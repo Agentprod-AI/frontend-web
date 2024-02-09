@@ -5,6 +5,7 @@ import { UserNav } from "./user-nav";
 import Link from "next/link";
 import { AccountSwitcher } from "./account-switcher";
 import { accounts } from "@/constants/data";
+import { LeadProfileSheet } from "../lead-profile-sheet";
 
 export default function Header() {
   return (
@@ -45,6 +46,7 @@ export default function Header() {
         <div className="flex items-center gap-2">
           <UserNav />
           <ThemeToggle />
+          <LeadProfileSheet />
         </div>
       </nav>
     </div>
