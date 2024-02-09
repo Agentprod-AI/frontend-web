@@ -3,13 +3,15 @@ import { cn } from "@/lib/utils";
 import { MobileSidebar } from "./mobile-sidebar";
 import { UserNav } from "./user-nav";
 import Link from "next/link";
+import { AccountSwitcher } from "./account-switcher";
+import { accounts } from "@/constants/data";
 
 export default function Header() {
   return (
     <div className="fixed top-0 left-0 right-0 supports-backdrop-blur:bg-background/60 border-b bg-background/95 backdrop-blur z-20">
       <nav className="h-14 flex items-center justify-between px-4">
         <div className="hidden md:block">
-          <Link href={"/dashboard"}>
+          {/* <Link href={"/dashboard"}>
             <svg
               xmlns="http://www.w3.org/2000/svg"
               viewBox="0 0 24 24"
@@ -22,9 +24,21 @@ export default function Header() {
             >
               <path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3" />
             </svg>
-          </Link>
+          </Link> */}
+          <div
+            className={cn(
+              "flex h-[52px] items-center justify-center px-2",
+              // isCollapsed ? "h-[52px]" : "px-2",
+            )}
+          >
+            <AccountSwitcher
+              // isCollapsed={isCollapsed}
+              // isCollapsed={false}
+              accounts={accounts}
+            />
+          </div>
         </div>
-        <div className={cn("block sm:!hidden")}>
+        <div className={cn("block md:!hidden")}>
           <MobileSidebar />
         </div>
 

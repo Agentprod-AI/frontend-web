@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/select";
 
 interface AccountSwitcherProps {
-  isCollapsed: boolean;
+  isCollapsed?: boolean;
   accounts: {
     label: string;
     email: string;
