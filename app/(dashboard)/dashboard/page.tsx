@@ -173,7 +173,7 @@ export default function page() {
           <SalesMetrics />
           <Card className="col-span-4">
             <CardHeader>
-              <CardTitle>Line Chart</CardTitle>
+              <CardTitle>Leads Details</CardTitle>
             </CardHeader>
             <CardContent className="pl-2">
               <LineChartComponent />

@@ -13,46 +13,58 @@ import {
 
 const data = [
   {
-    name: "Page A",
-    uv: 4000,
-    pv: 2400,
-    amt: 2400,
+    name: "17 Dec",
+    lew: 10,
+    le: 20,
+    mlc: 15,
   },
   {
-    name: "Page B",
-    uv: 3000,
-    pv: 1398,
-    amt: 2210,
+    name: "20 Dec",
+    lew: 30,
+    le: 40,
+    mlc: 45,
   },
   {
-    name: "Page C",
-    uv: 2000,
-    pv: 9800,
-    amt: 2290,
+    name: "23 Dec",
+    lew: 5,
+    le: 10,
+    mlc: 35,
   },
   {
-    name: "Page D",
-    uv: 2780,
-    pv: 3908,
-    amt: 2000,
+    name: "26 Dec",
+    lew: 20,
+    le: 30,
+    mlc: 25,
   },
   {
-    name: "Page E",
-    uv: 1890,
-    pv: 4800,
-    amt: 2181,
+    name: "29 Dec",
+    lew: 15,
+    le: 40,
+    mlc: 20,
   },
   {
-    name: "Page F",
-    uv: 2390,
-    pv: 3800,
-    amt: 2500,
+    name: "1 Jan",
+    lew: 25,
+    le: 30,
+    mlc: 30,
   },
   {
-    name: "Page G",
-    uv: 3490,
-    pv: 4300,
-    amt: 2100,
+    name: "4 Jan",
+    lew: 10,
+    le: 20,
+    mlc: 15,
+  },
+  {
+    name: "7 Jan",
+    lew: 30,
+    le: 40,
+    mlc: 45,
+  },
+  {
+    name: "10 Jan",
+    lew: 5,
+    le: 10,
+    mlc: 35,
   },
 ];
 
@@ -71,17 +83,40 @@ export function LineChartComponent() {
         }}
       >
         {/* <CartesianGrid strokeDasharray="3 3" /> */}
-        <XAxis dataKey="name" />
-        <YAxis />
+        <Legend fontSize={10} />
+        <XAxis
+          dataKey="name"
+          stroke="#888888"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+        />
+        <YAxis
+          stroke="#888888"
+          fontSize={12}
+          tickLine={false}
+          axisLine={false}
+        />
         <Tooltip />
-        <Legend />
         <Line
+          name="Leads Enrolled in Workflow"
           type="monotone"
-          dataKey="pv"
+          dataKey="lew"
           stroke="#8884d8"
           activeDot={{ r: 8 }}
         />
-        <Line type="monotone" dataKey="uv" stroke="#82ca9d" />
+        <Line
+          name="Leads Engaged"
+          type="monotone"
+          dataKey="le"
+          stroke="#82ca9d"
+        />
+        <Line
+          name="Meeting Link Clicks"
+          type="monotone"
+          dataKey="mlc"
+          stroke="#a64490"
+        />
       </LineChart>
     </ResponsiveContainer>
   );
