@@ -20,7 +20,7 @@ export function BarChartComponent({ data }: { data: any }) {
           fontSize={12}
           tickLine={false}
           axisLine={false}
-          tickFormatter={(value) => `$${value}`}
+          tickFormatter={(value) => `${value}%`}
         />
         <Bar
           dataKey="total"

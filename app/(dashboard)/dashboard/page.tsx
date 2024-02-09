@@ -1,4 +1,7 @@
+import { LocationCardDashboard } from "@/components/cards/location-card";
+import { SalesMetrics } from "@/components/cards/sales-matrics";
 import { BarChartComponent } from "@/components/charts/bar-chart";
+import { LineChartComponent } from "@/components/charts/line-chart";
 import { CalendarDateRangePicker } from "@/components/date-range-picker";
 import { RecentSales } from "@/components/recent-sales";
 import { Button } from "@/components/ui/button";
@@ -10,7 +13,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 
 const cardData = [
@@ -161,13 +164,23 @@ export default function page() {
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
           <Card className="col-span-4">
             <CardHeader>
-              <CardTitle>Overview</CardTitle>
+              <CardTitle>Conversation funnel</CardTitle>
             </CardHeader>
             <CardContent className="pl-2">
               <BarChartComponent data={barChartData} />
             </CardContent>
           </Card>
-          <Card className="col-span-4 md:col-span-3">
+          <SalesMetrics />
+          <Card className="col-span-4">
+            <CardHeader>
+              <CardTitle>Line Chart</CardTitle>
+            </CardHeader>
+            <CardContent className="pl-2">
+              <LineChartComponent />
+            </CardContent>
+          </Card>
+          <LocationCardDashboard />
+          {/* <Card className="col-span-4 md:col-span-3">
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
               <CardDescription>You made 265 sales this month.</CardDescription>
@@ -175,7 +188,7 @@ export default function page() {
             <CardContent>
               <RecentSales />
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
         {/* </TabsContent> */}
         {/* </Tabs> */}

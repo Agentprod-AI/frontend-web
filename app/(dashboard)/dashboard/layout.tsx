@@ -8,12 +8,13 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
-import type { Metadata } from "next";
+// import type { Metadata } from "next";
 import React from "react";
 import { Nav } from "@/components/layout/nav";
 import { navItems } from "@/constants/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import useWindowSize from "@/hooks/useWindowSize";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 // export const metadata: Metadata = {
 //   title: "Next Shadcn Dashboard Starter",
@@ -71,7 +72,9 @@ export default function DashboardLayout({
             </ResizablePanel>
             {width > 768 ? <ResizableHandle withHandle /> : null}
             <ResizablePanel minSize={30} defaultSize={85}>
-              <main className="pt-16">{children}</main>
+              <ScrollArea className="h-screen">
+                <main className="pt-16">{children}</main>
+              </ScrollArea>
             </ResizablePanel>
           </ResizablePanelGroup>
         </TooltipProvider>

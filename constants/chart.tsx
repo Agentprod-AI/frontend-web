@@ -1,50 +1,27 @@
 export const barChartData = [
   {
-    name: "Jan",
-    total: Math.floor(Math.random() * 5000) + 1000,
+    name: "Prospect",
+    param: 246,
+    total: 100,
   },
   {
-    name: "Feb",
-    total: Math.floor(Math.random() * 5000) + 1000,
+    name: "Outreach",
+    param: 179,
+    total: 73,
   },
   {
-    name: "Mar",
-    total: Math.floor(Math.random() * 5000) + 1000,
+    name: "Open",
+    param: 135,
+    total: 55,
   },
   {
-    name: "Apr",
-    total: Math.floor(Math.random() * 5000) + 1000,
+    name: "CTA click",
+    param: 17,
+    total: 7,
   },
   {
-    name: "May",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Jun",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Jul",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Aug",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Sep",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Oct",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Nov",
-    total: Math.floor(Math.random() * 5000) + 1000,
-  },
-  {
-    name: "Dec",
-    total: Math.floor(Math.random() * 5000) + 1000,
+    name: "Deal",
+    param: 6,
+    total: 2.4,
   },
 ];
