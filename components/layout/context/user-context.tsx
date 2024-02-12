@@ -20,7 +20,7 @@ export interface AppState {
 }
 
 const defaultState: AppState = {
-  user: {},
+  user: DummyUser,
   updateState: (newState?: Partial<AppState>) => {},
 };
 
@@ -40,11 +40,16 @@ export const UserContextProvider: React.FunctionComponent<Props> = (
   });
 
   const updateState = (newState: Partial<AppState>) => {
-    setState({ ...state, ...newState });
+    setState((prevState) => ({ ...prevState, ...newState }));
   };
 
+  const contextValue = React.useMemo(
+    () => ({ ...state, updateState }),
+    [state],
+  );
+
   return (
-    <UserContext.Provider value={{ ...state, updateState }}>
+    <UserContext.Provider value={contextValue}>
       {props.children}
     </UserContext.Provider>
   );
