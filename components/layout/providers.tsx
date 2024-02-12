@@ -4,6 +4,7 @@ import { SessionProvider, SessionProviderProps } from "next-auth/react";
 
 import ThemeProvider from "./ThemeToggle/theme-provider";
 import { UserContextProvider } from "./context/user-context";
+import { LeadSheetSidebarProvider } from "./context/lead-sheet-sidebar";
 
 export default function Providers({
   session,
@@ -16,7 +17,9 @@ export default function Providers({
     <>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
         <UserContextProvider>
-          <SessionProvider session={session}>{children}</SessionProvider>
+          <LeadSheetSidebarProvider>
+            <SessionProvider session={session}>{children}</SessionProvider>
+          </LeadSheetSidebarProvider>
         </UserContextProvider>
       </ThemeProvider>
     </>
