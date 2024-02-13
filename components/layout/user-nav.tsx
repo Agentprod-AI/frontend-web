@@ -1,4 +1,5 @@
 "use client";
+import { logout } from "@/app/(auth)/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -11,9 +12,22 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut, useSession } from "next-auth/react";
+// import { signOut, useSession } from "next-auth/react";
 export function UserNav() {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
+  const session = {
+    user: {
+      name: "John Doe",
+      email: "john@gmail.com",
+      image: "https://avatars.dicebear.com/api/avataaars/john.svg",
+    },
+  };
+
+  const logoutUser = async () => {
+    await logout();
+    window.location.reload();
+  };
+
   if (session) {
     return (
       <DropdownMenu>
@@ -56,7 +70,7 @@ export function UserNav() {
             <DropdownMenuItem>New Team</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => signOut()}>
+          <DropdownMenuItem onClick={() => logoutUser()}>
             Log out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>

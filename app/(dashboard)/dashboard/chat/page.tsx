@@ -19,7 +19,7 @@ import EmailForm from "@/components/forms/emailForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useSession } from "next-auth/react";
+// import { useSession } from "next-auth/react";
 
 const examples = [
   `How much revenue did we close this month?`,
@@ -28,7 +28,7 @@ const examples = [
 ];
 
 export default function Home() {
-  const { data: session } = useSession();
+  // const { data: session } = useSession();
 
   // console.log("Session: ", session);
   const formRef = useRef<HTMLFormElement>(null);
@@ -36,7 +36,7 @@ export default function Home() {
 
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  const [userEmail, setUserEmail] = useState(session?.user?.email || "");
+  const [userEmail, setUserEmail] = useState("");
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -131,7 +131,7 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      fetchUserIdFromEmail(userEmail);
+      // fetchUserIdFromEmail(userEmail);
     } catch (err) {
       console.log("Something went wrong!", err);
     }
