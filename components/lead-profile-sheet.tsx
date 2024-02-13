@@ -9,7 +9,7 @@ import {
   Clock,
   Linkedin,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback } from "./ui/avatar";
 import {
@@ -18,6 +18,7 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
+import { useLeadSheetSidebar } from "./layout/context/lead-sheet-sidebar";
 
 // import { Playlist } from "../data/playlists";
 
@@ -26,12 +27,21 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function LeadProfileSheet({ className }: SidebarProps) {
-  const [open, setOpen] = useState(false);
-  const [isOpen, setIsOpen] = useState(false);
+  const { isOpen, itemId, toggleSidebar } = useLeadSheetSidebar();
+  const [collapsibleOpen, setCollapsibleOpen] = useState(false);
+
+  useEffect(() => {
+    if (isOpen && itemId) {
+      // Make API call with itemId
+      // fetchData(itemId).then(...);
+    }
+  }, [isOpen, itemId]);
+
+  if (!isOpen) return null;
 
   return (
     <>
-      <Sheet open={open} onOpenChange={setOpen}>
+      <Sheet open={isOpen} onOpenChange={toggleSidebar}>
         <SheetTrigger asChild>
           <MenuIcon />
         </SheetTrigger>
@@ -87,8 +97,8 @@ export function LeadProfileSheet({ className }: SidebarProps) {
                 </div>
                 <br />
                 <Collapsible
-                  open={isOpen}
-                  onOpenChange={setIsOpen}
+                  open={collapsibleOpen}
+                  onOpenChange={setCollapsibleOpen}
                   className="w-[350px] pt-4 space-y-2 text-muted-foreground"
                 >
                   <div className="flex items-center justify-between space-x-4">

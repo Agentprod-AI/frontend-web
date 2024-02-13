@@ -1,8 +1,10 @@
+"use client";
 import { LocationCardDashboard } from "@/components/cards/location-card";
 import { SalesMetrics } from "@/components/cards/sales-matrics";
 import { BarChartComponent } from "@/components/charts/bar-chart";
 import { LineChartComponent } from "@/components/charts/line-chart";
 import { CalendarDateRangePicker } from "@/components/date-range-picker";
+import { useLeadSheetSidebar } from "@/components/layout/context/lead-sheet-sidebar";
 import { RecentSales } from "@/components/recent-sales";
 import { Button } from "@/components/ui/button";
 import {
@@ -39,12 +41,21 @@ const cardData = [
   },
 ];
 
-export default function page() {
+export default function Page() {
+  const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+
+  const handleOpenSidebar = (id: string) => {
+    setItemId(id);
+    toggleSidebar(true);
+  };
+
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
+          <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button>
+
           <div className="hidden md:flex items-center space-x-2">
             <CalendarDateRangePicker />
             <Button>Download</Button>
