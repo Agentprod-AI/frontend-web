@@ -1,5 +1,5 @@
 "use client";
-import { logout } from "@/app/(auth)/actions";
+import { logout as supabaseLogout } from "@/app/(auth)/actions";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -12,9 +12,11 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useAuth } from "./context/auth-provider";
 // import { signOut, useSession } from "next-auth/react";
 export function UserNav() {
   // const { data: session } = useSession();
+  const { logout } = useAuth();
   const session = {
     user: {
       name: "John Doe",
@@ -24,8 +26,9 @@ export function UserNav() {
   };
 
   const logoutUser = async () => {
-    await logout();
-    window.location.reload();
+    await supabaseLogout();
+    logout();
+    // window.location.reload();
   };
 
   if (session) {

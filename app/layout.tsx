@@ -26,11 +26,11 @@ export default async function RootLayout({
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
-  let authData: AuthStateInterface = { user: null };
+  let authData: AuthStateInterface["user"] = null;
 
   const { data, error } = await supabase.auth.getUser();
   if (!error && data?.user) {
-    authData["user"] = data?.user;
+    authData = data?.user;
   }
 
   return (

@@ -16,8 +16,12 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 // import GoogleSignInButton from "../github-auth-button";
-import { login, signup } from "@/app/(auth)/actions";
+import {
+  login as supabaseLogin,
+  signup as supabaseSignup,
+} from "@/app/(auth)/actions";
 import { toast } from "sonner";
+import { useAuth } from "@/components/layout/context/auth-provider";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -34,12 +38,16 @@ export default function UserAuthForm({
   formType: "signin" | "signup";
 }) {
   const searchParams = useSearchParams();
+  const { login } = useAuth();
+
   // const callbackUrl = searchParams.get("callbackUrl");
   const [loading, setLoading] = useState(false);
+
   const defaultValues = {
     email: "naman.barkiya@gmail.com",
     password: "naman123",
   };
+
   const form = useForm<UserFormValue>({
     resolver: zodResolver(formSchema),
     defaultValues,
@@ -48,17 +56,20 @@ export default function UserAuthForm({
   const onSubmit = async (data: UserFormValue) => {
     if (formType === "signin") {
       try {
-        await login({
+        const userData = await supabaseLogin({
           email: data.email,
           password: data.password,
         });
-        window.location.reload();
+        console.log("userData66::: ", userData);
+        login(userData.user);
+        // redirect("/dashboard");
+        // window.location.reload();
       } catch (error: any) {
         toast.error(error.message);
       }
     } else if (formType === "signup") {
       try {
-        await signup({
+        await supabaseSignup({
           email: data.email,
           password: data.password,
         });

@@ -13,13 +13,13 @@ export default function Providers({
   children,
 }: {
   // session: SessionProviderProps["session"];
-  userAuthData: AuthStateInterface;
+  userAuthData: AuthStateInterface["user"];
   children: React.ReactNode;
 }) {
   return (
     <>
       <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-        <AuthProvider authData={userAuthData}>
+        <AuthProvider userData={userAuthData}>
           <UserContextProvider>
             <LeadSheetSidebarProvider>
               {/* <SessionProvider session={session}> */}

@@ -17,14 +17,16 @@ export async function login(formData: { email: string; password: string }) {
     password: formData.password,
   };
 
-  const { error } = await supabase.auth.signInWithPassword(data);
+  const { data: userData, error } =
+    await supabase.auth.signInWithPassword(data);
 
   if (error) {
     throw new Error(error.message);
   }
 
-  revalidatePath("/", "layout");
-  redirect("/");
+  return userData;
+  // revalidatePath("/", "layout");
+  // redirect("/");
 }
 
 export async function signup(formData: { email: string; password: string }) {
@@ -44,8 +46,8 @@ export async function signup(formData: { email: string; password: string }) {
     throw new Error(error.message);
   }
 
-  revalidatePath("/", "layout");
-  redirect("/");
+  // revalidatePath("/", "layout");
+  // redirect("/");
 }
 
 export async function logout() {
@@ -59,7 +61,6 @@ export async function logout() {
   } else {
     // Ideally, you might want to also revalidate or clear any cache that depends on the user session
     // This step depends on your application's structure and how it handles cache
-
-    redirect("/"); // Redirect to the homepage or login page after successful logout
+    // redirect("/"); // Redirect to the homepage or login page after successful logout
   }
 }
