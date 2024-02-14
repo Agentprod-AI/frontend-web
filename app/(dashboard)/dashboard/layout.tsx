@@ -15,6 +15,8 @@ import { navItems } from "@/constants/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import useWindowSize from "@/hooks/useWindowSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useAuth } from "@/components/layout/context/auth-provider";
+import { redirect } from "next/navigation";
 
 // export const metadata: Metadata = {
 //   title: "Next Shadcn Dashboard Starter",
@@ -28,6 +30,11 @@ export default function DashboardLayout({
 }) {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const { width } = useWindowSize();
+  const { user } = useAuth();
+
+  if (!user) {
+    redirect("/");
+  }
 
   return (
     <>
