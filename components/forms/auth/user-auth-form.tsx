@@ -60,10 +60,8 @@ export default function UserAuthForm({
           email: data.email,
           password: data.password,
         });
-        console.log("userData66::: ", userData);
+
         login(userData.user);
-        // redirect("/dashboard");
-        // window.location.reload();
       } catch (error: any) {
         toast.error(error.message);
       }
