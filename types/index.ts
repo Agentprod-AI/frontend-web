@@ -8,6 +8,12 @@ export interface NavItem {
   icon?: keyof typeof Icons;
   label?: string;
   description?: string;
+  isCollapsible?: boolean;
+}
+
+export interface NavInterface {
+  category: string;
+  items: NavItem[];
 }
 
 export interface NavItemWithChildren extends NavItem {

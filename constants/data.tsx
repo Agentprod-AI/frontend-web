@@ -1,5 +1,5 @@
 import { Icons } from "@/components/icons";
-import { NavItem, SidebarNavItem } from "@/types";
+import { NavInterface, NavItem, SidebarNavItem } from "@/types";
 
 export type User = {
   id: number;
@@ -111,48 +111,77 @@ export type Employee = {
   profile_picture?: string | null; // Profile picture can be a string (URL) or null (if no picture)
 };
 
-export const navItems: NavItem[] = [
+export const navItems: NavInterface[] = [
   {
-    title: "Dashboard",
-    href: "/dashboard",
-    icon: "dashboard",
-    label: "Dashboard",
+    category: "Main",
+    items: [
+      {
+        title: "Chat with Prod",
+        href: "/dashboard/chat",
+        icon: "chat",
+        label: "chat with prod",
+        isCollapsible: false,
+      },
+    ],
   },
   {
-    title: "Chat",
-    href: "/dashboard/chat",
-    icon: "chat",
-    label: "chat",
+    category: "Main",
+    items: [
+      {
+        title: "Dashboard",
+        href: "/dashboard",
+        icon: "dashboard",
+        label: "Dashboard",
+        isCollapsible: false,
+      },
+      {
+        title: "Inbox",
+        href: "/dashboard/mail",
+        icon: "mail",
+        label: "mail",
+        isCollapsible: false,
+      },
+      {
+        title: "Campaign",
+        href: "/dashboard/campaign",
+        icon: "campaign",
+        label: "campaign",
+        isCollapsible: false,
+      },
+    ],
   },
   {
-    title: "User",
-    href: "/dashboard/user",
-    icon: "user",
-    label: "user",
-  },
-  {
-    title: "Employee",
-    href: "/dashboard/employee",
-    icon: "employee",
-    label: "employee",
-  },
-  {
-    title: "Profile",
-    href: "/dashboard/profile",
-    icon: "profile",
-    label: "profile",
-  },
-  {
-    title: "Mail",
-    href: "/dashboard/mail",
-    icon: "mail",
-    label: "mail",
-  },
-  {
-    title: "Login",
-    href: "/",
-    icon: "login",
-    label: "login",
+    category: "Extras",
+    items: [
+      {
+        title: "User",
+        href: "/dashboard/user",
+        icon: "user",
+        label: "user",
+        isCollapsible: false,
+      },
+      {
+        title: "Employee",
+        href: "/dashboard/employee",
+        icon: "employee",
+        label: "employee",
+        isCollapsible: false,
+      },
+      {
+        title: "Profile",
+        href: "/dashboard/profile",
+        icon: "profile",
+        label: "profile",
+        isCollapsible: false,
+      },
+      // {
+      //   title: "Login",
+      //   href: "/",
+      //   icon: "login",
+      //   label: "login",
+      //   isCollapsible: false,
+      // },
+    ],
   },
 ];
 

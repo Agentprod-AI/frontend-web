@@ -18,7 +18,7 @@ import {
 import { AccountSwitcher } from "../layout/account-switcher";
 import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
-import { Nav } from "../layout/nav";
+// import { Nav } from "../layout/nav";
 import { Mail } from "@/constants/data";
 import { useMail } from "@/hooks/useMail";
 import { cn } from "@/lib/utils";
