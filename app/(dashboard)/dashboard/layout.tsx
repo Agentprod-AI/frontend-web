@@ -80,7 +80,7 @@ export default function DashboardLayout({
             {width > 768 ? <ResizableHandle withHandle /> : null}
             <ResizablePanel minSize={30} defaultSize={85}>
               <ScrollArea className="h-screen">
-                <main className="pt-16">{children}</main>
+                <main className="p-2 pt-16">{children}</main>
               </ScrollArea>
             </ResizablePanel>
           </ResizablePanelGroup>

@@ -54,7 +54,7 @@ export default function Page() {
       <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
         <div className="flex items-center justify-between space-y-2">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
-          <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button>
+          {/* <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button> */}
 
           <div className="hidden md:flex items-center space-x-2">
             <CalendarDateRangePicker />
