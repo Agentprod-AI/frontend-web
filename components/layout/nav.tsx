@@ -34,7 +34,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
         {/* <Separator /> */}
         {links.map((nav, index) => {
           return (
-            <>
+            <div key={index}>
               {nav.items.map((link, index) => {
                 const Icon = Icons[link.icon || "arrowRight"];
                 return isCollapsed ? (
@@ -113,7 +113,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                 );
               })}
               <Separator className="mb-1" />
-            </>
+            </div>
           );
         })}
       </nav>

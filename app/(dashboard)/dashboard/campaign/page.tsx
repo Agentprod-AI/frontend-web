@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -25,7 +26,9 @@ export default function Page() {
           
         </CardContent> */}
         <CardFooter className="flex justify-between">
-          <Button>Edit</Button>
+          <Button asChild variant={"outline"}>
+            <Link href={"/dashboard/campaign/123"}>Edit</Link>
+          </Button>
         </CardFooter>
       </Card>
     </div>
