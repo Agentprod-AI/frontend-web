@@ -1,3 +1,9 @@
+import { SchedulingForm } from "@/components/campaign/scheduling-form";
+
 export default function Page() {
-  return <div>Page</div>;
+  return (
+    <div>
+      <SchedulingForm />
+    </div>
+  );
 }
