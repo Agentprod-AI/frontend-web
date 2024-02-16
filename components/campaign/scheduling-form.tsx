@@ -1,68 +1,59 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
-import { CalendarIcon, CaretSortIcon, CheckIcon } from "@radix-ui/react-icons";
-import { format } from "date-fns";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 
-import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import {
-  Command,
-  CommandEmpty,
-  CommandGroup,
-  CommandInput,
-  CommandItem,
-} from "@/components/ui/command";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
 import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
+import React from "react";
 
-const languages = [
-  { label: "English", value: "en" },
-  { label: "French", value: "fr" },
-  { label: "German", value: "de" },
-  { label: "Spanish", value: "es" },
-  { label: "Portuguese", value: "pt" },
-  { label: "Russian", value: "ru" },
-  { label: "Japanese", value: "ja" },
-  { label: "Korean", value: "ko" },
-  { label: "Chinese", value: "zh" },
-] as const;
+const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
 const accountFormSchema = z.object({
-  name: z
+  campaignName: z
     .string()
-    .min(2, {
-      message: "Name must be at least 2 characters.",
-    })
-    .max(30, {
-      message: "Name must not be longer than 30 characters.",
-    }),
-  dob: z.date({
-    required_error: "A date of birth is required.",
+    .min(2, "Campaign Name must be at least 2 characters.")
+    .max(50, "Campaign Name must not be longer than 50 characters."),
+  campaignType: z.enum(["Outbound", "Inbound", "Nurturing"], {
+    required_error: "Please select a campaign type.",
   }),
-  language: z.string({
-    required_error: "Please select a language.",
-  }),
-  type: z.enum(["all", "mentions", "none"], {
-    required_error: "You need to select a notification type.",
+  dailyOutreach: z.preprocess(
+    (value) => {
+      // Convert the input value to a number if it's a string
+      if (typeof value === "string") {
+        return parseInt(value, 10);
+      }
+      return value;
+    },
+    z
+      .number()
+      .min(1, "You must outreach to at least 1 prospect per day.")
+      .max(500, "You cannot outreach to more than 500 prospects per day."),
+  ),
+  schedule: z.object({
+    mondayStartTime: z.string().optional(),
+    mondayEndTime: z.string().optional(),
+    tuesdayStartTime: z.string().optional(),
+    tuesdayEndTime: z.string().optional(),
+    wednesdayStartTime: z.string().optional(),
+    wednesdayEndTime: z.string().optional(),
+    thursdayStartTime: z.string().optional(),
+    thursdayEndTime: z.string().optional(),
+    fridayStartTime: z.string().optional(),
+    fridayEndTime: z.string().optional(),
+    // Assuming Saturday and Sunday are not working days as per the image
+    // If they are, you can add them similarly to the weekdays
   }),
 });
 
@@ -81,6 +72,7 @@ export function SchedulingForm() {
   });
 
   function onSubmit(data: AccountFormValues) {
+    console.log("Data: ", data);
     toast({
       title: "You submitted the following values:",
       description: (
@@ -96,27 +88,24 @@ export function SchedulingForm() {
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <FormField
           control={form.control}
-          name="name"
-          render={({ field }) => (
+          name="campaignName"
+          render={({ field, fieldState: { error } }) => (
             <FormItem>
-              <FormLabel>Name</FormLabel>
+              <FormLabel>Campaign Name</FormLabel>
               <FormControl>
-                <Input placeholder="Your name" {...field} />
+                <Input placeholder="Campaign Name" {...field} />
               </FormControl>
-              <FormDescription>
-                This is the name that will be displayed on your profile and in
-                emails.
-              </FormDescription>
-              <FormMessage />
+              <FormMessage>{error?.message}</FormMessage>
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
-          name="type"
+          name="campaignType"
           render={({ field }) => (
             <FormItem className="space-y-3">
-              <FormLabel>Notify me about...</FormLabel>
+              <FormLabel>Campaign Type</FormLabel>
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
@@ -125,25 +114,21 @@ export function SchedulingForm() {
                 >
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
-                      <RadioGroupItem value="all" />
+                      <RadioGroupItem value="Outbound" />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      All new messages
-                    </FormLabel>
+                    <FormLabel className="font-normal">Outbound</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
-                      <RadioGroupItem value="mentions" />
+                      <RadioGroupItem value="Inbound" />
                     </FormControl>
-                    <FormLabel className="font-normal">
-                      Direct messages and mentions
-                    </FormLabel>
+                    <FormLabel className="font-normal">Inbound</FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
-                      <RadioGroupItem value="none" />
+                      <RadioGroupItem value="Nurturing" />
                     </FormControl>
-                    <FormLabel className="font-normal">Nothing</FormLabel>
+                    <FormLabel className="font-normal">Nurturing</FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
@@ -151,112 +136,70 @@ export function SchedulingForm() {
             </FormItem>
           )}
         />
+
         <FormField
           control={form.control}
-          name="dob"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Date of birth</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-[240px] pl-3 text-left font-normal",
-                        !field.value && "text-muted-foreground",
-                      )}
-                    >
-                      {field.value ? (
-                        format(field.value, "PPP")
-                      ) : (
-                        <span>Pick a date</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value}
-                    onSelect={field.onChange}
-                    disabled={(date) =>
-                      date > new Date() || date < new Date("1900-01-01")
-                    }
-                    initialFocus
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                Your date of birth is used to calculate your age.
-              </FormDescription>
-              <FormMessage />
+          name="dailyOutreach"
+          render={({ field, fieldState: { error } }) => (
+            <FormItem>
+              <FormLabel>Daily Outreach</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Number of daily outreach"
+                  {...field}
+                />
+              </FormControl>
+              <FormMessage>{error?.message}</FormMessage>
             </FormItem>
           )}
         />
-        <FormField
-          control={form.control}
-          name="language"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel>Language</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      className={cn(
-                        "w-[200px] justify-between",
-                        !field.value && "text-muted-foreground",
-                      )}
-                    >
-                      {field.value
-                        ? languages.find(
-                            (language) => language.value === field.value,
-                          )?.label
-                        : "Select language"}
-                      <CaretSortIcon className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-[200px] p-0">
-                  <Command>
-                    <CommandInput placeholder="Search language..." />
-                    <CommandEmpty>No language found.</CommandEmpty>
-                    <CommandGroup>
-                      {languages.map((language) => (
-                        <CommandItem
-                          value={language.label}
-                          key={language.value}
-                          onSelect={() => {
-                            form.setValue("language", language.value);
-                          }}
-                        >
-                          <CheckIcon
-                            className={cn(
-                              "mr-2 h-4 w-4",
-                              language.value === field.value
-                                ? "opacity-100"
-                                : "opacity-0",
-                            )}
-                          />
-                          {language.label}
-                        </CommandItem>
-                      ))}
-                    </CommandGroup>
-                  </Command>
-                </PopoverContent>
-              </Popover>
-              <FormDescription>
-                This is the language that will be used in the dashboard.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <Button type="submit">Update account</Button>
+
+        {/* Dynamically create a time input for each day */}
+        <h1>Schedule</h1>
+        {["monday", "tuesday", "wednesday", "thursday", "friday"].map((day) => (
+          <div key={day} className="flex w-[400px] justify-between">
+            <h1>{day.charAt(0).toUpperCase() + day.slice(1)}:</h1>
+            <div className="flex gap-2">
+              <FormField
+                control={form.control}
+                //@ts-ignore
+                name={`schedule.${day}StartTime`}
+                render={({ field, fieldState: { error } }) => (
+                  <FormItem>
+                    {/* <FormLabel>{`${
+                    day.charAt(0).toUpperCase() + day.slice(1)
+                  } Start Time`}</FormLabel> */}
+                    <FormControl>
+                      {/* @ts-ignore */}
+                      <Input type="time" {...field} />
+                    </FormControl>
+                    <FormMessage>{error?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                //@ts-ignore
+                name={`schedule.${day}EndTime`}
+                render={({ field, fieldState: { error } }) => (
+                  <FormItem>
+                    {/* <FormLabel>{`${
+                    day.charAt(0).toUpperCase() + day.slice(1)
+                  } End Time`}</FormLabel> */}
+                    <FormControl>
+                      {/* @ts-ignore */}
+                      <Input type="time" placeholder="End Time" {...field} />
+                    </FormControl>
+                    <FormMessage>{error?.message}</FormMessage>
+                  </FormItem>
+                )}
+              />
+            </div>
+          </div>
+        ))}
+
+        <Button type="submit">Update Campaign</Button>
       </form>
     </Form>
   );
