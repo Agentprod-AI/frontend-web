@@ -11,11 +11,11 @@ import Link from "next/link";
 
 export default function Page() {
   return (
-    <div>
-      <h1>Campaign Page</h1>
+    <div className="space-y-2">
+      {/* <h1>Campaign Page</h1> */}
       <Button> + Create Campaign </Button>
 
-      <Card className="w-[350px] m-2">
+      <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Test Campaign</CardTitle>
           <CardDescription>

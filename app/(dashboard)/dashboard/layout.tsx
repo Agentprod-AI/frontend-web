@@ -17,6 +17,8 @@ import useWindowSize from "@/hooks/useWindowSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/components/layout/context/auth-provider";
 import { redirect } from "next/navigation";
+import { PageHeaderProvider } from "@/components/layout/context/page-header";
+import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 
 // export const metadata: Metadata = {
 //   title: "Next Shadcn Dashboard Starter",
@@ -80,7 +82,12 @@ export default function DashboardLayout({
             {width > 768 ? <ResizableHandle withHandle /> : null}
             <ResizablePanel minSize={30} defaultSize={85}>
               <ScrollArea className="h-screen">
-                <main className="p-2 pt-16">{children}</main>
+                <PageHeaderProvider>
+                  <main className="px-4 pt-[56px]">
+                    <DashboardPageHeader />
+                    {children}
+                  </main>
+                </PageHeaderProvider>
               </ScrollArea>
             </ResizablePanel>
           </ResizablePanelGroup>

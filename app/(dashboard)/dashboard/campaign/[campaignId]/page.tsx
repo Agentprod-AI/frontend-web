@@ -44,7 +44,7 @@ const campaignPages = [
 export default function Page({ params }: { params: { campaignId: string } }) {
   return (
     <div>
-      Campaign: {params.campaignId}
+      {/* Campaign: {params.campaignId} */}
       {campaignPages.map((val, ind) => (
         <Card
           className="w-[95%] min-w-[330px] m-2 flex justify-between"
