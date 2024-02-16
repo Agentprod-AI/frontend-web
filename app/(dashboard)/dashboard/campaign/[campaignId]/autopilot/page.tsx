@@ -1,3 +1,9 @@
+import { AutopilotForm } from "@/components/campaign/autopilot-form";
+
 export default function Page() {
-  return <div>autopilot</div>;
+  return (
+    <div>
+      <AutopilotForm />
+    </div>
+  );
 }
