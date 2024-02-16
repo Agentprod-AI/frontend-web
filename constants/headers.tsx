@@ -38,6 +38,11 @@ export const pageTitleConfig = [
     title: "Autopilot",
     hidden: false,
   },
+  {
+    pathname: "/dashboard/profile",
+    title: "Profile",
+    hidden: false,
+  },
   // Add more configurations as needed
 ];
 
