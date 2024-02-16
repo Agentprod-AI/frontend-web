@@ -25,7 +25,7 @@ export default function DashboardPageHeader() {
     <>
       {hidden ? null : (
         <div>
-          <h1 className="text-3xl font-bold tracking-tight mt-2">{title}</h1>
+          <h1 className="text-2xl font-bold tracking-tight mt-4">{title}</h1>
           <Separator className="mt-3 mb-3" />
         </div>
       )}

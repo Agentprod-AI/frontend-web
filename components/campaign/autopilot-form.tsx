@@ -138,7 +138,7 @@ export function AutopilotForm() {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         <div>
-          <h3 className="mb-4 text-lg font-medium">Email Notifications</h3>
+          {/* <h3 className="mb-4 text-lg font-medium">Email Notifications</h3> */}
           <div className="space-y-2">
             {autopilotOptions.map((val, ind) => (
               <FormField
@@ -146,7 +146,7 @@ export function AutopilotForm() {
                 control={form.control}
                 name={val.name}
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg px-4 py-2 max-w-[550px]">
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg px-4 py-2">
                     <div className="space-y-0.5">
                       <FormLabel className="text-base">{val.label}</FormLabel>
                       <FormDescription>{val.description}</FormDescription>
