@@ -19,6 +19,8 @@ import EmailForm from "@/components/forms/emailForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { useAuth } from "@/components/layout/context/auth-provider";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 // import { useSession } from "next-auth/react";
 
 const examples = [
@@ -33,10 +35,12 @@ export default function Home() {
   // console.log("Session: ", session);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const { user } = useAuth();
+  // console.log("User: ", user);
 
   const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
-  const [userEmail, setUserEmail] = useState("");
+  const [userEmail, setUserEmail] = useState(user?.email);
   const [userId, setUserId] = useState("");
   const [loading, setLoading] = useState(true);
 
@@ -132,6 +136,39 @@ export default function Home() {
   useEffect(() => {
     try {
       // fetchUserIdFromEmail(userEmail);
+      setMessages([
+        {
+          id: Math.random().toString(),
+          role: "assistant",
+          content: JSON.stringify({
+            content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+            buttons: [
+              {
+                buttonTitle: "Check out our website",
+                url: "https://agentprod.com",
+              },
+            ],
+          }),
+        },
+        {
+          id: Math.random().toString(),
+          role: "assistant",
+          content: JSON.stringify({
+            content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
+            buttons: [
+              {
+                buttonTitle: "Google Login",
+                url: `hello.com/test`,
+              },
+            ],
+          }),
+        },
+        {
+          id: Math.random().toString(),
+          role: "user",
+          content: "How much revenue did we close this month?",
+        },
+      ]);
     } catch (err) {
       console.log("Something went wrong!", err);
     }
@@ -173,11 +210,16 @@ export default function Home() {
             <div
               key={i}
               className={clsx(
-                "flex w-full items-center justify-center py-8",
-                message.role === "user" ? "bg-black" : "bg-black/5",
+                "flex w-full items-center justify-center py-4",
+                // message.role === "user" ? "bg-black" : "bg-black/5",
               )}
             >
-              <div className="flex w-full max-w-screen-md items-start space-x-4 px-5 sm:px-0">
+              <div
+                className={clsx(
+                  "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
+                  message.role === "user" ? "flex-row-reverse" : "flex-row",
+                )}
+              >
                 <div
                   className={clsx(
                     "p-1.5 text-white",
@@ -185,54 +227,76 @@ export default function Home() {
                   )}
                 >
                   {message.role === "user" ? (
-                    <User width={20} />
+                    <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
+                      <AvatarImage src="/user.png" alt="user" />
+                      {/* <AvatarFallback>NB</AvatarFallback> */}
+                    </Avatar>
                   ) : (
-                    <Image
-                      className="mx-auto"
-                      width={20}
-                      height={20}
-                      src={"/bw-logo.png"}
-                      alt="AgentProd"
-                    />
+                    <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
+                      {/* <AvatarFallback>JL</AvatarFallback> */}
+                      <AvatarImage src="/bw-logo.png" alt="agentprod logo" />
+                      {/* <Image
+                        // className="mx-auto"
+                        width={100}
+                        height={100}
+                        src={"/bw-logo.png"}
+                        alt="AgentProd"
+                      /> */}
+                    </Avatar>
                   )}
                 </div>
-                <div className="flex flex-col">
-                  <ReactMarkdown
-                    className="prose mt-1 w-full break-words prose-p:leading-relaxed"
-                    remarkPlugins={[remarkGfm]}
-                    components={{
-                      // open links in new tab
-                      a: (props) => (
-                        <a
-                          {...props}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        />
-                      ),
-                    }}
-                  >
-                    {message.role === "assistant"
-                      ? JSON.parse(message.content).content
-                      : message.content}
-                  </ReactMarkdown>
+                <div
+                  className={clsx(
+                    "flex flex-col !mr-3 space-y-1",
+                    message.role === "assistant" ? "items-start" : "items-end",
+                  )}
+                >
+                  <span className="text-xs">
+                    {message.role === "assistant" ? "Prod" : "User"} 05:07 PM
+                  </span>
+                  <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                    <ReactMarkdown
+                      className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                      remarkPlugins={[remarkGfm]}
+                      components={{
+                        // open links in new tab
+                        a: (props) => (
+                          <a
+                            {...props}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          />
+                        ),
+                      }}
+                    >
+                      {message.role === "assistant"
+                        ? JSON.parse(message.content).content
+                        : message.content}
+                    </ReactMarkdown>
 
-                  <div className="button-container mt-4">
-                    {message.role === "assistant" &&
-                    JSON.parse(message.content).buttons
-                      ? JSON.parse(message.content).buttons.map(
-                          (button: any, index: number) => (
-                            <a
-                              key={index}
-                              href={button.url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="rounded-md border border-gray-200 bg-white px-3 sm:px-5 py-2 sm:py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50 ml-1 sm:ml-2"
-                            >
-                              {button.buttonTitle}
-                            </a>
-                          ),
-                        )
-                      : null}
+                    <div
+                      className={clsx(
+                        "button-container mt-4",
+                        message.role === "assistant" ? "pb-4" : "pb-0",
+                      )}
+                    >
+                      {message.role === "assistant" &&
+                      JSON.parse(message.content).buttons
+                        ? JSON.parse(message.content).buttons.map(
+                            (button: any, index: number) => (
+                              <a
+                                key={index}
+                                href={button.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-md border border-gray-200 bg-white px-3 sm:px-5 py-2 sm:py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50 ml-1 sm:ml-2"
+                              >
+                                {button.buttonTitle}
+                              </a>
+                            ),
+                          )
+                        : null}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -281,7 +345,7 @@ export default function Home() {
           <form
             ref={formRef}
             onSubmit={handleSubmit}
-            className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex bg-[#0f0f0f]"
+            className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex"
           >
             <Input
               ref={inputRef}

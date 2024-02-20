@@ -118,7 +118,7 @@ export default function UserAuthForm({
                 <FormControl>
                   <Input
                     type="password"
-                    placeholder="Enter your email..."
+                    placeholder="Enter your password..."
                     disabled={loading}
                     {...field}
                   />
