@@ -1,4 +1,5 @@
 "use client";
+import { Lead } from "@/components/layout/context/lead-user";
 import { AlertModal } from "@/components/modal/alert-modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -8,13 +9,13 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { User } from "@/constants/data";
+// import { User } from "@/constants/data";
 import { Edit, MoreHorizontal, Trash } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CellActionProps {
-  data: User;
+  data: Lead;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
