@@ -19,6 +19,7 @@ import {
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
 import { useLeadSheetSidebar } from "./layout/context/lead-sheet-sidebar";
+import { Lead, useLeads } from "./layout/context/lead-user";
 
 // import { Playlist } from "../data/playlists";
 
@@ -28,12 +29,14 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function LeadProfileSheet({ className }: SidebarProps) {
   const { isOpen, itemId, toggleSidebar } = useLeadSheetSidebar();
+  const { leads } = useLeads();
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
+  const [data, setData] = useState<Lead>();
 
   useEffect(() => {
     if (isOpen && itemId) {
-      // Make API call with itemId
-      // fetchData(itemId).then(...);
+      const item = leads.find((lead) => lead.id === itemId);
+      setData(item);
     }
   }, [isOpen, itemId]);
 
@@ -54,8 +57,9 @@ export function LeadProfileSheet({ className }: SidebarProps) {
                     <AvatarFallback>JL</AvatarFallback>
                   </Avatar>
                   <div className="ml-4 space-y-1">
+                    {/* <p>Id: {itemId}</p> */}
                     <p className="text-sm font-medium leading-none">
-                      Jackson Lee
+                      {data?.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
                       jackson.lee@email.com
@@ -73,7 +77,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
                   <div className="flex space-x-2">
                     <Briefcase className="h-5 w-5 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Software Developer
+                      {data?.title}
                     </span>
                   </div>
                   <div className="flex space-x-2">
