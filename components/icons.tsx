@@ -31,12 +31,14 @@ import {
   X,
   Mail,
   MessageCircle,
+  Radio,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
 
 export const Icons = {
   chat: MessageCircle,
+  campaign: Radio,
   mail: Mail,
   dashboard: LayoutDashboardIcon,
   logo: Command,

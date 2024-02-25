@@ -8,10 +8,14 @@ import {
   MapPinIcon,
   Clock,
   Linkedin,
+  Phone,
+  Link,
+  Twitter,
+  Facebook,
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Avatar, AvatarFallback } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import {
   Collapsible,
   CollapsibleContent,
@@ -19,6 +23,7 @@ import {
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
 import { useLeadSheetSidebar } from "./layout/context/lead-sheet-sidebar";
+import { Lead, useLeads } from "./layout/context/lead-user";
 
 // import { Playlist } from "../data/playlists";
 
@@ -28,16 +33,26 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 
 export function LeadProfileSheet({ className }: SidebarProps) {
   const { isOpen, itemId, toggleSidebar } = useLeadSheetSidebar();
+  const { leads } = useLeads();
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
+  const [data, setData] = useState<Lead>();
 
   useEffect(() => {
     if (isOpen && itemId) {
-      // Make API call with itemId
-      // fetchData(itemId).then(...);
+      const item = leads.find((lead) => lead.id === itemId);
+      setData(item);
     }
   }, [isOpen, itemId]);
 
   if (!isOpen) return null;
+
+  const initials = (name: string) => {
+    const names = name.split(" ");
+    return names
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   return (
     <>
@@ -51,47 +66,54 @@ export function LeadProfileSheet({ className }: SidebarProps) {
               <div className={"p-4 h-full"}>
                 <div className="flex">
                   <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
-                    <AvatarFallback>JL</AvatarFallback>
+                    <AvatarImage src={data?.photo_url} alt="avatar" />
+                    <AvatarFallback>
+                      {initials(data?.name || "AP")}
+                    </AvatarFallback>
                   </Avatar>
                   <div className="ml-4 space-y-1">
+                    {/* <p>Id: {itemId}</p> */}
                     <p className="text-sm font-medium leading-none">
-                      Jackson Lee
+                      {data?.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      jackson.lee@email.com
+                      {data?.email}
                     </p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground pt-4">
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Beatae veritatis minima pariatur fugit eaque itaque ut
-                  accusantium, quas error nihil quasi deserunt saepe inventore
-                  corrupti a voluptate omnis laborum vel!
+                  {data?.headline}
                 </p>
                 <br />
                 <div className="pt-4 space-y-3">
                   <div className="flex space-x-2">
                     <Briefcase className="h-5 w-5 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Software Developer
+                      {data?.title}
                     </span>
                   </div>
                   <div className="flex space-x-2">
                     <MapPinIcon className="h-5 w-5 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Pune, Maharashtra, India
+                      {data?.state}, {data?.country}
                     </span>
                   </div>
                   <div className="flex space-x-2">
-                    <Clock className="h-5 w-5 text-muted-foreground" />
+                    <Briefcase className="h-5 w-5 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      Tuesday 10:00 AM, 2023
+                      {data?.organization.name}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {data?.phone_numbers[0].sanitized_number}
                     </span>
                   </div>
                   <div className="flex space-x-2">
                     <Linkedin className="h-5 w-5 text-muted-foreground" />
                     <span className="text-sm text-muted-foreground">
-                      /in/jacksonlee
+                      {data?.linkedin_url}
                     </span>
                   </div>
                 </div>
@@ -110,42 +132,88 @@ export function LeadProfileSheet({ className }: SidebarProps) {
                       </Button>
                     </CollapsibleTrigger>
                   </div>
-                  <div className="flex px-2 py-1 font-mono text-sm justify-between">
-                    <span>2023-present</span>
-                    <span>Software Developer</span>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between">
+                    <span>
+                      {data?.employment_history[0].start_date.substring(0, 4)} -
+                      present
+                    </span>
+                    <span className="w-[200px]">
+                      {data?.employment_history[0].title}
+                    </span>
                   </div>
                   <CollapsibleContent className="space-y-2">
-                    <div className="flex px-2 py-1 font-mono text-sm justify-between">
-                      <span>2022-2023</span>
+                    {data?.employment_history.map((val, ind) => {
+                      if (ind === 0) return null;
+                      return (
+                        <div
+                          className="flex px-2 py-1 font-mono text-xs justify-between"
+                          key={`e_his${ind}`}
+                        >
+                          <span>
+                            {val.start_date.substring(0, 4)} -{" "}
+                            {val.end_date.substring(0, 4)}
+                          </span>
+                          <span className="w-[200px]">{val.title}</span>
+                        </div>
+                      );
+                    })}
+                    {/* <div className="flex px-2 py-1 font-mono text-sm justify-between">
+                      <span></span>
                       <span>Software Developer</span>
-                    </div>
-                    <div className="flex px-2 py-1 font-mono text-sm justify-between">
-                      <span>2021-2022</span>
-                      <span>Software Developer</span>
-                    </div>
+                    </div> */}
                   </CollapsibleContent>
                 </Collapsible>
                 <br />
                 <br />
                 <div className="flex">
                   <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
+                    <AvatarImage src={data?.organization.logo_url} />
                     <AvatarFallback>CN</AvatarFallback>
                   </Avatar>
                   <div className="ml-4 space-y-1">
                     <p className="text-sm font-medium leading-none">
-                      Company Name
+                      {data?.organization.name}
                     </p>
                     <p className="text-sm text-muted-foreground">
-                      companyname.com
+                      {data?.organization.primary_domain}
                     </p>
                   </div>
                 </div>
                 <p className="text-sm text-muted-foreground pt-4">
-                  Lorem, ipsum dolor sit amet consectetur adipisicing elit.
-                  Beatae veritatis minima pariatur fugit eaque itaque ut
-                  accusantium, quas error nihil quasi deserunt saepe inventore
-                  corrupti a voluptate omnis laborum vel!
+                  {/* {data?.organization.} */}
                 </p>
+                <div className="pt-4 space-y-3">
+                  <div className="flex space-x-2">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {data?.organization.sanitized_phone}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Linkedin className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {data?.organization.linkedin_url}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Link className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {data?.organization.website_url}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Twitter className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {data?.organization.twitter_url}
+                    </span>
+                  </div>
+                  <div className="flex space-x-2">
+                    <Facebook className="h-5 w-5 text-muted-foreground" />
+                    <span className="text-sm text-muted-foreground">
+                      {data?.organization.facebook_url}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

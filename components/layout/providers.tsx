@@ -6,6 +6,7 @@ import ThemeProvider from "./ThemeToggle/theme-provider";
 import { UserContextProvider } from "./context/user-context";
 import { LeadSheetSidebarProvider } from "./context/lead-sheet-sidebar";
 import { AuthProvider, AuthStateInterface } from "./context/auth-provider";
+import { LeadsProvider } from "./context/lead-user";
 
 export default function Providers({
   // session,
@@ -22,9 +23,11 @@ export default function Providers({
         <AuthProvider userData={userAuthData}>
           <UserContextProvider>
             <LeadSheetSidebarProvider>
-              {/* <SessionProvider session={session}> */}
-              {children}
-              {/* </SessionProvider> */}
+              <LeadsProvider>
+                {/* <SessionProvider session={session}> */}
+                {children}
+                {/* </SessionProvider> */}
+              </LeadsProvider>
             </LeadSheetSidebarProvider>
           </UserContextProvider>
         </AuthProvider>

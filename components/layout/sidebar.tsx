@@ -11,7 +11,7 @@ export default function Sidebar({ isCollapsed }: { isCollapsed: boolean }) {
       <div className="space-y-4 pb-4">
         <div className="px-3 py-2">
           <div className="space-y-1">
-            <DashboardNav items={navItems} isCollapsed={isCollapsed} />
+            {/* <DashboardNav items={navItems} isCollapsed={isCollapsed} /> */}
           </div>
         </div>
       </div>

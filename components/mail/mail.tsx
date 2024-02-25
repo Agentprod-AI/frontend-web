@@ -18,7 +18,7 @@ import {
 import { AccountSwitcher } from "../layout/account-switcher";
 import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
-import { Nav } from "../layout/nav";
+// import { Nav } from "../layout/nav";
 import { Mail } from "@/constants/data";
 import { useMail } from "@/hooks/useMail";
 import { cn } from "@/lib/utils";
@@ -64,7 +64,7 @@ export function Mail({
           )}`;
         }}
         className="h-full items-stretch"
-        style={{ height: "calc(100vh - 3.5rem)" }}
+        style={{ height: "calc(100vh - 56px)" }}
       >
         {/* <ResizablePanel
           defaultSize={defaultLayout[0]}
@@ -172,7 +172,7 @@ export function Mail({
           <ResizablePanelGroup direction="horizontal"> */}
         <ResizablePanel defaultSize={50}>
           <Tabs defaultValue="all">
-            <div className="flex items-center px-4 py-2">
+            <div className="flex items-center px-4 pt-2 pb-0">
               <h1 className="text-xl font-bold">Inbox</h1>
               <TabsList className="ml-auto">
                 <TabsTrigger
