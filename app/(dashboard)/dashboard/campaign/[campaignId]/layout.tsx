@@ -3,5 +3,5 @@ export default async function CampaignPagesLayout({
 }: {
   children: React.ReactNode;
 }) {
-  return <div className="max-w-[550px] px-4">{children}</div>;
+  return <div className="px-4">{children}</div>;
 }
