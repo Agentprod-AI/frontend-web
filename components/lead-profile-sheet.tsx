@@ -22,8 +22,8 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
-import { useLeadSheetSidebar } from "./layout/context/lead-sheet-sidebar";
-import { Lead, useLeads } from "./layout/context/lead-user";
+import { useLeadSheetSidebar } from "../context/lead-sheet-sidebar";
+import { Lead, useLeads } from "../context/lead-user";
 
 // import { Playlist } from "../data/playlists";
 

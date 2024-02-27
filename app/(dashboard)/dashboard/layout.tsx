@@ -15,9 +15,9 @@ import { navItems } from "@/constants/data";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import useWindowSize from "@/hooks/useWindowSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/components/layout/context/auth-provider";
+import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
-import { PageHeaderProvider } from "@/components/layout/context/page-header";
+import { PageHeaderProvider } from "@/context/page-header";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 
 // export const metadata: Metadata = {

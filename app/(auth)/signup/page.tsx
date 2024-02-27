@@ -4,7 +4,7 @@ import Link from "next/link";
 import UserAuthForm from "@/components/forms/auth/user-auth-form";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { useAuth } from "@/components/layout/context/auth-provider";
+import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
 
 // export const metadata: Metadata = {

@@ -1,7 +1,7 @@
 "use client";
 import Link from "next/link";
 import UserAuthForm from "@/components/forms/auth/user-auth-form";
-import { useAuth } from "@/components/layout/context/auth-provider";
+import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
 
 // export const metadata: Metadata = {

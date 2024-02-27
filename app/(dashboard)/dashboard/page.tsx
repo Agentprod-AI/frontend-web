@@ -4,7 +4,7 @@ import { SalesMetrics } from "@/components/cards/sales-matrics";
 import { BarChartComponent } from "@/components/charts/bar-chart";
 import { LineChartComponent } from "@/components/charts/line-chart";
 import { CalendarDateRangePicker } from "@/components/date-range-picker";
-import { useLeadSheetSidebar } from "@/components/layout/context/lead-sheet-sidebar";
+import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
 import { Button } from "@/components/ui/button";
 import {
   Card,
