@@ -31,6 +31,7 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
+
   const { width } = useWindowSize();
   const { user } = useAuth();
 
@@ -53,32 +54,34 @@ export default function DashboardLayout({
             className="h-full items-stretch"
             // style={{ height: "calc(100vh - 3.5rem)" }}
           >
-            <ResizablePanel
-              defaultSize={15}
-              collapsedSize={4}
-              collapsible={true}
-              minSize={15}
-              maxSize={15}
-              onCollapse={() => {
-                setIsCollapsed(true);
-                document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                  true,
-                )}`;
-              }}
-              onExpand={() => {
-                setIsCollapsed(false);
-                document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                  false,
-                )}`;
-              }}
-              className={cn(
-                isCollapsed &&
-                  "min-w-[50px] transition-all duration-300 ease-in-out",
-              )}
-            >
-              {/* <Sidebar isCollapsed={isCollapsed} /> */}
-              <Nav isCollapsed={isCollapsed} links={navItems} />
-            </ResizablePanel>
+            {width > 768 ? (
+              <ResizablePanel
+                defaultSize={15}
+                collapsedSize={4}
+                collapsible={true}
+                minSize={15}
+                maxSize={15}
+                onCollapse={() => {
+                  setIsCollapsed(true);
+                  document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
+                    true,
+                  )}`;
+                }}
+                onExpand={() => {
+                  setIsCollapsed(false);
+                  document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
+                    false,
+                  )}`;
+                }}
+                className={cn(
+                  isCollapsed &&
+                    "min-w-[50px] transition-all duration-300 ease-in-out",
+                )}
+              >
+                {/* <Sidebar isCollapsed={isCollapsed} /> */}
+                <Nav isCollapsed={isCollapsed} links={navItems} />
+              </ResizablePanel>
+            ) : null}
             {width > 768 ? <ResizableHandle withHandle /> : null}
             <ResizablePanel minSize={30} defaultSize={85}>
               <ScrollArea className="h-screen">

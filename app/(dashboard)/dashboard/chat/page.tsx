@@ -15,7 +15,7 @@ import { toast } from "sonner";
 // import Textarea from "react-textarea-autosize";
 // import { Textarea } from "@/components/ui/textarea";
 
-import EmailForm from "@/components/forms/emailForm";
+// import EmailForm from "@/components/forms/emailForm";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -313,11 +313,11 @@ export default function Home() {
                 to showcase Agentprod's capabilities, designed to supercharge
                 your workflow.
               </p>
-              <EmailForm
+              {/* <EmailForm
                 userEmail={userEmail}
                 setUserEmail={setUserEmail}
                 disabled={userEmail !== ""}
-              />
+              /> */}
               <p className="leading-7 [&:not(:first-child)]:mt-6">
                 {userEmail === ""
                   ? "*Enter you email to start using AgentProd!"
