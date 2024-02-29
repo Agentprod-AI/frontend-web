@@ -14,10 +14,9 @@ import {
 } from "@/components/ui/card";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
-import { DummyCampaign } from "@/constants/campaign";
 
 export default function Page() {
-  const { campaign, updateCampaignState, toggleCampaignEnabled, activeCampaignId, setActiveCampaignId} = useCampaignContext();
+  const { campaign, toggleCampaignEnabled, setActiveCampaignId} = useCampaignContext();
 
   function formatKey(key: any) {
     return key
@@ -25,10 +24,6 @@ export default function Page() {
       .replace(/^./, function(str: string) { return str.toUpperCase(); })
       .trim();
   }
-
-  useEffect(() => {
-    updateCampaignState({ campaign: DummyCampaign });
-  }, [updateCampaignState]);
 
   return (
     <div className="space-y-2">
@@ -67,14 +62,12 @@ export default function Page() {
 
             {/* <div data-orientation="vertical" role="none" className="shrink-0 bg-border w-[1px] mx-2 h-6"></div> */}
 
-            <Link href={"/dashboard"}>
-              {/* <Button 
-              variant={"outline"}
-              onClick={() => setActiveCampaignId(campaignItem.campaignId)}> */}
-                Analytics
-              {/* </Button> */}
-            </Link>
             
+            <Button 
+              variant={"outline"}
+              onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
+                <Link href={"/dashboard"}>Analytics</Link>
+            </Button>
 
             <div className="flex">
               <p className="text-xs text-muted-foreground w-14">

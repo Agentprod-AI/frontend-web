@@ -15,9 +15,24 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuPortal,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
+import { DummyCampaign } from "@/constants/campaign";
 
 const cardData = [
   {
@@ -54,16 +69,20 @@ const cardData = [
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
-  const { activeCampaignId } = useCampaignContext();
+  const { campaign, updateCampaignState, activeCampaignId, setActiveCampaignId } = useCampaignContext();
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
 
+  const selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+
+  console.log(selectedCampaign);
+
   useEffect(() => {
-    activeCampaignId && console.log(activeCampaignId);
-  }, [activeCampaignId]);
+    updateCampaignState({ campaign: DummyCampaign });
+  }, []);
 
   return (
     <ScrollArea className="h-full">
@@ -75,7 +94,28 @@ export default function Page() {
 
           <div className="hidden md:flex items-center space-x-2">
             <CalendarDateRangePicker />
+
             <Button>Download</Button>
+            
+            <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline">Campaign</Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent className="w-56">
+              <DropdownMenuGroup>
+                {
+                  campaign && campaign?.map((campaignItem) => (
+                    <div>
+                      <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
+                        <p>{campaignItem.campaignName}</p>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                    </div>
+                  ))
+                }
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
           </div>
         </div>
 
