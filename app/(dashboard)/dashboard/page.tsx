@@ -1,4 +1,5 @@
 "use client";
+import React, { useEffect } from "react";
 import { LocationCardDashboard } from "@/components/cards/location-card";
 import { SalesMetrics } from "@/components/cards/sales-matrics";
 import { BarChartComponent } from "@/components/charts/bar-chart";
@@ -16,6 +17,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
+import { useCampaignContext } from "@/context/campaign-provider";
 
 const cardData = [
   {
@@ -52,16 +54,22 @@ const cardData = [
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+  const { activeCampaignId } = useCampaignContext();
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
 
+  useEffect(() => {
+    activeCampaignId && console.log(activeCampaignId);
+  }, [activeCampaignId]);
+
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between space-y-2">
+
           {/* <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2> */}
           {/* <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button> */}
 
@@ -70,6 +78,7 @@ export default function Page() {
             <Button>Download</Button>
           </div>
         </div>
+
         {/* <Tabs defaultValue="overview" className="space-y-4"> */}
         {/* <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -78,6 +87,7 @@ export default function Page() {
             </TabsTrigger>
           </TabsList> */}
         {/* <TabsContent value="overview" className="space-y-4"> */}
+
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           {cardData.map((card, index) => (
             <Card key={index}>
@@ -85,6 +95,7 @@ export default function Page() {
                 <CardTitle className="text-sm font-medium">
                   {card.title}
                 </CardTitle>
+
                 {/* <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -97,6 +108,7 @@ export default function Page() {
                 >
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg> */}
+
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
@@ -106,6 +118,7 @@ export default function Page() {
               </CardContent>
             </Card>
           ))}
+
           {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -132,7 +145,8 @@ export default function Page() {
                 +180.1% from last month
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
+
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Sales</CardTitle>
@@ -179,7 +193,7 @@ export default function Page() {
                 +201 since last hour
               </p>
             </CardContent>
-          </Card> */}
+          </Card>
         </div>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
           <Card className="col-span-4">
@@ -200,6 +214,7 @@ export default function Page() {
             </CardContent>
           </Card>
           <LocationCardDashboard />
+
           {/* <Card className="col-span-4 md:col-span-3">
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
@@ -209,9 +224,12 @@ export default function Page() {
               <RecentSales />
             </CardContent>
           </Card> */}
+          
         </div>
+
         {/* </TabsContent> */}
         {/* </Tabs> */}
+
       </div>
     </ScrollArea>
   );
