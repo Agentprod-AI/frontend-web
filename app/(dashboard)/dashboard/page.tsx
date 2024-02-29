@@ -86,9 +86,9 @@ export default function Page() {
 
   return (
     <ScrollArea className="h-full">
+      <span>{activeCampaignId}</span>
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between space-y-2">
-
           {/* <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2> */}
           {/* <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button> */}
 
@@ -148,7 +148,6 @@ export default function Page() {
                 >
                   <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
                 </svg> */}
-
               </CardHeader>
               <CardContent>
                 <div className="text-2xl font-bold">{card.value}</div>
@@ -264,12 +263,10 @@ export default function Page() {
               <RecentSales />
             </CardContent>
           </Card> */}
-          
         </div>
 
         {/* </TabsContent> */}
         {/* </Tabs> */}
-
       </div>
     </ScrollArea>
   );
