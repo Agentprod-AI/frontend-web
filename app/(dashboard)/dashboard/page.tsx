@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { LocationCardDashboard } from "@/components/cards/location-card";
 import { SalesMetrics } from "@/components/cards/sales-matrics";
 import { BarChartComponent } from "@/components/charts/bar-chart";
@@ -20,20 +20,15 @@ import {
   DropdownMenuContent,
   DropdownMenuGroup,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuPortal,
   DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
+import { ChevronDown } from "lucide-react";
 
-const cardData = [
+const initialCardData = [
   {
     title: "Contacts",
     value: "246",
@@ -69,13 +64,58 @@ const cardData = [
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
   const { campaign, activeCampaignId, setActiveCampaignId } = useCampaignContext();
+  const [cardData, setCardData] = useState(initialCardData)
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
 
-  const selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+  let selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+
+  useEffect(() => {
+    if (selectedCampaign !== undefined) {
+      const updatedCardData = [
+        {
+          title: "Contacts",
+          value: selectedCampaign.analytics.active.toString(),
+          description: "+20.1%",
+        },
+        {
+          title: "Replies",
+          value: selectedCampaign.analytics.paused.toString(),
+          description: "+180.1%",
+        },
+        {
+          title: "Meeting Link Click",
+          value: selectedCampaign.analytics.notSent.toString(),
+          description: "+19%",
+        },
+        {
+          title: "Conversion Rate",
+          value: selectedCampaign.analytics.bounced.toString(),
+          description: "+19%",
+        },
+        {
+          title: "Goals",
+          value: selectedCampaign.analytics.finished.toString(),
+          description: "+19%",
+        },
+        {
+          title: "Cost Per Goal",
+          value: selectedCampaign.analytics.scheduled.toString(),
+          description: "+19%",
+        },
+      ];
+      setCardData(updatedCardData);
+    } else {
+      setCardData(initialCardData);
+    }
+  }, [selectedCampaign]);
+
+  useEffect(() => {
+    selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+  }, [activeCampaignId])
 
   return (
     <ScrollArea className="h-full">
@@ -91,10 +131,20 @@ export default function Page() {
             
             <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline">Campaign</Button>
+            <Button variant="outline" className="flex items-center justify-center space-x-2">
+              <span>{selectedCampaign ? selectedCampaign.campaignName : "Select Campaign"}</span>
+              <ChevronDown size={20}/>
+            </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent className="w-56">
               <DropdownMenuGroup>
+                <DropdownMenuItem className="flex space-x-2" onClick={() =>  {
+                setActiveCampaignId(undefined)
+                setCardData(initialCardData)
+                }}>
+                  Select Campaign
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
                 {
                   campaign && campaign?.map((campaignItem, index) => (
                     <div>
@@ -142,7 +192,7 @@ export default function Page() {
                 </svg> */}
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{card.value}</div>
+                <div className="text-2xl font-bold">{card.value === "" ? "-" : card.value}</div>
                 <p className="text-xs text-muted-foreground">
                   {card.description}
                 </p>
@@ -178,7 +228,7 @@ export default function Page() {
             </CardContent>
           </Card> */}
 
-          <Card>
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Sales</CardTitle>
               <svg
@@ -224,7 +274,7 @@ export default function Page() {
                 +201 since last hour
               </p>
             </CardContent>
-          </Card>
+          </Card> */}
         </div>
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-7">
           <Card className="col-span-4">
@@ -256,9 +306,6 @@ export default function Page() {
             </CardContent>
           </Card> */}
         </div>
-
-        {/* </TabsContent> */}
-        {/* </Tabs> */}
       </div>
     </ScrollArea>
   );
