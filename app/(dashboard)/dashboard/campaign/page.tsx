@@ -8,7 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
-import { Activity, MoreHorizontal } from "lucide-react";
+import { Activity, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
 
@@ -32,11 +32,12 @@ export default function Page() {
     <div className="space-y-2 mb-5">
       <Card className="bg-accent px-4 py-6">
         <CardTitle>Send your first outbound Email campaign</CardTitle>
-        <Button className="mt-4"> + Create Campaign </Button>
+        <Button className="mt-4 flex gap-1"> <Plus size={16}/> Create Campaign </Button>
       </Card>
 
       {campaign &&
         campaign.map((campaignItem) => (
+          // className="hover:bg-accent" for card
           <Card key={campaignItem.campaignId}>
             <CardContent className="flex items-center justify-between space-x-4 p-4 gap-4">
               <Switch
@@ -98,7 +99,7 @@ export default function Page() {
                   <PopoverContent>
                     <div className="grid gap-4">
                       <Button asChild variant={"outline"}>
-                        <Link href={"/dashboard/campaign/123"}>
+                        <Link href={`/dashboard/campaign/${campaignItem.campaignId}`}>
                           Edit Campaign
                         </Link>
                       </Button>
