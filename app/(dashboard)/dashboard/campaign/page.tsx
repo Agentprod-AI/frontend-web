@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -8,6 +8,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
+import { Activity, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
 
@@ -38,42 +39,36 @@ export default function Page() {
         campaign.map((campaignItem) => (
           <Card key={campaignItem.campaignId}>
             <CardContent className="flex items-center justify-between space-x-4 p-4 gap-4">
-              <div className="flex space gap-3">
-                <Switch
-                  checked={campaignItem?.isEnabled}
-                  onCheckedChange={() =>
-                    campaignItem.campaignId !== undefined &&
-                    toggleCampaignEnabled(campaignItem.campaignId)
-                  }
-                />
+              <Switch
+                checked={campaignItem?.isEnabled}
+                onCheckedChange={() =>
+                  campaignItem.campaignId !== undefined &&
+                  toggleCampaignEnabled(campaignItem.campaignId)
+                }
+              />
+
+              <div className="flex justify-between items-center">
                 <p className="text-sm font-medium leading-none w-[150px]">
                   {campaignItem?.campaignName}
                 </p>
-              </div>
 
-              {/* <div className="flex justify-between">
-                {campaignItem.analytics && Object.entries(campaignItem.analytics).map(([key, value]) => (
-                  <div key={key} style={{ margin: '0 10px', textAlign: 'center' }}>
-                    <p className="text-[10px] text-muted-foreground">
-                      {value}
-                    </p>
-                    <p className="text-xs text-muted-foreground">
-                      {formatKey(key)}
-                    </p>    
-                  </div>
-                ))}
-              </div>
+                <div data-orientation="vertical" role="none" className="shrink-0 bg-border w-[1px] mr-2 ml-4 h-6"></div>
 
-              <div data-orientation="vertical" role="none" className="shrink-0 bg-border w-[1px] mx-2 h-6"></div> */}
+                <div className="flex justify-between">
+                  {campaignItem.analytics && Object.entries(campaignItem.analytics).map(([key, value]) => (
+                    <div key={key} className="px-[10px] text-center">
+                      <p className="text-[10px] text-muted-foreground">
+                        {value}
+                      </p>
+                      <p className="text-[10px] text-muted-foreground">
+                        {formatKey(key)}
+                      </p>    
+                    </div>
+                  ))}
+                </div>
 
-          
-              <Button 
-                variant={"outline"}
-                onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
-                  <Link href={"/dashboard"}>Analytics</Link>
-              </Button>
+                <div data-orientation="vertical" role="none" className="shrink-0 bg-border w-[1px] ml-2 mr-4 h-6"></div>
 
-              <div className="flex">
                 <p className="text-xs text-muted-foreground w-14">
                   {new Date(campaignItem.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
@@ -81,10 +76,24 @@ export default function Page() {
                     hour12: true,
                   })}
                 </p>
+              </div>
+
+              <div className="flex gap-2">
+                <Button 
+                  asChild
+                  variant={"outline"}
+                  onClick={() => setActiveCampaignId(campaignItem.campaignId)}
+                  className="px-2">
+                    <Link href={"/dashboard"}>
+                      <Activity size={20}/>
+                    </Link>
+                </Button>
 
                 <Popover>
                   <PopoverTrigger asChild>
-                    <Button variant="outline"> ... </Button>
+                    <Button variant="outline" className="p-2">
+                      <MoreHorizontal size={20}/>
+                    </Button>
                   </PopoverTrigger>
                   <PopoverContent>
                     <div className="grid gap-4">

@@ -32,7 +32,6 @@ import {
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
-import { DummyCampaign } from "@/constants/campaign";
 
 const cardData = [
   {
@@ -69,7 +68,7 @@ const cardData = [
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
-  const { campaign, updateCampaignState, activeCampaignId, setActiveCampaignId } = useCampaignContext();
+  const { campaign, activeCampaignId, setActiveCampaignId } = useCampaignContext();
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
@@ -78,15 +77,8 @@ export default function Page() {
 
   const selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
 
-  console.log(selectedCampaign);
-
-  useEffect(() => {
-    updateCampaignState({ campaign: DummyCampaign });
-  }, []);
-
   return (
     <ScrollArea className="h-full">
-      <span>{activeCampaignId}</span>
       <div className="flex-1 space-y-4">
         <div className="flex items-center justify-between space-y-2">
           {/* <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2> */}
@@ -104,12 +96,12 @@ export default function Page() {
             <DropdownMenuContent className="w-56">
               <DropdownMenuGroup>
                 {
-                  campaign && campaign?.map((campaignItem) => (
+                  campaign && campaign?.map((campaignItem, index) => (
                     <div>
                       <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
                         <p>{campaignItem.campaignName}</p>
                       </DropdownMenuItem>
-                      <DropdownMenuSeparator />
+                      {index !== campaign.length - 1 && <DropdownMenuSeparator />}
                     </div>
                   ))
                 }
