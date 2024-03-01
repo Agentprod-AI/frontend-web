@@ -29,7 +29,7 @@ export default function Page() {
   }
 
   return (
-    <div className="space-y-2">
+    <div className="space-y-2 mb-5">
       <Card className="bg-accent px-4 py-6">
         <CardTitle>Send your first outbound Email campaign</CardTitle>
         <Button className="mt-4"> + Create Campaign </Button>
@@ -58,7 +58,7 @@ export default function Page() {
                   {campaignItem.analytics && Object.entries(campaignItem.analytics).map(([key, value]) => (
                     <div key={key} className="px-[10px] text-center">
                       <p className="text-[10px] text-muted-foreground">
-                        {value}
+                        {value ? value : "-"}
                       </p>
                       <p className="text-[10px] text-muted-foreground">
                         {formatKey(key)}
