@@ -14,18 +14,23 @@ const defaultCampaignState: CampaignState = {
   updateCampaignState: () => {},
   toggleCampaignEnabled: (id: number) => {},
   activeCampaignId: undefined,
-  setActiveCampaignId: (id: number | undefined) => {} 
+  setActiveCampaignId: (id: number | undefined) => {},
 };
 
-const CampaignContext = React.createContext<CampaignState>(defaultCampaignState);
+const CampaignContext =
+  React.createContext<CampaignState>(defaultCampaignState);
 
 interface Props {
   children: React.ReactNode;
 }
 
-export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) => {
-  const [state, setState] = useState<CampaignState>(defaultCampaignState);  
-  const [activeCampaignId, setActiveCampaignId] = useState<number | undefined>(); 
+export const CampaignProvider: React.FunctionComponent<Props> = ({
+  children,
+}) => {
+  const [state, setState] = useState<CampaignState>(defaultCampaignState);
+  const [activeCampaignId, setActiveCampaignId] = useState<
+    number | undefined
+  >();
 
   const updateCampaignState = (newState: Partial<CampaignState>) => {
     setState((prevState) => ({ ...prevState, ...newState }));
@@ -35,18 +40,23 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
     setState((prevState) => ({
       ...prevState,
       campaign: prevState.campaign?.map((campaign) =>
-        campaign.campaignId == id ? { ...campaign, isEnabled: !campaign.isEnabled } : campaign
+        campaign.campaignId == id
+          ? { ...campaign, status: !campaign.status }
+          : campaign,
       ),
     }));
-  };  
+  };
 
-  const contextValue = React.useMemo(() => ({
-    ...state,
-    updateCampaignState,
-    toggleCampaignEnabled,
-    activeCampaignId,
-    setActiveCampaignId, 
-  }), [state, activeCampaignId]);
+  const contextValue = React.useMemo(
+    () => ({
+      ...state,
+      updateCampaignState,
+      toggleCampaignEnabled,
+      activeCampaignId,
+      setActiveCampaignId,
+    }),
+    [state, activeCampaignId],
+  );
 
   return (
     <CampaignContext.Provider value={contextValue}>

@@ -22,7 +22,7 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu"
+} from "@/components/ui/dropdown-menu";
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
@@ -63,15 +63,18 @@ const initialCardData = [
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
-  const { campaign, activeCampaignId, setActiveCampaignId } = useCampaignContext();
-  const [cardData, setCardData] = useState(initialCardData)
+  const { campaign, activeCampaignId, setActiveCampaignId } =
+    useCampaignContext();
+  const [cardData, setCardData] = useState(initialCardData);
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
 
-  let selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+  let selectedCampaign: any = campaign?.find(
+    (campaignItem) => campaignItem.campaignId === activeCampaignId,
+  );
 
   useEffect(() => {
     if (selectedCampaign !== undefined) {
@@ -114,8 +117,10 @@ export default function Page() {
   }, [selectedCampaign]);
 
   useEffect(() => {
-    selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
-  }, [activeCampaignId])
+    selectedCampaign = campaign?.find(
+      (campaignItem) => campaignItem.campaignId === activeCampaignId,
+    );
+  }, [activeCampaignId]);
 
   return (
     <ScrollArea className="h-full">
@@ -126,37 +131,55 @@ export default function Page() {
           <div className="hidden md:flex items-center space-x-2">
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center justify-center space-x-2">
-                <span>{selectedCampaign ? selectedCampaign.campaignName : "Select Campaign"}</span>
-                <ChevronDown size={20}/>
-              </Button>
+                <Button
+                  variant="outline"
+                  className="flex items-center justify-center space-x-2"
+                >
+                  <span>
+                    {selectedCampaign
+                      ? selectedCampaign.campaignName
+                      : "Select Campaign"}
+                  </span>
+                  <ChevronDown size={20} />
+                </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-56">
                 <DropdownMenuGroup>
-                  <DropdownMenuItem className="flex space-x-2" onClick={() =>  {
-                  setActiveCampaignId(undefined)
-                  setCardData(initialCardData)
-                  }}>
+                  <DropdownMenuItem
+                    className="flex space-x-2"
+                    onClick={() => {
+                      setActiveCampaignId(undefined);
+                      setCardData(initialCardData);
+                    }}
+                  >
                     Select Campaign
                   </DropdownMenuItem>
                   <DropdownMenuSeparator />
-                  {
-                    campaign && campaign?.map((campaignItem, index) => (
+                  {campaign &&
+                    campaign?.map((campaignItem, index) => (
                       <div key={campaignItem.campaignId}>
-                        <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
+                        <DropdownMenuItem
+                          key={campaignItem.campaignId}
+                          onClick={() =>
+                            setActiveCampaignId(campaignItem.campaignId)
+                          }
+                        >
                           <p>{campaignItem.campaignName}</p>
                         </DropdownMenuItem>
-                        {index !== campaign.length - 1 && <DropdownMenuSeparator />}
+                        {index !== campaign.length - 1 && (
+                          <DropdownMenuSeparator />
+                        )}
                       </div>
-                    ))
-                  }
+                    ))}
                 </DropdownMenuGroup>
               </DropdownMenuContent>
             </DropdownMenu>
 
             <CalendarDateRangePicker />
 
-            <Button variant={"outline"}><Download size={20}/></Button>
+            <Button variant={"outline"}>
+              <Download size={20} />
+            </Button>
 
             <Button>Create Campaign</Button>
           </div>
@@ -193,7 +216,9 @@ export default function Page() {
                 </svg> */}
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{card.value === "" ? "-" : card.value}</div>
+                <div className="text-2xl font-bold">
+                  {card.value === "" ? "-" : card.value}
+                </div>
                 <p className="text-xs text-muted-foreground">
                   {card.description}
                 </p>
