@@ -120,18 +120,6 @@ export const orgLocations: string[] = [
   "San Francisco Bay Area",
 ];
 
-const orgDomains: string[] = [
-  "google.com",
-  "amazon.com",
-  "illumni.co",
-  "linkedin.com",
-  "ted.com",
-  "microsoft.com",
-  "unilever.com",
-  "apple.com",
-  "forbes.com",
-];
-
 const jobTitles: string[] = [
   "manager",
   "project manager",
