@@ -58,7 +58,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({
       login,
       logout,
     }),
-    [userAuthData],
+    [userAuthData]
   );
 
   return (

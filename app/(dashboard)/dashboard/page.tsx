@@ -73,7 +73,7 @@ export default function Page() {
   };
 
   let selectedCampaign: any = campaign?.find(
-    (campaignItem) => campaignItem.campaignId === activeCampaignId,
+    (campaignItem) => campaignItem.campaignId === activeCampaignId
   );
 
   useEffect(() => {
@@ -118,7 +118,7 @@ export default function Page() {
 
   useEffect(() => {
     selectedCampaign = campaign?.find(
-      (campaignItem) => campaignItem.campaignId === activeCampaignId,
+      (campaignItem) => campaignItem.campaignId === activeCampaignId
     );
   }, [activeCampaignId]);
 

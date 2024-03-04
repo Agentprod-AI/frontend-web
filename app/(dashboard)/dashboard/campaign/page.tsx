@@ -71,7 +71,7 @@ export default function Page() {
                             {formatKey(key)}
                           </p>
                         </div>
-                      ),
+                      )
                     )}
                 </div>
 
