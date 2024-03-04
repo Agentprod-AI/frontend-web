@@ -1,6 +1,6 @@
 "use client";
-import { useLeadSheetSidebar } from "@/components/layout/context/lead-sheet-sidebar";
-import { Lead } from "@/components/layout/context/lead-user";
+import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
+import { Lead } from "@/context/lead-user";
 // import { User } from "@/constants/data";
 
 interface NameActionProps {

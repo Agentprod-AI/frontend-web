@@ -1,6 +1,6 @@
 "use client";
 import React, { useEffect } from "react";
-import { usePageHeader } from "./context/page-header";
+import { usePageHeader } from "../../context/page-header";
 import { Separator } from "../ui/separator";
 import { usePathname } from "next/navigation";
 import { pageTitleConfig, matchPathname } from "@/constants/headers"; // Adjust import as needed

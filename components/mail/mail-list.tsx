@@ -16,7 +16,7 @@ export function MailList({ items }: MailListProps) {
   const [mail, setMail] = useMail();
 
   return (
-    <ScrollArea className="h-screen">
+    <ScrollArea className="h-screen pb-40">
       <div className="flex flex-col gap-2 p-4 pt-0">
         {items.map((item) => (
           <button
@@ -42,12 +42,24 @@ export function MailList({ items }: MailListProps) {
                 </div>
                 <div
                   className={cn(
-                    "ml-auto text-xs",
+                    "ml-auto text-xs flex gap-2 items-center",
                     mail.selected === item.id
                       ? "text-foreground"
                       : "text-muted-foreground",
                   )}
                 >
+                  {item.labels.length ? (
+                    <div className="flex items-center gap-2">
+                      {item.labels.map((label) => (
+                        <Badge
+                          key={label}
+                          variant={getBadgeVariantFromLabel(label)}
+                        >
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
+                  ) : null}
                   {formatDistanceToNow(new Date(item.date), {
                     addSuffix: true,
                   })}
@@ -58,15 +70,6 @@ export function MailList({ items }: MailListProps) {
             <div className="line-clamp-2 text-xs text-muted-foreground">
               {item.text.substring(0, 300)}
             </div>
-            {item.labels.length ? (
-              <div className="flex items-center gap-2">
-                {item.labels.map((label) => (
-                  <Badge key={label} variant={getBadgeVariantFromLabel(label)}>
-                    {label}
-                  </Badge>
-                ))}
-              </div>
-            ) : null}
           </button>
         ))}
       </div>

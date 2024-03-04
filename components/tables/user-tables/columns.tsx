@@ -4,7 +4,7 @@ import { CellAction } from "./cell-action";
 // import { User } from "@/constants/data";
 import { Checkbox } from "@/components/ui/checkbox";
 import { NameAction } from "./name-action";
-import { Lead } from "@/components/layout/context/lead-user";
+import { Lead } from "@/context/lead-user";
 
 export const columns: ColumnDef<Lead>[] = [
   {

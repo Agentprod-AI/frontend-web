@@ -6,7 +6,7 @@ import Providers from "@/components/layout/providers";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
-import { AuthStateInterface } from "@/components/layout/context/auth-provider";
+import { AuthStateInterface } from "@/context/auth-provider";
 import { Toaster } from "sonner";
 // import { getServerSession } from "next-auth";
 

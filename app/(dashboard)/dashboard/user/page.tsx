@@ -1,7 +1,7 @@
 "use client";
 import { LoadingCircle } from "@/app/icons";
 import BreadCrumb from "@/components/breadcrumb";
-import { useLeads } from "@/components/layout/context/lead-user";
+import { useLeads } from "@/context/lead-user";
 import { UserClient } from "@/components/tables/user-tables/client";
 // import { users } from "@/constants/data";
 import { useEffect, useState } from "react";
