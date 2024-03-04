@@ -1,19 +1,18 @@
 export interface CampaignInterface {
-    isEnabled?: boolean;
-    campaignId?: number;
-    campaignName?: string;
-    status?: string;
-    startDate?: Date;
-    endDate?: Date;
+    campaignId: number;
+    campaignName: string;
+    status: boolean;
+    startDate: Date;
+    endDate: Date;
     createdAt: Date
     userId?: string;
     goalId?: string;
-    analytics?: object
+    analytics: object
   }
 
 export const DummyCampaign: CampaignInterface[] = [
     {
-      isEnabled: true,
+      status: true,
       campaignId: 1,
       campaignName: "Strategic Finance Analyst",
       startDate: new Date('2024-02-27T00:00:00.000Z'),
@@ -35,7 +34,7 @@ export const DummyCampaign: CampaignInterface[] = [
       }
     },
     {
-      isEnabled: true,
+      status: true,
       campaignId: 2,
       campaignName: "Ricardo Reachout to Phillipines YC Senior Engineers",
       startDate: new Date('2024-02-27T00:00:00.000Z'),
@@ -57,7 +56,7 @@ export const DummyCampaign: CampaignInterface[] = [
       }
     },
     {
-      isEnabled: false,
+      status: false,
       campaignId: 3,
       campaignName: "22Q2 - SDR Manager US",
       startDate: new Date('2024-03-27T02:00:00.000Z'),
@@ -79,7 +78,7 @@ export const DummyCampaign: CampaignInterface[] = [
       }
     },
     {
-      isEnabled: true,
+      status: true,
       campaignId: 4,
       campaignName: "22Q2 - Account Executive V3 (US Companies LATAM)",
       startDate: new Date('2024-03-15T02:00:00.000Z'),

@@ -26,7 +26,7 @@ import {
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Download } from "lucide-react";
 
 const initialCardData = [
   {
@@ -120,44 +120,45 @@ export default function Page() {
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4">
-        <div className="flex items-center justify-between space-y-2">
-          {/* <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2> */}
+        <div className="flex items-center justify-between space-y-2 pt-4">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           {/* <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button> */}
-
           <div className="hidden md:flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center justify-center space-x-2">
+                <span>{selectedCampaign ? selectedCampaign.campaignName : "Select Campaign"}</span>
+                <ChevronDown size={20}/>
+              </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="flex space-x-2" onClick={() =>  {
+                  setActiveCampaignId(undefined)
+                  setCardData(initialCardData)
+                  }}>
+                    Select Campaign
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {
+                    campaign && campaign?.map((campaignItem, index) => (
+                      <div>
+                        <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
+                          <p>{campaignItem.campaignName}</p>
+                        </DropdownMenuItem>
+                        {index !== campaign.length - 1 && <DropdownMenuSeparator />}
+                      </div>
+                    ))
+                  }
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <CalendarDateRangePicker />
 
-            <Button>Download</Button>
-            
-            <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-            <Button variant="outline" className="flex items-center justify-center space-x-2">
-              <span>{selectedCampaign ? selectedCampaign.campaignName : "Select Campaign"}</span>
-              <ChevronDown size={20}/>
-            </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent className="w-56">
-              <DropdownMenuGroup>
-                <DropdownMenuItem className="flex space-x-2" onClick={() =>  {
-                setActiveCampaignId(undefined)
-                setCardData(initialCardData)
-                }}>
-                  Select Campaign
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                {
-                  campaign && campaign?.map((campaignItem, index) => (
-                    <div>
-                      <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
-                        <p>{campaignItem.campaignName}</p>
-                      </DropdownMenuItem>
-                      {index !== campaign.length - 1 && <DropdownMenuSeparator />}
-                    </div>
-                  ))
-                }
-              </DropdownMenuGroup>
-            </DropdownMenuContent>
-          </DropdownMenu>
+            <Button variant={"outline"}><Download size={20}/></Button>
+
+            <Button>Create Campaign</Button>
           </div>
         </div>
 

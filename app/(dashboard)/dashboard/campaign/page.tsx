@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -11,6 +11,7 @@ import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { Activity, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
+import { CampaignModal } from "@/components/campaign/create-campaign-form";
 
 export default function Page() {
   const {
@@ -41,7 +42,7 @@ export default function Page() {
           <Card key={campaignItem.campaignId}>
             <CardContent className="flex items-center justify-between space-x-4 p-4 gap-4">
               <Switch
-                checked={campaignItem?.isEnabled}
+                checked={campaignItem?.status}
                 onCheckedChange={() =>
                   campaignItem.campaignId !== undefined &&
                   toggleCampaignEnabled(campaignItem.campaignId)
