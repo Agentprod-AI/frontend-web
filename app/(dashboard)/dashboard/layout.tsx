@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useEffect } from "react";
 import Header from "@/components/layout/header";
 // import Sidebar from "@/components/layout/sidebar";
 import {
@@ -9,15 +9,16 @@ import {
 } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 // import type { Metadata } from "next";
-import React from "react";
 import { Nav } from "@/components/layout/nav";
 import { navItems } from "@/constants/data";
+import { DummyCampaign } from "@/constants/campaign";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import useWindowSize from "@/hooks/useWindowSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
 import { PageHeaderProvider } from "@/context/page-header";
+import { useCampaignContext } from "@/context/campaign-provider";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 
 // export const metadata: Metadata = {
@@ -34,10 +35,15 @@ export default function DashboardLayout({
 
   const { width } = useWindowSize();
   const { user } = useAuth();
+  const { updateCampaignState } = useCampaignContext();
 
   if (!user) {
     redirect("/");
   }
+
+  useEffect(() => {
+    updateCampaignState({ campaign: DummyCampaign });
+  }, []);
 
   return (
     <>
@@ -48,7 +54,7 @@ export default function DashboardLayout({
             direction="horizontal"
             onLayout={(sizes: number[]) => {
               document.cookie = `react-resizable-panels:layout=${JSON.stringify(
-                sizes,
+                sizes
               )}`;
             }}
             className="h-full items-stretch"
@@ -64,18 +70,18 @@ export default function DashboardLayout({
                 onCollapse={() => {
                   setIsCollapsed(true);
                   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                    true,
+                    true
                   )}`;
                 }}
                 onExpand={() => {
                   setIsCollapsed(false);
                   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                    false,
+                    false
                   )}`;
                 }}
                 className={cn(
                   isCollapsed &&
-                    "min-w-[50px] transition-all duration-300 ease-in-out",
+                    "min-w-[50px] transition-all duration-300 ease-in-out"
                 )}
               >
                 {/* <Sidebar isCollapsed={isCollapsed} /> */}

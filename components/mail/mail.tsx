@@ -62,7 +62,7 @@ export function Mail({
         direction="horizontal"
         onLayout={(sizes: number[]) => {
           document.cookie = `react-resizable-panels:layout=${JSON.stringify(
-            sizes,
+            sizes
           )}`;
         }}
         className="h-full items-stretch"

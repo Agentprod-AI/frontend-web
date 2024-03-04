@@ -27,7 +27,7 @@ export function MobileSidebar({ className }: SidebarProps) {
             <div className="px-3 py-2">
               <div
                 className={cn(
-                  "flex h-[52px] items-center justify-center px-2",
+                  "flex h-[52px] items-center justify-center px-2"
                   // isCollapsed ? "h-[52px]" : "px-2",
                 )}
               >

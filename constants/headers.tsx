@@ -1,6 +1,6 @@
 // pageTitleConfig.js
 export const pageTitleConfig = [
-  { pathname: "/dashboard", title: "Dashboard", hidden: false },
+  { pathname: "/dashboard", title: "Dashboard", hidden: true },
   { pathname: "/dashboard/mail", title: "Mail", hidden: true },
   { pathname: "/dashboard/chat", title: "Chat with Prod", hidden: true },
   { pathname: "/dashboard/campaign", title: "Campaign", hidden: false },
@@ -49,7 +49,7 @@ export const pageTitleConfig = [
 
 export const matchPathname = (currentPathname: string, pattern: any) => {
   const regex = new RegExp(
-    "^" + pattern.replace(/:[^\s/]+/g, "([\\w-]+)") + "$",
+    "^" + pattern.replace(/:[^\s/]+/g, "([\\w-]+)") + "$"
   );
   return regex.test(currentPathname);
 };
