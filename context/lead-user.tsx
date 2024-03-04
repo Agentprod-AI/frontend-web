@@ -9,6 +9,7 @@ import React, {
 // Define the type for a single lead
 export interface Lead {
   id: string;
+  type: string;
   first_name: string;
   last_name: string;
   name: string;
@@ -41,6 +42,7 @@ export interface Lead {
 
 export interface Organization {
   id: string;
+  type: string;
   name: string;
   website_url: string;
   blog_url: string | null;
@@ -91,7 +93,7 @@ export const LeadsProvider: React.FC<LeadsProviderProps> = ({ children }) => {
       leads,
       setLeads,
     }),
-    [leads],
+    [leads]
   );
 
   return (

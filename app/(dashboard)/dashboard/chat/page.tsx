@@ -50,7 +50,7 @@ export default function Home() {
   const fetchUserIdFromEmail = async (email_id: string) => {
     const supabase = createClient(
       process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || "",
+      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
     );
 
     let { data: allUsers, error } = await supabase
@@ -210,20 +210,20 @@ export default function Home() {
             <div
               key={i}
               className={clsx(
-                "flex w-full items-center justify-center py-4",
+                "flex w-full items-center justify-center py-4"
                 // message.role === "user" ? "bg-black" : "bg-black/5",
               )}
             >
               <div
                 className={clsx(
                   "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                  message.role === "user" ? "flex-row-reverse" : "flex-row",
+                  message.role === "user" ? "flex-row-reverse" : "flex-row"
                 )}
               >
                 <div
                   className={clsx(
                     "p-1.5 text-white",
-                    message.role === "assistant" ? "" : "",
+                    message.role === "assistant" ? "" : ""
                   )}
                 >
                   {message.role === "user" ? (
@@ -248,7 +248,7 @@ export default function Home() {
                 <div
                   className={clsx(
                     "flex flex-col !mr-3 space-y-1",
-                    message.role === "assistant" ? "items-start" : "items-end",
+                    message.role === "assistant" ? "items-start" : "items-end"
                   )}
                 >
                   <span className="text-xs">
@@ -277,7 +277,7 @@ export default function Home() {
                     <div
                       className={clsx(
                         "button-container mt-4",
-                        message.role === "assistant" ? "pb-4" : "pb-0",
+                        message.role === "assistant" ? "pb-4" : "pb-0"
                       )}
                     >
                       {message.role === "assistant" &&
@@ -293,7 +293,7 @@ export default function Home() {
                               >
                                 {button.buttonTitle}
                               </a>
-                            ),
+                            )
                           )
                         : null}
                     </div>

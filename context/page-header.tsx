@@ -54,7 +54,7 @@ export const PageHeaderProvider: React.FC<PageHeaderProviderProps> = ({
       setBreadcrumbs,
       setHidden, // Provide setHidden function
     }),
-    [title, breadcrumbs, hidden],
+    [title, breadcrumbs, hidden]
   );
 
   return (

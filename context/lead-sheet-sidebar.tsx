@@ -48,7 +48,7 @@ export const LeadSheetSidebarProvider: React.FC<
       toggleSidebar,
       setItemId,
     }),
-    [isOpen, itemId],
+    [isOpen, itemId]
   );
 
   return (
