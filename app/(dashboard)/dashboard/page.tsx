@@ -142,7 +142,7 @@ export default function Page() {
                   <DropdownMenuSeparator />
                   {
                     campaign && campaign?.map((campaignItem, index) => (
-                      <div>
+                      <div key={campaignItem.campaignId}>
                         <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
                           <p>{campaignItem.campaignName}</p>
                         </DropdownMenuItem>
