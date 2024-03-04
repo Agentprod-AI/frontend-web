@@ -93,7 +93,7 @@ export const LeadsProvider: React.FC<LeadsProviderProps> = ({ children }) => {
       leads,
       setLeads,
     }),
-    [leads],
+    [leads]
   );
 
   return (

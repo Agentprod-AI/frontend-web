@@ -12,7 +12,7 @@ export default function DashboardPageHeader() {
   useEffect(() => {
     // Attempt to find a matching config for the current pathname
     const currentPageConfig = pageTitleConfig.find((config) =>
-      matchPathname(pathname, config.pathname),
+      matchPathname(pathname, config.pathname)
     );
 
     if (currentPageConfig) {

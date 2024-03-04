@@ -91,7 +91,7 @@ function SingleThreadDisplay({ threadData }: { threadData: any }) {
       type: "email",
       data: email,
       timestamp: new Date(email.timestamp),
-    }),
+    })
   );
 
   const eventsWithType: EmailOrEventItem[] = threadData.data.threadEvents.map(
@@ -99,7 +99,7 @@ function SingleThreadDisplay({ threadData }: { threadData: any }) {
       type: "event",
       data: event,
       timestamp: new Date(event.timestamp),
-    }),
+    })
   );
 
   const messages: EmailOrEventItem[] = [...emailsWithType, ...eventsWithType];

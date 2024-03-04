@@ -87,7 +87,7 @@ export function EmployeeTable<TData, TValue>({
 
       return newSearchParams.toString();
     },
-    [searchParams],
+    [searchParams]
   );
 
   // Handle server-side pagination
@@ -105,7 +105,7 @@ export function EmployeeTable<TData, TValue>({
       })}`,
       {
         scroll: false,
-      },
+      }
     );
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -165,7 +165,7 @@ export function EmployeeTable<TData, TValue>({
         })}`,
         {
           scroll: false,
-        },
+        }
       );
     }
     if (searchValue?.length === 0 || searchValue === undefined) {
@@ -177,7 +177,7 @@ export function EmployeeTable<TData, TValue>({
         })}`,
         {
           scroll: false,
-        },
+        }
       );
     }
 
@@ -208,7 +208,7 @@ export function EmployeeTable<TData, TValue>({
                         ? null
                         : flexRender(
                             header.column.columnDef.header,
-                            header.getContext(),
+                            header.getContext()
                           )}
                     </TableHead>
                   );
@@ -227,7 +227,7 @@ export function EmployeeTable<TData, TValue>({
                     <TableCell key={cell.id}>
                       {flexRender(
                         cell.column.columnDef.cell,
-                        cell.getContext(),
+                        cell.getContext()
                       )}
                     </TableCell>
                   ))}

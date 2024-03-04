@@ -441,7 +441,7 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
 TagInput.displayName = "TagInput";

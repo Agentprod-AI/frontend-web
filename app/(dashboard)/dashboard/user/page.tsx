@@ -34,7 +34,7 @@ export default function Page() {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
       // console.log("DATA: ", JSON.stringify(data.data));
       setLeads(data.data.result.people);

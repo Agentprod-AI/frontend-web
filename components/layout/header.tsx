@@ -28,7 +28,7 @@ export default function Header() {
           </Link> */}
           <div
             className={cn(
-              "flex h-[52px] items-center justify-center px-2",
+              "flex h-[52px] items-center justify-center px-2"
               // isCollapsed ? "h-[52px]" : "px-2",
             )}
           >

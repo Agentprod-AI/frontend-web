@@ -71,7 +71,7 @@ function EmailComponent({ email }: { email: EmailReply }) {
               new Date(email.receivedDateTime.toDateString()),
               {
                 addSuffix: true,
-              },
+              }
             )}
           </span>
         </CardContent>

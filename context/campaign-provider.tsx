@@ -42,7 +42,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       campaign: prevState.campaign?.map((campaign) =>
         campaign.campaignId == id
           ? { ...campaign, status: !campaign.status }
-          : campaign,
+          : campaign
       ),
     }));
   };
@@ -55,7 +55,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       activeCampaignId,
       setActiveCampaignId,
     }),
-    [state, activeCampaignId],
+    [state, activeCampaignId]
   );
 
   return (

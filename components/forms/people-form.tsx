@@ -41,7 +41,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   organization_locations: z
@@ -49,7 +49,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   person_seniorities: z
@@ -57,7 +57,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   email_status: z
@@ -65,7 +65,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   minimun_company_headcount: z
@@ -91,7 +91,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   prospected_by_current_team: z
@@ -249,10 +249,10 @@ export default function PeopleForm(): JSX.Element {
     // convert all arrays object to array of strings
     const formData = {
       q_organization_domains: data.q_organization_domains?.map(
-        (tag) => tag.text,
+        (tag) => tag.text
       ),
       organization_locations: data.organization_locations?.map(
-        (tag) => tag.text,
+        (tag) => tag.text
       ),
       person_seniorities: data.person_seniorities?.map((tag) => tag.text),
       minimum_company_headcount: data.minimun_company_headcount?.text, // Assuming this was a typo and it's actually a number
@@ -313,12 +313,12 @@ export default function PeopleForm(): JSX.Element {
           headers: {
             "Content-Type": "application/json",
           },
-        },
+        }
       );
 
       console.log("DATA: ", JSON.stringify(response.data));
       response.data.result.people.map(
-        (person: any) => (person.type = "people"),
+        (person: any) => (person.type = "people")
       );
       setLeads(response.data.result.people);
       // console.log(leads);
@@ -374,7 +374,7 @@ export default function PeopleForm(): JSX.Element {
                               setQOrganizationDomainsTags(newTags);
                               setValue(
                                 "q_organization_domains",
-                                newTags as [Tag, ...Tag[]],
+                                newTags as [Tag, ...Tag[]]
                               );
                             }}
                           />
@@ -409,7 +409,7 @@ export default function PeopleForm(): JSX.Element {
                                   setPersonSenioritiesTags(newTags);
                                   setValue(
                                     "person_seniorities",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />
@@ -444,7 +444,7 @@ export default function PeopleForm(): JSX.Element {
                                   setPersonTitlesTags(newTags);
                                   setValue(
                                     "person_titles",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />
@@ -556,7 +556,7 @@ export default function PeopleForm(): JSX.Element {
                               setOrganizationLocationsTags(newTags);
                               setValue(
                                 "organization_locations",
-                                newTags as [Tag, ...Tag[]],
+                                newTags as [Tag, ...Tag[]]
                               );
                             }}
                           />
@@ -595,7 +595,7 @@ export default function PeopleForm(): JSX.Element {
                               setEmailStatus(newTags);
                               setValue(
                                 "email_status",
-                                newTags as [Tag, ...Tag[]],
+                                newTags as [Tag, ...Tag[]]
                               );
                             }}
                           />

@@ -39,7 +39,7 @@ const accountFormSchema = z.object({
     z
       .number()
       .min(1, "You must outreach to at least 1 prospect per day.")
-      .max(500, "You cannot outreach to more than 500 prospects per day."),
+      .max(500, "You cannot outreach to more than 500 prospects per day.")
   ),
   schedule: z.object({
     mondayStartTime: z.string().optional(),
