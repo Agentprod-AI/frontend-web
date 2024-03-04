@@ -7,6 +7,7 @@ import { UserContextProvider } from "../../context/user-context";
 import { LeadSheetSidebarProvider } from "../../context/lead-sheet-sidebar";
 import { AuthProvider, AuthStateInterface } from "../../context/auth-provider";
 import { LeadsProvider } from "../../context/lead-user";
+import { CampaignProvider } from "../../context/campaign-provider"; 
 
 export default function Providers({
   // session,
@@ -24,9 +25,11 @@ export default function Providers({
           <UserContextProvider>
             <LeadSheetSidebarProvider>
               <LeadsProvider>
-                {/* <SessionProvider session={session}> */}
-                {children}
-                {/* </SessionProvider> */}
+                <CampaignProvider>
+                  {/* <SessionProvider session={session}> */}
+                  {children}
+                  {/* </SessionProvider> */}
+                </CampaignProvider>
               </LeadsProvider>
             </LeadSheetSidebarProvider>
           </UserContextProvider>

@@ -1,4 +1,5 @@
 "use client";
+import React, { useEffect, useState } from "react";
 import { LocationCardDashboard } from "@/components/cards/location-card";
 import { SalesMetrics } from "@/components/cards/sales-matrics";
 import { BarChartComponent } from "@/components/charts/bar-chart";
@@ -14,10 +15,20 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 // import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
+import { useCampaignContext } from "@/context/campaign-provider";
+import { ChevronDown, Download } from "lucide-react";
 
-const cardData = [
+const initialCardData = [
   {
     title: "Contacts",
     value: "246",
@@ -52,24 +63,105 @@ const cardData = [
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+  const { campaign, activeCampaignId, setActiveCampaignId } = useCampaignContext();
+  const [cardData, setCardData] = useState(initialCardData)
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
 
+  let selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+
+  useEffect(() => {
+    if (selectedCampaign !== undefined) {
+      const updatedCardData = [
+        {
+          title: "Contacts",
+          value: selectedCampaign.analytics.active.toString(),
+          description: "+20.1%",
+        },
+        {
+          title: "Replies",
+          value: selectedCampaign.analytics.paused.toString(),
+          description: "+180.1%",
+        },
+        {
+          title: "Meeting Link Click",
+          value: selectedCampaign.analytics.notSent.toString(),
+          description: "+19%",
+        },
+        {
+          title: "Conversion Rate",
+          value: selectedCampaign.analytics.bounced.toString(),
+          description: "+19%",
+        },
+        {
+          title: "Goals",
+          value: selectedCampaign.analytics.finished.toString(),
+          description: "+19%",
+        },
+        {
+          title: "Cost Per Goal",
+          value: selectedCampaign.analytics.scheduled.toString(),
+          description: "+19%",
+        },
+      ];
+      setCardData(updatedCardData);
+    } else {
+      setCardData(initialCardData);
+    }
+  }, [selectedCampaign]);
+
+  useEffect(() => {
+    selectedCampaign = campaign?.find((campaignItem) => campaignItem.campaignId === activeCampaignId);
+  }, [activeCampaignId])
+
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4">
-        <div className="flex items-center justify-between space-y-2">
-          {/* <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2> */}
+        <div className="flex items-center justify-between space-y-2 pt-4">
+          <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           {/* <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button> */}
-
           <div className="hidden md:flex items-center space-x-2">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+              <Button variant="outline" className="flex items-center justify-center space-x-2">
+                <span>{selectedCampaign ? selectedCampaign.campaignName : "Select Campaign"}</span>
+                <ChevronDown size={20}/>
+              </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="w-56">
+                <DropdownMenuGroup>
+                  <DropdownMenuItem className="flex space-x-2" onClick={() =>  {
+                  setActiveCampaignId(undefined)
+                  setCardData(initialCardData)
+                  }}>
+                    Select Campaign
+                  </DropdownMenuItem>
+                  <DropdownMenuSeparator />
+                  {
+                    campaign && campaign?.map((campaignItem, index) => (
+                      <div key={campaignItem.campaignId}>
+                        <DropdownMenuItem key={campaignItem.campaignId} onClick={() => setActiveCampaignId(campaignItem.campaignId)}>
+                          <p>{campaignItem.campaignName}</p>
+                        </DropdownMenuItem>
+                        {index !== campaign.length - 1 && <DropdownMenuSeparator />}
+                      </div>
+                    ))
+                  }
+                </DropdownMenuGroup>
+              </DropdownMenuContent>
+            </DropdownMenu>
+
             <CalendarDateRangePicker />
-            <Button>Download</Button>
+
+            <Button variant={"outline"}><Download size={20}/></Button>
+
+            <Button>Create Campaign</Button>
           </div>
         </div>
+
         {/* <Tabs defaultValue="overview" className="space-y-4"> */}
         {/* <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -78,6 +170,7 @@ export default function Page() {
             </TabsTrigger>
           </TabsList> */}
         {/* <TabsContent value="overview" className="space-y-4"> */}
+
         <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
           {cardData.map((card, index) => (
             <Card key={index}>
@@ -85,6 +178,7 @@ export default function Page() {
                 <CardTitle className="text-sm font-medium">
                   {card.title}
                 </CardTitle>
+
                 {/* <svg
                   xmlns="http://www.w3.org/2000/svg"
                   viewBox="0 0 24 24"
@@ -99,13 +193,14 @@ export default function Page() {
                 </svg> */}
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{card.value}</div>
+                <div className="text-2xl font-bold">{card.value === "" ? "-" : card.value}</div>
                 <p className="text-xs text-muted-foreground">
                   {card.description}
                 </p>
               </CardContent>
             </Card>
           ))}
+
           {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">
@@ -132,8 +227,9 @@ export default function Page() {
                 +180.1% from last month
               </p>
             </CardContent>
-          </Card>
-          <Card>
+          </Card> */}
+
+          {/* <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Sales</CardTitle>
               <svg
@@ -200,6 +296,7 @@ export default function Page() {
             </CardContent>
           </Card>
           <LocationCardDashboard />
+
           {/* <Card className="col-span-4 md:col-span-3">
             <CardHeader>
               <CardTitle>Recent Sales</CardTitle>
@@ -210,8 +307,6 @@ export default function Page() {
             </CardContent>
           </Card> */}
         </div>
-        {/* </TabsContent> */}
-        {/* </Tabs> */}
       </div>
     </ScrollArea>
   );

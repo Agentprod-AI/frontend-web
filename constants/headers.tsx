@@ -1,6 +1,6 @@
 // pageTitleConfig.js
 export const pageTitleConfig = [
-  { pathname: "/dashboard", title: "Dashboard", hidden: false },
+  { pathname: "/dashboard", title: "Dashboard", hidden: true },
   { pathname: "/dashboard/mail", title: "Mail", hidden: true },
   { pathname: "/dashboard/chat", title: "Chat with Prod", hidden: true },
   { pathname: "/dashboard/campaign", title: "Campaign", hidden: false },
