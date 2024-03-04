@@ -11,6 +11,14 @@ import { TagPopover } from "./tag-popover";
 import { TagList } from "./tag-list";
 import { tagVariants } from "./tag";
 import { Autocomplete } from "./autocomplete";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export enum Delimiter {
   Comma = ",",
@@ -66,7 +74,17 @@ export interface TagInputProps
   clearAll?: boolean;
   onClearAll?: () => void;
   inputProps?: React.InputHTMLAttributes<HTMLInputElement>;
+  dropdown?: boolean;
+  dropdownOptions?: string[];
+  dropdownPlaceholder?: string;
 }
+
+export const truncateString = (str: string) => {
+  if (str.length <= 15) {
+    return str;
+  }
+  return str.slice(0, 15) + "...";
+};
 
 const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>(
   (props, ref) => {
@@ -112,6 +130,9 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>(
       onClearAll,
       usePopoverForTags = false,
       inputProps = {},
+      dropdown = false,
+      dropdownOptions,
+      dropdownPlaceholder,
     } = props;
 
     const [inputValue, setInputValue] = React.useState("");
@@ -319,26 +340,51 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>(
         ) : (
           <div className="w-full">
             {!usePopoverForTags ? (
-              <Input
-                ref={inputRef}
-                id={id}
-                type="text"
-                placeholder={
-                  maxTags !== undefined && tags.length >= maxTags
-                    ? placeholderWhenFull
-                    : placeholder
-                }
-                value={inputValue}
-                onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
-                onFocus={onFocus}
-                onBlur={onBlur}
-                {...inputProps}
-                className={className}
-                autoComplete={enableAutocomplete ? "on" : "off"}
-                list={enableAutocomplete ? "autocomplete-options" : undefined}
-                disabled={maxTags !== undefined && tags.length >= maxTags}
-              />
+              dropdown ? (
+                <Select
+                  onValueChange={(value) => {
+                    setTags([...tags, { id: uuid(), text: value }]);
+                    onTagAdd?.(value);
+                    setTagCount((prevTagCount) => prevTagCount + 1);
+                  }}
+                >
+                  <SelectTrigger className="w-[180px]">
+                    <SelectValue placeholder={dropdownPlaceholder} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <ScrollArea className="h-[200px] rounded-md">
+                      {dropdownOptions?.map((option, index) => {
+                        return (
+                          <SelectItem key={index} value={option}>
+                            {truncateString(option)}
+                          </SelectItem>
+                        );
+                      })}
+                    </ScrollArea>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Input
+                  ref={inputRef}
+                  id={id}
+                  type="text"
+                  placeholder={
+                    maxTags !== undefined && tags.length >= maxTags
+                      ? placeholderWhenFull
+                      : placeholder
+                  }
+                  value={inputValue}
+                  onChange={handleInputChange}
+                  onKeyDown={handleKeyDown}
+                  onFocus={onFocus}
+                  onBlur={onBlur}
+                  {...inputProps}
+                  className={className}
+                  autoComplete={enableAutocomplete ? "on" : "off"}
+                  list={enableAutocomplete ? "autocomplete-options" : undefined}
+                  disabled={maxTags !== undefined && tags.length >= maxTags}
+                />
+              )
             ) : (
               <TagPopover
                 tags={truncatedTags}
