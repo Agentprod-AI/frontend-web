@@ -31,7 +31,8 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import ThreadDisplay from "./thread-display";
+// import ThreadDisplay from "./thread-display";
+import ThreadDisplayMain from "./thread-display-main";
 
 interface MailProps {
   accounts: {
@@ -212,7 +213,7 @@ export function Mail({
           {/* <MailDisplay
             mail={mails.find((item) => item.id === mail.selected) || null}
           /> */}
-          <ThreadDisplay />
+          <ThreadDisplayMain />
         </ResizablePanel>
       </ResizablePanelGroup>
       {/* </ResizablePanel>
