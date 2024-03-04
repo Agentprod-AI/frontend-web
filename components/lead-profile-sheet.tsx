@@ -22,8 +22,8 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
-import { useLeadSheetSidebar } from "./layout/context/lead-sheet-sidebar";
-import { Lead, Organization, useLeads } from "./layout/context/lead-user";
+import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
+import { Lead, Organization, useLeads } from "@/context/lead-user";
 import { PeopleProfileSheet } from "./people-profile-sheet";
 import { CompanyProfileSheet } from "./company-profile-sheet";
 

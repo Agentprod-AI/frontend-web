@@ -4,8 +4,7 @@ import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 // import { User } from "@/constants/data";
 import { columns } from "./columns";
-// import { AudienceTable } from "./columns";
-import { useLeads } from "@/components/layout/context/lead-user";
+import { useLeads } from "@/context/lead-user";
 
 // interface ProductsClientProps {
 //   data: User[];

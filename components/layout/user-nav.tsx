@@ -12,7 +12,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "./context/auth-provider";
+import { useAuth } from "../../context/auth-provider";
 // import { signOut, useSession } from "next-auth/react";
 export function UserNav() {
   // const { data: session } = useSession();

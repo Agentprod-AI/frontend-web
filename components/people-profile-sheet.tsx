@@ -16,7 +16,7 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
-import { Lead } from "./layout/context/lead-user";
+import { Lead } from "@/context/lead-user";
 
 export const PeopleProfileSheet = (data: Lead) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);

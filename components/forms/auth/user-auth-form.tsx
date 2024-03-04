@@ -21,7 +21,7 @@ import {
   signup as supabaseSignup,
 } from "@/app/(auth)/actions";
 import { toast } from "sonner";
-import { useAuth } from "@/components/layout/context/auth-provider";
+import { useAuth } from "@/context/auth-provider";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),

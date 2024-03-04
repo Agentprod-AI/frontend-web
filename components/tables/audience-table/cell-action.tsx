@@ -1,5 +1,5 @@
 "use client";
-import { Lead } from "@/components/layout/context/lead-user";
+import { Lead } from "@/context/lead-user";
 import { AlertModal } from "@/components/modal/alert-modal";
 import { Button } from "@/components/ui/button";
 import {

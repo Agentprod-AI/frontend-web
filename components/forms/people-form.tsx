@@ -30,7 +30,7 @@ import React, { useState } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "sonner";
 import axios from "axios";
-import { Lead, useLeads } from "../layout/context/lead-user";
+import { Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 // import { toast } from "@/components/ui/use-toast";

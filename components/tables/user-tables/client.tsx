@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
-import { useLeads } from "@/components/layout/context/lead-user";
+import { useLeads } from "@/context/lead-user";
 
 // interface ProductsClientProps {
 //   data: User[];

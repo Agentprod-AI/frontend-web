@@ -1,5 +1,5 @@
 "use client";
-
+import React, { useEffect } from "react";
 import Header from "@/components/layout/header";
 // import Sidebar from "@/components/layout/sidebar";
 import {
@@ -9,16 +9,18 @@ import {
 } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 // import type { Metadata } from "next";
-import React from "react";
 import { Nav } from "@/components/layout/nav";
 import { navItems } from "@/constants/data";
+import { DummyCampaign } from "@/constants/campaign";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import useWindowSize from "@/hooks/useWindowSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { useAuth } from "@/components/layout/context/auth-provider";
+import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
-import { PageHeaderProvider } from "@/components/layout/context/page-header";
+import { PageHeaderProvider } from "@/context/page-header";
+import { useCampaignContext } from "@/context/campaign-provider";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
+
 
 // export const metadata: Metadata = {
 //   title: "Next Shadcn Dashboard Starter",
@@ -34,10 +36,15 @@ export default function DashboardLayout({
 
   const { width } = useWindowSize();
   const { user } = useAuth();
+  const { updateCampaignState } = useCampaignContext();
 
   if (!user) {
     redirect("/");
   }
+
+  useEffect(() => {
+    updateCampaignState({ campaign: DummyCampaign });
+  }, []);
 
   return (
     <>

@@ -3,16 +3,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
 import { User } from "@/constants/data";
 import { NameAction } from "./name-action";
-import { Lead, Organization } from "@/components/layout/context/lead-user";
-import {
-  Table,
-  TableBody,
-  TableCaption,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Lead } from "@/context/lead-user";
 
 export const columns: ColumnDef<Lead>[] = [
   {
