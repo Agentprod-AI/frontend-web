@@ -1,47 +1,28 @@
 "use client";
 import { ColumnDef } from "@tanstack/react-table";
 import { CellAction } from "./cell-action";
-// import { User } from "@/constants/data";
-import { Checkbox } from "@/components/ui/checkbox";
+import { User } from "@/constants/data";
 import { NameAction } from "./name-action";
-import { Lead } from "@/components/layout/context/lead-user";
+import { Lead, Organization } from "@/components/layout/context/lead-user";
+import {
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export const columns: ColumnDef<Lead>[] = [
-  {
-    id: "select",
-    header: ({ table }) => (
-      <Checkbox
-        checked={table.getIsAllPageRowsSelected()}
-        onCheckedChange={(value) => table.toggleAllPageRowsSelected(!!value)}
-        aria-label="Select all"
-      />
-    ),
-    cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label="Select row"
-      />
-    ),
-    enableSorting: false,
-    enableHiding: false,
-  },
   {
     accessorKey: "name",
     header: "NAME",
     cell: ({ row }) => <NameAction data={row.original} />,
   },
   {
-    accessorKey: "organization.name",
-    header: "COMPANY",
-  },
-  {
     accessorKey: "title",
     header: "ROLE",
-  },
-  {
-    accessorKey: "country",
-    header: "COUNTRY",
   },
   {
     id: "actions",
