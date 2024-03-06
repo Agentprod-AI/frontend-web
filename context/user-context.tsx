@@ -32,7 +32,7 @@ interface Props {
 }
 
 export const UserContextProvider: React.FunctionComponent<Props> = (
-  props: Props,
+  props: Props
 ): JSX.Element => {
   const [state, setState] = useState<AppState>({
     user: DummyUser,
@@ -45,7 +45,7 @@ export const UserContextProvider: React.FunctionComponent<Props> = (
 
   const contextValue = React.useMemo(
     () => ({ ...state, updateState }),
-    [state],
+    [state]
   );
 
   return (

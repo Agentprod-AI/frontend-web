@@ -49,7 +49,7 @@ export const pageTitleConfig = [
 
 export const matchPathname = (currentPathname: string, pattern: any) => {
   const regex = new RegExp(
-    "^" + pattern.replace(/:[^\s/]+/g, "([\\w-]+)") + "$",
+    "^" + pattern.replace(/:[^\s/]+/g, "([\\w-]+)") + "$"
   );
   return regex.test(currentPathname);
 };

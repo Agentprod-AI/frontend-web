@@ -23,7 +23,7 @@ export function MailList({ items }: MailListProps) {
             key={item.id}
             className={cn(
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
-              mail.selected === item.id && "bg-muted",
+              mail.selected === item.id && "bg-muted"
             )}
             onClick={() =>
               setMail({
@@ -45,7 +45,7 @@ export function MailList({ items }: MailListProps) {
                     "ml-auto text-xs flex gap-2 items-center",
                     mail.selected === item.id
                       ? "text-foreground"
-                      : "text-muted-foreground",
+                      : "text-muted-foreground"
                   )}
                 >
                   {item.labels.length ? (
@@ -78,7 +78,7 @@ export function MailList({ items }: MailListProps) {
 }
 
 function getBadgeVariantFromLabel(
-  label: string,
+  label: string
 ): ComponentProps<typeof Badge>["variant"] {
   if (["work"].includes(label.toLowerCase())) {
     return "default";

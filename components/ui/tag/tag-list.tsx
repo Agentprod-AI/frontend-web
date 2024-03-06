@@ -56,7 +56,7 @@ export const TagList: React.FC<TagListProps> = ({
                     "border border-solid border-primary rounded-md":
                       draggedTagId === tagObj.id,
                   },
-                  "transition-all duration-200 ease-in-out",
+                  "transition-all duration-200 ease-in-out"
                 )}
               >
                 {customTagRenderer ? (
@@ -74,7 +74,7 @@ export const TagList: React.FC<TagListProps> = ({
             customTagRenderer(tagObj)
           ) : (
             <Tag key={tagObj.id} tagObj={tagObj} {...tagListProps} />
-          ),
+          )
         )
       )}
     </div>

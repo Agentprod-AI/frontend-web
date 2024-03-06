@@ -47,7 +47,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   organization_locations: z
@@ -55,7 +55,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   person_seniorities: z
@@ -63,7 +63,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   email_status: z
@@ -71,7 +71,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   minimun_company_headcount: z
@@ -97,7 +97,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   prospected_by_current_team: z
@@ -313,7 +313,7 @@ export default function PeopleForm(): JSX.Element {
             headers: {
               "Content-Type": "application/json",
             },
-          },
+          }
         );
 
         // const response = {
@@ -527,7 +527,7 @@ export default function PeopleForm(): JSX.Element {
                               setQOrganizationDomainsTags(newTags);
                               setValue(
                                 "q_organization_domains",
-                                newTags as [Tag, ...Tag[]],
+                                newTags as [Tag, ...Tag[]]
                               );
                             }}
                           />
@@ -562,7 +562,7 @@ export default function PeopleForm(): JSX.Element {
                                   setPersonSenioritiesTags(newTags);
                                   setValue(
                                     "person_seniorities",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />
@@ -597,7 +597,7 @@ export default function PeopleForm(): JSX.Element {
                                   setPersonTitlesTags(newTags);
                                   setValue(
                                     "person_titles",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />
@@ -709,7 +709,7 @@ export default function PeopleForm(): JSX.Element {
                               setOrganizationLocationsTags(newTags);
                               setValue(
                                 "organization_locations",
-                                newTags as [Tag, ...Tag[]],
+                                newTags as [Tag, ...Tag[]]
                               );
                             }}
                           />
@@ -748,7 +748,7 @@ export default function PeopleForm(): JSX.Element {
                               setEmailStatus(newTags);
                               setValue(
                                 "email_status",
-                                newTags as [Tag, ...Tag[]],
+                                newTags as [Tag, ...Tag[]]
                               );
                             }}
                           />

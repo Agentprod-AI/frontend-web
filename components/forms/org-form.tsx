@@ -75,7 +75,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   organization_not_locations: z
@@ -83,7 +83,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
   q_organization_keyword_tags: z
@@ -91,7 +91,7 @@ const FormSchema = z.object({
       z.object({
         id: z.string(),
         text: z.string(),
-      }),
+      })
     )
     .optional(),
 });
@@ -609,7 +609,7 @@ export default function OrgFormComponenet(): JSX.Element {
                                   setOrganizationLocationsTags(newTags);
                                   setValue(
                                     "organization_locations",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />
@@ -644,7 +644,7 @@ export default function OrgFormComponenet(): JSX.Element {
                                   setOrganizationNotLocationsTags(newTags);
                                   setValue(
                                     "organization_not_locations",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />
@@ -681,7 +681,7 @@ export default function OrgFormComponenet(): JSX.Element {
                                   setQOrganizationKeywordTags(newTags);
                                   setValue(
                                     "q_organization_keyword_tags",
-                                    newTags as [Tag, ...Tag[]],
+                                    newTags as [Tag, ...Tag[]]
                                   );
                                 }}
                               />

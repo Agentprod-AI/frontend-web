@@ -64,7 +64,7 @@ export const tagVariants = cva(
       animation: "fadeIn",
       textStyle: "normal",
     },
-  },
+  }
 );
 
 export type TagProps = {
@@ -113,7 +113,7 @@ export const Tag: React.FC<TagProps> = ({
         {
           "justify-between": direction === "column",
           "cursor-pointer": draggable,
-        },
+        }
       )}
       onClick={() => onTagClick?.(tagObj)}
     >

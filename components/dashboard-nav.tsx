@@ -37,7 +37,7 @@ export function DashboardNav({
         <div
           className={cn(
             "flex h-[52px] items-center justify-center px-2",
-            isCollapsed ? "h-[52px]" : "px-2",
+            isCollapsed ? "h-[52px]" : "px-2"
           )}
         >
           <AccountSwitcher
@@ -64,7 +64,7 @@ export function DashboardNav({
                       path === item.href
                         ? "bg-primary text-accent hover:bg-primary hover:text-accent"
                         : "transparent",
-                      item.disabled && "cursor-not-allowed opacity-80",
+                      item.disabled && "cursor-not-allowed opacity-80"
                     )}
                   >
                     <Icon className="mr-2 h-4 w-4" />

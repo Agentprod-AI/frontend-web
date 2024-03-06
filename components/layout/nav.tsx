@@ -55,7 +55,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                             path === link.href
                               ? "bg-primary text-accent hover:bg-primary hover:text-accent"
                               : "transparent",
-                            link.disabled && "cursor-not-allowed opacity-80",
+                            link.disabled && "cursor-not-allowed opacity-80"
                           )}
                         >
                           <Icon className="h-4 w-4" />
@@ -92,7 +92,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                         path === link.href
                           ? "bg-primary text-accent hover:bg-primary hover:text-accent"
                           : "transparent",
-                        link.disabled && "cursor-not-allowed opacity-80",
+                        link.disabled && "cursor-not-allowed opacity-80"
                       )}
                     >
                       <Icon className="mr-2 h-4 w-4" />
