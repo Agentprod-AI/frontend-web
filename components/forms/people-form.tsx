@@ -23,7 +23,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tag, TagInput } from "@/components/ui/tag/tag-input";
 import { Button } from "@/components/ui/button";
-import { input, z } from "zod";
+import { boolean, input, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState } from "react";
@@ -34,6 +34,12 @@ import { Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 // import { toast } from "@/components/ui/use-toast";
+import {
+  orgLocations,
+  jobTitles,
+  emailStatusOptions,
+  seniorities,
+} from "./formUtils";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -102,69 +108,6 @@ const FormSchema = z.object({
     .optional(),
 });
 
-export const orgLocations: string[] = [
-  "United States",
-  "Americas",
-  "North America",
-  "EMEA",
-  "Dallas/Fort Worth Area",
-  "Greater Houston Area",
-  "Europe",
-  "European Union",
-  "Germany",
-  "Miami/Fort Lauderdale Area",
-  "California, US",
-  "India",
-  "United Kingdom",
-  "Greater Denver Area",
-  "San Francisco Bay Area",
-];
-
-const jobTitles: string[] = [
-  "manager",
-  "project manager",
-  "teacher",
-  "owner",
-  "student",
-  "director",
-  "software engineer",
-  "consultant",
-  "account manager",
-  "engineer",
-  "professor",
-  "sales manager",
-  "sales",
-  "partner",
-  "associate",
-  "president",
-  "administrative assistant",
-  "supervisor",
-  "general manager",
-  "realtor",
-];
-
-const seniorities: string[] = [
-  "Owner",
-  "Founder",
-  "C suite",
-  "Partner",
-  "Vp",
-  "Head",
-  "Director",
-  "Manager",
-  "Senior",
-  "Entry",
-  "Intern",
-];
-
-const emailStatusOptions: string[] = [
-  "Verified",
-  "Guessed",
-  "Unavailable",
-  "Bounced",
-  "Pending Manual Fulfillment",
-];
-
 export default function PeopleForm(): JSX.Element {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -178,10 +121,10 @@ export default function PeopleForm(): JSX.Element {
   const onTabChange = async (value: any) => {
     //TODO: only change the value if form is correct
     console.log(form.formState.isValid);
-    if (form.formState.isValid) {
-      setTab(value);
-      setLoading(true);
-    }
+    // if (form.formState.isValid) {
+    setTab(value);
+    setLoading(true);
+    // }
   };
 
   //   const [tags, setTags] = React.useState<Tag[]>([]);
@@ -228,14 +171,15 @@ export default function PeopleForm(): JSX.Element {
   const { setValue } = form;
 
   interface Data {
-    q_organization_domains: { id: string; text: string }[];
-    organization_locations: { id: string; text: string }[];
-    person_seniorities: { id: string; text: string }[];
-    person_titles: { id: string; text: string }[];
-    minimumCompanyHeadcount: { id: string; text: number };
-    maximumCompanyHeadcount: { id: string; text: number };
-    perPage: { id: string; text: number };
-    emailStatus: { id: string; text: string };
+    q_organization_domains: { id: string; text: string }[] | undefined;
+    organization_locations: { id: string; text: string }[] | undefined;
+    person_seniorities: { id: string; text: string }[] | undefined;
+    person_titles: { id: string; text: string }[] | undefined;
+    email_status: { id: string; text: string }[] | undefined;
+    minimum_company_headcount: { id: string; text: number } | undefined;
+    maximum_company_headcount: { id: string; text: number } | undefined;
+    per_page: { id: string; text: number } | undefined;
+    prospected_by_current_team: { id: string; text: string } | undefined;
   }
 
   // Assuming prevInputValues is a useRef with the initial structure
@@ -248,94 +192,303 @@ export default function PeopleForm(): JSX.Element {
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     // convert all arrays object to array of strings
     const formData = {
-      q_organization_domains: data.q_organization_domains?.map(
-        (tag) => tag.text,
-      ),
-      organization_locations: data.organization_locations?.map(
-        (tag) => tag.text,
-      ),
-      person_seniorities: data.person_seniorities?.map((tag) => tag.text),
-      minimum_company_headcount: data.minimun_company_headcount?.text, // Assuming this was a typo and it's actually a number
-      maximum_company_headcount: data.maximun_company_headcount?.text, // Assuming this was a typo and it's actually a number
-      person_titles: data.person_titles?.map((tag) => tag.text),
+      q_organization_domains: data.q_organization_domains,
+      organization_locations: data.organization_locations,
+      person_seniorities: data.person_seniorities,
+      minimum_company_headcount: data.minimun_company_headcount,
+      maximum_company_headcount: data.maximun_company_headcount,
+      person_titles: data.person_titles,
+      per_page: data.per_page,
+      email_status: data.email_status,
+      prospected_by_current_team: data.prospected_by_current_team,
     };
 
     let shouldCallAPI = false;
 
-    // Example check for a singular field
-    // if (prevInputValues.current?.perPage.text !== formData.perPage.text) {
-    //   shouldCallAPI = true;
-    // }
+    if (!prevInputValues) shouldCallAPI = true;
 
-    // Simplified check for arrays - this needs to be adapted based on your exact needs
-    // if (prevInputValues.current?.q_organization_domains.map(tag => tag.text).toString() !== formData.q_organization_domains.map(tag => tag.text).toString()) {
-    //   shouldCallAPI = true;
-    // }
-
-    // More comprehensive checks for all fields can be added here following the pattern above
-
-    if (shouldCallAPI) {
-      // Proceed with API call or other actions
-    }
-
-    // Update prevInputValues with current formData for next submission
-    // prevInputValues.current = formData;
+    const pages = formData.per_page?.text
+      ? Math.ceil(formData.per_page?.text / 100)
+      : 1;
 
     const body = {
-      q_organization_domains: "apollo.io\ngoogle.com",
-      page: 1,
-      per_page: 2,
-      organization_locations: ["California, US"],
-      person_seniorities: ["senior", "manager"],
-      organization_num_employees_ranges: ["1,1000000"],
-      person_titles: ["sales manager", "engineer manager"],
+      ...(pages && { page: pages }), // Only include if pages is truthy
+      ...(formData.per_page?.text && {
+        per_page: formData.per_page.text > 100 ? 100 : formData.per_page.text,
+      }),
+      ...(formData.prospected_by_current_team?.text && {
+        prospected_by_current_team: [formData.prospected_by_current_team.text],
+      }),
+      ...(formData.person_titles && {
+        person_titles: formData.person_titles
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
+      ...(formData.organization_locations && {
+        organization_locations: formData.organization_locations
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
+      ...(formData.minimum_company_headcount?.text &&
+        formData.maximum_company_headcount?.text && {
+          organization_num_employees_ranges: [
+            `${formData.minimum_company_headcount.text},${formData.maximum_company_headcount.text}`,
+          ],
+        }),
+      ...(formData.person_seniorities && {
+        person_seniorities: formData.person_seniorities
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
+      ...(formData.q_organization_domains && {
+        q_organization_domains: formData.q_organization_domains
+          .map((tag) => tag.text)
+          .join("\n")
+          .trim(),
+      }),
+      ...(formData.email_status && {
+        email_status: formData.email_status
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
     };
 
+    if (
+      prevInputValues.current?.minimum_company_headcount?.text !==
+        formData.minimum_company_headcount?.text ||
+      prevInputValues.current?.maximum_company_headcount?.text !==
+        formData.maximum_company_headcount?.text ||
+      prevInputValues.current?.per_page?.text !== body.per_page ||
+      prevInputValues.current?.prospected_by_current_team?.text !==
+        body.prospected_by_current_team?.[0]
+    ) {
+      shouldCallAPI = true;
+    }
+
+    if (
+      prevInputValues.current?.q_organization_domains
+        ?.map((tag) => tag.text)
+        .toString() !== body.q_organization_domains?.toString() ||
+      prevInputValues.current?.organization_locations
+        ?.map((tag) => tag.text)
+        .toString() !== body.organization_locations?.toString() ||
+      prevInputValues.current?.person_seniorities
+        ?.map((tag) => tag.text)
+        .toString() !== body.person_seniorities?.toString() ||
+      prevInputValues.current?.person_titles
+        ?.map((tag) => tag.text)
+        .toString() !== body.person_titles?.toString() ||
+      prevInputValues.current?.email_status
+        ?.map((tag) => tag.text)
+        .toString() !== body.email_status?.toString()
+    ) {
+      shouldCallAPI = true;
+    }
+
+    if (formData) {
+      prevInputValues.current = formData;
+    }
+
     // const body = {
+    //   q_organization_domains: "apollo.io\ngoogle.com",
     //   page: 1,
     //   per_page: 2,
-    //   q_organization_domains,
-    //   organization_locations,
-    //   person_seniorities,
-    //   organization_num_employees_ranges,
-    //   person_titles,
+    //   organization_locations: ["California, US"],
+    //   person_seniorities: ["senior", "manager"],
+    //   organization_num_employees_ranges: ["1,1000000"],
+    //   person_titles: ["sales manager", "engineer manager"],
     // };
 
-    // if (shouldCallAPI) {
-    try {
-      const response = await axios.post(
-        "/api/apollo",
-        {
-          // url: "https://api.apollo.io/v1/mixed_people/search",
-          body: body,
-        },
-        {
-          headers: {
-            "Content-Type": "application/json",
+    if (shouldCallAPI) {
+      try {
+        console.log(JSON.stringify(body));
+        console.log("api called");
+        const response = await axios.post(
+          "/api/apollo",
+          {
+            url: "https://api.apollo.io/v1/mixed_people/search",
+            body,
           },
-        },
-      );
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          },
+        );
 
-      console.log("DATA: ", JSON.stringify(response.data));
-      response.data.result.people.map(
-        (person: any) => (person.type = "people"),
-      );
-      setLeads(response.data.result.people);
-      // console.log(leads);
-      toast.success("api called");
+        // const response = {
+        //   data: {
+        //     result: {
+        //       people: [
+        //         {
+        //           id: "618a24XXXXXXXXXXXXXXXXXX",
+        //           first_name: "Tim",
+        //           last_name: "Zheng",
+        //           type: "people",
+        //           name: "Tim Zheng",
+        //           linkedin_url: "http://www.linkedin.com/in/tim-zheng-677ba010",
+        //           title: "Founder & CEO",
+        //           email_status: "verified",
+        //           photo_url:
+        //             "https://static-exp1.licdn.com/sc/h/244xhbkr7g40x6bsu4gi6q4ry",
+        //           twitter_url: null,
+        //           github_url: null,
+        //           facebook_url: null,
+        //           extrapolated_email_confidence: null,
+        //           headline: "Founder & CEO at Apollo",
+        //           email: "email_not_unlocked@domain.com",
+        //           employment_history: [
+        //             {
+        //               _id: "618afbXXXXXXXXXXXXXXXXXX",
+        //               created_at: "2021-11-09T22:51:18.531Z",
+        //               current: true,
+        //               degree: null,
+        //               description: null,
+        //               emails: null,
+        //               end_date: null,
+        //               grade_level: null,
+        //               kind: null,
+        //               major: null,
+        //               organization_id: "5e66b6XXXXXXXXXXXXXXXXXX",
+        //               organization_name: "Apollo",
+        //               raw_address: null,
+        //               start_date: "2015-01-01",
+        //               title: "Founder & CEO",
+        //               updated_at: "2021-11-09T22:51:18.531Z",
+        //               id: "618afbXXXXXXXXXXXXXXXXXX",
+        //               key: "618afbXXXXXXXXXXXXXXXXXX",
+        //             },
+        //             {
+        //               _id: "618afbXXXXXXXXXXXXXXXXXX",
+        //               created_at: "2021-11-09T22:51:18.536Z",
+        //               current: false,
+        //               degree: null,
+        //               description: null,
+        //               emails: null,
+        //               end_date: "2014-01-01",
+        //               grade_level: null,
+        //               kind: null,
+        //               major: null,
+        //               organization_id: null,
+        //               organization_name: "Braingenie",
+        //               raw_address: null,
+        //               start_date: "2011-01-01",
+        //               title: "Founder & CEO",
+        //               updated_at: "2021-11-09T22:51:18.536Z",
+        //               id: "618afbXXXXXXXXXXXXXXXXXX",
+        //               key: "618afbXXXXXXXXXXXXXXXXXX",
+        //             },
+        //             {
+        //               _id: "618afbXXXXXXXXXXXXXXXXXX",
+        //               created_at: "2021-11-09T22:51:18.536Z",
+        //               current: false,
+        //               degree: null,
+        //               description: null,
+        //               emails: null,
+        //               end_date: "2011-01-01",
+        //               grade_level: null,
+        //               kind: null,
+        //               major: null,
+        //               organization_id: "54a22fXXXXXXXXXXXXXXXXXX",
+        //               organization_name: "Citadel Investment Group",
+        //               raw_address: null,
+        //               start_date: "2011-01-01",
+        //               title: "Investment & Trading Associate",
+        //               updated_at: "2021-11-09T22:51:18.536Z",
+        //               id: "618afbXXXXXXXXXXXXXXXXXX",
+        //               key: "618afbXXXXXXXXXXXXXXXXXX",
+        //             },
+        //             // Additional employment history objects...
+        //           ],
+        //           state: "Texas",
+        //           city: "Austin",
+        //           country: "United States",
+        //           organization_id: "5e66b6XXXXXXXXXXXXXXXXXX",
+        //           organization: {
+        //             id: "5e66b6XXXXXXXXXXXXXXXXXX",
+        //             type: "Company", // Assuming a value for 'type', as it's required by the interface but not provided in the snippet
+        //             name: "Apollo.io",
+        //             website_url: "http://www.apollo.io",
+        //             blog_url: null,
+        //             angellist_url: null,
+        //             linkedin_url: "http://www.linkedin.com/company/apolloio",
+        //             twitter_url: "https://twitter.com/MeetApollo/",
+        //             facebook_url: "https://www.facebook.com/MeetApollo/",
+        //             primary_phone: {
+        //               number: "(202) 374-XXXX",
+        //               source: "Account",
+        //             },
+        //             languages: [],
+        //             alexa_ranking: 685,
+        //             phone: "(202) 374-XXXX",
+        //             linkedin_uid: "185115XX",
+        //             founded_year: 2015,
+        //             publicly_traded_symbol: null,
+        //             publicly_traded_exchange: null,
+        //             logo_url:
+        //               "https://apollo-server.com/uploads/pictures/6188cXXXXXXXXXXXXXXXXXXX/picture",
+        //             crunchbase_url: null,
+        //             primary_domain: "apollo.io",
+        //             sanitized_phone: "(202) 374-XXXX",
+        //             market_cap: 100000,
+        //           },
+        //           account_id: "616d0eXXXXXXXXXXXXXXXXXX",
+        //           account: {
+        //             id: "616d0eXXXXXXXXXXXXXXXXXX",
+        //             name: "Apollo",
+        //             website_url: "http://www.apollo.io",
+        //             // Repeating the account details as necessary...
+        //           },
+        //           departments: [
+        //             "c_suite",
+        //             "master_information_technology",
+        //             "master_operations",
+        //           ],
+        //           subdepartments: [
+        //             "operations_executive",
+        //             "business_service_management_itsm",
+        //             "operations",
+        //           ],
+        //           functions: ["operations"],
+        //           is_likely_to_engage: true,
+        //           seniority: "c_suite",
+        //           intent_strength: null,
+        //           show_intent: true,
+        //           revealed_for_current_team: false,
+        //           phone_numbers: [
+        //             {
+        //               number: "(202) 374-XXXX",
+        //               type: "Work",
+        //             },
+        //           ],
+        //         },
+        //       ],
+        //     },
+        //   },
+        // };
 
-      console.log("BODY: ", body);
-    } catch (err) {
-      console.log("ERR: ", err);
-      toast.error("Error fetching data");
-    } finally {
-      shouldCallAPI = false;
+        console.log(response);
+
+        console.log("DATA: ", JSON.stringify(response.data));
+        response.data.result.people.map((person: Lead): void => {
+          person.type = "people";
+        });
+        setLeads(response.data.result.people as Lead[]);
+        console.log(leads);
+        toast.success("api called");
+
+        console.log("BODY: ", body);
+      } catch (err) {
+        console.log("ERR: ", err);
+        toast.error("Error fetching data");
+      } finally {
+        shouldCallAPI = false;
+        setLoading(false);
+      }
+    } else {
+      toast.error("no need to call api");
       setLoading(false);
     }
-    // } else {
-    //   toast.error("no need to call api");
-    //   setLoading(false);
-    // }
   };
 
   return (

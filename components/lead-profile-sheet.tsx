@@ -58,13 +58,13 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           <MenuIcon />
         </SheetTrigger>
         <SheetContent side="right" className="!px-0">
-          {/* component people, company*/}
           {data?.type === "people" && (
             <PeopleProfileSheet {...(data as Lead)} />
           )}
           {data?.type === "company" && (
             <CompanyProfileSheet {...(data as Organization)} />
           )}
+          {/* component people, company*/}
         </SheetContent>
       </Sheet>
     </>

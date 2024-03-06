@@ -44,31 +44,41 @@ export interface Organization {
   id: string;
   type: string;
   name: string;
-  website_url: string;
+  website_url: string | null;
   blog_url: string | null;
-  angellist_url: string;
+  angellist_url: string | null; // Adjusted to allow null, matching your provided structure
   linkedin_url: string;
   twitter_url: string;
   facebook_url: string;
-  primary_phone: any;
+  primary_phone: {
+    number: string;
+    source: string;
+  };
   languages: string[];
   alexa_ranking: number;
-  phone: string;
+  phone: string | null;
   linkedin_uid: string;
   founded_year: number;
-  publicly_traded_symbol: string;
-  publicly_traded_exchange: string;
+  publicly_traded_symbol: string | null; // Adjusted to allow null
+  publicly_traded_exchange: string | null; // Adjusted to allow null
   logo_url: string;
   crunchbase_url: string | null;
-  primary_domain: string;
+  primary_domain: string | null;
+  domain?: string | null;
   sanitized_phone: string;
-  market_cap: string | number; // Adjusted to accommodate both string and number types
+  market_cap: string | number | null;
+  organization_raw_address?: string | null;
+  organization_city?: string | null;
+  organization_street_address?: string | null;
+  organization_state?: string | null;
+  organization_country?: string | null;
+  organization_postal_code?: string | null;
 }
 
 // Define the state structure for our context
 interface LeadsContextState {
-  leads: Lead[];
-  setLeads: (leads: Lead[]) => void;
+  leads: Lead[] | Organization[];
+  setLeads: (leads: Lead[] | Organization[]) => void;
 }
 
 // Default state with initial values
@@ -86,7 +96,9 @@ interface LeadsProviderProps {
 
 // Context provider component
 export const LeadsProvider: React.FC<LeadsProviderProps> = ({ children }) => {
-  const [leads, setLeads] = useState<Lead[]>(defaultState.leads);
+  const [leads, setLeads] = useState<Lead[] | Organization[]>(
+    defaultState.leads,
+  );
 
   const contextValue = useMemo(
     () => ({

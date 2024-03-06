@@ -1,10 +1,10 @@
 "use client";
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
-import { Lead } from "@/context/lead-user";
+import { Lead, Organization } from "@/context/lead-user";
 // import { User } from "@/constants/data";
 
 interface NameActionProps {
-  data: Lead;
+  data: Lead | Organization;
 }
 
 export const NameAction: React.FC<NameActionProps> = ({ data }) => {

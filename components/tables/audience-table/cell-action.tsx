@@ -1,5 +1,5 @@
 "use client";
-import { Lead } from "@/context/lead-user";
+import { Lead, Organization } from "@/context/lead-user";
 import { AlertModal } from "@/components/modal/alert-modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,7 +15,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CellActionProps {
-  data: Lead;
+  data: Lead | Organization;
 }
 
 export const CellAction: React.FC<CellActionProps> = ({ data }) => {
