@@ -39,7 +39,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
               {nav.items.map((link, index) => {
                 const Icon = Icons[link.icon || "arrowRight"];
                 return isCollapsed ? (
-                  <Tooltip key={index} delayDuration={0}>
+                  <Tooltip key={link.label} delayDuration={0}>
                     <TooltipTrigger asChild>
                       <>
                         <Link
@@ -71,7 +71,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                                   Icons[subLink.icon || "arrowRight"];
                                 return (
                                   <Link
-                                    key={index}
+                                    key={subLink.label}
                                     href={subLink.href || "/"}
                                     // className={cn(
                                     //   buttonVariants({ variant: link.variant, size: "sm" }),
@@ -115,9 +115,8 @@ export function Nav({ links, isCollapsed }: NavProps) {
                     </TooltipContent>
                   </Tooltip>
                 ) : (
-                  <>
+                  <div key={link.label}>
                     <Link
-                      key={index}
                       href={link.href || "/"}
                       // className={cn(
                       //   buttonVariants({ variant: link.variant, size: "sm" }),
@@ -150,7 +149,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                               Icons[subLink.icon || "arrowRight"];
                             return (
                               <Link
-                                key={index}
+                                key={subLink.label}
                                 href={subLink.href || "/"}
                                 // className={cn(
                                 //   buttonVariants({ variant: link.variant, size: "sm" }),
@@ -177,7 +176,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
                           })
                         : null}
                     </div>
-                  </>
+                  </div>
                 );
               })}
               <Separator className="my-1" />

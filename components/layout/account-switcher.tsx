@@ -53,7 +53,7 @@ export function AccountSwitcher({
           <SelectItem key={account.email} value={account.email}>
             <div className="flex items-center gap-3 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 [&_svg]:text-foreground">
               {account.icon}
-              {account.email}
+              {account.label}
             </div>
           </SelectItem>
         ))}
