@@ -128,52 +128,54 @@ export default function Page() {
         <div className="flex items-center justify-between space-y-2 pt-4">
           <h2 className="text-3xl font-bold tracking-tight">Dashboard</h2>
           {/* <Button onClick={() => handleOpenSidebar("123")}>Open Sidebar</Button> */}
-          <div className="hidden md:flex items-center space-x-2">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="flex items-center justify-center space-x-2"
-                >
-                  <span>
-                    {selectedCampaign
-                      ? selectedCampaign.campaignName
-                      : "Select Campaign"}
-                  </span>
-                  <ChevronDown size={20} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-56">
-                <DropdownMenuGroup>
-                  <DropdownMenuItem
-                    className="flex space-x-2"
-                    onClick={() => {
-                      setActiveCampaignId(undefined);
-                      setCardData(initialCardData);
-                    }}
+          <div className="hidden md:flex items-center space-x-2 ">
+            <div className="w-[300px]">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="flex items-center justify-center space-x-2"
                   >
-                    Select Campaign
-                  </DropdownMenuItem>
-                  <DropdownMenuSeparator />
-                  {campaign &&
-                    campaign?.map((campaignItem, index) => (
-                      <div key={campaignItem.campaignId}>
-                        <DropdownMenuItem
-                          key={campaignItem.campaignId}
-                          onClick={() =>
-                            setActiveCampaignId(campaignItem.campaignId)
-                          }
-                        >
-                          <p>{campaignItem.campaignName}</p>
-                        </DropdownMenuItem>
-                        {index !== campaign.length - 1 && (
-                          <DropdownMenuSeparator />
-                        )}
-                      </div>
-                    ))}
-                </DropdownMenuGroup>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                    <span className="w-[240px] truncate">
+                      {selectedCampaign
+                        ? selectedCampaign.campaignName
+                        : "All Campaign"}
+                    </span>
+                    <ChevronDown size={20} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem
+                      className="flex space-x-2"
+                      onClick={() => {
+                        setActiveCampaignId(undefined);
+                        setCardData(initialCardData);
+                      }}
+                    >
+                      All Campaign
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {campaign &&
+                      campaign?.map((campaignItem, index) => (
+                        <div key={campaignItem.campaignId}>
+                          <DropdownMenuItem
+                            key={campaignItem.campaignId}
+                            onClick={() =>
+                              setActiveCampaignId(campaignItem.campaignId)
+                            }
+                          >
+                            <p>{campaignItem.campaignName}</p>
+                          </DropdownMenuItem>
+                          {index !== campaign.length - 1 && (
+                            <DropdownMenuSeparator />
+                          )}
+                        </div>
+                      ))}
+                  </DropdownMenuGroup>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
 
             <CalendarDateRangePicker />
 
