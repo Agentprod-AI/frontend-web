@@ -34,11 +34,13 @@ import {
   Radio,
   Clock,
   CheckCheck,
+  Contact,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
 
 export const Icons = {
+  contact: Contact,
   chat: MessageCircle,
   clock: Clock,
   checkCheck: CheckCheck,
