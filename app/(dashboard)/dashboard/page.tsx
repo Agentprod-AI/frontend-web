@@ -27,6 +27,7 @@ import {
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { ChevronDown, Download } from "lucide-react";
+import Link from "next/link";
 
 const initialCardData = [
   {
@@ -181,7 +182,11 @@ export default function Page() {
               <Download size={20} />
             </Button>
 
-            <Button>Create Campaign</Button>
+            <Button className="min-w-max"> 
+              <Link href={"/dashboard/campaign/create"}>
+                Create Campaign
+              </Link>
+            </Button>
           </div>
         </div>
 

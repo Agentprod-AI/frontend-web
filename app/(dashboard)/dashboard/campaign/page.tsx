@@ -29,9 +29,10 @@ export default function Page() {
     <div className="space-y-2 mb-5">
       <Card className="bg-accent px-4 py-6">
         <CardTitle>Send your first outbound Email campaign</CardTitle>
-        <Button className="mt-4 flex gap-1">
-          {" "}
-          <Plus size={16} /> Create Campaign{" "}
+        <Button className="mt-4">
+          <Link href={"/dashboard/campaign/create"} className="flex items-center gap-1">
+            <Plus size={16} /> Create Campaign
+          </Link>
         </Button>
       </Card>
 
@@ -40,19 +41,20 @@ export default function Page() {
           // className="hover:bg-accent" for card
           <Card key={campaignItem.campaignId}>
             <CardContent className="flex items-center justify-between space-x-4 p-4 gap-4">
-              <Switch
-                checked={campaignItem?.status}
-                onCheckedChange={() =>
-                  campaignItem.campaignId !== undefined &&
-                  toggleCampaignEnabled(campaignItem.campaignId)
-                }
-              />
-
-              <div className="flex justify-between items-center">
+              <div className="flex items-center gap-5">
+                <Switch
+                  checked={campaignItem?.status}
+                  onCheckedChange={() =>
+                    campaignItem.campaignId !== undefined &&
+                    toggleCampaignEnabled(campaignItem.campaignId)
+                  }
+                />
                 <p className="text-sm font-medium leading-none w-[150px]">
                   {campaignItem?.campaignName}
                 </p>
+              </div>
 
+              <div className="flex justify-between items-center">
                 <div
                   data-orientation="vertical"
                   role="none"
