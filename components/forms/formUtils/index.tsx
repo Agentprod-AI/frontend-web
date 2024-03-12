@@ -1,3 +1,8 @@
+export interface InputType {
+  id: string;
+  text: string | number;
+}
+
 export const orgLocations: string[] = [
   "Americas",
   "APAC",

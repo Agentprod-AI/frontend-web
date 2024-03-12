@@ -71,18 +71,18 @@ export const PeopleProfileSheet = (data: Lead) => {
                   {data.organization.name}
                 </span>
               </div>
-              {data.phone_numbers[0].sanitized_number && (
+              {data.phone_numbers && (
                 <div className="flex space-x-2">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {data.phone_numbers[0].sanitized_number}
+                    {data.phone_numbers[0].sanitized_number || "N/A"}
                   </span>
                 </div>
               )}
               <div className="flex space-x-2">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.linkedin_url}
+                  {data.linkedin_url || "N/A"}
                 </span>
               </div>
             </div>
@@ -144,42 +144,39 @@ export const PeopleProfileSheet = (data: Lead) => {
                   {data.organization.name}
                 </p>
                 <p className="text-sm text-muted-foreground">
-                  {data.organization.primary_domain}
+                  {data.organization.primary_domain || "N/A"}
                 </p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground pt-4">
-              {/* {data?.organization.} */}
-            </p>
             <div className="pt-4 space-y-3">
               <div className="flex space-x-2">
                 <Phone className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.organization.sanitized_phone}
+                  {data.organization.sanitized_phone || "N/A"}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.organization.linkedin_url}
+                  {data.organization.linkedin_url || "N/A"}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Link className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.organization.website_url}
+                  {data.organization.website_url || "N/A"}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Twitter className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.organization.twitter_url}
+                  {data.organization.twitter_url || "N/A"}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Facebook className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.organization.facebook_url}
+                  {data.organization.facebook_url || "N/A"}
                 </span>
               </div>
             </div>

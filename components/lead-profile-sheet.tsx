@@ -61,7 +61,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           {data?.type === "people" && (
             <PeopleProfileSheet {...(data as Lead)} />
           )}
-          {data?.type === "company" && (
+          {data?.type === "organization" && (
             <CompanyProfileSheet {...(data as Organization)} />
           )}
           {/* component people, company*/}

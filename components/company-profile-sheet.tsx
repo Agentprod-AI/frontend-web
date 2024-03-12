@@ -43,6 +43,7 @@ export const CompanyProfileSheet = (data: Organization) => {
             <div className="pt-4 space-y-3">
               <div className="flex space-x-2">
                 <MapPinIcon className="h-5 w-5 text-muted-foreground" />
+
                 <span className="text-sm text-muted-foreground">
                   {data.organization_country}, {data.organization_city}
                 </span>
@@ -50,41 +51,37 @@ export const CompanyProfileSheet = (data: Organization) => {
               <div className="flex space-x-2">
                 <Phone className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.sanitized_phone}
+                  {data.sanitized_phone || "N/A"}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.linkedin_url}
+                  {data.linkedin_url || "N/A"}
                 </span>
               </div>
-              {data.website_url && (
-                <div className="flex space-x-2">
-                  <Link className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {data.website_url}
-                  </span>
-                </div>
-              )}
-              {data.domain && (
-                <div className="flex space-x-2">
-                  <Link className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {data.domain}
-                  </span>
-                </div>
-              )}
+              <div className="flex space-x-2">
+                <Link className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {data.website_url || "N/A"}
+                </span>
+              </div>
+              <div className="flex space-x-2">
+                <Link className="h-5 w-5 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {data.domain || "N/A"}
+                </span>
+              </div>
               <div className="flex space-x-2">
                 <Twitter className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.twitter_url}
+                  {data.twitter_url || "N/A"}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Facebook className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.facebook_url}
+                  {data.facebook_url || "N/A"}
                 </span>
               </div>
             </div>

@@ -4,7 +4,6 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-
 // import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -25,7 +24,7 @@ import { Input } from "@/components/ui/input";
 //   SelectValue,
 // } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 const profileFormSchema = z.object({
   product_offering: z
@@ -42,7 +41,10 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 // This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {};
+const defaultValues: Partial<ProfileFormValues> = {
+  product_offering: "",
+  offering_details: "",
+};
 
 export function OfferingForm() {
   const form = useForm<ProfileFormValues>({
@@ -57,13 +59,14 @@ export function OfferingForm() {
   //   });
 
   function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: "You submitted the following values:",
+    console.log("form submitted", data);
+    toast("You submitted the following values:", {
       description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+        <pre className="mt-2 w-[320px] rounded-md bg-slate-950 p-4">
           <code className="text-white">{JSON.stringify(data, null, 2)}</code>
         </pre>
       ),
+      // `Product Name: ${data.product_offering} Product Details: ${data.offering_details}`,
     });
   }
 
@@ -118,8 +121,8 @@ export function OfferingForm() {
               <FormLabel>Details of offers and details</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Write some details"
-                  className="resize-none"
+                  placeholder="Describe the product and features."
+                  // className="resize-none"
                   {...field}
                 />
               </FormControl>

@@ -34,10 +34,7 @@ import { Organization, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 // import { toast } from "@/components/ui/use-toast";
-import { orgLocations } from "./formUtils";
-import { v4 as uuid } from "uuid";
-import { truncateString } from "@/components/ui/tag/tag-input";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { orgLocations, InputType } from "./formUtils";
 
 const FormSchema = z.object({
   q_organization_name: z
@@ -95,17 +92,6 @@ const FormSchema = z.object({
     )
     .optional(),
 });
-
-const orgNames: string[] = [
-  "Google",
-  "Amazon",
-  "illumni 校友会",
-  "Linkedin",
-  "Ted Conferences",
-  "Microsoft",
-  "Unilever",
-  "Forbes",
-];
 
 const industryKeywords: string[] = [
   "accounting",
@@ -280,43 +266,31 @@ export default function OrgFormComponenet(): JSX.Element {
   };
 
   //   const [tags, setTags] = React.useState<Tag[]>([]);
-  const [qOrganizationName, setQOrganizationName] = React.useState<{
-    id: string;
-    text: string;
-  }>({
+
+  const [qOrganizationName, setQOrganizationName] = React.useState<InputType>({
     id: "",
     text: "",
   });
 
-  const [minimumCompanyHeadcount, setMinimumCompanyHeadcount] = React.useState<{
-    id: string;
-    text: number;
-  }>({
+  const [minimumCompanyHeadcount, setMinimumCompanyHeadcount] =
+    React.useState<InputType>({
+      id: "",
+      text: 0,
+    });
+
+  const [maximumCompanyHeadcount, setMaximumCompanyHeadcount] =
+    React.useState<InputType>({
+      id: "",
+      text: 0,
+    });
+
+  const [perPage, setPerPage] = React.useState<InputType>({
     id: "",
     text: 0,
   });
 
-  const [maximumCompanyHeadcount, setMaximumCompanyHeadcount] = React.useState<{
-    id: string;
-    text: number;
-  }>({
-    id: "",
-    text: 0,
-  });
-
-  const [perPage, setPerPage] = React.useState<{
-    id: string;
-    text: number;
-  }>({
-    id: "",
-    text: 0,
-  });
-
-  const [prospectedByCurrentTeamTags, setProspectedByCurrentTeamTags] =
-    React.useState<{
-      id: string;
-      text: string;
-    }>({
+  const [prospectedByCurrentTeam, setProspectedByCurrentTeam] =
+    React.useState<InputType>({
       id: "",
       text: "",
     });
@@ -386,19 +360,18 @@ export default function OrgFormComponenet(): JSX.Element {
       ...(formData.minimum_company_headcount?.text &&
         formData.maximum_company_headcount?.text && {
           organization_num_employees_ranges: [
-            `${formData.minimum_company_headcount.text}-${formData.maximum_company_headcount.text}`,
+            `${formData.minimum_company_headcount.text},${formData.maximum_company_headcount.text}`,
           ],
         }),
       ...(formData.organization_not_locations && {
-        organization_not_location: formData.organization_not_locations
+        organization_not_locations: formData.organization_not_locations
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
       ...(formData.q_organization_keyword_tags && {
         q_organization_keyword_tags: formData.q_organization_keyword_tags
           .map((tag) => tag.text)
-          .join("\n")
-          .trim(),
+          .filter((text) => text),
       }),
     };
 
@@ -419,18 +392,13 @@ export default function OrgFormComponenet(): JSX.Element {
     if (
       prevInputValues.current?.organization_locations
         ?.map((tag) => tag.text)
-        .toString() !==
-        formData.organization_locations?.map((tag) => tag.text).toString() ||
+        .toString() !== body.organization_locations?.toString() ||
       prevInputValues.current?.organization_not_locations
         ?.map((tag) => tag.text)
-        .toString() !==
-        formData.organization_not_locations
-          ?.map((tag) => tag.text)
-          .toString() ||
+        .toString() !== body.organization_not_locations?.toString() ||
       prevInputValues.current?.q_organization_keyword_tags
         ?.map((tag) => tag.text)
-        .toString() !==
-        formData.q_organization_keyword_tags?.map((tag) => tag.text).toString()
+        .toString() !== body.q_organization_keyword_tags?.toString()
     ) {
       shouldCallAPI = true;
     }
@@ -438,108 +406,49 @@ export default function OrgFormComponenet(): JSX.Element {
     if (shouldCallAPI) {
       try {
         console.log("api called");
-        //       const data = await axios.post("/api/apollo", {
-        //         url: "https://api.apollo.io/api/v1/mixed_companies/search",
-        //         body,}
-        //         headers: {
-        //           "Content-Type": "application/json",
-        //         },
-        //       });
-
-        const response = {
-          data: {
-            result: {
-              accounts: [
-                {
-                  id: "63b3e47f0deb820001XXXXX",
-                  name: "Apollo.io",
-                  type: "company",
-                  website_url: null, // Assuming a placeholder value, adjust to a valid URL as needed
-                  blog_url: null,
-                  angellist_url: null,
-                  linkedin_url: "http://www.linkedin.com/company/apolXXXXX",
-                  twitter_url: "https://twitter.com/MeetApolXXXXX/",
-                  facebook_url: "https://facebook.com/MeetApoXXXXX/",
-                  primary_phone: {
-                    number: "+1 415-640-9303",
-                    source: "Account",
-                  },
-                  languages: [],
-                  alexa_ranking: 3514,
-                  phone: null, // This field should be a string; assuming null implies an empty string or no value.
-                  linkedin_uid: "18511550",
-                  founded_year: 2015,
-                  publicly_traded_symbol: null,
-                  publicly_traded_exchange: null,
-                  logo_url:
-                    "https://zenprospect-production.s3.amazonaws.com/uploads/pictures/63d3a127e242df0001eXXXXX/picture",
-                  crunchbase_url: null,
-                  primary_domain: null, // Assuming null implies no primary domain available; adjust as needed
-                  sanitized_phone: "+14156409303",
-                  organization_raw_address:
-                    "535 mission st, suite 1100, san francisco, california 94105, us",
-                  organization_city: "San Francisco",
-                  organization_street_address: "535 Mission St",
-                  organization_state: "California",
-                  organization_country: "United States",
-                  organization_postal_code: "94105",
-                  // Additional fields from the Organization interface
-                  market_cap: null, // Assuming null for demonstration; adjust based on actual data or requirements
-                  // Note: Some fields like 'owned_by_organization_id', 'organization_raw_address', etc., are not part of the Organization interface and are thus omitted in the corrected structure.
-                  parent_account: {
-                    id: "62b5283531e821000XXXXX",
-                    name: "Apollo.io",
-                    // Assuming 'parent_account' mirrors some Organization interface fields; adjust as needed
-                  },
-                  // Additional fields to align with the rest of the provided structure...
-                  domain: "apollo.io",
-                  team_id: "551e3ef072616951471XXXXX",
-                  organization_id: "65080f223660ac000XXXXX",
-                  account_stage_id: "5711a6247ff0bb33edXXXXX",
-                  source: "job_change",
-                  original_source: "job_change",
-                  creator_id: null,
-                  owner_id: "5eaf980991763800eXXXXX",
-                  created_at: "2023-01-03T08:17:03.163Z",
-                  phone_status: "no_status",
-                  hubspot_id: null,
-                  salesforce_id: "0015a00003AXXXXX",
-                  crm_owner_id: "0052L000003XXXXX",
-                  parent_account_id: "62b5283531e82100012XXXXX",
-                  account_playbook_statuses: [],
-                  account_rule_config_statuses: [],
-                  existence_level: "full",
-                  label_ids: [],
-                  typed_custom_fields: {
-                    "5b7aff6c55884769e38XXXXX": 7.0,
-                    "5ee1d989add32701128XXXXX": "0015a00003AjsaS",
-                    "5f28afc474e70000f12XXXXX": "High Tier",
-                  },
-                  modality: "account",
-                  salesforce_record_url:
-                    "https://apolloio.my.salesforce.com/0015a00003AjsXXXXX",
-                  contact_emailer_campaign_ids: ["6488dbeb72e68a00d9XXXXX"],
-                  contact_campaign_status_tally: {
-                    finished: 6,
-                    paused: 4,
-                    not_sent: 1,
-                    active: 1,
-                  },
-                  num_contacts: 17,
-                  last_activity_date: "2023-09-26T05:31:52.000+00:00",
-                  intent_strength: null,
-                  show_intent: true,
-                },
-              ],
-            },
-          },
-        };
-
-        // console.log("DATA: ", JSON.stringify(data.data));
-        // data.data.result.accounts.map(
-        //   (account: any) => (account.type = "organization"),
+        console.log(body);
+        // const response = await axios.post(
+        //   "/api/apollo",
+        //   {
+        //     url: "https://api.apollo.io/api/v1/mixed_companies/search",
+        //     body: body,
+        //   },
+        //   {
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //   }
         // );
-        setLeads(response.data.result.accounts as Organization[]);
+
+        const response = await axios.post(
+          "/api/apollo",
+          {
+            url: "http://localhost:3030/apollo/api/company",
+            body: body,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        console.log("DATA: ", JSON.stringify(response.data));
+        if (response.data.result.organizations.length > 0) {
+          response.data.result.organizations.map(
+            (organization: Organization): void => {
+              organization.type = "organization";
+            }
+          );
+          setLeads(response.data.result.organizations as Organization[]);
+        } else {
+          response.data.result.accounts.map(
+            (organization: Organization): void => {
+              organization.type = "organization";
+            }
+          );
+          setLeads(response.data.result.accounts as Organization[]);
+        }
         //       console.log(form.getValues());
         toast.success("api called");
       } catch (err) {
@@ -853,10 +762,10 @@ export default function OrgFormComponenet(): JSX.Element {
                     <Select
                       onValueChange={(value) => {
                         const newValue = {
-                          ...prospectedByCurrentTeamTags,
+                          ...prospectedByCurrentTeam,
                           text: value,
                         };
-                        setProspectedByCurrentTeamTags(newValue); // Update local state
+                        setProspectedByCurrentTeam(newValue); // Update local state
                         field.onChange(newValue); // Notify React Hook Form of the change
                       }}
                     >

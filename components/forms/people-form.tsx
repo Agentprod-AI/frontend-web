@@ -39,6 +39,7 @@ import {
   jobTitles,
   emailStatusOptions,
   seniorities,
+  InputType,
 } from "./formUtils";
 
 const FormSchema = z.object({
@@ -135,36 +136,26 @@ export default function PeopleForm(): JSX.Element {
   >([]);
   const [qOrganizationDomainsTags, setQOrganizationDomainsTags] =
     React.useState<Tag[]>([]);
-  const [minimumCompanyHeadcount, setMinimumCompanyHeadcount] = React.useState<{
-    id: string;
-    text: number;
-  }>({
-    id: "",
-    text: 0,
-  });
-  const [maximumCompanyHeadcount, setMaximumCompanyHeadcount] = React.useState<{
-    id: string;
-    text: number;
-  }>({
-    id: "",
-    text: 0,
-  });
+  const [minimumCompanyHeadcount, setMinimumCompanyHeadcount] =
+    React.useState<InputType>({
+      id: "",
+      text: 0,
+    });
+  const [maximumCompanyHeadcount, setMaximumCompanyHeadcount] =
+    React.useState<InputType>({
+      id: "",
+      text: 0,
+    });
   const [personTitlesTags, setPersonTitlesTags] = React.useState<Tag[]>([]);
-  const [perPage, setPerPage] = React.useState<{
-    id: string;
-    text: number;
-  }>({
+  const [perPage, setPerPage] = React.useState<InputType>({
     id: "",
     text: 0,
   });
 
   const [emailStatus, setEmailStatus] = React.useState<Tag[]>([]);
 
-  const [prospectedByCurrentTeamTags, setProspectedByCurrentTeamTags] =
-    React.useState<{
-      id: string;
-      text: string;
-    }>({
+  const [prospectedByCurrentTeam, setProspectedByCurrentTeam] =
+    React.useState<InputType>({
       id: "",
       text: "",
     });
@@ -214,7 +205,10 @@ export default function PeopleForm(): JSX.Element {
     const body = {
       ...(pages && { page: pages }), // Only include if pages is truthy
       ...(formData.per_page?.text && {
-        per_page: formData.per_page.text > 100 ? 100 : formData.per_page.text,
+        per_page:
+          formData.per_page.text > 100
+            ? Math.ceil(formData.per_page?.text / pages)
+            : formData.per_page.text,
       }),
       ...(formData.prospected_by_current_team?.text && {
         prospected_by_current_team: [formData.prospected_by_current_team.text],
@@ -237,7 +231,7 @@ export default function PeopleForm(): JSX.Element {
         }),
       ...(formData.person_seniorities && {
         person_seniorities: formData.person_seniorities
-          .map((tag) => tag.text)
+          .map((tag) => tag.text.toLowerCase())
           .filter((text) => text),
       }),
       ...(formData.q_organization_domains && {
@@ -263,17 +257,19 @@ export default function PeopleForm(): JSX.Element {
         body.prospected_by_current_team?.[0]
     ) {
       shouldCallAPI = true;
+      console.log("foo");
     }
 
     if (
       prevInputValues.current?.q_organization_domains
         ?.map((tag) => tag.text)
-        .toString() !== body.q_organization_domains?.toString() ||
+        .join("\n")
+        .trim() !== body.q_organization_domains?.toString() ||
       prevInputValues.current?.organization_locations
         ?.map((tag) => tag.text)
         .toString() !== body.organization_locations?.toString() ||
       prevInputValues.current?.person_seniorities
-        ?.map((tag) => tag.text)
+        ?.map((tag) => tag.text.toLowerCase())
         .toString() !== body.person_seniorities?.toString() ||
       prevInputValues.current?.person_titles
         ?.map((tag) => tag.text)
@@ -283,6 +279,7 @@ export default function PeopleForm(): JSX.Element {
         .toString() !== body.email_status?.toString()
     ) {
       shouldCallAPI = true;
+      console.log("bar");
     }
 
     if (formData) {
@@ -299,15 +296,29 @@ export default function PeopleForm(): JSX.Element {
     //   person_titles: ["sales manager", "engineer manager"],
     // };
 
+    console.log(shouldCallAPI);
     if (shouldCallAPI) {
       try {
-        console.log(JSON.stringify(body));
+        console.log(body);
         console.log("api called");
+        // const response = await axios.post(
+        //   "/api/apollo",
+        //   {
+        // url: "https://api.apollo.io/v1/mixed_people/search",
+        //     body: body,
+        //   },
+        //   {
+        //     headers: {
+        //       "Content-Type": "application/json",
+        //     },
+        //   }
+        // );
+
         const response = await axios.post(
           "/api/apollo",
           {
-            url: "https://api.apollo.io/v1/mixed_people/search",
-            body,
+            url: "http://localhost:3030/apollo/api/people",
+            body: body,
           },
           {
             headers: {
@@ -316,160 +327,9 @@ export default function PeopleForm(): JSX.Element {
           }
         );
 
-        // const response = {
-        //   data: {
-        //     result: {
-        //       people: [
-        //         {
-        //           id: "618a24XXXXXXXXXXXXXXXXXX",
-        //           first_name: "Tim",
-        //           last_name: "Zheng",
-        //           type: "people",
-        //           name: "Tim Zheng",
-        //           linkedin_url: "http://www.linkedin.com/in/tim-zheng-677ba010",
-        //           title: "Founder & CEO",
-        //           email_status: "verified",
-        //           photo_url:
-        //             "https://static-exp1.licdn.com/sc/h/244xhbkr7g40x6bsu4gi6q4ry",
-        //           twitter_url: null,
-        //           github_url: null,
-        //           facebook_url: null,
-        //           extrapolated_email_confidence: null,
-        //           headline: "Founder & CEO at Apollo",
-        //           email: "email_not_unlocked@domain.com",
-        //           employment_history: [
-        //             {
-        //               _id: "618afbXXXXXXXXXXXXXXXXXX",
-        //               created_at: "2021-11-09T22:51:18.531Z",
-        //               current: true,
-        //               degree: null,
-        //               description: null,
-        //               emails: null,
-        //               end_date: null,
-        //               grade_level: null,
-        //               kind: null,
-        //               major: null,
-        //               organization_id: "5e66b6XXXXXXXXXXXXXXXXXX",
-        //               organization_name: "Apollo",
-        //               raw_address: null,
-        //               start_date: "2015-01-01",
-        //               title: "Founder & CEO",
-        //               updated_at: "2021-11-09T22:51:18.531Z",
-        //               id: "618afbXXXXXXXXXXXXXXXXXX",
-        //               key: "618afbXXXXXXXXXXXXXXXXXX",
-        //             },
-        //             {
-        //               _id: "618afbXXXXXXXXXXXXXXXXXX",
-        //               created_at: "2021-11-09T22:51:18.536Z",
-        //               current: false,
-        //               degree: null,
-        //               description: null,
-        //               emails: null,
-        //               end_date: "2014-01-01",
-        //               grade_level: null,
-        //               kind: null,
-        //               major: null,
-        //               organization_id: null,
-        //               organization_name: "Braingenie",
-        //               raw_address: null,
-        //               start_date: "2011-01-01",
-        //               title: "Founder & CEO",
-        //               updated_at: "2021-11-09T22:51:18.536Z",
-        //               id: "618afbXXXXXXXXXXXXXXXXXX",
-        //               key: "618afbXXXXXXXXXXXXXXXXXX",
-        //             },
-        //             {
-        //               _id: "618afbXXXXXXXXXXXXXXXXXX",
-        //               created_at: "2021-11-09T22:51:18.536Z",
-        //               current: false,
-        //               degree: null,
-        //               description: null,
-        //               emails: null,
-        //               end_date: "2011-01-01",
-        //               grade_level: null,
-        //               kind: null,
-        //               major: null,
-        //               organization_id: "54a22fXXXXXXXXXXXXXXXXXX",
-        //               organization_name: "Citadel Investment Group",
-        //               raw_address: null,
-        //               start_date: "2011-01-01",
-        //               title: "Investment & Trading Associate",
-        //               updated_at: "2021-11-09T22:51:18.536Z",
-        //               id: "618afbXXXXXXXXXXXXXXXXXX",
-        //               key: "618afbXXXXXXXXXXXXXXXXXX",
-        //             },
-        //             // Additional employment history objects...
-        //           ],
-        //           state: "Texas",
-        //           city: "Austin",
-        //           country: "United States",
-        //           organization_id: "5e66b6XXXXXXXXXXXXXXXXXX",
-        //           organization: {
-        //             id: "5e66b6XXXXXXXXXXXXXXXXXX",
-        //             type: "Company", // Assuming a value for 'type', as it's required by the interface but not provided in the snippet
-        //             name: "Apollo.io",
-        //             website_url: "http://www.apollo.io",
-        //             blog_url: null,
-        //             angellist_url: null,
-        //             linkedin_url: "http://www.linkedin.com/company/apolloio",
-        //             twitter_url: "https://twitter.com/MeetApollo/",
-        //             facebook_url: "https://www.facebook.com/MeetApollo/",
-        //             primary_phone: {
-        //               number: "(202) 374-XXXX",
-        //               source: "Account",
-        //             },
-        //             languages: [],
-        //             alexa_ranking: 685,
-        //             phone: "(202) 374-XXXX",
-        //             linkedin_uid: "185115XX",
-        //             founded_year: 2015,
-        //             publicly_traded_symbol: null,
-        //             publicly_traded_exchange: null,
-        //             logo_url:
-        //               "https://apollo-server.com/uploads/pictures/6188cXXXXXXXXXXXXXXXXXXX/picture",
-        //             crunchbase_url: null,
-        //             primary_domain: "apollo.io",
-        //             sanitized_phone: "(202) 374-XXXX",
-        //             market_cap: 100000,
-        //           },
-        //           account_id: "616d0eXXXXXXXXXXXXXXXXXX",
-        //           account: {
-        //             id: "616d0eXXXXXXXXXXXXXXXXXX",
-        //             name: "Apollo",
-        //             website_url: "http://www.apollo.io",
-        //             // Repeating the account details as necessary...
-        //           },
-        //           departments: [
-        //             "c_suite",
-        //             "master_information_technology",
-        //             "master_operations",
-        //           ],
-        //           subdepartments: [
-        //             "operations_executive",
-        //             "business_service_management_itsm",
-        //             "operations",
-        //           ],
-        //           functions: ["operations"],
-        //           is_likely_to_engage: true,
-        //           seniority: "c_suite",
-        //           intent_strength: null,
-        //           show_intent: true,
-        //           revealed_for_current_team: false,
-        //           phone_numbers: [
-        //             {
-        //               number: "(202) 374-XXXX",
-        //               type: "Work",
-        //             },
-        //           ],
-        //         },
-        //       ],
-        //     },
-        //   },
-        // };
+        // console.log(response);
 
-        console.log(response);
-
-        console.log("DATA: ", JSON.stringify(response.data));
+        console.log("DATA: ", JSON.stringify(response));
         response.data.result.people.map((person: Lead): void => {
           person.type = "people";
         });
@@ -775,11 +635,11 @@ export default function PeopleForm(): JSX.Element {
                         <Select
                           onValueChange={(value) => {
                             const newValue = {
-                              ...prospectedByCurrentTeamTags,
+                              ...prospectedByCurrentTeam,
                               text: value,
                             };
-                            setProspectedByCurrentTeamTags(newValue); // Update local state
-                            field.onChange(newValue); // Notify React Hook Form of the change
+                            setProspectedByCurrentTeam(newValue);
+                            field.onChange(newValue);
                           }}
                         >
                           <SelectTrigger className="w-[180px]">
