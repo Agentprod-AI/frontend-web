@@ -23,7 +23,6 @@ import {
     DropdownMenuTrigger,
   } from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
 import { ChevronDown, Plus, Minus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input";
@@ -61,21 +60,22 @@ const dummyLinks = [
 const goalFormSchema = z.object({
   goal: z.string(),
   schedulingLink: z.string().url(), 
-  email: z.string().email(),
-  calendlyLink: z.string().url(),
-  followUps: z.array(z.union([z.number(), z.undefined()])), 
+  emails: z.array(z.string()).refine((value) => value.length > 0, {
+    message: "You have to select at least one email.",
+  }),
+  calendlyLinks: z.array(z.string()).refine((value) => value.length > 0, {
+    message: "You have to select at least one Calendly link.",
+  }),
+  followUps: z.array(z.object({
+    value: z.union([z.number(), z.undefined()]),
+  })),
   markAsLost: z.number(),
 });
 
 type GoalFormValues = z.infer<typeof goalFormSchema>;
 
-const defaultValues: GoalFormValues = {
-  goal: '',
-  schedulingLink: '',
-  email: '',
-  calendlyLink: '',
-  followUps: [undefined, undefined], 
-  markAsLost: 0,
+const defaultValues: Partial<GoalFormValues> = {
+  // followUps: [{ value: undefined }, { value: undefined }]
 };
 
 export function GoalForm() {
@@ -86,24 +86,37 @@ export function GoalForm() {
   });
 
   const { control, handleSubmit } = form;
-  const { fields, append, remove } = useFieldArray({
+  const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({
+    control,
+    name: 'emails',
+  });
+
+  // Field array for calendlyLinks
+  const { fields: calendlyFields, append: appendCalendlyLink, remove: removeCalendlyLink } = useFieldArray({
+    control,
+    name: 'calendlyLinks',
+  });
+
+  // Field array for followUps
+  const { fields: followUpFields, append: appendFollowUp, remove: removeFollowUp } = useFieldArray({
     control,
     name: 'followUps',
   });
 
   const onAppend = () => {
-    if (fields.length < 5) {
-      append(undefined);
+    if (followUpFields.length < 5) {
+      appendFollowUp({ value: undefined });
     }
   };
 
   const onRemove = (index: number) => {
-    if (fields.length > 2) { // Ensure minimum two inputs
-      remove(index);
+    if (followUpFields.length > 2) { // Ensure minimum two inputs
+      removeFollowUp(index);
     }
   };
 
   const onSubmit: SubmitHandler<GoalFormValues> = (data) =>  {
+    console.log(data);
     toast({
       title: "You submitted the following values:",
       description: (
@@ -112,7 +125,6 @@ export function GoalForm() {
         </pre>
       ),
     });
-    console.log(data);
   }
 
   return (
@@ -167,7 +179,7 @@ export function GoalForm() {
         <FormField
           control={form.control}
           name="schedulingLink"
-          render={({ field, fieldState: { error } }) => (
+          render={({ field }) => (
             <FormItem className="space-y-3">
               <div>
                 <FormLabel>Scheduling Link</FormLabel>
@@ -175,139 +187,183 @@ export function GoalForm() {
               </div>
               <FormControl>
                 <Input
-                  type="number"
+                  type="url"
                   placeholder="https://calendly.com/example"
                   {...field}
                 />
               </FormControl>
-              <FormMessage>{error?.message}</FormMessage>
+              <FormMessage/>
             </FormItem>
           )}
         />
 
+        <div>
+            <FormLabel>Sender Email</FormLabel>
+            <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
+
+            <div className="flex gap-4 mt-3">
+              <FormField
+              control={form.control}
+              name="emails"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <FormControl>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="flex items-center justify-center space-x-3">
+                          <span>Select Email</span>
+                          <ChevronDown size={20} />
+                        </Button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="w-max">
+                        <ScrollArea className="h-60">
+                          <DropdownMenuGroup>
+                            {dummyEmails &&
+                              dummyEmails?.map((email, index) => (
+                                <div key={index}>
+                                  <DropdownMenuItem key={index}>
+                                    <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
+                                    <Checkbox
+                                      checked={emailFields.some((field) => field.email === email)}
+                                      onChange={(e) => {
+                                        if (e.target.checked) {
+                                          appendEmail({ email });
+                                        } else {
+                                          const index = emailFields.findIndex((field) => field.email === email);
+                                          removeEmail(index);
+                                        }
+                                      }}
+                                    />
+                                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                          {email}
+                                        </label>
+                                    </div>
+                                  </DropdownMenuItem>
+                                  {index !== dummyEmails.length - 1 && (
+                                    <DropdownMenuSeparator />)}
+                                </div>
+                            ))}
+                          </DropdownMenuGroup>
+                        </ScrollArea>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  </FormControl>
+                <FormMessage/>
+              </FormItem>
+              )}
+              />  
+
+              <FormField
+              control={form.control}
+              name="calendlyLinks"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                <FormControl>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="outline" className="flex items-center justify-center space-x-3">
+                        <span>Select Calendly Link</span>
+                        <ChevronDown size={20} />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-max">
+                      <ScrollArea className="h-60">
+                        <DropdownMenuGroup>
+                          {dummyLinks && dummyLinks.map((link, index) => (
+                            <div key={index}>
+                              <DropdownMenuItem key={index}>
+                                <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
+                                <Checkbox
+                                  checked={calendlyFields.some((field) => field.calendlyLink === link)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      appendCalendlyLink({ calendlyLink: link });
+                                    } else {
+                                      const index = calendlyFields.findIndex((field) => field.calendlyLink === link);
+                                      removeCalendlyLink(index);
+                                    }
+                                  }}
+                                />
+                                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    {link}
+                                  </label>
+                                </div>
+                              </DropdownMenuItem>
+                              {index !== dummyEmails.length - 1 && (
+                                <DropdownMenuSeparator />
+                              )}
+                            </div>
+                          ))}
+                        </DropdownMenuGroup>
+                      </ScrollArea>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </FormControl>
+                <FormMessage/>
+              </FormItem>
+              )}
+              />  
+            </div>  
+        </div> 
+
         <FormField
-        control={form.control}
-        name="senderEmail"
-        render={({ field, fieldState: { error } }) => (
-          <FormItem className="space-y-3">
-              <div>
-                  <FormLabel>Sender Email</FormLabel>
-                  <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
-              </div>
-              <div className="flex gap-4">
+          control={form.control}
+          name="followUps"
+          render={() => (
+            <FormItem className="space-y-3">
+              <FormLabel>Follow Up</FormLabel>
+              {followUpFields.map((field, index) => (
+                <div key={field.id} className="flex items-center gap-2">
                   <FormControl>
-                      <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                              <Button variant="outline" className="flex items-center justify-center space-x-3">
-                                  <span>Select Email</span>
-                                  <ChevronDown size={20} />
-                              </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-max">
-                              <ScrollArea className="h-60">
-                                  <DropdownMenuGroup>
-                                      {dummyEmails &&
-                                          dummyEmails?.map((email, index) => (
-                                          <div key={index}>
-                                              <DropdownMenuItem key={index}>
-                                                      <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
-                                                          <Checkbox />
-                                                          <label
-                                                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                          >
-                                                          {email}
-                                                          </label>
-                                                      </div>
-                                              </DropdownMenuItem>
-
-                                              {index !== dummyEmails.length - 1 && (
-                                              <DropdownMenuSeparator />
-                                              )}
-                                          </div>
-                                      ))}
-                                  </DropdownMenuGroup>
-                              </ScrollArea>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
+                    <Input
+                      type="number"
+                      placeholder="Follow Up"
+                      {...form.register(`followUps.${index}.value`, {
+                        setValueAs: (value) => value === "" ? undefined : Number(value),
+                      })}
+                      {...field}
+                    />
                   </FormControl>
-
-                  <FormControl>
-                      <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                              <Button variant="outline" className="flex items-center justify-center space-x-3">
-                                  <span>Select Calendly Link</span>
-                                  <ChevronDown size={20} />
-                              </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-max">
-                              <ScrollArea className="h-60">
-                                  <DropdownMenuGroup >
-                                      {dummyLinks &&
-                                          dummyLinks?.map((link, index) => (
-                                          <div key={index}>
-                                              <DropdownMenuItem key={index}>
-                                                      <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
-                                                          <Checkbox />
-                                                          <label
-                                                              className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                                          >
-                                                          {link}
-                                                          </label>
-                                                      </div>
-                                              </DropdownMenuItem>
-
-                                              {index !== dummyEmails.length - 1 && (
-                                              <DropdownMenuSeparator />
-                                              )}
-                                          </div>
-                                      ))}
-                                  </DropdownMenuGroup>
-                              </ScrollArea>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
-                  </FormControl>
-              </div>
-            <FormMessage>{error?.message}</FormMessage>
-          </FormItem>
-        )}
+                  {followUpFields.length > 2 && (
+                    <Button type="button" variant="outline" className="w-max" onClick={() => onRemove(index)}>
+                      <Minus size={14}/>
+                    </Button>
+                  )}
+                </div>
+              ))}
+              {followUpFields.length < 5 && (
+                <Button type="button" variant="outline" className="w-max" onClick={onAppend}>
+                  <Plus size={14}/>
+                </Button>
+              )}
+              <FormMessage/>
+            </FormItem>
+          )}
         />
 
-        <div className="flex flex-col gap-4">
-          <FormLabel>Follow Up</FormLabel>
-          {fields.map((field, index) => (
-            <div key={field.id} className="flex items-center gap-2">
-              <Input
-                {...form.register(`followUps.${index}`)}
-                type="number"
-                placeholder="Follow Up" 
-              />
-              {fields.length > 2 && (
-                <Button type="button" variant={"outline"} className="w-max" onClick={() => onRemove(index)}><Minus size={14}/></Button>
-              )}
-            </div>
-          ))}
-          {fields.length < 5 && (
-            <Button type="button" variant={"outline"} className="w-max" onClick={onAppend}><Plus size={14}/></Button>
-          )}
-        </div>
 
         <FormField
           control={form.control}
           name="markAsLost"
-          render={({ field, fieldState: { error } }) => (
+          render={({ field }) => (
             <FormItem className="space-y-3">
-                <FormLabel>Mark as lost</FormLabel>
-                <FormControl>
-                    <Input
-                    type="number"
-                    placeholder="eg. 10 days"
-                    {...field}
-                    />
-                </FormControl>
-                <FormMessage>{error?.message}</FormMessage>
+              <FormLabel>Mark as lost</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="eg. 10 days"
+                  {...field}
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    const numberValue = value === "" ? undefined : Number(value);
+                    field.onChange(numberValue);
+                  }}
+                />
+              </FormControl>
+              <FormMessage/>
             </FormItem>
           )}
-          />
+        />
 
         <Button type="submit">Add Goal</Button>
       </form>
