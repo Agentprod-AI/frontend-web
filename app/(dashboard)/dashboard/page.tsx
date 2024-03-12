@@ -140,7 +140,7 @@ export default function Page() {
                     <span className="w-[240px] truncate">
                       {selectedCampaign
                         ? selectedCampaign.campaignName
-                        : "All Campaign"}
+                        : "All Campaigns"}
                     </span>
                     <ChevronDown size={20} />
                   </Button>
@@ -154,7 +154,7 @@ export default function Page() {
                         setCardData(initialCardData);
                       }}
                     >
-                      All Campaign
+                      All Campaigns
                     </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     {campaign &&

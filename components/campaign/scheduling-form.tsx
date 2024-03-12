@@ -1,5 +1,6 @@
 "use client";
 
+import axios from 'axios';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,6 +18,7 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React from "react";
+import Link from 'next/link';
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -25,7 +27,7 @@ const accountFormSchema = z.object({
     .string()
     .min(2, "Campaign Name must be at least 2 characters.")
     .max(50, "Campaign Name must not be longer than 50 characters."),
-  campaignType: z.enum(["Outbound", "Inbound", "Nurturing"], {
+  campaignType: z.enum(["Outbound", "Inbouncd", "Nurturing"], {
     required_error: "Please select a campaign type.",
   }),
   dailyOutreach: z.preprocess(
@@ -65,14 +67,49 @@ const defaultValues: Partial<AccountFormValues> = {
   // dob: new Date("2023-01-23"),
 };
 
-export function SchedulingForm() {
+export function SchedulingForm({type}: {type: string}) {
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues,
   });
 
-  function onSubmit(data: AccountFormValues) {
+  async function onSubmit(data: AccountFormValues) {
+    if (type === "create") {
+      try {
+        const apiRequestBody = {
+          campaign_name: data.campaignName,
+          status: "Active", 
+          start_date: "2024-02-01",
+          end_date: "2024-03-01",
+          // user_id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c", 
+          schedule_type: "Weekly",
+          start_time: data.schedule.mondayStartTime || "", 
+          end_time: data.schedule.fridayEndTime || "", 
+          days_of_week: "Mon,Tue,Wed,Thu,Fri", 
+          // description: "Launching our new product line", 
+          // additional_details: "Focused on regions with high engagement", 
+        };
+
+        // const response = await axios.post('http://localhost:3000/v2/campaigns/', apiRequestBody);
+    
+        // console.log('Success:', response.data);
+
+        localStorage.setItem('campaignId', "9b0660ce-7333-4315-aa3f-e9b0ed6653c4");
+        
+        let formsTracker = JSON.parse(localStorage.getItem('formsTracker') || '{}');
+        formsTracker.schedulingBudget = true;
+        localStorage.setItem('formsTracker', JSON.stringify(formsTracker));
+      } catch (error) {
+        console.error('Failure:', error);
+        toast({
+          title: "Error updating campaign",
+          description: "There was an error updating your campaign. Please try again.",
+        });
+      }
+    }
+
     console.log("Data: ", data);
+
     toast({
       title: "You submitted the following values:",
       description: (
@@ -85,7 +122,7 @@ export function SchedulingForm() {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mb-5">
         <FormField
           control={form.control}
           name="campaignName"
@@ -199,7 +236,16 @@ export function SchedulingForm() {
           </div>
         ))}
 
-        <Button type="submit">Update Campaign</Button>
+        <Button type="submit">
+          {/* {
+            type === "create" ?
+            <a href="/dashboard/campaign/create">
+              Add Campagin
+            </a> :
+            "Update Campagin"
+          } */}
+          {type === "create" ? "Add" : "Update"} Campaign
+          </Button>
       </form>
     </Form>
   );

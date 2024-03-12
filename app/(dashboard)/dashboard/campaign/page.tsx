@@ -7,6 +7,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { Activity, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
@@ -52,13 +58,20 @@ export default function Page() {
               />
 
               <div className="flex justify-between items-center flex-1 px-5">
-                <p className="text-sm font-medium leading-none truncate w-full max-w-72">
-                  {campaignItem?.campaignName} ksanaoiin asinaos asonasi Lorem
-                  ipsum dolor sit amet consectetur adipisicing elit. Deleniti
-                  quo asperiores quis, beatae magnam reiciendis nobis ipsam
-                  tenetur distinctio iste, officia eaque. Nobis, eum ut ex ab
-                  explicabo pariatur culpa.
-                </p>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <p className="text-sm font-medium leading-none truncate w-full max-w-72">
+                        {campaignItem?.campaignName}
+                      </p>
+                    </TooltipTrigger>
+                    <TooltipContent >
+                      <p className="text-sm font-medium leading-none">
+                        {campaignItem?.campaignName}
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               </div>
 
               <div className="flex justify-between items-center">
@@ -68,7 +81,7 @@ export default function Page() {
                   className="shrink-0 bg-border w-[1px] mr-2 ml-4 h-6"
                 ></div>
 
-                {/* <ScrollArea className="w-96 whitespace-nowrap rounded-md border"> */}
+                {/* <ScrollArea className="w-[28rem] whitespace-nowrap rounded-md border p-3"> */}
                 <div className="flex justify-between w-auto mx-5">
                   {campaignItem.analytics &&
                     Object.entries(campaignItem.analytics).map(
@@ -93,7 +106,7 @@ export default function Page() {
                   className="shrink-0 bg-border w-[1px] ml-2 mr-4 h-6"
                 ></div>
 
-                <p className="text-xs text-muted-foreground w-14">
+                <p className="text-xs text-muted-foreground w-14 mr-2">
                   {new Date(campaignItem.createdAt).toLocaleTimeString([], {
                     hour: "2-digit",
                     minute: "2-digit",
