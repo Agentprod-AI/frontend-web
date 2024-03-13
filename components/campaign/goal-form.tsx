@@ -43,29 +43,16 @@ const dummyEmails = [
     "jason.roberts@nomail.com",
 ]
 
-const dummyLinks = [
-    "https://calendly.com/dummyuser1/consultation",
-    "https://calendly.com/dummyuser2/30min",
-    "https://calendly.com/dummyuser3/introduction-call",
-    "https://calendly.com/dummyuser4/team-meeting",
-    "https://calendly.com/dummyuser5/product-demo",
-    "https://calendly.com/dummyuser6/strategy-session",
-    "https://calendly.com/dummyuser7/quick-chat",
-    "https://calendly.com/dummyuser8/client-onboarding",
-    "https://calendly.com/dummyuser9/networking",
-    "https://calendly.com/dummyuser10/feedback-session"
-]
-
-// Update the Zod schema to reflect that followUps is just an array of numbers
 const goalFormSchema = z.object({
   goal: z.string(),
   schedulingLink: z.string().url(), 
-  emails: z.array(z.string()).refine((value) => value.length > 0, {
-    message: "You have to select at least one email.",
-  }),
-  calendlyLinks: z.array(z.string()).refine((value) => value.length > 0, {
-    message: "You have to select at least one Calendly link.",
-  }),
+  emails: z.array(z.object({
+    value: z.string().url()
+  }))
+  // .refine((value) => value.some((item) => item), {
+  //   message: "You have to select at least one item.",
+  // })
+  ,
   followUps: z.array(z.object({
     value: z.union([z.number(), z.undefined()]),
   })),
@@ -75,7 +62,7 @@ const goalFormSchema = z.object({
 type GoalFormValues = z.infer<typeof goalFormSchema>;
 
 const defaultValues: Partial<GoalFormValues> = {
-  // followUps: [{ value: undefined }, { value: undefined }]
+  followUps: [{ value: undefined }, { value: undefined }]
 };
 
 export function GoalForm() {
@@ -91,27 +78,35 @@ export function GoalForm() {
     name: 'emails',
   });
 
-  // Field array for calendlyLinks
-  const { fields: calendlyFields, append: appendCalendlyLink, remove: removeCalendlyLink } = useFieldArray({
-    control,
-    name: 'calendlyLinks',
-  });
-
-  // Field array for followUps
   const { fields: followUpFields, append: appendFollowUp, remove: removeFollowUp } = useFieldArray({
     control,
     name: 'followUps',
   });
 
-  const onAppend = () => {
+  const onFollowUpAppend = () => {
     if (followUpFields.length < 5) {
       appendFollowUp({ value: undefined });
     }
   };
 
-  const onRemove = (index: number) => {
-    if (followUpFields.length > 2) { // Ensure minimum two inputs
+  const onFollowUpRemove = (index: number) => {
+    if (followUpFields.length > 2) { 
       removeFollowUp(index);
+    }
+  };
+
+  const onEmailAppend = (email: string) => {
+    // Check if the email is not already present to avoid duplicates
+    if (!emailFields.some(emailField => emailField.value === email)) {
+      appendEmail({ value: email });
+    }
+  };
+  
+  const onEmailRemove = (email: string) => {
+    // Find the index of the email object to remove
+    const indexToRemove = emailFields.findIndex(emailField => emailField.value === email);
+    if (indexToRemove !== -1) {
+      removeEmail(indexToRemove);
     }
   };
 
@@ -197,114 +192,55 @@ export function GoalForm() {
           )}
         />
 
-        <div>
-            <FormLabel>Sender Email</FormLabel>
-            <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
-
-            <div className="flex gap-4 mt-3">
-              <FormField
-              control={form.control}
-              name="emails"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormControl>
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="flex items-center justify-center space-x-3">
-                          <span>Select Email</span>
-                          <ChevronDown size={20} />
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="w-max">
-                        <ScrollArea className="h-60">
-                          <DropdownMenuGroup>
-                            {dummyEmails &&
-                              dummyEmails?.map((email, index) => (
-                                <div key={index}>
-                                  <DropdownMenuItem key={index}>
-                                    <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
-                                    <Checkbox
-                                      checked={emailFields.some((field) => field.email === email)}
-                                      onChange={(e) => {
-                                        if (e.target.checked) {
-                                          appendEmail({ email });
-                                        } else {
-                                          const index = emailFields.findIndex((field) => field.email === email);
-                                          removeEmail(index);
-                                        }
-                                      }}
-                                    />
-                                        <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                          {email}
-                                        </label>
-                                    </div>
-                                  </DropdownMenuItem>
-                                  {index !== dummyEmails.length - 1 && (
-                                    <DropdownMenuSeparator />)}
-                                </div>
-                            ))}
-                          </DropdownMenuGroup>
-                        </ScrollArea>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </FormControl>
-                <FormMessage/>
-              </FormItem>
-              )}
-              />  
-
-              <FormField
-              control={form.control}
-              name="calendlyLinks"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                <FormControl>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button variant="outline" className="flex items-center justify-center space-x-3">
-                        <span>Select Calendly Link</span>
-                        <ChevronDown size={20} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-max">
-                      <ScrollArea className="h-60">
-                        <DropdownMenuGroup>
-                          {dummyLinks && dummyLinks.map((link, index) => (
-                            <div key={index}>
-                              <DropdownMenuItem key={index}>
-                                <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
-                                <Checkbox
-                                  checked={calendlyFields.some((field) => field.calendlyLink === link)}
-                                  onChange={(e) => {
-                                    if (e.target.checked) {
-                                      appendCalendlyLink({ calendlyLink: link });
-                                    } else {
-                                      const index = calendlyFields.findIndex((field) => field.calendlyLink === link);
-                                      removeCalendlyLink(index);
-                                    }
-                                  }}
-                                />
-                                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    {link}
-                                  </label>
-                                </div>
-                              </DropdownMenuItem>
-                              {index !== dummyEmails.length - 1 && (
-                                <DropdownMenuSeparator />
-                              )}
-                            </div>
-                          ))}
-                        </DropdownMenuGroup>
-                      </ScrollArea>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </FormControl>
-                <FormMessage/>
-              </FormItem>
-              )}
-              />  
-            </div>  
-        </div> 
+        <FormField
+          control={form.control}
+          name="emails"
+          render={({field}) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Sender Email</FormLabel>
+              <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
+              <FormControl>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="outline" className="flex items-center justify-center space-x-3">
+                      <span>Select Email</span>
+                      <ChevronDown size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-max">
+                    <ScrollArea className="h-60">
+                      <DropdownMenuGroup>
+                        {dummyEmails && dummyEmails.map((email, index) => {
+                          console.log(form.control._fields.emails)
+                          return (
+                            <DropdownMenuItem key={index}>
+                              <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
+                              <Checkbox
+                                checked={emailFields.some(emailField => emailField.value === email)}
+                                onCheckedChange={(checked) => {
+                                  if (checked) {
+                                    onEmailAppend(email);
+                                  } else {
+                                    onEmailRemove(email);
+                                  }
+                                }}
+                              />
+                                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                  {email}
+                                </label>
+                              </div>
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </DropdownMenuGroup>
+                    </ScrollArea>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <FormField
           control={form.control}
@@ -325,14 +261,14 @@ export function GoalForm() {
                     />
                   </FormControl>
                   {followUpFields.length > 2 && (
-                    <Button type="button" variant="outline" className="w-max" onClick={() => onRemove(index)}>
+                    <Button type="button" variant="outline" className="w-max" onClick={() => onFollowUpRemove(index)}>
                       <Minus size={14}/>
                     </Button>
                   )}
                 </div>
               ))}
               {followUpFields.length < 5 && (
-                <Button type="button" variant="outline" className="w-max" onClick={onAppend}>
+                <Button type="button" variant="outline" className="w-max" onClick={onFollowUpAppend}>
                   <Plus size={14}/>
                 </Button>
               )}
