@@ -19,6 +19,7 @@ import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React from "react";
 import Link from 'next/link';
+import { useCreateCampaign } from '@/hooks/useCampaign';
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -27,7 +28,7 @@ const accountFormSchema = z.object({
     .string()
     .min(2, "Campaign Name must be at least 2 characters.")
     .max(50, "Campaign Name must not be longer than 50 characters."),
-  campaignType: z.enum(["Outbound", "Inbouncd", "Nurturing"], {
+  campaignType: z.enum(["Outbound", "Inbound", "Nurturing"], {
     required_error: "Please select a campaign type.",
   }),
   dailyOutreach: z.preprocess(
@@ -73,52 +74,14 @@ export function SchedulingForm({type}: {type: string}) {
     defaultValues,
   });
 
-  async function onSubmit(data: AccountFormValues) {
-    if (type === "create") {
-      try {
-        const apiRequestBody = {
-          campaign_name: data.campaignName,
-          status: "Active", 
-          start_date: "2024-02-01",
-          end_date: "2024-03-01",
-          // user_id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c", 
-          schedule_type: "Weekly",
-          start_time: data.schedule.mondayStartTime || "", 
-          end_time: data.schedule.fridayEndTime || "", 
-          days_of_week: "Mon,Tue,Wed,Thu,Fri", 
-          // description: "Launching our new product line", 
-          // additional_details: "Focused on regions with high engagement", 
-        };
+  const { createCampaign, isLoading, error } = useCreateCampaign();
 
-        // const response = await axios.post('http://localhost:3000/v2/campaigns/', apiRequestBody);
-    
-        // console.log('Success:', response.data);
-
-        localStorage.setItem('campaignId', "9b0660ce-7333-4315-aa3f-e9b0ed6653c4");
-        
-        let formsTracker = JSON.parse(localStorage.getItem('formsTracker') || '{}');
-        formsTracker.schedulingBudget = true;
-        localStorage.setItem('formsTracker', JSON.stringify(formsTracker));
-      } catch (error) {
-        console.error('Failure:', error);
-        toast({
-          title: "Error updating campaign",
-          description: "There was an error updating your campaign. Please try again.",
-        });
-      }
+  const onSubmit = (data: AccountFormValues) => {
+    if(type === "create") {
+      createCampaign(data)
     }
+  };
 
-    console.log("Data: ", data);
-
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
 
   return (
     <Form {...form}>

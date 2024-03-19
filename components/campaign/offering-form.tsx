@@ -26,6 +26,7 @@ import { Input } from "@/components/ui/input";
 // } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
+import { useCreateCampaign } from '@/hooks/useCampaign';
 
 const profileFormSchema = z.object({
   product_offering: z
@@ -44,27 +45,24 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 // This can come from your database or API.
 const defaultValues: Partial<ProfileFormValues> = {};
 
-export function OfferingForm() {
+export function OfferingForm({type}: {type: string}) {
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
     mode: "onChange",
   });
 
+  const { createOffering } = useCreateCampaign();
+
   //   const { fields, append } = useFieldArray({
   //     name: "urls",
   //     control: form.control,
   //   });
 
-  function onSubmit(data: ProfileFormValues) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+  async function onSubmit(data: ProfileFormValues) {
+    if (type === "create") {
+      await createOffering(data);
+    }
   }
 
   return (
