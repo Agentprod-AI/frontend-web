@@ -28,7 +28,7 @@ export default function FieldList({
   fieldsList,
   setFieldsList,
 }: {
-  fieldsList: allFieldsListType;
+  fieldsList: allFieldsListType | any;
   setFieldsList: (val: allFieldsListType) => void;
 }) {
   return (

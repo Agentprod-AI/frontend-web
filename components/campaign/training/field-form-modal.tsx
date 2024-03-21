@@ -41,7 +41,7 @@ export function FieldFormModal({
 }: {
   children: React.ReactNode;
   type: string;
-  fieldsList: allFieldsListType;
+  fieldsList: allFieldsListType | any;
   setFieldsList: (val: allFieldsListType) => void;
   fieldId?: any;
   modalType: "edit" | "add";
@@ -52,16 +52,16 @@ export function FieldFormModal({
     defaultValues: {
       fieldName:
         modalType === "edit"
-          ? fieldsList[type].find((val) => val.id === fieldId)?.val
+          ? fieldsList[type].find((val: any) => val.id === fieldId)?.val
           : "",
       description:
         modalType === "edit"
-          ? fieldsList[type].find((val) => val.id === fieldId)?.description
+          ? fieldsList[type].find((val: any) => val.id === fieldId)?.description
           : "",
       ...(type === "variable" && {
         length:
           modalType === "edit"
-            ? fieldsList[type].find((val) => val.id === fieldId)?.length
+            ? fieldsList[type].find((val: any) => val.id === fieldId)?.length
             : "short",
       }),
     },
@@ -83,7 +83,7 @@ export function FieldFormModal({
       });
     } else {
       const newfieldsList = { ...fieldsList };
-      newfieldsList[type] = newfieldsList[type].map((val) => {
+      newfieldsList[type] = newfieldsList[type].map((val: any) => {
         if (val.id === fieldId) {
           return {
             id: fieldId,

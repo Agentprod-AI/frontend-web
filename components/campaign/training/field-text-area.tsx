@@ -41,7 +41,11 @@ export const Portal = ({ children }: { children?: ReactNode }) => {
     : null;
 };
 
-const FieldTextArea = ({ fieldsList }: { fieldsList: allFieldsListType }) => {
+const FieldTextArea = ({
+  fieldsList,
+}: {
+  fieldsList: allFieldsListType | any;
+}) => {
   const ref = useRef<HTMLDivElement | null>();
   const [target, setTarget] = useState<Range | undefined | null>();
   const [index, setIndex] = useState(0);
@@ -56,7 +60,9 @@ const FieldTextArea = ({ fieldsList }: { fieldsList: allFieldsListType }) => {
   const searchLower = search.toLowerCase();
   const charList = Object.keys(fieldsList).flatMap((key) =>
     fieldsList[key]
-      .filter(({ val }) => val.toLowerCase().startsWith(searchLower))
+      .filter(({ val }: { val: string }) =>
+        val.toLowerCase().startsWith(searchLower)
+      )
       .slice(0, 10)
   );
 
@@ -144,6 +150,7 @@ const FieldTextArea = ({ fieldsList }: { fieldsList: allFieldsListType }) => {
       {target && chars.length > 0 && (
         <Portal>
           <div
+            // @ts-ignore
             ref={ref}
             style={{
               top: "-9999px",
@@ -178,25 +185,25 @@ const FieldTextArea = ({ fieldsList }: { fieldsList: allFieldsListType }) => {
   );
 };
 
-const withMentions = (editor) => {
+const withMentions = (editor: any) => {
   const { isInline, isVoid, markableVoid } = editor;
 
-  editor.isInline = (element) => {
+  editor.isInline = (element: any) => {
     return element.type === "mention" ? true : isInline(element);
   };
 
-  editor.isVoid = (element) => {
+  editor.isVoid = (element: any) => {
     return element.type === "mention" ? true : isVoid(element);
   };
 
-  editor.markableVoid = (element) => {
+  editor.markableVoid = (element: any) => {
     return element.type === "mention" || markableVoid(element);
   };
 
   return editor;
 };
 
-const insertMention = (editor, character) => {
+const insertMention = (editor: any, character: any) => {
   const mention: MentionElement = {
     type: "mention",
     character,
@@ -208,7 +215,7 @@ const insertMention = (editor, character) => {
 
 // Borrow Leaf renderer from the Rich Text example.
 // In a real project you would get this via `withRichText(editor)` or similar.
-const Leaf = ({ attributes, children, leaf }) => {
+const Leaf = ({ attributes, children, leaf }: any) => {
   if (leaf.bold) {
     children = <strong>{children}</strong>;
   }
@@ -228,7 +235,7 @@ const Leaf = ({ attributes, children, leaf }) => {
   return <span {...attributes}>{children}</span>;
 };
 
-const Element = (props) => {
+const Element = (props: any) => {
   const { attributes, children, element } = props;
   switch (element.type) {
     case "mention":
@@ -238,7 +245,7 @@ const Element = (props) => {
   }
 };
 
-const Mention = ({ attributes, children, element }) => {
+const Mention = ({ attributes, children, element }: any) => {
   const selected = useSelected();
   const focused = useFocused();
   const style: React.CSSProperties = {
@@ -274,7 +281,7 @@ const Mention = ({ attributes, children, element }) => {
   );
 };
 
-const initialValue: Descendant[] = [
+const initialValue: any[] = [
   //   {
   //     type: "paragraph",
   //     children: [
