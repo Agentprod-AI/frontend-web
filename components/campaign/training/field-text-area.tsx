@@ -20,7 +20,7 @@ import {
 } from "slate-react";
 import ReactDOM from "react-dom";
 import { cn } from "@/lib/utils";
-import { AllVariablesListType } from "../../../app/(dashboard)/dashboard/campaign/[campaignId]/training/page";
+import { allFieldsListType } from "../../../app/(dashboard)/dashboard/campaign/[campaignId]/training/page";
 
 export type CustomText = {
   bold?: boolean;
@@ -41,11 +41,7 @@ export const Portal = ({ children }: { children?: ReactNode }) => {
     : null;
 };
 
-const VariablesTextArea = ({
-  variableList,
-}: {
-  variableList: AllVariablesListType;
-}) => {
+const FieldTextArea = ({ fieldsList }: { fieldsList: allFieldsListType }) => {
   const ref = useRef<HTMLDivElement | null>();
   const [target, setTarget] = useState<Range | undefined | null>();
   const [index, setIndex] = useState(0);
@@ -57,20 +53,12 @@ const VariablesTextArea = ({
     []
   );
 
-  const charList = [
-    ...variableList.variables
-      .filter((c) => c.val.toLowerCase().startsWith(search.toLowerCase()))
-      .slice(0, 10),
-    ...variableList.offering
-      .filter((c) => c.val.toLowerCase().startsWith(search.toLowerCase()))
-      .slice(0, 10),
-    ...variableList.personlized
-      .filter((c) => c.val.toLowerCase().startsWith(search.toLowerCase()))
-      .slice(0, 10),
-    ...variableList.enriched
-      .filter((c) => c.val.toLowerCase().startsWith(search.toLowerCase()))
-      .slice(0, 10),
-  ];
+  const searchLower = search.toLowerCase();
+  const charList = Object.keys(fieldsList).flatMap((key) =>
+    fieldsList[key]
+      .filter(({ val }) => val.toLowerCase().startsWith(searchLower))
+      .slice(0, 10)
+  );
 
   // make chars a list of strings
   const chars = charList.map((c) => c.val);
@@ -316,23 +304,27 @@ const initialValue: Descendant[] = [
   //       },
   //     ],
   //   },
+  // {
+  //   type: "paragraph",
+  //   children: [
+  //     {
+  //       type: "mention",
+  //       character: "R2-D2",
+  //       children: [{ text: "", bold: true }],
+  //     },
+  //     { text: " or " },
+  //     {
+  //       type: "mention",
+  //       character: "Mace Windu",
+  //       children: [{ text: "" }],
+  //     },
+  //     { text: "!" },
+  //   ],
+  // },
   {
     type: "paragraph",
-    children: [
-      {
-        type: "mention",
-        character: "R2-D2",
-        children: [{ text: "", bold: true }],
-      },
-      { text: " or " },
-      {
-        type: "mention",
-        character: "Mace Windu",
-        children: [{ text: "" }],
-      },
-      { text: "!" },
-    ],
+    children: [{ text: "hello!" }],
   },
 ];
 
-export default VariablesTextArea;
+export default FieldTextArea;

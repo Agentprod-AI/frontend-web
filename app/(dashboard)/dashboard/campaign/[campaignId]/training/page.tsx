@@ -6,81 +6,96 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-import VariablesTextArea from "@/components/campaign/training/variables-text-area";
 import { Input } from "@/components/ui/input";
 import { Settings } from "lucide-react";
-import React, { useEffect } from "react";
+import React from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import SubjectForm from "@/components/campaign/training/subject-form";
-import VariableList from "@/components/campaign/training/variable-list";
+import FieldList from "@/components/campaign/training/field-list";
+import FieldTextArea from "@/components/campaign/training/field-text-area";
 
-const allVariablesList: AllVariablesListType = {
-  variables: [
+const allFieldsList: allFieldsListType = {
+  variable: [
     {
       id: 1,
       val: "company name",
+      description: "The name of the company",
+      length: "short",
     },
     {
       id: 2,
       val: "first name",
+      description: "The first name of the customer",
+      length: "automatic",
     },
   ],
   offering: [
     {
       id: 4,
       val: "customer per industry",
+      description: "The industry of the customer",
     },
     {
       id: 5,
       val: "customer per region",
+      description: "The region of the customer",
     },
   ],
-  personlized: [
+  personalized: [
     {
       id: 7,
       val: "customer name",
+      description: "The name of the customer",
     },
     {
       id: 8,
       val: "customer company",
+      description: "The company of the customer",
     },
   ],
   enriched: [
     {
       id: 10,
       val: "enriched",
+      description: "The enriched data",
     },
   ],
 };
 
 // make a type for all variables
-export type AllVariablesListType = {
-  variables: {
+export type allFieldsListType = {
+  variable: {
     id: number;
     val: string;
+    description: string;
+    length: string;
   }[];
   offering: {
     id: number;
     val: string;
+    description: string;
   }[];
-  personlized: {
+  personalized: {
     id: number;
     val: string;
+    description: string;
   }[];
   enriched: {
     id: number;
     val: string;
+    description: string;
   }[];
 };
 
 export default function Training() {
   const [isOpen, setIsOpen] = React.useState(false);
 
-  const [variableList, setVariableList] = React.useState(allVariablesList);
+  const [fieldsList, setFieldsList] =
+    React.useState<allFieldsListType>(allFieldsList);
 
   // useEffect(() => {
   //   setVariableList([
@@ -117,14 +132,17 @@ export default function Training() {
                 <SubjectForm />
               </CollapsibleContent>
             </Collapsible>
-            <VariablesTextArea variableList={variableList} />
+            <FieldTextArea fieldsList={fieldsList} />
+            <span className="text-xs text-gray-500">
+              *use variables like: &#123;variable_name&#125;
+            </span>
           </div>
         </div>
       </ResizablePanel>
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={25}>
         <div className="flex h-full items-center justify-center p-6">
-          <VariableList variableList={variableList} />
+          <FieldList fieldsList={fieldsList} setFieldsList={setFieldsList} />
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
