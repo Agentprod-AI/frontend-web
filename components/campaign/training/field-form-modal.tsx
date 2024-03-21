@@ -28,7 +28,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 const FormSchema = z.object({
   fieldName: z.string(),
   description: z.string(),
-  length: z.enum(["short", "medium", "long", "automatic"]).optional(),
+  length: z.string().optional(),
 });
 
 export function FieldFormModal({
