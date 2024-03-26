@@ -32,12 +32,16 @@ import {
   Mail,
   MessageCircle,
   Radio,
+  Clock,
+  CheckCheck,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
 
 export const Icons = {
   chat: MessageCircle,
+  clock: Clock,
+  checkCheck: CheckCheck,
   campaign: Radio,
   mail: Mail,
   dashboard: LayoutDashboardIcon,

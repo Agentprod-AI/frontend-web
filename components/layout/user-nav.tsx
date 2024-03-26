@@ -13,17 +13,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "../../context/auth-provider";
-// import { signOut, useSession } from "next-auth/react";
+
 export function UserNav() {
-  // const { data: session } = useSession();
-  const { logout } = useAuth();
-  const session = {
-    user: {
-      name: "John Doe",
-      email: "john@gmail.com",
-      image: "https://avatars.dicebear.com/api/avataaars/john.svg",
-    },
-  };
+  const { logout, user } = useAuth();
 
   const logoutUser = async () => {
     await supabaseLogout();
@@ -31,18 +23,20 @@ export function UserNav() {
     // window.location.reload();
   };
 
-  if (session) {
+  if (user?.email) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8">
+            <Avatar className="h-8 w-8 bg-accent">
               <AvatarImage
                 src="/user.png"
                 // src={session.user?.image ?? ""}
-                alt={session.user?.name ?? ""}
+                alt={user?.user_metadata.profile.first_name ?? ""}
               />
-              <AvatarFallback>{session.user?.name?.[0]}</AvatarFallback>
+              <AvatarFallback>
+                {user?.user_metadata.profile.first_name?.[0]}
+              </AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -50,10 +44,12 @@ export function UserNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {session.user?.name}
+                {user?.user_metadata.profile.first_name +
+                  " " +
+                  user?.user_metadata.profile.last_name}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
-                {session.user?.email}
+                {user?.email}
               </p>
             </div>
           </DropdownMenuLabel>

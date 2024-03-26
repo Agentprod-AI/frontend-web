@@ -5,7 +5,7 @@ import { accounts, navItems } from "@/constants/data";
 import { MenuIcon } from "lucide-react";
 import { useState } from "react";
 import { Nav } from "./nav";
-import { AccountSwitcher } from "./account-switcher";
+import { AccountSwitcher } from "../account-switcher";
 import { cn } from "@/lib/utils";
 
 // import { Playlist } from "../data/playlists";
