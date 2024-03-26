@@ -16,10 +16,12 @@ import { useState } from "react";
 
 interface CellActionProps {
   data: Lead | Organization;
+  type?: string;
 }
 
-export const CellAction: React.FC<CellActionProps> = ({ data }) => {
+export const CellAction: React.FC<CellActionProps> = ({ data, type }) => {
   const [loading, setLoading] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
 

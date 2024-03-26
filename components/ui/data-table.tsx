@@ -20,6 +20,9 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { ScrollArea, ScrollBar } from "./scroll-area";
 
+import { useState } from "react";
+import { Ghost, Trash } from "lucide-react";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
@@ -39,6 +42,8 @@ export function DataTable<TData, TValue>({
     getCoreRowModel: getCoreRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
   });
+
+  const [isHovering, setIsHovering] = useState(false);
 
   /* this can be used to get the selectedrows 
   console.log("value", table.getFilteredSelectedRowModel()); */
@@ -79,6 +84,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onMouseEnter={() => setIsHovering(true)}
+                  onMouseLeave={() => setIsHovering(false)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -88,6 +95,14 @@ export function DataTable<TData, TValue>({
                       )}
                     </TableCell>
                   ))}
+                  <Button
+                    variant={"ghost"}
+                    className={`${
+                      isHovering ? "visible" : "invisible"
+                    } p-3  rounded-xl`}
+                  >
+                    <Trash className="h-4 w-4" />
+                  </Button>
                 </TableRow>
               ))
             ) : (

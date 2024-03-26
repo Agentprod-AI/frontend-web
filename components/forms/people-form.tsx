@@ -33,7 +33,8 @@ import axios from "axios";
 import { Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
-// import { toast } from "@/components/ui/use-toast";
+import { ChevronDown, ChevronUp } from "lucide-react";
+
 import {
   orgLocations,
   jobTitles,
@@ -41,6 +42,7 @@ import {
   seniorities,
   InputType,
 } from "./formUtils";
+import { Checkbox } from "@/components/ui/checkbox";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -50,6 +52,12 @@ const FormSchema = z.object({
         text: z.string(),
       })
     )
+    .optional(),
+  q_keywords: z
+    .object({
+      id: z.string(),
+      text: z.string(),
+    })
     .optional(),
   organization_locations: z
     .array(
@@ -75,18 +83,40 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  minimun_company_headcount: z
+  company_headcount: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
+  funding_rounds: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
+  minimun_company_funding: z
     .object({
       id: z.string(),
       text: z.number(),
     })
     .optional(),
-  maximun_company_headcount: z
+  maximun_company_funding: z
     .object({
       id: z.string(),
       text: z.number(),
     })
     .optional(),
+  // prospected_by_current_team: z
+  //   .object({
+  //     id: z.string(),
+  //     text: z.string(),
+  //   })
+  //   .optional(),
   per_page: z
     .object({
       id: z.string(),
@@ -101,11 +131,29 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  prospected_by_current_team: z
-    .object({
-      id: z.string(),
-      text: z.string(),
-    })
+  trading_statuses: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
+  job_locations: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
+  job_offerings: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
     .optional(),
 });
 
@@ -136,16 +184,6 @@ export default function PeopleForm(): JSX.Element {
   >([]);
   const [qOrganizationDomainsTags, setQOrganizationDomainsTags] =
     React.useState<Tag[]>([]);
-  const [minimumCompanyHeadcount, setMinimumCompanyHeadcount] =
-    React.useState<InputType>({
-      id: "",
-      text: 0,
-    });
-  const [maximumCompanyHeadcount, setMaximumCompanyHeadcount] =
-    React.useState<InputType>({
-      id: "",
-      text: 0,
-    });
   const [personTitlesTags, setPersonTitlesTags] = React.useState<Tag[]>([]);
   const [perPage, setPerPage] = React.useState<InputType>({
     id: "",
@@ -154,11 +192,35 @@ export default function PeopleForm(): JSX.Element {
 
   const [emailStatus, setEmailStatus] = React.useState<Tag[]>([]);
 
-  const [prospectedByCurrentTeam, setProspectedByCurrentTeam] =
+  // const [prospectedByCurrentTeam, setProspectedByCurrentTeam] =
+  //   React.useState<InputType>({
+  //     id: "",
+  //     text: "",
+  //   });
+
+  const [checkedFundingRounds, setCheckedFundingRounds] = React.useState<
+    string[]
+  >([""]);
+
+  const [checkedCompanyHeadcount, setCheckedCompanyHeadcount] =
+    React.useState<string[]>();
+
+  const [minimumCompanyFunding, setMinimumCompanyFunding] =
     React.useState<InputType>({
       id: "",
-      text: "",
+      text: 0,
     });
+
+  const [maximumCompanyFunding, setMaximumCompanyFunding] =
+    React.useState<InputType>({
+      id: "",
+      text: 0,
+    });
+  const [tradingStatusTags, setTradingStatusTags] = React.useState<Tag[]>([]);
+
+  const [jobLocationTags, setJobLocationTags] = React.useState<Tag[]>([]);
+  const [jobOfferingTags, setJobOfferingTags] = React.useState<Tag[]>([]);
+
   const { setValue } = form;
 
   interface Data {
@@ -167,10 +229,12 @@ export default function PeopleForm(): JSX.Element {
     person_seniorities: { id: string; text: string }[] | undefined;
     person_titles: { id: string; text: string }[] | undefined;
     email_status: { id: string; text: string }[] | undefined;
-    minimum_company_headcount: { id: string; text: number } | undefined;
-    maximum_company_headcount: { id: string; text: number } | undefined;
+    company_headcount: { id: string; text: string }[] | undefined;
     per_page: { id: string; text: number } | undefined;
-    prospected_by_current_team: { id: string; text: string } | undefined;
+    // prospected_by_current_team: { id: string; text: string } | undefined;
+    q_keywords: { id: string; text: string } | undefined;
+    job_locations: { id: string; text: string }[] | undefined;
+    job_offerings: { id: string; text: string }[] | undefined;
   }
 
   // Assuming prevInputValues is a useRef with the initial structure
@@ -184,14 +248,16 @@ export default function PeopleForm(): JSX.Element {
     // convert all arrays object to array of strings
     const formData = {
       q_organization_domains: data.q_organization_domains,
+      q_keywords: data.q_keywords,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
-      minimum_company_headcount: data.minimun_company_headcount,
-      maximum_company_headcount: data.maximun_company_headcount,
+      company_headcount: data.company_headcount,
       person_titles: data.person_titles,
       per_page: data.per_page,
       email_status: data.email_status,
-      prospected_by_current_team: data.prospected_by_current_team,
+      // prospected_by_current_team: data.prospected_by_current_team,
+      job_locations: data.job_locations,
+      job_offerings: data.job_offerings,
     };
 
     let shouldCallAPI = false;
@@ -202,6 +268,17 @@ export default function PeopleForm(): JSX.Element {
       ? Math.ceil(formData.per_page?.text / 100)
       : 1;
 
+    let headcounts: string[] = [];
+    const companyHeadcounts = () => {
+      checkedCompanyHeadcount?.map((headcount) => {
+        headcounts.push(headcount.split("-").join(","));
+      });
+
+      return headcounts;
+    };
+
+    console.log(formData.company_headcount);
+
     const body = {
       ...(pages && { page: pages }), // Only include if pages is truthy
       ...(formData.per_page?.text && {
@@ -210,9 +287,10 @@ export default function PeopleForm(): JSX.Element {
             ? Math.ceil(formData.per_page?.text / pages)
             : formData.per_page.text,
       }),
-      ...(formData.prospected_by_current_team?.text && {
-        prospected_by_current_team: [formData.prospected_by_current_team.text],
-      }),
+      prospected_by_current_team: ["No"],
+      // ...(formData.prospected_by_current_team?.text && {
+      //   prospected_by_current_team: [formData.prospected_by_current_team.text],
+      // }),
       ...(formData.person_titles && {
         person_titles: formData.person_titles
           .map((tag) => tag.text)
@@ -223,12 +301,7 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...(formData.minimum_company_headcount?.text &&
-        formData.maximum_company_headcount?.text && {
-          organization_num_employees_ranges: [
-            `${formData.minimum_company_headcount.text},${formData.maximum_company_headcount.text}`,
-          ],
-        }),
+      ...{ organization_num_employees_ranges: companyHeadcounts() },
       ...(formData.person_seniorities && {
         person_seniorities: formData.person_seniorities
           .map((tag) => tag.text.toLowerCase())
@@ -245,16 +318,26 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
+      ...(formData.job_locations && {
+        job_locations: formData.job_locations
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
+      ...(formData.job_offerings && {
+        job_offerings: formData.job_offerings
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
     };
+    console.log(body);
 
     if (
-      prevInputValues.current?.minimum_company_headcount?.text !==
-        formData.minimum_company_headcount?.text ||
-      prevInputValues.current?.maximum_company_headcount?.text !==
-        formData.maximum_company_headcount?.text ||
-      prevInputValues.current?.per_page?.text !== body.per_page ||
-      prevInputValues.current?.prospected_by_current_team?.text !==
-        body.prospected_by_current_team?.[0]
+      prevInputValues.current?.company_headcount?.toString() !==
+        formData.company_headcount?.toString() ||
+      prevInputValues.current?.per_page?.text !== body.per_page
+      // ||
+      // prevInputValues.current?.prospected_by_current_team?.text !==
+      //   body.prospected_by_current_team?.[0]
     ) {
       shouldCallAPI = true;
       console.log("foo");
@@ -276,7 +359,13 @@ export default function PeopleForm(): JSX.Element {
         .toString() !== body.person_titles?.toString() ||
       prevInputValues.current?.email_status
         ?.map((tag) => tag.text)
-        .toString() !== body.email_status?.toString()
+        .toString() !== body.email_status?.toString() ||
+      prevInputValues.current?.job_locations
+        ?.map((tag) => tag.text)
+        .toString() !== body.job_locations?.toString() ||
+      prevInputValues.current?.job_offerings
+        ?.map((tag) => tag.text)
+        .toString() !== body.job_offerings?.toString()
     ) {
       shouldCallAPI = true;
       console.log("bar");
@@ -285,6 +374,9 @@ export default function PeopleForm(): JSX.Element {
     if (formData) {
       prevInputValues.current = formData;
     }
+
+    // console.log("body", body);
+    // console.log("prevInputValues", prevInputValues);
 
     // const body = {
     //   q_organization_domains: "apollo.io\ngoogle.com",
@@ -351,6 +443,62 @@ export default function PeopleForm(): JSX.Element {
     }
   };
 
+  const [dropdownsOpen, setDropdownsOpen] = useState({
+    currentEmployment: false,
+    revenueFunding: false,
+    orgLocations: false,
+    advanced: false,
+    funding: false,
+    headcount: false,
+  });
+  const toggleDropdown = (id: string) => {
+    setDropdownsOpen((prev) => ({
+      ...prev,
+      [id]: !prev[id as keyof typeof prev],
+    }));
+  };
+
+  const min = 0;
+  const [leadsNum, setLeadsNum] = useState<number>(0);
+
+  const increment = () => setLeadsNum((prev) => prev + 1);
+  const decrement = () => setLeadsNum((prev) => Math.max(min, prev - 1));
+
+  type CheckboxOptions = {
+    name: string;
+    checked: boolean;
+  };
+
+  const fundingRounds: CheckboxOptions[] = [
+    { name: "Seed", checked: false },
+    { name: "Venture (Round not Specified)", checked: false },
+    { name: "Series A", checked: false },
+    { name: "Series B", checked: false },
+    { name: "Series C", checked: false },
+    { name: "Series D", checked: false },
+    { name: "Series E", checked: false },
+    { name: "Series F", checked: false },
+    { name: "Debt Financing", checked: false },
+    { name: "Equity Crowdfunding", checked: false },
+    { name: "Convertible Note", checked: false },
+    { name: "Private Equity", checked: false },
+    { name: "Other", checked: false },
+  ];
+
+  const companyHeadcountOptions: CheckboxOptions[] = [
+    { name: "1-10", checked: false },
+    { name: "11-20", checked: false },
+    { name: "21-50", checked: false },
+    { name: "51-100", checked: false },
+    { name: "101-200", checked: false },
+    { name: "201-500", checked: false },
+    { name: "501-1000", checked: false },
+    { name: "1001-2000", checked: false },
+    { name: "2001-5000", checked: false },
+    { name: "5001-10000", checked: false },
+    { name: "10000+", checked: false },
+  ];
+
   return (
     <Form {...form}>
       <form
@@ -364,200 +512,421 @@ export default function PeopleForm(): JSX.Element {
               Preview
             </TabsTrigger>
           </TabsList>
-          <TabsContent value="tab1" className="space-y-4">
-            <Accordion className="flex flex-col" type="single" collapsible>
-              <AccordionItem className="my-2" value="current-employment">
-                <AccordionTrigger>Current Employment</AccordionTrigger>
-                <AccordionContent>
-                  <FormField
-                    control={form.control}
-                    name="q_organization_domains"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col items-start mx-1 mb-4">
-                        <FormLabel className="text-left">
-                          Company Domains
-                        </FormLabel>
-                        <FormControl>
-                          <TagInput
-                            {...field}
-                            tags={qOrganizationDomainsTags}
-                            placeholder="Enter company domain"
-                            className="sm:min-w-[450px]"
-                            setTags={(newTags) => {
-                              setQOrganizationDomainsTags(newTags);
-                              setValue(
-                                "q_organization_domains",
-                                newTags as [Tag, ...Tag[]]
-                              );
-                            }}
-                          />
-                        </FormControl>
-                        <FormDescription>
-                          These are the company domains that you&apos;re
-                          interested in.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+
+          <TabsContent value="tab1" className="space-y-2">
+            <div className="bg-muted px-2 rounded">
+              <div
+                className="flex justify-between w-full py-3 cursor-pointer"
+                onClick={() => toggleDropdown("currentEmployment")}
+              >
+                <div className="text-sm">Current employment</div>
+                {dropdownsOpen.currentEmployment ? (
+                  <ChevronUp color="#000000" />
+                ) : (
+                  <ChevronUp
+                    color="#000000"
+                    className="transition-transform duration-200 transform rotate-180"
                   />
-                  <div className="flex w-full justify-between">
-                    <div className="my-3 w-1/2">
-                      <FormField
-                        control={form.control}
-                        name="person_seniorities"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col items-start mx-1 my-4">
-                            <FormLabel className="text-left">
-                              Seniorities
-                            </FormLabel>
-                            <FormControl>
-                              <TagInput
-                                {...field}
-                                dropdown={true}
-                                dropdownPlaceholder="Enter a seniority"
-                                dropdownOptions={seniorities}
-                                tags={personSenioritiesTags}
-                                className="sm:min-w-[450px]"
-                                setTags={(newTags) => {
-                                  setPersonSenioritiesTags(newTags);
-                                  setValue(
-                                    "person_seniorities",
-                                    newTags as [Tag, ...Tag[]]
+                )}
+              </div>
+              <div
+                className={`${
+                  dropdownsOpen.currentEmployment ? "block" : "hidden"
+                }`}
+              >
+                <FormField
+                  control={form.control}
+                  name="q_organization_domains"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start py-4 w-8/12">
+                      <FormLabel className="text-left">
+                        Company Domains
+                      </FormLabel>
+                      <FormControl>
+                        <TagInput
+                          {...field}
+                          tags={qOrganizationDomainsTags}
+                          placeholder="Enter company domain"
+                          variant={"base"}
+                          className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                          setTags={(newTags) => {
+                            setQOrganizationDomainsTags(newTags);
+                            setValue(
+                              "q_organization_domains",
+                              newTags as [Tag, ...Tag[]]
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      {/* <FormDescription>
+                        These are the company domains that you&apos;re
+                        interested in.
+                      </FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="person_seniorities"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start py-4 w-8/12">
+                      <FormLabel className="text-left">
+                        Management Positions
+                      </FormLabel>
+                      <FormControl>
+                        <TagInput
+                          {...field}
+                          dropdown={true}
+                          dropdownPlaceholder="Add management postitions"
+                          dropdownOptions={seniorities}
+                          tags={personSenioritiesTags}
+                          variant={"base"}
+                          className="sm:min-w-[450px] bg-white/90 text-black"
+                          setTags={(newTags) => {
+                            setPersonSenioritiesTags(newTags);
+                            setValue(
+                              "person_seniorities",
+                              newTags as [Tag, ...Tag[]]
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      {/* <FormDescription>
+                        These are the seniorities that you&apos;re interested
+                        in.
+                      </FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="person_titles"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start py-4 w-8/12">
+                      <FormLabel className="text-left">
+                        Current Job Title
+                      </FormLabel>
+                      <FormControl>
+                        <TagInput
+                          {...field}
+                          dropdown={true}
+                          dropdownPlaceholder="Enter a job title"
+                          dropdownOptions={jobTitles}
+                          tags={personTitlesTags}
+                          variant={"base"}
+                          className="sm:min-w-[450px]"
+                          setTags={(newTags) => {
+                            setPersonTitlesTags(newTags);
+                            setValue(
+                              "person_titles",
+                              newTags as [Tag, ...Tag[]]
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      {/* <FormDescription>
+                        These are the job titles that you&apos;re interested in.
+                      </FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="bg-muted px-2 rounded">
+              <FormField
+                control={form.control}
+                name="company_headcount"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start">
+                    <FormLabel
+                      className="flex justify-between font-normal w-full py-3 cursor-pointer items-center text-left"
+                      onClick={() => toggleDropdown("headcount")}
+                    >
+                      <div>Company Headcount</div>
+                      {dropdownsOpen.headcount ? (
+                        <ChevronUp color="#000000" />
+                      ) : (
+                        <ChevronUp
+                          color="#000000"
+                          className="transition-transform duration-200 transform rotate-180"
+                        />
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      <div
+                        className={`${
+                          dropdownsOpen.headcount ? "block" : "hidden"
+                        }`}
+                      >
+                        {companyHeadcountOptions.map((round, index) => (
+                          <div className="text-sm flex items-center mb-3">
+                            <Checkbox
+                              {...field}
+                              className="mr-2"
+                              checked={checkedCompanyHeadcount?.includes(
+                                round.name
+                              )}
+                              onCheckedChange={(e) => {
+                                if (e.valueOf()) {
+                                  setCheckedCompanyHeadcount([
+                                    ...(checkedCompanyHeadcount
+                                      ? checkedCompanyHeadcount
+                                      : []),
+                                    round.name,
+                                  ]);
+                                } else {
+                                  setCheckedCompanyHeadcount(
+                                    checkedCompanyHeadcount?.filter(
+                                      (item) => item !== round.name
+                                    )
                                   );
-                                }}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              These are the seniorities that you&apos;re
-                              interested in.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
+                                }
+                              }}
+                              key={index}
+                              value={round.name}
+                            />
+                            {round.name}
+                          </div>
+                        ))}
+                      </div>
+                    </FormControl>
+                    {/* <FormDescription>
+                      This is headcount of the company that you&apos;re
+                      interested in.
+                    </FormDescription> */}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="bg-muted px-2 rounded">
+              <div
+                className="flex justify-between w-full py-3 cursor-pointer"
+                onClick={() => toggleDropdown("revenueFunding")}
+              >
+                <div className="text-sm">Revenue and funding</div>
+                {dropdownsOpen.revenueFunding ? (
+                  <ChevronUp color="#000000" />
+                ) : (
+                  <ChevronUp
+                    color="#000000"
+                    className="transition-transform duration-200 transform rotate-180"
+                  />
+                )}
+              </div>
+              <div
+                className={`${
+                  dropdownsOpen.revenueFunding ? "block" : "hidden"
+                }`}
+              >
+                <FormField
+                  control={form.control}
+                  name="funding_rounds"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start py-4 w-8/12">
+                      <FormLabel
+                        className="w-full text-left h-1 my-2 flex items-center"
+                        onClick={() => toggleDropdown("funding")}
+                      >
+                        <div>Funding rounds</div>
+                        {dropdownsOpen.funding ? (
+                          <ChevronUp
+                            width="15"
+                            color="#000000"
+                            className="ml-2"
+                          />
+                        ) : (
+                          <ChevronUp
+                            width={15}
+                            color="#000000"
+                            className="ml-2 transition-transform duration-200 transform rotate-180"
+                          />
                         )}
-                      />
-                    </div>
-                    <div className="my-3 w-1/2">
+                      </FormLabel>
+                      <FormControl>
+                        <div
+                          className={`${
+                            dropdownsOpen.funding ? "block" : "hidden"
+                          }`}
+                        >
+                          {fundingRounds.map((round, index) => (
+                            <div className="text-sm flex items-center mb-3">
+                              <Checkbox
+                                {...field}
+                                className="mr-2"
+                                checked={checkedFundingRounds.includes(
+                                  round.name
+                                )}
+                                onCheckedChange={(e) => {
+                                  if (e.valueOf()) {
+                                    setCheckedFundingRounds([
+                                      ...checkedFundingRounds,
+                                      round.name,
+                                    ]);
+                                  } else {
+                                    setCheckedFundingRounds(
+                                      checkedFundingRounds.filter(
+                                        (item) => item !== round.name
+                                      )
+                                    );
+                                  }
+                                }}
+                                key={index}
+                                value={round.name}
+                              />
+                              {round.name}
+                            </div>
+                          ))}
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <div className="w-1/2">
+                  <div className="text-sm font-medium">
+                    Total Company Funding
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <FormField
+                      control={form.control}
+                      name="minimun_company_funding"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start mx-1 my-4">
+                          {/* <FormLabel className="text-left">Min</FormLabel> */}
+                          <FormControl>
+                            <Input
+                              placeholder="Min"
+                              className="sm:min-w-[300px] w-2/3 bg-white"
+                              value={
+                                minimumCompanyFunding.text
+                                  ? minimumCompanyFunding.text
+                                  : ""
+                              }
+                              onChange={(e) => {
+                                const numericValue = Number(e.target.value);
+                                if (!isNaN(numericValue)) {
+                                  const newValue = {
+                                    ...minimumCompanyFunding,
+                                    text: numericValue,
+                                  };
+                                  setMinimumCompanyFunding(newValue); // Update local state
+                                  field.onChange(newValue); // Notify React Hook Form of the change
+                                }
+                              }}
+                            />
+                          </FormControl>
+                          {/* <FormDescription>
+                            This is the minimun funding of the company that
+                            you&apos;re interested in.
+                          </FormDescription> */}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="w-1/2">
                       <FormField
                         control={form.control}
-                        name="person_titles"
+                        name="maximun_company_funding"
                         render={({ field }) => (
                           <FormItem className="flex flex-col items-start mx-1 my-4">
-                            <FormLabel className="text-left">
-                              Job Titles
-                            </FormLabel>
+                            {/* <FormLabel className="text-left">Max</FormLabel> */}
                             <FormControl>
-                              <TagInput
-                                {...field}
-                                dropdown={true}
-                                dropdownPlaceholder="Enter a job title"
-                                dropdownOptions={jobTitles}
-                                tags={personTitlesTags}
-                                className="sm:min-w-[450px]"
-                                setTags={(newTags) => {
-                                  setPersonTitlesTags(newTags);
-                                  setValue(
-                                    "person_titles",
-                                    newTags as [Tag, ...Tag[]]
-                                  );
+                              <Input
+                                placeholder="Max"
+                                className="sm:min-w-[300px] w-2/3 bg-white"
+                                value={
+                                  maximumCompanyFunding.text
+                                    ? maximumCompanyFunding.text
+                                    : ""
+                                }
+                                onChange={(e) => {
+                                  const numericValue = Number(e.target.value);
+                                  const newValue = {
+                                    ...maximumCompanyFunding,
+                                    text: numericValue,
+                                  };
+                                  setMaximumCompanyFunding(newValue); // Update local state
+                                  field.onChange(newValue); // Notify React Hook Form of the change
                                 }}
                               />
                             </FormControl>
-                            <FormDescription>
-                              These are the job titles that you&apos;re
-                              interested in.
-                            </FormDescription>
+                            {/* <FormDescription>
+                              This is maximun funding of the company that
+                              you&apos;re interested in.
+                            </FormDescription> */}
                             <FormMessage />
                           </FormItem>
                         )}
                       />
                     </div>
                   </div>
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            <Accordion className="flex flex-col" type="single" collapsible>
-              <AccordionItem className="my-2" value="current-employment">
-                <AccordionTrigger>Company information</AccordionTrigger>
-                <AccordionContent>
-                  <div className="flex w-full justify-between">
-                    <div className="my-3 w-1/2">
-                      <FormField
-                        control={form.control}
-                        name="minimun_company_headcount"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col items-start mx-1 my-4">
-                            <FormLabel className="text-left">
-                              Minimum Company Headcount
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Minimum"
-                                className="sm:min-w-[450px] w-2/3"
-                                value={minimumCompanyHeadcount.text}
-                                onChange={(e) => {
-                                  const numericValue = Number(e.target.value);
-                                  const newValue = {
-                                    ...minimumCompanyHeadcount,
-                                    text: numericValue,
-                                  };
-                                  setMinimumCompanyHeadcount(newValue); // Update local state
-                                  field.onChange(newValue); // Notify React Hook Form of the change
-                                }}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              This is the minimun headcount of the company that
-                              you&apos;re interested in.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                    <div className="my-3 w-1/2">
-                      <FormField
-                        control={form.control}
-                        name="maximun_company_headcount"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col items-start mx-1 my-4">
-                            <FormLabel className="text-left">
-                              Maximun Company Headcount
-                            </FormLabel>
-                            <FormControl>
-                              <Input
-                                placeholder="Maximun"
-                                className="sm:min-w-[450px] w-2/3"
-                                value={maximumCompanyHeadcount.text}
-                                onChange={(e) => {
-                                  const numericValue = Number(e.target.value);
-                                  const newValue = {
-                                    ...maximumCompanyHeadcount,
-                                    text: numericValue,
-                                  };
-                                  setMaximumCompanyHeadcount(newValue); // Update local state
-                                  field.onChange(newValue); // Notify React Hook Form of the change
-                                }}
-                              />
-                            </FormControl>
-                            <FormDescription>
-                              This is maximun headcount of the company that
-                              you&apos;re interested in.
-                            </FormDescription>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                    </div>
-                  </div>
-                  <FormField
-                    control={form.control}
-                    name="organization_locations"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col items-start mx-1 my-4">
-                        <FormLabel className="text-left">
-                          Company Locations
-                        </FormLabel>
-                        <FormControl>
+                </div>
+                <FormField
+                  control={form.control}
+                  name="trading_statuses"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start py-4 w-8/12">
+                      <FormLabel className="text-left h-1">
+                        Trading status
+                      </FormLabel>
+                      <FormControl>
+                        <TagInput
+                          {...field}
+                          dropdown={true}
+                          dropdownPlaceholder="Add trading statuses"
+                          // dropdownOptions={tradingStatuses}
+                          tags={tradingStatusTags}
+                          variant={"base"}
+                          className="sm:min-w-[450px]"
+                          setTags={(newTags) => {
+                            setTradingStatusTags(newTags);
+                            setValue(
+                              "trading_statuses",
+                              newTags as [Tag, ...Tag[]]
+                            );
+                          }}
+                        />
+                      </FormControl>
+                      {/* <FormDescription>
+                        These are the job titles that you&apos;re interested in.
+                      </FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            </div>
+            <div className="bg-muted px-2 rounded">
+              <FormField
+                control={form.control}
+                name="organization_locations"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start">
+                    <FormLabel
+                      className="w-full font-normal flex justify-between cursor-pointer py-3 "
+                      onClick={() => toggleDropdown("orgLocations")}
+                    >
+                      <div>Company Locations</div>
+                      {dropdownsOpen.orgLocations ? (
+                        <ChevronUp color="#000000" />
+                      ) : (
+                        <ChevronUp
+                          color="#000000"
+                          className="transition-transform duration-200 transform rotate-180"
+                        />
+                      )}
+                    </FormLabel>
+                    <FormControl>
+                      <div
+                        className={`${
+                          dropdownsOpen.orgLocations ? "block" : "hidden"
+                        }`}
+                      >
+                        <div className="w-2/3 sm:min-w-[300px] mb-3">
                           <TagInput
                             {...field}
                             dropdown={true}
@@ -573,121 +942,152 @@ export default function PeopleForm(): JSX.Element {
                               );
                             }}
                           />
-                        </FormControl>
-                        <FormDescription>
-                          These are the company locations that you&apos;re
-                          interested in.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    )}
+                        </div>
+                      </div>
+                    </FormControl>
+                    {/* <FormDescription>
+                      These are the company locations that you&apos;re
+                      interested in.
+                    </FormDescription> */}
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="bg-muted px-2 rounded">
+              <div
+                className="flex justify-between w-full py-3 cursor-pointer"
+                onClick={() => toggleDropdown("advanced")}
+              >
+                <div className="text-sm">Advanced</div>
+                {dropdownsOpen.advanced ? (
+                  <ChevronUp color="#000000" />
+                ) : (
+                  <ChevronUp
+                    color="#000000"
+                    className="transition-transform duration-200 transform rotate-180"
                   />
-                </AccordionContent>
-              </AccordionItem>
-            </Accordion>
-            <div className="flex w-full justify-between">
-              <div className="my-3 w-1/2">
-                <FormField
-                  control={form.control}
-                  name="email_status"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-start my-4">
-                      <FormLabel className="text-left">
-                        Contact email status
-                      </FormLabel>
-                      <FormControl>
-                        <FormControl>
-                          <TagInput
-                            {...field}
-                            dropdown={true}
-                            dropdownPlaceholder="Select email status"
-                            dropdownOptions={emailStatusOptions}
-                            tags={emailStatus}
-                            className="sm:min-w-[450px]"
-                            setTags={(newTags) => {
-                              setEmailStatus(newTags);
-                              setValue(
-                                "email_status",
-                                newTags as [Tag, ...Tag[]]
-                              );
-                            }}
-                          />
-                        </FormControl>
-                      </FormControl>
-                      <FormDescription>
-                        These are the email status you&apos;re interested in.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />{" "}
+                )}
               </div>
-              <div className="my-3 w-1/2">
-                <FormField
-                  control={form.control}
-                  name="prospected_by_current_team"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-start my-4">
-                      <FormLabel className="text-left">
-                        Prospected by Current Team
-                      </FormLabel>
-                      <FormControl>
-                        <Select
-                          onValueChange={(value) => {
-                            const newValue = {
-                              ...prospectedByCurrentTeam,
-                              text: value,
-                            };
-                            setProspectedByCurrentTeam(newValue);
-                            field.onChange(newValue);
-                          }}
-                        >
-                          <SelectTrigger className="w-[180px]">
-                            <SelectValue placeholder="Yes/No" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="yes">Yes</SelectItem>
-                            <SelectItem value="no">No</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </FormControl>
-                      <FormDescription>
-                        This is wether the organization that you&apos;re
-                        interested in has been prospected or not.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className={`${dropdownsOpen.advanced ? "block" : "hidden"}`}>
+                <div className="text-sm font-medium">Job postings</div>
+                <div className="flex items-center gap-2">
+                  <div className="mb-3 w-1/2">
+                    <FormField
+                      control={form.control}
+                      name="job_offerings"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start mx-1 my-4">
+                          <FormLabel className="text-left font-normal">
+                            Currently hiring for
+                          </FormLabel>
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              dropdown={true}
+                              dropdownPlaceholder="Enter job titles..."
+                              dropdownOptions={jobTitles}
+                              tags={jobOfferingTags}
+                              className="sm:min-w-[450px]"
+                              setTags={(newTags) => {
+                                setJobOfferingTags(newTags);
+                                setValue(
+                                  "job_offerings",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          {/* <FormDescription>
+                            This is the minimun funding of the company that
+                            you&apos;re interested in.
+                          </FormDescription> */}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                  <div className="w-1/2 mb-3">
+                    <FormField
+                      control={form.control}
+                      name="job_locations"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start mx-1 my-4">
+                          <FormLabel className="text-left font-normal">
+                            Job located at
+                          </FormLabel>
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              dropdown={true}
+                              dropdownPlaceholder="Enter locations..."
+                              dropdownOptions={orgLocations}
+                              tags={jobLocationTags}
+                              variant={"base"}
+                              className="sm:min-w-[450px]"
+                              setTags={(newTags) => {
+                                setJobLocationTags(newTags);
+                                setValue(
+                                  "job_locations",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          {/* <FormDescription>
+                              This is maximun funding of the company that
+                              you&apos;re interested in.
+                            </FormDescription> */}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
+
             <FormField
               control={form.control}
               name="per_page"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start my-4">
-                  <FormLabel className="text-left">
-                    Number of Employees
-                  </FormLabel>
+                  <FormLabel className="text-left">Number of Leads</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter number of employees"
-                      className="sm:min-w-[450px]"
-                      value={perPage.text}
-                      onChange={(e) => {
-                        const numericValue = Number(e.target.value);
-                        const newValue = {
-                          ...perPage,
-                          text: numericValue,
-                        };
-                        setPerPage(newValue); // Update local state
-                        field.onChange(newValue); // Notify React Hook Form of the change
-                      }}
-                    />
+                    <div className="flex items-center">
+                      <Input
+                        type="text"
+                        placeholder={"Enter the number of leads you want"}
+                        className="sm:min-w-[450px] outline-none"
+                        value={leadsNum}
+                        onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+                          const numericValue = Math.max(
+                            min,
+                            Number(e.target.value)
+                          );
+                          if (!isNaN(numericValue)) {
+                            setLeadsNum(numericValue);
+                          }
+                          // Handle field.onChange if needed
+                        }}
+                      />
+                      <div className="flex flex-col items-center">
+                        <ChevronUp
+                          className="cursor-pointer"
+                          height={10}
+                          onClick={increment}
+                        />
+                        <ChevronDown
+                          className="cursor-pointer"
+                          height={10}
+                          onClick={decrement}
+                        />
+                      </div>
+                    </div>
                   </FormControl>
                   <FormDescription>
-                    These are the number of employees that you&apos;re
-                    interested in.
+                    These are the number of leads that you&apos;re interested
+                    in.
                   </FormDescription>
                   <FormMessage />
                 </FormItem>

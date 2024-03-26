@@ -14,11 +14,11 @@ export const pageTitleConfig = [
     title: "Scheduling and Budget",
     hidden: false,
   },
-  {
-    pathname: "/dashboard/campaign/:id/offering",
-    title: "Offering",
-    hidden: false,
-  },
+  // {
+  //   pathname: "/dashboard/campaign/:id/offering",
+  //   title: "Offering",
+  //   hidden: false,
+  // },
   {
     pathname: "/dashboard/campaign/:id/goal",
     title: "Goal",
@@ -34,11 +34,11 @@ export const pageTitleConfig = [
     title: "Training",
     hidden: false,
   },
-  {
-    pathname: "/dashboard/campaign/:id/autopilot",
-    title: "Autopilot",
-    hidden: false,
-  },
+  // {
+  //   pathname: "/dashboard/campaign/:id/autopilot",
+  //   title: "Autopilot",
+  //   hidden: false,
+  // },
   {
     pathname: "/dashboard/profile",
     title: "Profile",

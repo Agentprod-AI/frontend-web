@@ -15,24 +15,20 @@ export const leadColumns: ColumnDef<Lead>[] = [
     accessorKey: "title",
     header: "ROLE",
   },
-  {
-    id: "actions",
-    cell: ({ row }) => <CellAction data={row.original} />,
-  },
 ];
 
-export const orgColumns: ColumnDef<Organization>[] = [
-  {
-    accessorKey: "name",
-    header: "NAME",
-    cell: ({ row }) => <NameAction data={row.original} />,
-  },
-  {
-    accessorKey: "title",
-    header: "DOMAIN",
-  },
-  {
-    id: "actions",
-    cell: ({ row }) => <CellAction data={row.original} />,
-  },
-];
+// export const orgColumns: ColumnDef<Organization>[] = [
+//   {
+// accessorKey: "name",
+//     header: "NAME",
+//     cell: ({ row }) => <NameAction data={row.original} />,
+//   },
+//   {
+//     accessorKey: "title",
+//     header: "DOMAIN",
+//   },
+//   {
+//     id: "actions",
+//     cell: ({ row }) => <CellAction data={row.original} />,
+//   },
+// ];

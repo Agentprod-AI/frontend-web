@@ -14,11 +14,11 @@ const campaignPages = [
     description: "How do you want to schedule this campaign?",
     href: "scheduling-budget",
   },
-  {
-    title: "Offering",
-    description: "What are your products and services?",
-    href: "offering",
-  },
+  // {
+  //   title: "Offering",
+  //   description: "What are your products and services?",
+  //   href: "offering",
+  // },
   {
     title: "Goal",
     description: "What do you want to achieve with this campaign?",
@@ -34,11 +34,11 @@ const campaignPages = [
     description: "What messages do you want to send?",
     href: "training",
   },
-  {
-    title: "Autopilot",
-    description: "How do you want to automate this campaign?",
-    href: "autopilot",
-  },
+  // {
+  //   title: "Autopilot",
+  //   description: "How do you want to automate this campaign?",
+  //   href: "autopilot",
+  // },
 ];
 
 export default function Page({ params }: { params: { campaignId: string } }) {

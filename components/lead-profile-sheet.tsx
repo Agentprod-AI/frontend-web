@@ -25,7 +25,7 @@ import { Button } from "./ui/button";
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
 import { Lead, Organization, useLeads } from "@/context/lead-user";
 import { PeopleProfileSheet } from "./people-profile-sheet";
-import { CompanyProfileSheet } from "./company-profile-sheet";
+// import { CompanyProfileSheet } from "./company-profile-sheet";
 
 // import { Playlist } from "../data/playlists";
 
@@ -61,9 +61,9 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           {data?.type === "people" && (
             <PeopleProfileSheet {...(data as Lead)} />
           )}
-          {data?.type === "organization" && (
+          {/* {data?.type === "organization" && (
             <CompanyProfileSheet {...(data as Organization)} />
-          )}
+          )} */}
           {/* component people, company*/}
         </SheetContent>
       </Sheet>
