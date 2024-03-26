@@ -99,13 +99,13 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  minimun_company_funding: z
+  minimum_company_funding: z
     .object({
       id: z.string(),
       text: z.number(),
     })
     .optional(),
-  maximun_company_funding: z
+  maximum_company_funding: z
     .object({
       id: z.string(),
       text: z.number(),
@@ -198,9 +198,8 @@ export default function PeopleForm(): JSX.Element {
   //     text: "",
   //   });
 
-  const [checkedFundingRounds, setCheckedFundingRounds] = React.useState<
-    string[]
-  >([""]);
+  const [checkedFundingRounds, setCheckedFundingRounds] =
+    React.useState<string[]>();
 
   const [checkedCompanyHeadcount, setCheckedCompanyHeadcount] =
     React.useState<string[]>();
@@ -230,6 +229,9 @@ export default function PeopleForm(): JSX.Element {
     person_titles: { id: string; text: string }[] | undefined;
     email_status: { id: string; text: string }[] | undefined;
     company_headcount: { id: string; text: string }[] | undefined;
+    funding_rounds: { id: string; text: string }[] | undefined;
+    minimum_company_funding: { id: string; text: number } | undefined;
+    maximum_company_funding: { id: string; text: number } | undefined;
     per_page: { id: string; text: number } | undefined;
     // prospected_by_current_team: { id: string; text: string } | undefined;
     q_keywords: { id: string; text: string } | undefined;
@@ -246,12 +248,16 @@ export default function PeopleForm(): JSX.Element {
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     // convert all arrays object to array of strings
+
     const formData = {
       q_organization_domains: data.q_organization_domains,
       q_keywords: data.q_keywords,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
+      funding_rounds: data.funding_rounds,
+      minimum_company_funding: data.minimum_company_funding,
+      maximum_company_funding: data.maximum_company_funding,
       person_titles: data.person_titles,
       per_page: data.per_page,
       email_status: data.email_status,
@@ -268,16 +274,31 @@ export default function PeopleForm(): JSX.Element {
       ? Math.ceil(formData.per_page?.text / 100)
       : 1;
 
-    let headcounts: string[] = [];
-    const companyHeadcounts = () => {
-      checkedCompanyHeadcount?.map((headcount) => {
-        headcounts.push(headcount.split("-").join(","));
-      });
+    // let headcounts: string[] = [];
+    // const companyHeadcounts = () => {
+    //   checkedCompanyHeadcount?.map((headcount) => {
+    //     headcounts.push(headcount.split("-").join(","));
+    //   });
 
-      return headcounts;
+    //   return headcounts;
+    // };
+
+    const checkedFields = (
+      field: string[] | undefined,
+      returnDashed: boolean
+    ) => {
+      const checked: string[] = [];
+      if (returnDashed) {
+        field?.map((field) => {
+          checked.push(field.split("-").join(","));
+        });
+      } else {
+        field?.map((field) => {
+          checked.push(field);
+        });
+      }
+      return checked;
     };
-
-    console.log(formData.company_headcount);
 
     const body = {
       ...(pages && { page: pages }), // Only include if pages is truthy
@@ -301,7 +322,19 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...{ organization_num_employees_ranges: companyHeadcounts() },
+      ...{
+        funding_rounds: checkedFields(checkedFundingRounds, false),
+      },
+      ...(formData.minimum_company_funding &&
+        formData.maximum_company_funding && {
+          total_funding: `${data.minimum_company_funding?.text}-${data.maximum_company_funding?.text}`,
+        }),
+      ...{
+        organization_num_employees_ranges: checkedFields(
+          checkedCompanyHeadcount,
+          true
+        ),
+      },
       ...(formData.person_seniorities && {
         person_seniorities: formData.person_seniorities
           .map((tag) => tag.text.toLowerCase())
@@ -334,7 +367,11 @@ export default function PeopleForm(): JSX.Element {
     if (
       prevInputValues.current?.company_headcount?.toString() !==
         formData.company_headcount?.toString() ||
-      prevInputValues.current?.per_page?.text !== body.per_page
+      prevInputValues.current?.per_page?.text !== body.per_page ||
+      `${prevInputValues.current?.minimum_company_funding?.text}-${prevInputValues.current?.maximum_company_funding?.text}` !==
+        body.total_funding ||
+      prevInputValues.current?.funding_rounds?.toString() !==
+        body.funding_rounds?.toString()
       // ||
       // prevInputValues.current?.prospected_by_current_team?.text !==
       //   body.prospected_by_current_team?.[0]
@@ -662,7 +699,10 @@ export default function PeopleForm(): JSX.Element {
                         }`}
                       >
                         {companyHeadcountOptions.map((round, index) => (
-                          <div className="text-sm flex items-center mb-3">
+                          <div
+                            className="text-sm flex items-center mb-3"
+                            key={index}
+                          >
                             <Checkbox
                               {...field}
                               className="mr-2"
@@ -685,7 +725,6 @@ export default function PeopleForm(): JSX.Element {
                                   );
                                 }
                               }}
-                              key={index}
                               value={round.name}
                             />
                             {round.name}
@@ -753,28 +792,33 @@ export default function PeopleForm(): JSX.Element {
                           }`}
                         >
                           {fundingRounds.map((round, index) => (
-                            <div className="text-sm flex items-center mb-3">
+                            <div
+                              className="text-sm flex items-center mb-3"
+                              key={index}
+                            >
                               <Checkbox
                                 {...field}
                                 className="mr-2"
-                                checked={checkedFundingRounds.includes(
+                                checked={checkedFundingRounds?.includes(
                                   round.name
                                 )}
                                 onCheckedChange={(e) => {
                                   if (e.valueOf()) {
                                     setCheckedFundingRounds([
-                                      ...checkedFundingRounds,
+                                      ...(checkedFundingRounds
+                                        ? checkedFundingRounds
+                                        : []),
                                       round.name,
                                     ]);
                                   } else {
                                     setCheckedFundingRounds(
-                                      checkedFundingRounds.filter(
+                                      checkedFundingRounds?.filter(
                                         (item) => item !== round.name
                                       )
                                     );
                                   }
+                                  console.log(checkedFundingRounds);
                                 }}
-                                key={index}
                                 value={round.name}
                               />
                               {round.name}
@@ -793,7 +837,7 @@ export default function PeopleForm(): JSX.Element {
                   <div className="flex items-center gap-2">
                     <FormField
                       control={form.control}
-                      name="minimun_company_funding"
+                      name="minimum_company_funding"
                       render={({ field }) => (
                         <FormItem className="flex flex-col items-start mx-1 my-4">
                           {/* <FormLabel className="text-left">Min</FormLabel> */}
@@ -830,7 +874,7 @@ export default function PeopleForm(): JSX.Element {
                     <div className="w-1/2">
                       <FormField
                         control={form.control}
-                        name="maximun_company_funding"
+                        name="maximum_company_funding"
                         render={({ field }) => (
                           <FormItem className="flex flex-col items-start mx-1 my-4">
                             {/* <FormLabel className="text-left">Max</FormLabel> */}

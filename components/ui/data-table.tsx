@@ -95,14 +95,16 @@ export function DataTable<TData, TValue>({
                       )}
                     </TableCell>
                   ))}
-                  <Button
-                    variant={"ghost"}
-                    className={`${
-                      isHovering ? "visible" : "invisible"
-                    } p-3  rounded-xl`}
-                  >
-                    <Trash className="h-4 w-4" />
-                  </Button>
+                  <TableCell>
+                    <Button
+                      variant={"ghost"}
+                      className={`${
+                        isHovering ? "visible" : "invisible"
+                      } p-3  rounded-xl`}
+                    >
+                      <Trash className="h-4 w-4" />
+                    </Button>
+                  </TableCell>
                 </TableRow>
               ))
             ) : (
