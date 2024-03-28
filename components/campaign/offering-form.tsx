@@ -1,6 +1,7 @@
 "use client";
 
 // import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -46,6 +47,8 @@ type ProfileFormValues = z.infer<typeof profileFormSchema>;
 const defaultValues: Partial<ProfileFormValues> = {};
 
 export function OfferingForm({type}: {type: string}) {
+  const router = useRouter();
+  
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
@@ -62,6 +65,7 @@ export function OfferingForm({type}: {type: string}) {
   async function onSubmit(data: ProfileFormValues) {
     if (type === "create") {
       await createOffering(data);
+      router.push('/dashboard/campaign/create');
     }
   }
 

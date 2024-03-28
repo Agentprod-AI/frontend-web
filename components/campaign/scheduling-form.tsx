@@ -1,5 +1,7 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
+
 import axios from 'axios';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -69,6 +71,8 @@ const defaultValues: Partial<AccountFormValues> = {
 };
 
 export function SchedulingForm({type}: {type: string}) {
+  const router = useRouter();
+
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues,
@@ -76,10 +80,12 @@ export function SchedulingForm({type}: {type: string}) {
 
   const { createCampaign, isLoading, error } = useCreateCampaign();
 
-  const onSubmit = (data: AccountFormValues) => {
-    if(type === "create") {
-      createCampaign(data)
+  const onSubmit = async (data: AccountFormValues) => {
+    if (type === "create") {
+      await createCampaign(data);
+      router.push('/dashboard/campaign/create');
     }
+    // handle other types if necessary
   };
 
 

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -47,12 +48,10 @@ const goalFormSchema = z.object({
   goal: z.string(),
   schedulingLink: z.string().url(), 
   emails: z.array(z.object({
-    value: z.string().url()
-  }))
-  // .refine((value) => value.some((item) => item), {
-  //   message: "You have to select at least one item.",
-  // })
-  ,
+    value: z.string()
+  })).refine((value) => value.some((item) => item), {
+    message: "You have to select at least one item.",
+  }),
   followUps: z.array(z.object({
     value: z.union([z.number(), z.undefined()]),
   })),
@@ -65,7 +64,9 @@ const defaultValues: Partial<GoalFormValues> = {
   followUps: [{ value: undefined }, { value: undefined }]
 };
 
-export function GoalForm() {
+export function GoalForm({type}: {type: string}) {
+  const router = useRouter();
+
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
     defaultValues,
@@ -111,15 +112,18 @@ export function GoalForm() {
   };
 
   const onSubmit: SubmitHandler<GoalFormValues> = (data) =>  {
-    console.log(data);
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+    if (type === "create") {
+      console.log(data);
+      toast({
+        title: "You submitted the following values:",
+        description: (
+          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
+            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          </pre>
+        ),
+      });
+      router.push('/dashboard/campaign/create');
+    }
   }
 
   return (
