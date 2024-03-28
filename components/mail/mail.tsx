@@ -14,7 +14,7 @@ import {
   Trash2,
   Users2,
 } from "lucide-react";
-
+import { useSession } from "next-auth/react";
 import { AccountSwitcher } from "../layout/account-switcher";
 import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
@@ -34,6 +34,7 @@ import {
 // import ThreadDisplay from "./thread-display";
 import ThreadDisplayMain from "./thread-display-main";
 import { ScrollArea } from "../ui/scroll-area";
+import { config } from "@/utils/config";
 
 interface MailProps {
   accounts: {
@@ -48,14 +49,42 @@ interface MailProps {
 }
 
 export function Mail({
-  accounts,
-  mails,
   defaultLayout = [265, 440, 655],
   defaultCollapsed = false,
   navCollapsedSize,
 }: MailProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-  const [mail] = useMail();
+  const { data: session, status } = useSession();
+  const [mails, setMails] = React.useState<Mail[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  
+  // Temporarily hardcode the userId for testing purposes
+  const testUserId = "test-user-123";
+
+  React.useEffect(() => {
+    async function fetchMails(userId: string) {
+      // Update your API URL as needed
+      const apiUrl = `${config}/v2/mailbox/${userId}`;
+
+      try {
+        setLoading(true);
+        const response = await fetch(apiUrl);
+        if (!response.ok) {
+          throw new Error(`Failed to fetch: ${response.statusText}`);
+        }
+        const data = await response.json();
+        setMails(data.mails); // Make sure this matches your API response structure
+      } catch (error) {
+        setError(error instanceof Error ? error.toString() : String(error));
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Call fetchMails with the hardcoded testUserId
+    fetchMails(testUserId);
+  }, []); // Removed session and status from the dependency array as they're not used now
 
   return (
     <TooltipProvider delayDuration={0}>
