@@ -1,3 +1,9 @@
+import { GoalForm } from "@/components/campaign/goal-form";
+
 export default function Page() {
-  return <div>Goal</div>;
+  return (
+    <div>
+      <GoalForm type="edit"/>
+    </div>
+  );
 }
