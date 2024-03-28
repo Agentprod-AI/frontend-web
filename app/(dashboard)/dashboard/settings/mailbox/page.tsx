@@ -42,7 +42,7 @@ export default function Page () {
         <Alert>
             <Icons.info/>
             <AlertDescription className="ml-2">
-                Connect a mailbox to use it for campaigns and increase your sending volume. If you disconnect a mailbox, it won't be able to send and receive emails, and it can't be added to new campaigns. You can connect as many mailboxes as needed.
+                Connect a mailbox to use it for campaigns and increase your sending volume. If you disconnect a mailbox, it won&apos;t be able to send and receive emails, and it can&apos;t be added to new campaigns. You can connect as many mailboxes as needed.
             </AlertDescription>
         </Alert>
 

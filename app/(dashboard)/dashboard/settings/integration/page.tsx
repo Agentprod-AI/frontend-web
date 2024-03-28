@@ -32,7 +32,7 @@ export default function Page () {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {services.map(service => (
-        <Card>
+        <Card key={service.name}>
         <CardHeader className="flex flex-col justify-between">
           <div className="flex justify-between items-center">
             {service.logo}
