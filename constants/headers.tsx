@@ -75,6 +75,24 @@ export const pageTitleConfig = [
     title: "Profile",
     hidden: false,
   },
+  {
+    pathname: "/dashboard/settings/account-info",
+    title: "Settings",
+    subTitle: "Account Info",
+    hidden: false,
+  },
+  {
+    pathname: "/dashboard/settings/mailbox",
+    title: "Settings",
+    subTitle: "Mailboxes",
+    hidden: false,
+  },
+  {
+    pathname: "/dashboard/settings/integration",
+    title: "Settings",
+    subTitle: "Integrations",
+    hidden: false,
+  }
   // Add more configurations as needed
 ];
 

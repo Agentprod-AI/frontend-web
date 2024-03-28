@@ -183,6 +183,18 @@ export const navItems: NavInterface[] = [
       // },
     ],
   },
+  {
+    category: "Extras",
+    items: [
+      {
+        title: "Settings",
+        href: "/dashboard/settings/account-info",
+        icon: "settings",
+        label: "settings",
+        isCollapsible: false,
+      }
+    ],
+  }
 ];
 
 export const mails = [

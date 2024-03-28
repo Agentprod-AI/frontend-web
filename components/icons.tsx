@@ -32,6 +32,9 @@ import {
   Mail,
   MessageCircle,
   Radio,
+  Info, 
+  AlertCircle,
+  PencilLine
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -66,6 +69,9 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  info: Info,
+  alertCircle: AlertCircle,
+  pencilLine: PencilLine,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
