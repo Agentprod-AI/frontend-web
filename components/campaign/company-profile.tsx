@@ -41,7 +41,7 @@ const companyData: Field[] = [
   },
   { label: "Success Stories", content: [
     { value: "Career Advancement for Students", subValue: "Students who completed our program have successfully been placed as AI engineers, showcasing the real-world value and industry recognition of our training.", isEditing: false },
-    { value: "Startup Success Post-Program", subValue: "Leveraging the skills and knowledge gained from our course, some of our students have built innovative products and successfully raised funding, demonstrating the entrepreneurial impact of our curriculum.", isEditing: false }
+    { value: "Startup Success Post-Program", subValue: "Leveraging the skills and knowledge gained from our course, some of our students have built innovative products and successfully raised funding, demonstrating the entrepreneurial impact of our curriculum.", isEditing: false }
     ]
   }
 ];
