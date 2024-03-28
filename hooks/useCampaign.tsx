@@ -94,6 +94,10 @@ export const useCreateCampaign = () => {
       // const response = await axios.post('http://localhost:3000/v2/offerings/', apiRequestBody);
       // console.log('Success:', response.data);
 
+      let formsTracker = JSON.parse(localStorage.getItem('formsTracker') || '{}');
+      formsTracker.offering = true;
+      localStorage.setItem('formsTracker', JSON.stringify(formsTracker));
+
       toast({
         title: "You submitted the following values:",
         description: (
