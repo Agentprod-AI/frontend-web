@@ -1,19 +1,36 @@
-import { ComponentProps } from "react";
+import React, { ComponentProps } from "react";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
-import { Mail } from "@/constants/data";
 import { useMail } from "@/hooks/useMail";
 
+// Adjusting the Mail interface to match the API response
+interface Mail {
+  id: string;
+  user_id: string; // Consider if you need to use it in your component
+  sender: string;
+  recipient: string; // Consider if you need to use it in your component
+  subject: string;
+  body_substr: string;
+  // Assuming date, read, labels might be part of your data; include them if they are
+  date?: string; // Optional if your data doesn't always include it
+  read?: boolean;
+  labels?: string[]; // Optional, include if your mails have labels
+}
+
+// Props definition if you're passing the mails down from a parent component
 interface MailListProps {
-  items: Mail[];
+  items: Mail[]; // Accepts mails array as props
+}
+
+function isValidDate(dateString: string) {
+  return Boolean(dateString) && !isNaN(Date.parse(dateString));
 }
 
 export function MailList({ items }: MailListProps) {
-  const [mail, setMail] = useMail();
+  const [mail, setMail] = useMail(); // Assuming useMail is a custom hook for state management
 
   return (
     <ScrollArea className="h-screen pb-40">
@@ -25,18 +42,13 @@ export function MailList({ items }: MailListProps) {
               "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
               mail.selected === item.id && "bg-muted"
             )}
-            onClick={() =>
-              setMail({
-                ...mail,
-                selected: item.id,
-              })
-            }
+            onClick={() => setMail({ ...mail, selected: item.id })}
           >
             <div className="flex w-full flex-col gap-1">
               <div className="flex items-center">
                 <div className="flex items-center gap-2">
-                  <div className="font-semibold">{item.name}</div>
-                  {!item.read && (
+                  <div className="font-semibold">{item.sender}</div>
+                  {item.read === false && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )}
                 </div>
@@ -48,27 +60,27 @@ export function MailList({ items }: MailListProps) {
                       : "text-muted-foreground"
                   )}
                 >
-                  {item.labels.length ? (
+                  {/* If labels are part of your data */}
+                  {item.labels && item.labels.length > 0 && (
                     <div className="flex items-center gap-2">
-                      {item.labels.map((label) => (
-                        <Badge
-                          key={label}
-                          variant={getBadgeVariantFromLabel(label)}
-                        >
+                      {item.labels.map((label, index) => (
+                        <Badge key={index} variant="default">
                           {label}
                         </Badge>
                       ))}
                     </div>
-                  ) : null}
-                  {formatDistanceToNow(new Date(item.date), {
-                    addSuffix: true,
-                  })}
+                  )}
+                  {/* Displaying the date if available */}
+                  {item.date && isValidDate(item.date)
+                    ? formatDistanceToNow(new Date(item.date), { addSuffix: true })
+                    : "No date available"}
                 </div>
               </div>
               <div className="text-xs font-medium">{item.subject}</div>
-            </div>
-            <div className="line-clamp-2 text-xs text-muted-foreground">
-              {item.text.substring(0, 300)}
+              {/* Using body_substr for the email body preview */}
+              <div className="line-clamp-2 text-xs text-muted-foreground">
+                {item.body_substr.substring(0, 100)} {/* Adjust substring as needed */}
+              </div>
             </div>
           </button>
         ))}
@@ -76,7 +88,6 @@ export function MailList({ items }: MailListProps) {
     </ScrollArea>
   );
 }
-
 function getBadgeVariantFromLabel(
   label: string
 ): ComponentProps<typeof Badge>["variant"] {
