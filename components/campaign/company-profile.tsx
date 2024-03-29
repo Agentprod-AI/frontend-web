@@ -29,7 +29,7 @@ interface Field {
   description?: string;
   details?: NestedField[]; 
   isEditing?: boolean;
-  actionLabel?: string
+  actionLabel?: string;
 }
 
 const companyData: Field[] = [
@@ -60,27 +60,28 @@ const companyData: Field[] = [
 
 export default function CompanyProfile() {
   const [fields, setFields] = useState<Field[]>(companyData);
-  const [detailsInput, setDetailsInput] = useState({ title: "", description: "" });
+  const [detailsInput, setDetailsInput] = useState<{ title: string, description: string }>({ title: "", description: "" });
 
-  const handleEditToggle = (index: number, detailsIndex?: number) => {
-    setFields(fields => fields.map((field, i) => {
-      if (i === index) {
-        if (detailsIndex !== undefined && field.details) {
-          const updatedDetails = field.details.map((item, ci) => 
-            ci === detailsIndex ? { ...item, isEditing: !item.isEditing } : item);
-          return { ...field, details: updatedDetails };
-        } else {
-          return { ...field, isEditing: !field.isEditing };
-        }
-      }
-      return field;
-    }));
+  const toggleEdit = (index: number, detailsIndex?: number) => {
+    setFields(fields => fields.map((field, i) => ({
+      ...field,
+      isEditing: i === index ? !field.isEditing : field.isEditing,
+      details: field.details?.map((detail, ci) => ({
+        ...detail,
+        isEditing: i === index && ci === detailsIndex ? !detail.isEditing : detail.isEditing
+      }))
+    })));
   };
 
-  const handleFieldChange = (e: React.ChangeEvent<HTMLInputElement>, index: number, detailsIndex: number | undefined, valueType: 'title' | 'description') => {
+  const handleFieldChange = (index: number, detailsIndex: number | undefined, valueType: 'title' | 'description') => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = e.target.value;
+  
     setFields(fields => fields.map((field, i) => {
-      if (i === index && field.details) {
+      if (i === index && detailsIndex === undefined && valueType === 'description') {
+        return { ...field, description: newValue };
+      }
+  
+      if (i === index && field.details && detailsIndex !== undefined) {
         const updatedDetails = field.details.map((item, ci) => {
           if (ci === detailsIndex) {
             return { ...item, [valueType]: newValue };
@@ -89,22 +90,26 @@ export default function CompanyProfile() {
         });
         return { ...field, details: updatedDetails };
       }
+  
       return field;
     }));
   };  
-
+  
   const handleAddDetails = (type: string) => {
-    setFields(fields => fields.map(field => {
+    if (detailsInput.title.trim() && detailsInput.description.trim()) {
+      setFields(fields => fields.map(field => {
       if (field.label === type) {
         const updatedDetails = field.details ? 
-          [...field.details, { title: detailsInput.title, description: detailsInput.description, isEditing: false }] : 
-          [{ title: detailsInput.title, description: detailsInput.description, isEditing: false }];
+          [...field.details, { ...detailsInput, isEditing: false }] : 
+          [{ ...detailsInput, isEditing: false }];
         return { ...field, details: updatedDetails };
       }
       return field;
     }));
-    setDetailsInput({title: "", description: ""});
-  }; 
+  
+    setDetailsInput({ title: "", description: "" });
+    }
+  };
 
   return (
     <div>
@@ -115,102 +120,100 @@ export default function CompanyProfile() {
             <CardDescription>{field.label}</CardDescription>
           </CardHeader>
           <CardContent>
-            {field.description !== undefined && ( 
+            {field.description && (
               <div className="flex justify-between items-center">
                 {field.isEditing ? (
                   <Input 
                     value={field.description}
                     autoFocus
-                    onChange={(e) => handleFieldChange(e, index, undefined, 'description')} 
+                    onChange={handleFieldChange(index, undefined, 'description')}
                     className="mr-4"
                   />
                 ) : (
                   <span className="text-sm">{field.description}</span>
                 )}
-                <Button onClick={() => handleEditToggle(index)} variant={'ghost'}>
+                <Button onClick={() => toggleEdit(index)} variant={'ghost'}>
                   {field.isEditing ? <Icons.check size={16} /> : <><Icons.pencilLine size={16} className="mr-3" /><span className="text-sm">Edit</span></>}
                 </Button>
               </div>
             )}
-            {field.details && field.details.map((details, detailsIndex) => (
-              <Card key={`${field.label}-details-${detailsIndex}`} className="mt-2 w-full">
+            {field.details && field.details.map((detail, detailsIndex) => (
+              <Card key={`${field.label}-detail-${detailsIndex}`} className="mt-2 w-full">
                 <CardContent className="flex justify-between items-center p-4">
                   <div className="flex-grow flex flex-col justify-between mr-4">
-                    {details.isEditing ? (
+                    {detail.isEditing ? (
                       <>
                         <Input
-                          value={details.title}
+                          value={detail.title}
                           autoFocus
-                          onChange={(e) => handleFieldChange(e, index, detailsIndex, 'title')}
+                          onChange={handleFieldChange(index, detailsIndex, 'title')}
                           className="mb-2 w-full" 
                         />
                         <Input
-                          value={details.description || ''}
-                          onChange={(e) => handleFieldChange(e, index, detailsIndex, 'description')}
+                          value={detail.description || ''}
+                          onChange={handleFieldChange(index, detailsIndex, 'description')}
                           className="mb-4 w-full" 
                         />
                       </>
                     ) : (
                       <>
-                        <p className="text-sm mb-2">{details.title}</p>
-                        {details.description && <p className="text-xs">{details.description}</p>}
+                        <p className="text-sm mb-2">{detail.title}</p>
+                        <p className="text-xs">{detail.description}</p>
                       </>
                     )}
                   </div>
-                  <Button onClick={() => handleEditToggle(index, detailsIndex)} variant={'ghost'}>
-                    {details.isEditing ? (
-                      <Icons.check size={16} />
-                    ) : (
-                      <>
-                        <Icons.pencilLine size={16} className="mr-3" />
-                        <span className="text-sm">Edit</span>
-                      </>
-                    )}
+                  <Button onClick={() => toggleEdit(index, detailsIndex)} variant={'ghost'}>
+                    {detail.isEditing ? <Icons.check size={16} /> : <><Icons.pencilLine size={16} className="mr-3" /><span className="text-sm">Edit</span></>}
                   </Button>
                 </CardContent>
               </Card> 
             ))}
 
             {field.actionLabel && (
-               <Dialog>
-                  <DialogTrigger asChild >
-                  <Button className="mt-4" variant={"outline"}>
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button className="mt-4 text-sm font-normal" variant={"outline"}>
                     Add {field.actionLabel}
                   </Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader>
-                      <DialogTitle>Add {field.actionLabel}</DialogTitle>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="title" className="text-right">
-                          Title
-                        </Label>
-                        <Input
-                          id="title"
-                          onChange={(e) => setDetailsInput({ ...detailsInput, title: e.target.value })}
-                          className="col-span-3"
-                        />
-                      </div>
-                      <div className="grid grid-cols-4 items-center gap-4">
-                        <Label htmlFor="description" className="text-right">
-                          Description
-                        </Label>
-                        <Input
-                          id="description"
-                          onChange={(e) => setDetailsInput({ ...detailsInput, description: e.target.value })}
-                          className="col-span-3"
-                        />
-                      </div>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[425px]">
+                  <DialogHeader>
+                    <DialogTitle>Add {field.actionLabel}</DialogTitle>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="title" className="text-right">
+                        Title
+                      </Label>
+                      <Input
+                        id="title"
+                        onChange={(e) => setDetailsInput({ ...detailsInput, title: e.target.value })}
+                        className="col-span-3"
+                      />
                     </div>
-                    <DialogFooter>
-                      <DialogClose asChild>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="description" className="text-right">
+                        Description
+                      </Label>
+                      <Input
+                        id="description"
+                        onChange={(e) => setDetailsInput({ ...detailsInput, description: e.target.value })}
+                        className="col-span-3"
+                      />
+                    </div>
+                  </div>
+                  <DialogFooter>
+                    {
+                      (detailsInput.title.trim() && detailsInput.description.trim()) ?
+                        <DialogClose asChild>
+                          <Button type="submit" onClick={() => handleAddDetails(field.label)}>Add</Button>
+                        </DialogClose> :
                         <Button type="submit" onClick={() => handleAddDetails(field.label)}>Add</Button>
-                      </DialogClose>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
+                    }
+                    
+                  </DialogFooter>
+                </DialogContent>
+              </Dialog>
             )}
           </CardContent>
         </Card>
@@ -218,4 +221,3 @@ export default function CompanyProfile() {
     </div>
   );
 }
-
