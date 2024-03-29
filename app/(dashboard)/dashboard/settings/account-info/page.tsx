@@ -42,7 +42,7 @@ export default function Page () {
   };
 
   return (
-    <div className='overflow-y-auto'>
+    <div>
       <div className="rounded-md border border-collapse mb-8">
         <Table className="w-full text-left">
           <TableBody>

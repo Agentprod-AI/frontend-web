@@ -33,12 +33,6 @@ import { GmailIcon } from '@/app/icons';
 export default function Page () {
   return (
     <div className="w-full">
-        <div className="flex justify-end mb-4">
-            <Button>
-                Add Mailbox
-            </Button>
-        </div>
-
         <Alert>
             <Icons.info/>
             <AlertDescription className="ml-2">
@@ -101,6 +95,9 @@ export default function Page () {
                 </TableBody>
             </Table>
         </div>
+        <Button className="mt-5">
+            Add Mailbox
+        </Button>
     </div>
   );
 };
