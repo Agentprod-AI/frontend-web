@@ -54,18 +54,18 @@ export function Mail({
   navCollapsedSize,
 }: MailProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-  const { data: session, status } = useSession();
   const [mails, setMails] = React.useState<Mail[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
   
   // Temporarily hardcode the userId for testing purposes
-  const testUserId = "test-user-123";
+  const testUserId = "15d62076-bc0e-4c4d-8408-a0f157f76a09";
 
   React.useEffect(() => {
     async function fetchMails(userId: string) {
       // Update your API URL as needed
-      const apiUrl = `${config}/v2/mailbox/${userId}`;
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/v2/mailbox/${userId}`;
+      console.log ("apiUrl", apiUrl);      
 
       try {
         setLoading(true);
