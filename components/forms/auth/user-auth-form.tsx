@@ -44,7 +44,7 @@ export default function UserAuthForm({
   const [loading, setLoading] = useState(false);
 
   const defaultValues = {
-    email: "naman.barkiya@gmail.com",
+    email: "mrtechnobot02@gmail.com",
     password: "naman123",
   };
 
