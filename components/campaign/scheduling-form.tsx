@@ -1,5 +1,8 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
+
+import axios from 'axios';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,6 +20,8 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React from "react";
+import Link from 'next/link';
+import { useCreateCampaign } from '@/hooks/useCampaign';
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -65,27 +70,28 @@ const defaultValues: Partial<AccountFormValues> = {
   // dob: new Date("2023-01-23"),
 };
 
-export function SchedulingForm() {
+export function SchedulingForm({type}: {type: string}) {
+  const router = useRouter();
+
   const form = useForm<AccountFormValues>({
     resolver: zodResolver(accountFormSchema),
     defaultValues,
   });
 
-  function onSubmit(data: AccountFormValues) {
-    console.log("Data: ", data);
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
+  const { createCampaign, isLoading, error } = useCreateCampaign();
+
+  const onSubmit = async (data: AccountFormValues) => {
+    if (type === "create") {
+      await createCampaign(data);
+      router.push('/dashboard/campaign/create');
+    }
+    // handle other types if necessary
+  };
+
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mb-5">
         <FormField
           control={form.control}
           name="campaignName"
@@ -199,7 +205,16 @@ export function SchedulingForm() {
           </div>
         ))}
 
-        <Button type="submit">Update Campaign</Button>
+        <Button type="submit">
+          {/* {
+            type === "create" ?
+            <a href="/dashboard/campaign/create">
+              Add Campagin
+            </a> :
+            "Update Campagin"
+          } */}
+          {type === "create" ? "Add" : "Update"} Campaign
+          </Button>
       </form>
     </Form>
   );

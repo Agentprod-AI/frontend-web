@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import {
   Form,
   FormControl,
@@ -259,6 +260,8 @@ const industryKeywords: string[] = [
 ];
 
 export default function OrgFormComponenet(): JSX.Element {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
@@ -474,6 +477,8 @@ export default function OrgFormComponenet(): JSX.Element {
       // setLeads(response.data.result.people);
       // console.log(leads);
       toast.success("api called");
+
+      router.push('/dashboard/campaign/create');
 
       // console.log("BODY: ", body);
     } catch (err) {
