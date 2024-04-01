@@ -45,24 +45,21 @@ const dummyEmails = [
 ]
 
 const goalFormSchema = z.object({
-  goal: z.string(),
-  schedulingLink: z.string().url(), 
+  success_metric: z.string(),
+  scheduling_link: z.string().url(), 
   emails: z.array(z.object({
     value: z.string()
   })).refine((value) => value.some((item) => item), {
     message: "You have to select at least one item.",
   }),
-  followUps: z.array(z.object({
-    value: z.union([z.number(), z.undefined()]),
-  })),
-  markAsLost: z.number(),
+  follow_up_days: z.number(),
+  follow_up_times: z.number(),
+  mark_as_lost: z.number(),
 });
 
 type GoalFormValues = z.infer<typeof goalFormSchema>;
 
-const defaultValues: Partial<GoalFormValues> = {
-  followUps: [{ value: undefined }, { value: undefined }]
-};
+const defaultValues: Partial<GoalFormValues> = {};
 
 export function GoalForm({type}: {type: string}) {
   const router = useRouter();
@@ -78,23 +75,6 @@ export function GoalForm({type}: {type: string}) {
     control,
     name: 'emails',
   });
-
-  const { fields: followUpFields, append: appendFollowUp, remove: removeFollowUp } = useFieldArray({
-    control,
-    name: 'followUps',
-  });
-
-  const onFollowUpAppend = () => {
-    if (followUpFields.length < 5) {
-      appendFollowUp({ value: undefined });
-    }
-  };
-
-  const onFollowUpRemove = (index: number) => {
-    if (followUpFields.length > 2) { 
-      removeFollowUp(index);
-    }
-  };
 
   const onEmailAppend = (email: string) => {
     // Check if the email is not already present to avoid duplicates
@@ -131,7 +111,7 @@ export function GoalForm({type}: {type: string}) {
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-8 mb-5">
         <FormField
           control={form.control}
-          name="goal"
+          name="success_metric"
           render={({ field }) => (
             <FormItem className="space-y-3">
               <div>
@@ -177,7 +157,7 @@ export function GoalForm({type}: {type: string}) {
 
         <FormField
           control={form.control}
-          name="schedulingLink"
+          name="scheduling_link"
           render={({ field }) => (
             <FormItem className="space-y-3">
               <div>
@@ -201,8 +181,10 @@ export function GoalForm({type}: {type: string}) {
           name="emails"
           render={({field}) => (
             <FormItem className="space-y-3">
-              <FormLabel>Sender Email</FormLabel>
-              <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
+              <div>
+                <FormLabel>Sender Email</FormLabel>
+                <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
+              </div>
               <FormControl>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -215,7 +197,6 @@ export function GoalForm({type}: {type: string}) {
                     <ScrollArea className="h-60">
                       <DropdownMenuGroup>
                         {dummyEmails && dummyEmails.map((email, index) => {
-                          console.log(form.control._fields.emails)
                           return (
                             <DropdownMenuItem key={index}>
                               <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
@@ -246,45 +227,60 @@ export function GoalForm({type}: {type: string}) {
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="followUps"
-          render={() => (
-            <FormItem className="space-y-3">
-              <FormLabel>Follow Up</FormLabel>
-              {followUpFields.map((field, index) => (
-                <div key={field.id} className="flex items-center gap-2">
+        <div>
+          <FormLabel className="tex-sm font-medium">Follow Up</FormLabel>
+
+          <div className="flex gap-4 items-center mt-3">
+            <FormField
+              control={form.control}
+              name="follow_up_days"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <p className="text-sm mb-3">Days between follow-ups</p>
                   <FormControl>
-                    <Input
-                      type="number"
-                      placeholder="Follow Up"
-                      {...form.register(`followUps.${index}.value`, {
-                        setValueAs: (value) => value === "" ? undefined : Number(value),
-                      })}
-                      {...field}
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numberValue = value === "" ? undefined : Number(value);
+                        field.onChange(numberValue);
+                      }}
                     />
                   </FormControl>
-                  {followUpFields.length > 2 && (
-                    <Button type="button" variant="outline" className="w-max" onClick={() => onFollowUpRemove(index)}>
-                      <Minus size={14}/>
-                    </Button>
-                  )}
-                </div>
-              ))}
-              {followUpFields.length < 5 && (
-                <Button type="button" variant="outline" className="w-max" onClick={onFollowUpAppend}>
-                  <Plus size={14}/>
-                </Button>
+                <FormMessage/>
+                </FormItem>
               )}
-              <FormMessage/>
-            </FormItem>
-          )}
-        />
+            />
+
+            <FormField
+              control={form.control}
+              name="follow_up_times"
+              render={({ field }) => (
+                <FormItem className="space-y-3">
+                  <p className="text-sm mb-3">Number of follow-ups</p>
+                  <FormControl>
+                    <Input 
+                      type="number" 
+                      {...field} 
+                      onChange={(e) => {
+                        const value = e.target.value;
+                        const numberValue = value === "" ? undefined : Number(value);
+                        field.onChange(numberValue);
+                      }}
+                    />
+                  </FormControl>
+                <FormMessage/>
+                </FormItem>
+              )}
+            />
+          </div>
+        </div>
 
 
         <FormField
           control={form.control}
-          name="markAsLost"
+          name="mark_as_lost"
           render={({ field }) => (
             <FormItem className="space-y-3">
               <FormLabel>Mark as lost</FormLabel>
