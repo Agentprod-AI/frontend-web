@@ -18,19 +18,15 @@ import { Activity, MoreHorizontal, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
+import { Icons } from "@/components/icons";
+import { CircularProgressbar } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
+import { UKFlag, USAFlag } from "@/app/icons";
+
 
 export default function Page() {
-  const { campaign, toggleCampaignEnabled, setActiveCampaignId } =
+  const { campaign, toggleCampaignEnabled, deleteCampaign } =
     useCampaignContext();
-
-  function formatKey(key: any) {
-    return key
-      .replace(/([A-Z])/g, " $1")
-      .replace(/^./, function (str: string) {
-        return str.toUpperCase();
-      })
-      .trim();
-  }
 
   return (
     <div className="space-y-2 mb-5">
@@ -43,112 +39,77 @@ export default function Page() {
         </Button>
       </Card>
 
-      {campaign &&
-        campaign.map((campaignItem) => (
-          // className="hover:bg-accent" for card
-          <Card key={campaignItem.campaignId}>
-            <CardContent className="flex items-center p-4">
-              <Switch
-                checked={campaignItem?.status}
-                onCheckedChange={() =>
-                  campaignItem.campaignId !== undefined &&
-                  toggleCampaignEnabled(campaignItem.campaignId)
-                }
-                className="flex-none"
-              />
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {campaign &&
+          campaign.map((campaignItem) => (
+            // className="hover:bg-accent" for card
+            <Card key={campaignItem.campaignId} >
+              <CardContent className="flex flex-col items-left p-4 gap-4">
+                <div className="flex justify-between items-center">
+                  <div className="relative h-12 w-24 pt-2"> {/* Adjust height and width as needed */}
+                    <UKFlag className="absolute inset-0 z-10 h-9 w-9" />
+                    <USAFlag className="absolute left-4 top-0 z-10 h-9 w-9" /> {/* Adjust left value for overlap */}
+                  </div>
 
-              <div className="flex justify-between items-center flex-1 px-5">
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <p className="text-sm font-medium leading-none truncate w-full max-w-72">
-                        {campaignItem?.campaignName}
-                      </p>
-                    </TooltipTrigger>
-                    <TooltipContent >
-                      <p className="text-sm font-medium leading-none">
-                        {campaignItem?.campaignName}
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              </div>
-
-              <div className="flex justify-between items-center">
-                <div
-                  data-orientation="vertical"
-                  role="none"
-                  className="shrink-0 bg-border w-[1px] mr-2 ml-4 h-6"
-                ></div>
-
-                {/* <ScrollArea className="w-[28rem] whitespace-nowrap rounded-md border p-3"> */}
-                <div className="flex justify-between w-auto mx-5">
-                  {campaignItem.analytics &&
-                    Object.entries(campaignItem.analytics).map(
-                      ([key, value]) => (
-                        <div key={key} className="px-[10px] text-center w-16">
-                          <p className="text-[10px] text-muted-foreground">
-                            {value ? value : "-"}
-                          </p>
-                          <p className="text-[10px] text-muted-foreground">
-                            {formatKey(key)}
-                          </p>
-                        </div>
-                      )
-                    )}
-                  {/* <ScrollBar orientation="horizontal" /> */}
+                  <div className="flex gap-4 items-center">
+                    <p className="text-sm text-muted-foreground">50/400</p>
+                    <CircularProgressbar value={50} maxValue={400} text={`${12}%`} className="w-10 h-10"/>
+                  </div>
                 </div>
-                {/* </ScrollArea> */}
 
-                <div
-                  data-orientation="vertical"
-                  role="none"
-                  className="shrink-0 bg-border w-[1px] ml-2 mr-4 h-6"
-                ></div>
+                <div className="flex flex-col gap-2">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <p className="text-sm font-medium leading-none truncate w-full max-w-72">
+                          {campaignItem?.campaignName}
+                        </p>
+                      </TooltipTrigger>
+                      <TooltipContent >
+                        <p className="text-sm font-medium leading-none">
+                          {campaignItem?.campaignName}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                  <p className="text-sm text-muted-foreground">Campaign description coming from offering.</p>
+                </div>
 
-                <p className="text-xs text-muted-foreground w-14 mr-2">
-                  {new Date(campaignItem.createdAt).toLocaleTimeString([], {
-                    hour: "2-digit",
-                    minute: "2-digit",
-                    hour12: true,
-                  })}
-                </p>
-              </div>
+                <div className="flex space-x-4 text-sm text-muted-foreground">
+                  <div className="flex items-center">
+                    <Icons.circle className="mr-1 h-3 w-3" />
+                    Reply-20
+                  </div>
+                  <div className="flex items-center">
+                    <Icons.star className="mr-1 h-3 w-3" />
+                    Mettings booked-5
+                  </div>
+                </div>
 
-              <div className="flex gap-2">
-                <Button
-                  asChild
-                  variant={"outline"}
-                  onClick={() => setActiveCampaignId(campaignItem.campaignId)}
-                  className="px-2"
-                >
-                  <Link href={"/dashboard"}>
-                    <Activity size={20} />
-                  </Link>
-                </Button>
-
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button variant="outline" className="p-2">
-                      <MoreHorizontal size={20} />
+                <div className="flex gap-4 justify-between items-center">
+                  <Switch
+                    checked={campaignItem?.status}
+                    onCheckedChange={() =>
+                      campaignItem.campaignId !== undefined &&
+                      toggleCampaignEnabled(campaignItem.campaignId)
+                    }
+                    className="flex-none"
+                  />
+                  <div>
+                    <Button variant={"ghost"} onClick={() => deleteCampaign(campaignItem.campaignId)}>
+                      <Icons.trash2 size={16}/>
                     </Button>
-                  </PopoverTrigger>
-                  <PopoverContent>
-                    <div className="grid gap-4">
-                      <Button asChild variant={"outline"}>
-                        <Link
-                          href={`/dashboard/campaign/${campaignItem.campaignId}`}
-                        >
-                          Edit Campaign
-                        </Link>
-                      </Button>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+                    <Button variant={"ghost"}>
+                      <Link href={`/dashboard/campaign/${campaignItem.campaignId}`}>
+                        <Icons.pen size={16}/>
+                      </Link>
+                    </Button>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+      </div>
     </div>
   );
 }
