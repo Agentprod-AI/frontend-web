@@ -4,6 +4,7 @@ export const pageTitleConfig = [
   { pathname: "/dashboard/mail", title: "Mail", hidden: true },
   { pathname: "/dashboard/chat", title: "Chat with Prod", hidden: true },
   { pathname: "/dashboard/campaign", title: "Campaign", hidden: false },
+  { pathname: "/dashboard/leads", title: "Leads", hidden: false },
   {
     pathname: "/dashboard/campaign/:id",
     title: "Campaign Details",

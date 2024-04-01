@@ -32,3 +32,23 @@ export const leadColumns: ColumnDef<Lead>[] = [
 //     cell: ({ row }) => <CellAction data={row.original} />,
 //   },
 // ];
+
+export const contactsColumn: ColumnDef<Lead>[] = [
+  {
+    accessorKey: "name",
+    header: "NAME",
+    cell: ({ row }) => <NameAction data={row.original} />,
+  },
+  {
+    accessorKey: "title",
+    header: "ROLE",
+  },
+  {
+    accessorKey: "responded",
+    header: "RESPONDED",
+  },
+  {
+    accessorKey: "lastContacted",
+    header: "LAST CONTACTED",
+  },
+];

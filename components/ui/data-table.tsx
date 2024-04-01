@@ -28,6 +28,7 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchKey: string;
   simple?: boolean;
+  deleteAction?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -35,6 +36,7 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   simple,
+  deleteAction,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
@@ -95,16 +97,18 @@ export function DataTable<TData, TValue>({
                       )}
                     </TableCell>
                   ))}
-                  <TableCell>
-                    <Button
-                      variant={"ghost"}
-                      className={`${
-                        isHovering ? "visible" : "invisible"
-                      } p-3  rounded-xl`}
-                    >
-                      <Trash className="h-4 w-4" />
-                    </Button>
-                  </TableCell>
+                  {deleteAction && (
+                    <TableCell>
+                      <Button
+                        variant={"ghost"}
+                        className={`${
+                          isHovering ? "visible" : "invisible"
+                        } p-3  rounded-xl`}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (

@@ -23,8 +23,10 @@ import {
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
-import { Lead, Organization, useLeads } from "@/context/lead-user";
+import { Contact, Lead, Organization, useLeads } from "@/context/lead-user";
 import { PeopleProfileSheet } from "./people-profile-sheet";
+import { useCompanyInfo } from "@/context/company-linkedin";
+import { ContactProfileSheet } from "./contact-profile-sheet";
 // import { CompanyProfileSheet } from "./company-profile-sheet";
 
 // import { Playlist } from "../data/playlists";
@@ -37,7 +39,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   const { isOpen, itemId, toggleSidebar } = useLeadSheetSidebar();
   const { leads } = useLeads();
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
-  const [data, setData] = useState<Lead | Organization>();
+  const [data, setData] = useState<Lead | Contact>();
 
   useEffect(() => {
     if (isOpen && itemId) {
@@ -51,6 +53,8 @@ export function LeadProfileSheet({ className }: SidebarProps) {
 
   if (!isOpen) return null;
 
+  const { companyInfo } = useCompanyInfo();
+
   return (
     <>
       <Sheet open={isOpen} onOpenChange={toggleSidebar}>
@@ -58,9 +62,10 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           <MenuIcon />
         </SheetTrigger>
         <SheetContent side="right" className="!px-0">
-          {data?.type === "people" && (
-            <PeopleProfileSheet {...(data as Lead)} />
+          {data?.type === "prospective" && (
+            <PeopleProfileSheet {...(data as Lead)} {...companyInfo} />
           )}
+          <ContactProfileSheet {...(data as Contact)} />
           {/* {data?.type === "organization" && (
             <CompanyProfileSheet {...(data as Organization)} />
           )} */}

@@ -6,8 +6,9 @@ import { Separator } from "@/components/ui/separator";
 import {
   leadColumns,
   // orgColumns
+  contactsColumn,
 } from "./columns";
-import { Organization, Lead, useLeads } from "@/context/lead-user";
+import { Organization, Lead, Contact, useLeads } from "@/context/lead-user";
 
 // interface ProductsClientProps {
 //   data: User[];
@@ -17,12 +18,40 @@ function isOrganization(object: any): object is Organization {
   return (object as Organization).type === "company";
 }
 
-export const AudienceTableClient = () => {
+export const AudienceTableClient = ({
+  isContacts,
+  contacts,
+}: {
+  isContacts?: boolean;
+  contacts?: Contact[];
+}) => {
   const { leads } = useLeads();
-  console.log(leads);
 
-  let tableColumns: any = leadColumns;
+  let tableColumns: any;
   let tableDataComponent;
+  if (isContacts) {
+    tableColumns = contactsColumn;
+    tableDataComponent = (
+      <DataTable<Contact, (typeof leads)[0]> // Use the specific type for TValue if it's known
+        searchKey="name"
+        columns={tableColumns}
+        data={leads as Contact[]}
+        simple={true}
+      />
+    );
+  } else {
+    tableColumns = leadColumns;
+    tableDataComponent = (
+      <DataTable<Lead, (typeof leads)[0]> // Use the specific type for TValue if it's known
+        searchKey="name"
+        columns={tableColumns}
+        data={leads as Lead[]}
+        simple={true}
+      />
+    );
+  }
+
+  // let tableDataComponent;
 
   if (leads.length > 0) {
     // if (isOrganization(leads[0])) {
@@ -36,15 +65,6 @@ export const AudienceTableClient = () => {
     //     />
     //   );
     // } else {
-    tableColumns = leadColumns;
-    tableDataComponent = (
-      <DataTable<Lead, (typeof leads)[0]> // Use the specific type for TValue if it's known
-        searchKey="name"
-        columns={tableColumns}
-        data={leads as Lead[]}
-        simple={true}
-      />
-    );
     // }
   }
 

@@ -34,6 +34,8 @@ import {
   Radio,
   Clock,
   CheckCheck,
+  Contact2,
+  SlidersHorizontal,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -70,6 +72,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  contact: Contact2,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

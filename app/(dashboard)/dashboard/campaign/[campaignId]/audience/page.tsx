@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 
 import { useState } from "react";
 import { set } from "date-fns";
+import { ImportAudience } from "@/components/campaign/import-audience";
 
 export default function Page() {
   // const [isPeopleFormActive, setIsPeopleFormActive] = useState<boolean>(true);
@@ -79,10 +80,7 @@ export default function Page() {
           {/* : <OrgFormComponenet />} */}
         </div>
       ) : isImportActive ? (
-        <div>
-          <div className="my-2">File</div>
-          <Input type="file" className="w-1/5"></Input>
-        </div>
+        <ImportAudience />
       ) : (
         <div>Select from existing placeholder</div>
       )}
