@@ -32,6 +32,8 @@ import {
   Mail,
   MessageCircle,
   Radio,
+  Clock,
+  CheckCheck,
   Info, 
   AlertCircle,
   PencilLine,
@@ -45,6 +47,8 @@ export type Icon = LucideIcon;
 
 export const Icons = {
   chat: MessageCircle,
+  clock: Clock,
+  checkCheck: CheckCheck,
   campaign: Radio,
   mail: Mail,
   dashboard: LayoutDashboardIcon,
