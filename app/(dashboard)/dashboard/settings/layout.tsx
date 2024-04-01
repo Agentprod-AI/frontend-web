@@ -1,6 +1,6 @@
 "use client";
 import React from "react";
-import { Nav } from "@/components/layout/nav";
+import { Nav } from "@/components/layout/nav/nav";
 import { NavInterface } from "@/types";
 
 const navItems: NavInterface[] = [

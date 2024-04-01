@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 // import type { Metadata } from "next";
-import { Nav } from "@/components/layout/nav";
+import { Nav } from "@/components/layout/nav/nav";
 import { navItems } from "@/constants/data";
 import { DummyCampaign } from "@/constants/campaign";
 import { TooltipProvider } from "@/components/ui/tooltip";
