@@ -73,3 +73,4 @@ export default function SimpleNav({ nav }: { nav: NavItem }) {
       </div>
     </div>
   );
+}

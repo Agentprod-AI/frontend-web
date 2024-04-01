@@ -83,4 +83,4 @@ export default function MiniNav({ nav }: { nav: NavItem }) {
       </TooltipContent>
     </Tooltip>
   );
-
+}

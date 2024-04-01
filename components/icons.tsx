@@ -34,7 +34,13 @@ import {
   Radio,
   Clock,
   CheckCheck,
-
+  Info,
+  AlertCircle,
+  PencilLine,
+  Pen,
+  Trash2,
+  Circle,
+  Star
 } from "lucide-react";
 
 export type Icon = LucideIcon;
