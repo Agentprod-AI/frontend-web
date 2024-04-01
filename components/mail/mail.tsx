@@ -33,6 +33,7 @@ import {
 } from "@/components/ui/resizable";
 // import ThreadDisplay from "./thread-display";
 import ThreadDisplayMain from "./thread-display-main";
+import { ScrollArea } from "../ui/scroll-area";
 
 interface MailProps {
   accounts: {
@@ -213,7 +214,9 @@ export function Mail({
           {/* <MailDisplay
             mail={mails.find((item) => item.id === mail.selected) || null}
           /> */}
-          <ThreadDisplayMain />
+          <ScrollArea className="h-full">
+            <ThreadDisplayMain />
+          </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>
       {/* </ResizablePanel>

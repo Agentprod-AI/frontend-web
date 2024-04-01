@@ -13,7 +13,7 @@ export default function MailPage() {
 
   return (
     <>
-      <div className="md:hidden">
+      {/* <div className="md:hidden">
         <Image
           src="/examples/mail-dark.png"
           width={1280}
@@ -28,7 +28,7 @@ export default function MailPage() {
           alt="Mail"
           className="block dark:hidden"
         />
-      </div>
+      </div> */}
       <div className="hidden flex-col md:flex">
         <Mail
           accounts={accounts}

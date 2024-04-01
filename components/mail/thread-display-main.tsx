@@ -21,6 +21,31 @@ import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { Textarea } from "../ui/textarea";
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
+import { Check, ChevronsUpDown, Edit3, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+} from "@/components/ui/command";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
+
+const frameworks = [
+  {
+    value: "autopilotmode",
+    label: "Autopilot mode",
+  },
+  {
+    value: "manualmode",
+    label: "Manual mode",
+  },
+];
 
 type EmailOrEventItem = {
   type: "email" | "event";
@@ -87,6 +112,118 @@ function EmailComponent({ email }: { email: EmailReply }) {
   );
 }
 
+function DropdownComponent() {
+  const [open, setOpen] = React.useState(false);
+  const [value, setValue] = React.useState("");
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        <Button
+          variant="outline"
+          role="combobox"
+          aria-expanded={open}
+          className="w-[200px] justify-between"
+        >
+          {value
+            ? frameworks.find((framework) => framework.value === value)?.label
+            : "Select framework..."}
+          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-[200px] p-0">
+        <Command>
+          <CommandInput placeholder="Search framework..." />
+          <CommandEmpty>No framework found.</CommandEmpty>
+          <CommandGroup>
+            {frameworks.map((framework) => (
+              <CommandItem
+                key={framework.value}
+                value={framework.value}
+                onSelect={(currentValue) => {
+                  setValue(currentValue === value ? "" : currentValue);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === framework.value ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {framework.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
+  );
+}
+
+function DraftEmailComponent() {
+  const [editable, setEditable] = React.useState(false);
+  const [title, setTitle] = React.useState("");
+  const [body, setBody] = React.useState("");
+
+  return (
+    <div className="flex m-4 w-full">
+      <Avatar
+        className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+        // onClick={() => toggleSidebar(true)}
+      >
+        {/* <AvatarImage src="/user.png" alt="user" /> */}
+        <AvatarFallback>{"NB"}</AvatarFallback>
+      </Avatar>
+      <Card className="w-full mr-5">
+        <CardHeader>
+          <CardTitle className="text-sm flex">
+            <Input
+              disabled={!editable}
+              className="text-xs"
+              placeholder="Subject"
+              onChange={(e) => setTitle(e.target.value)}
+            />
+            <Badge className="ml-2" key={"label"}>
+              Draft
+            </Badge>
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-xs">
+          <Textarea
+            disabled={!editable}
+            className="text-xs"
+            placeholder={emailTemplates[0].bodyText}
+            onChange={(e) => setBody(e.target.value)}
+          />
+        </CardContent>
+
+        <CardFooter className="flex justify-between text-xs items-center">
+          <div>
+            <Button disabled={editable}>Send</Button>
+            {editable && (
+              <Button variant={"ghost"} onClick={() => setEditable(false)}>
+                <Check className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+          <div>
+            <Button variant={"ghost"} onClick={() => setEditable(true)}>
+              <Edit3 className="mr-2 h-4 w-4" />
+            </Button>
+            <Button variant={"ghost"}>
+              <RefreshCw className="mr-2 h-4 w-4" />
+            </Button>
+            <Button variant={"ghost"}>
+              <Trash2 className="mr-2 h-4 w-4" />
+            </Button>
+            <DropdownComponent />
+          </div>
+        </CardFooter>
+      </Card>
+    </div>
+  );
+}
+
 function SingleThreadDisplay({ threadData }: { threadData: any }) {
   const emails = emailReplies;
   //   const emailsWithType: EmailOrEventItem[] = threadData.data.emails.map(
@@ -114,6 +251,7 @@ function SingleThreadDisplay({ threadData }: { threadData: any }) {
       {emailReplies.map((email, index) => {
         return <EmailComponent key={index} email={email} />;
       })}
+      <DraftEmailComponent />
       {/* {messages.map((message, index) => {
         if (message.type === "email") {
           return <EmailComponent key={index} data={message} />;
