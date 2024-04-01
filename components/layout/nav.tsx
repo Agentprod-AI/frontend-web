@@ -112,7 +112,6 @@ export function Nav({ links, isCollapsed }: NavProps) {
                   </Link>
                 );
               })}
-              <Separator className="my-1" />
             </div>
           );
         })}
