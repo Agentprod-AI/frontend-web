@@ -5,6 +5,7 @@ export interface CampaignState {
   campaign?: CampaignInterface[];
   updateCampaignState: (newState: Partial<CampaignState>) => void;
   toggleCampaignEnabled: (id: number) => void;
+  deleteCampaign: (id: number) => void;
   activeCampaignId?: number;
   setActiveCampaignId: (id: number | undefined) => void;
 }
@@ -13,6 +14,7 @@ const defaultCampaignState: CampaignState = {
   campaign: [],
   updateCampaignState: () => {},
   toggleCampaignEnabled: (id: number) => {},
+  deleteCampaign: (id: number) => {},
   activeCampaignId: undefined,
   setActiveCampaignId: (id: number | undefined) => {},
 };
@@ -47,11 +49,19 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     }));
   };
 
+  const deleteCampaign = (id: number) => {
+    setState((prevState) => ({
+      ...prevState,
+      campaign: prevState.campaign?.filter(campaign => campaign.campaignId !== id),
+    }));
+  };
+
   const contextValue = React.useMemo(
     () => ({
       ...state,
       updateCampaignState,
       toggleCampaignEnabled,
+      deleteCampaign,
       activeCampaignId,
       setActiveCampaignId,
     }),

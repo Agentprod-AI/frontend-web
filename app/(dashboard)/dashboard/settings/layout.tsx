@@ -1,0 +1,50 @@
+"use client";
+import React from "react";
+import { Nav } from "@/components/layout/nav/nav";
+import { NavInterface } from "@/types";
+
+const navItems: NavInterface[] = [
+  {
+    category: "Main",
+    items: [
+      {
+        title: "Account Info",
+        href: "/dashboard/settings/account-info",
+        label: "Account Info",
+        isCollapsible: false,
+      },
+      {
+        title: "Mailboxes",
+        href: "/dashboard/settings/mailbox",
+        label: "Mailboxes",
+        isCollapsible: false,
+      },
+      {
+        title: "Integrations",
+        href: "/dashboard/settings/integration",
+        label: "Integrations",
+        isCollapsible: false,
+      }
+    ],
+  },
+  // ... add other categories and items if needed
+];
+
+export default function SettingsLayout ({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="flex"> 
+      <div className="w-52 flex-shrink-0" >
+        <Nav isCollapsed={false} links={navItems}/>
+      </div>
+      <div className="flex flex-col flex-grow">
+        <main className="flex-grow px-5 py-3">
+          {children}
+        </main>
+      </div>
+    </div>
+  );
+};
