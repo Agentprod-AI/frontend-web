@@ -138,7 +138,7 @@ export function Mail({
             mail={mails.find((item) => item.id === mail.selected) || null}
           /> */}
           <ScrollArea className="h-full">
-            <ThreadDisplayMain />
+            <ThreadDisplayMain conversationId={""} ownerEmail={""} />
           </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>

@@ -1,4 +1,4 @@
-import React, { ComponentProps } from "react";
+import React, { ComponentProps, ReactNode } from "react";
 import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
 import { cn } from "@/lib/utils";
@@ -8,18 +8,16 @@ import { useMail } from "@/hooks/useMail";
 
 // Adjusting the Mail interface to match the API response
 interface Mail {
+  [x: string]: ReactNode;
   id: string;
-  user_id: string; // Consider if you need to use it in your component
-  sender: string;
-  recipient: string; // Consider if you need to use it in your component
+  name: string; // Assuming this is the sender's name
+  email: string; // Assuming this is the recipient's email
   subject: string;
-  body_substr: string;
-  // Assuming date, read, labels might be part of your data; include them if they are
+  text: string; // Assuming this is the email body content
   date?: string; // Optional if your data doesn't always include it
   read?: boolean;
-  labels?: string[]; // Optional, include if your mails have labels
+  labels?: string[];
 }
-
 // Props definition if you're passing the mails down from a parent component
 interface MailListProps {
   items: Mail[]; // Accepts mails array as props
@@ -79,7 +77,7 @@ export function MailList({ items }: MailListProps) {
               <div className="text-xs font-medium">{item.subject}</div>
               {/* Using body_substr for the email body preview */}
               <div className="line-clamp-2 text-xs text-muted-foreground">
-                {item.body_substr.substring(0, 100)} {/* Adjust substring as needed */}
+                {(item.body_substr as string).substring(0, 100)} {/* Adjust substring as needed */}
               </div>
             </div>
           </button>
