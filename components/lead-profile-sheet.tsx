@@ -40,6 +40,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   const { leads } = useLeads();
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [data, setData] = useState<Lead | Contact>();
+  const { companyInfo } = useCompanyInfo();
 
   useEffect(() => {
     if (isOpen && itemId) {
@@ -52,8 +53,6 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   //add item type with item id
 
   if (!isOpen) return null;
-
-  const { companyInfo } = useCompanyInfo();
 
   return (
     <>
