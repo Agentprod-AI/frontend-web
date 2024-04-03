@@ -29,6 +29,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { draftEmail } from "@/constants/data";
 
 interface ConversationEntry {
   id: string;
@@ -92,30 +93,30 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   }, [conversationId, ownerEmail]);
 
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium">Loading...</div>
-      </div>
-    );
-  }
-  
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium text-red-500">Error: {error}</div>
-      </div>
-    );
-  }
-  
-  if (!conversations || conversations.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium">No conversation data found.</div>
-      </div>
-    );
-  }
-  
+if (isLoading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium">Loading...</div>
+    </div>
+  );
+}
+
+if (error) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium text-red-500">Error: {error}</div>
+    </div>
+  );
+}
+
+if (!conversations || conversations.length === 0) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium">No conversation data found.</div>
+    </div>
+  );
+}
+
   const EmailComponent = ({ email }: { email: ConversationEntry }) => {
     const isEmailFromOwner = email.sender === ownerEmail;
   
@@ -171,19 +172,21 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <CardHeader>
             <CardTitle className="text-sm flex">
               <Input
+                value={draftEmail.title}
                 disabled={!editable}
                 className="text-xs"
                 placeholder="Subject"
                 onChange={(e) => setTitle(e.target.value)}
               />
-              {/* <Badge className="ml-2" key={"label"}>
+              <Badge className="ml-2" key={"label"}>
                 Draft
-              </Badge> */}
+              </Badge> 
 
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs">
             <Textarea
+              value={draftEmail.body}
               disabled={!editable}
               className="text-xs"
               placeholder="Enter email body"
@@ -273,15 +276,16 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
 return (
   <div className="relative">
-    {conversations.length > 0 && (
-      <>
-        {conversations.map((email, index) => (
-          <EmailComponent key={index} email={email} />
-        ))}
-        <DraftEmailComponent />
-      </>
-    )}
-  </div>
+  <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
+  {conversations.length > 0 && (
+    <>
+      {conversations.map((email, index) => (
+        <EmailComponent key={index} email={email} />
+      ))}
+      <DraftEmailComponent />
+    </>
+  )}
+</div>
 );
 };
 
