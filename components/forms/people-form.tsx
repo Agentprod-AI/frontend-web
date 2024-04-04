@@ -1,3 +1,4 @@
+import { useRouter } from 'next/navigation';
 import {
   Form,
   FormControl,
@@ -133,6 +134,8 @@ const FormSchema = z.object({
 });
 
 export default function PeopleForm(): JSX.Element {
+  const router = useRouter();
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });

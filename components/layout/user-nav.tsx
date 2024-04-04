@@ -31,11 +31,10 @@ export function UserNav() {
             <Avatar className="h-8 w-8 bg-accent">
               <AvatarImage
                 src="/user.png"
-                // src={session.user?.image ?? ""}
-                alt={user?.user_metadata.profile.first_name ?? ""}
+                alt={user?.user_metadata?.profile?.first_name ?? ""}
               />
               <AvatarFallback>
-                {user?.user_metadata.profile.first_name?.[0]}
+                {user?.user_metadata?.profile?.first_name?.[0]}
               </AvatarFallback>
             </Avatar>
           </Button>
@@ -44,10 +43,11 @@ export function UserNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {user?.user_metadata.profile.first_name +
-                  " " +
-                  user?.user_metadata.profile.last_name}
+                {`${user?.user_metadata?.profile?.first_name ?? ""} ${
+                  user?.user_metadata?.profile?.last_name ?? ""
+                }`}
               </p>
+
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email}
               </p>

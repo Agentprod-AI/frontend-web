@@ -1,5 +1,6 @@
 "use client";
 import * as React from "react";
+import axios from "axios";
 import {
   AlertCircle,
   Archive,
@@ -14,7 +15,7 @@ import {
   Trash2,
   Users2,
 } from "lucide-react";
-
+import { useSession } from "next-auth/react";
 import { AccountSwitcher } from "../layout/account-switcher";
 import { MailDisplay } from "./mail-display";
 import { MailList } from "./mail-list";
@@ -34,6 +35,7 @@ import {
 // import ThreadDisplay from "./thread-display";
 import ThreadDisplayMain from "./thread-display-main";
 import { ScrollArea } from "../ui/scroll-area";
+import { config } from "@/utils/config";
 
 interface MailProps {
   accounts: {
@@ -48,14 +50,39 @@ interface MailProps {
 }
 
 export function Mail({
-  accounts,
-  mails,
   defaultLayout = [265, 440, 655],
   defaultCollapsed = false,
   navCollapsedSize,
 }: MailProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-  const [mail] = useMail();
+  const [mails, setMails] = React.useState<Mail[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+  
+  const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
+
+  React.useEffect(() => {
+    // Define the function for fetching mails using axios
+    async function fetchMails(userId: string) {
+      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/v2/mailbox/${userId}`;
+
+      try {
+        setLoading(true);
+        const response = await axios.get(apiUrl);
+        setMails(response.data.mails); // Assuming the response structure contains { mails: [...] }
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          setError(error.message); // Handling Axios errors
+        } else {
+          setError("An unknown error occurred");
+        }
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchMails(testUserId);
+  }, []); // Dependency array remains empty to run once on mount
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -69,110 +96,6 @@ export function Mail({
         className="h-full items-stretch"
         style={{ height: "calc(100vh - 56px)" }}
       >
-        {/* <ResizablePanel
-          defaultSize={defaultLayout[0]}
-          collapsedSize={navCollapsedSize}
-          collapsible={true}
-          minSize={15}
-          maxSize={20}
-          onCollapse={() => {
-            setIsCollapsed(true);
-            document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-              true,
-            )}`;
-          }}
-          onExpand={() => {
-            setIsCollapsed(false);
-            document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-              false,
-            )}`;
-          }}
-          className={cn(
-            isCollapsed &&
-              "min-w-[50px] transition-all duration-300 ease-in-out",
-          )}
-        >
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: "Inbox",
-                label: "128",
-                icon: Inbox,
-                variant: "default",
-              },
-              {
-                title: "Drafts",
-                label: "9",
-                icon: File,
-                variant: "ghost",
-              },
-              {
-                title: "Sent",
-                label: "",
-                icon: Send,
-                variant: "ghost",
-              },
-              {
-                title: "Junk",
-                label: "23",
-                icon: ArchiveX,
-                variant: "ghost",
-              },
-              {
-                title: "Trash",
-                label: "",
-                icon: Trash2,
-                variant: "ghost",
-              },
-              {
-                title: "Archive",
-                label: "",
-                icon: Archive,
-                variant: "ghost",
-              },
-            ]}
-          />
-          <Separator />
-          <Nav
-            isCollapsed={isCollapsed}
-            links={[
-              {
-                title: "Social",
-                label: "972",
-                icon: Users2,
-                variant: "ghost",
-              },
-              {
-                title: "Updates",
-                label: "342",
-                icon: AlertCircle,
-                variant: "ghost",
-              },
-              {
-                title: "Forums",
-                label: "128",
-                icon: MessagesSquare,
-                variant: "ghost",
-              },
-              {
-                title: "Shopping",
-                label: "8",
-                icon: ShoppingCart,
-                variant: "ghost",
-              },
-              {
-                title: "Promotions",
-                label: "21",
-                icon: Archive,
-                variant: "ghost",
-              },
-            ]}
-          />
-        </ResizablePanel>
-        <ResizableHandle withHandle /> */}
-        {/* <ResizablePanel minSize={30}>
-          <ResizablePanelGroup direction="horizontal"> */}
         <ResizablePanel defaultSize={50}>
           <Tabs defaultValue="all">
             <div className="flex items-center px-4 pt-2 pb-0">
@@ -182,13 +105,31 @@ export function Mail({
                   value="all"
                   className="text-zinc-600 dark:text-zinc-200"
                 >
-                  All mail
+                  To aprove
                 </TabsTrigger>
                 <TabsTrigger
                   value="unread"
                   className="text-zinc-600 dark:text-zinc-200"
                 >
-                  Unread
+                  Scheduled
+                </TabsTrigger>
+                <TabsTrigger
+                  value="unread"
+                  className="text-zinc-600 dark:text-zinc-200"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger
+                  value="unread"
+                  className="text-zinc-600 dark:text-zinc-200"
+                >
+                  Starred
+                </TabsTrigger>
+                <TabsTrigger
+                  value="unread"
+                  className="text-zinc-600 dark:text-zinc-200"
+                >
+                  Engaged
                 </TabsTrigger>
               </TabsList>
             </div>
@@ -202,10 +143,10 @@ export function Mail({
               </form>
             </div>
             <TabsContent value="all" className="m-0">
-              <MailList items={mails} />
+              <MailList items={mails as Mail[]} />
             </TabsContent>
             <TabsContent value="unread" className="m-0">
-              <MailList items={mails.filter((item) => !item.read)} />
+              <MailList items={mails.filter((item) => !item.read) as Mail[]} />
             </TabsContent>
           </Tabs>
         </ResizablePanel>
@@ -215,7 +156,7 @@ export function Mail({
             mail={mails.find((item) => item.id === mail.selected) || null}
           /> */}
           <ScrollArea className="h-full">
-            <ThreadDisplayMain />
+            <ThreadDisplayMain conversationId={""} ownerEmail={""} />
           </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>

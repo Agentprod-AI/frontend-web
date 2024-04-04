@@ -1,6 +1,7 @@
 "use client";
 
 // import Link from "next/link";
+import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
@@ -24,7 +25,8 @@ import { Input } from "@/components/ui/input";
 //   SelectValue,
 // } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "sonner";
+import { toast } from "@/components/ui/use-toast";
+import { useCreateCampaign } from '@/hooks/useCampaign';
 
 const profileFormSchema = z.object({
   product_offering: z
@@ -46,28 +48,27 @@ const defaultValues: Partial<ProfileFormValues> = {
   offering_details: "",
 };
 
-export function OfferingForm() {
+export function OfferingForm({type}: {type: string}) {
+  const router = useRouter();
+  
   const form = useForm<ProfileFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
     mode: "onChange",
   });
 
+  const { createOffering } = useCreateCampaign();
+
   //   const { fields, append } = useFieldArray({
   //     name: "urls",
   //     control: form.control,
   //   });
 
-  function onSubmit(data: ProfileFormValues) {
-    console.log("form submitted", data);
-    toast("You submitted the following values:", {
-      description: (
-        <pre className="mt-2 w-[320px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-      // `Product Name: ${data.product_offering} Product Details: ${data.offering_details}`,
-    });
+  async function onSubmit(data: ProfileFormValues) {
+    if (type === "create") {
+      await createOffering(data);
+      router.push('/dashboard/campaign/create');
+    }
   }
 
   return (
