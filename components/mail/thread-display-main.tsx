@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "../ui/avatar";
 import { Badge } from "../ui/badge";
+
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
 import {
   Command,
@@ -188,7 +189,7 @@ if (!conversations || conversations.length === 0) {
             <Textarea
               value={draftEmail.body}
               disabled={!editable}
-              className="text-xs"
+              className="text-xs h-64"              
               placeholder="Enter email body"
               onChange={(e) => setBody(e.target.value)}
             />

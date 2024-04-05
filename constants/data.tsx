@@ -140,26 +140,7 @@ export const navItems: NavInterface[] = [
         icon: "mail",
         label: "mail",
         isCollapsible: true,
-        subNavs: [
-          {
-            title: "Todo",
-            href: "/dashboard/mail/todo",
-            label: "Todo",
-            icon: "check",
-          },
-          {
-            title: "Scheduled",
-            href: "/dashboard/mail/scheduled",
-            label: "Scheduled",
-            icon: "clock",
-          },
-          {
-            title: "Completed",
-            href: "/dashboard/mail/completed",
-            label: "Completed",
-            icon: "checkCheck",
-          },
-        ],
+      
       },
       {
         title: "Campaign",
