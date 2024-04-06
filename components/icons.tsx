@@ -61,7 +61,7 @@ export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   trash: Trash,
-  employee: UserX2Icon,
+  lead: UserX2Icon,
   post: FileText,
   page: File,
   media: Image,

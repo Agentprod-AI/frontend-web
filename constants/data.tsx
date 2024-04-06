@@ -92,7 +92,7 @@ export const users: User[] = [
   },
 ];
 
-export type Employee = {
+export type Lead = {
   id: number;
   first_name: string;
   last_name: string;
@@ -174,38 +174,19 @@ export const navItems: NavInterface[] = [
     category: "Extras",
     items: [
       {
-        title: "User",
-        href: "/dashboard/user",
-        icon: "user",
-        label: "user",
+        title: "Leads",
+        href: "/dashboard/leads",
+        icon: "lead",
+        label: "leads",
         isCollapsible: false,
       },
       {
-        title: "Employee",
-        href: "/dashboard/employee",
-        icon: "employee",
-        label: "employee",
+        title: "Analytics",
+        href: "/dashboard/analytics",
+        // icon: "lead",
+        label: "analytics",
         isCollapsible: false,
       },
-      {
-        title: "Profile",
-        href: "/dashboard/profile",
-        icon: "profile",
-        label: "profile",
-        isCollapsible: false,
-      },
-      // {
-      //   title: "Login",
-      //   href: "/",
-      //   icon: "login",
-      //   label: "login",
-      //   isCollapsible: false,
-      // },
-    ],
-  },
-  {
-    category: "Extras",
-    items: [
       {
         title: "Settings",
         href: "/dashboard/settings/account-info",
