@@ -290,7 +290,7 @@ export default function PeopleForm(): JSX.Element {
       per_page: 2,
       organization_locations: ["California, US"],
       person_seniorities: ["senior", "manager"],
-      organization_num_employees_ranges: ["1,1000000"],
+      organization_num_leads_ranges: ["1,1000000"],
       person_titles: ["sales manager", "engineer manager"],
     };
 
@@ -300,7 +300,7 @@ export default function PeopleForm(): JSX.Element {
     //   q_organization_domains,
     //   organization_locations,
     //   person_seniorities,
-    //   organization_num_employees_ranges,
+    //   organization_num_leads_ranges,
     //   person_titles,
     // };
 
@@ -659,11 +659,11 @@ export default function PeopleForm(): JSX.Element {
               render={({ field }) => (
                 <FormItem className="flex flex-col items-start my-4">
                   <FormLabel className="text-left">
-                    Number of Employees
+                    Number of Leads
                   </FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="Enter number of employees"
+                      placeholder="Enter number of leads"
                       className="sm:min-w-[450px]"
                       value={perPage.text}
                       onChange={(e) => {
@@ -678,7 +678,7 @@ export default function PeopleForm(): JSX.Element {
                     />
                   </FormControl>
                   <FormDescription>
-                    These are the number of employees that you&apos;re
+                    These are the number of leads that you&apos;re
                     interested in.
                   </FormDescription>
                   <FormMessage />

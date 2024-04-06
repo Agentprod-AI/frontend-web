@@ -42,7 +42,7 @@
 //       text: z.string(),
 //     }),
 //   ),
-//   organization_num_employees_ranges: z.array(
+//   organization_num_leads_ranges: z.array(
 //     z.object({
 //       id: z.string(),
 //       text: z.string(),
@@ -57,7 +57,7 @@
 // });
 
 // const OrgFormSchema = z.object({
-//   organization_num_employees_ranges: z.array(
+//   organization_num_leads_ranges: z.array(
 //     z.object({
 //       id: z.string(),
 //       text: z.string(),
@@ -111,7 +111,7 @@
 //     q_organization_domains: string[];
 //     organization_locations: string[];
 //     person_seniorities: string[];
-//     organization_num_employees_ranges: string[];
+//     organization_num_leads_ranges: string[];
 //     person_titles: string[];
 //   }
 
@@ -119,7 +119,7 @@
 //     q_organization_domains: [],
 //     organization_locations: [],
 //     person_seniorities: [],
-//     organization_num_employees_ranges: [],
+//     organization_num_leads_ranges: [],
 //     person_titles: [],
 //   });
 
@@ -164,7 +164,7 @@
 //           //       per_page: 2,
 //           //       organization_locations: ["California, US"],
 //           //       person_seniorities: ["senior", "manager"],
-//           //       organization_num_employees_ranges: ["1,1000000"],
+//           //       organization_num_leads_ranges: ["1,1000000"],
 //           //       person_titles: ["sales manager", "engineer manager"],
 //           //     },
 //           //   },
@@ -203,8 +203,8 @@
 //     Tag[]
 //   >([]);
 //   const [
-//     organizationNumEmployeesRangesTags,
-//     setOrganizationNumEmployeesRangesTags,
+//     organizationNumLeadsRangesTags,
+//     setOrganizationNumLeadsRangesTags,
 //   ] = React.useState<Tag[]>([]);
 //   const [personTitlesTags, setPersonTitlesTags] = React.useState<Tag[]>([]);
 
@@ -219,8 +219,8 @@
 //       (tag) => tag.text,
 //     );
 //     const personSeniorities = data.person_seniorities.map((tag) => tag.text);
-//     const organizationNumEmployeesRanges =
-//       data.organization_num_employees_ranges.map((tag) => tag.text);
+//     const organizationNumLeadsRanges =
+//       data.organization_num_leads_ranges.map((tag) => tag.text);
 //     const personTitles = data.person_titles.map((tag) => tag.text);
 
 //     console.log(data);
@@ -229,7 +229,7 @@
 //       qOrganizationDomains,
 //       organizationLocations,
 //       personSeniorities,
-//       organizationNumEmployeesRanges,
+//       organizationNumLeadsRanges,
 //       personTitles,
 //     };
 
@@ -360,29 +360,29 @@
 //               />
 //               <FormField
 //                 control={form.control}
-//                 name="organization_num_employees_ranges"
+//                 name="organization_num_leads_ranges"
 //                 render={({ field }) => (
 //                   <FormItem className="flex flex-col items-start">
 //                     <FormLabel className="text-left">
-//                       Number of Employees
+//                       Number of Leads
 //                     </FormLabel>
 //                     <FormControl>
 //                       <TagInput
 //                         {...field}
-//                         placeholder="Enter a number of employees"
-//                         tags={organizationNumEmployeesRangesTags}
+//                         placeholder="Enter a number of leads"
+//                         tags={organizationNumLeadsRangesTags}
 //                         className="sm:min-w-[450px]"
 //                         setTags={(newTags) => {
-//                           setOrganizationNumEmployeesRangesTags(newTags);
+//                           setOrganizationNumLeadsRangesTags(newTags);
 //                           setValue(
-//                             "organization_num_employees_ranges",
+//                             "organization_num_leads_ranges",
 //                             newTags as [Tag, ...Tag[]],
 //                           );
 //                         }}
 //                       />
 //                     </FormControl>
 //                     <FormDescription>
-//                       These are the number of employees that you&apos;re
+//                       These are the number of leads that you&apos;re
 //                       interested in.
 //                     </FormDescription>
 //                     <FormMessage />
