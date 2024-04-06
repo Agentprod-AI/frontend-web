@@ -498,3 +498,29 @@ export const contacts = [
 ];
 
 export type Contact = (typeof contacts)[number];
+
+export const draftEmail = {
+  title: "Try Agentprod for your business!", 
+  body: `Hi Olliver,
+
+I wanted to tell you about this great new AI assistant tool called Agentprod that I think could really help your business. 
+
+Agentprod is an AI-powered virtual assistant that can understand customer questions and respond with accurate answers instantly. It's perfect for automating common customer service queries so your team can focus on more complex issues.
+
+Some key benefits:
+
+- 24/7 availability - Agentprod never sleeps! It can handle customer queries even when your team is offline.
+
+- Scalability - You can have as many conversations at once as you need. Agentprod can scale to handle increased demand seamlessly.
+
+- Customizable - Easily train Agentprod to understand industry/business specific language and terminology. 
+
+- Analytics - Get insights into the most common customer questions and queries. Use this to improve products/services.
+
+Let me know if you would like me to set up a demo of Agentprod for your customer service team. I really think this could help reduce workload and costs while also improving customer satisfaction.
+
+Looking forward to hearing your thoughts!
+
+Regards,
+Agent Prod`
+};

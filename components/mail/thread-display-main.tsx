@@ -1,6 +1,6 @@
 import React from "react";
 import { formatDistanceToNow } from "date-fns";
-
+import axiosInstance from "../../utils/axiosInstance";
 import {
   Card,
   CardContent,
@@ -10,18 +10,9 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback } from "../ui/avatar";
-import { Email, sampleThread, ThreadEvents } from "@/constants/threads";
-import {
-  EmailReply,
-  emailReplies,
-  emailTemplates,
-} from "@/constants/new-threads";
 import { Badge } from "../ui/badge";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { Textarea } from "../ui/textarea";
+
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
-import { Check, ChevronsUpDown, Edit3, RefreshCw, Trash2 } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -29,110 +20,234 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
+import { Check, ChevronsUpDown, Edit3, RefreshCw, Trash2 } from "lucide-react";
+import { cn } from "@/lib/utils";
+import { Input } from "../ui/input";
+import { Button } from "../ui/button";
+import { Textarea } from "../ui/textarea";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { cn } from "@/lib/utils";
+import { draftEmail } from "@/constants/data";
+
+interface ConversationEntry {
+  id: string;
+  conversation_id: string;
+  received_datetime: string | null;
+  sender: string;
+  recipient: string;
+  subject: string;
+  body: string;
+  is_reply: boolean;
+  send_datetime: string | null;
+  open_datetime: string | null;
+  click_datetime: string | null;
+  response_datetime: string | null;
+  status: string | null;
+  sentiment: string | null;
+  category: string | null;
+  action_draft: string | null;
+  message_id: string;
+}
+
+interface ThreadDisplayMainProps {
+  conversationId: string;
+  ownerEmail: string;
+}
 
 const frameworks = [
-  {
-    value: "autopilotmode",
-    label: "Autopilot mode",
-  },
   {
     value: "manualmode",
     label: "Manual mode",
   },
+  {
+    value: "autopilotmode",
+    label: "Autopilot mode",
+  },
 ];
 
-type EmailOrEventItem = {
-  type: "email" | "event";
-  data: Email | ThreadEvents;
-  timestamp: Date;
-};
-
-export default function ThreadDisplayMain() {
-  const threadData = sampleThread;
-  return (
-    <div className="relative">
-      <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
-      <SingleThreadDisplay threadData={threadData} />
-    </div>
+const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
+  conversationId,
+  ownerEmail,
+}) => {
+  const [conversations, setConversations] = React.useState<ConversationEntry[]>(
+    []
   );
-}
-
-function EmailComponent({ email }: { email: EmailReply }) {
-  const ownerEmail = "naman.barkiya@gmail.com";
-  const isEmailFromOwner = email.fromAddress === ownerEmail;
+  const [isLoading, setIsLoading] = React.useState(true);
+  const [error, setError] = React.useState("");
   const { toggleSidebar } = useLeadSheetSidebar();
+
+  React.useEffect(() => {
+    axiosInstance
+      .get<ConversationEntry[]>(`/v2/mailbox/conversation/7db97fce-37c4-476b-af57-3c3263c7750d`)
+      .then((response) => {
+        setConversations(response.data);
+        setIsLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching conversation:", error);
+        setError(error.message || "Failed to load conversation.");
+        setIsLoading(false);
+      });
+  }, [conversationId, ownerEmail]);
+
+
+if (isLoading) {
   return (
-    <div className="flex m-4 w-full">
-      <Avatar
-        className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-        onClick={() => toggleSidebar(true)}
-      >
-        {/* <AvatarImage src="/user.png" alt="user" /> */}
-        <AvatarFallback>{isEmailFromOwner ? "NB" : "TP"}</AvatarFallback>
-      </Avatar>
-      <Card className="w-full mr-5">
-        <CardHeader>
-          <CardTitle className="text-sm">
-            {email.subject}{" "}
-            {!isEmailFromOwner && (
-              <Badge className="ml-2" key={"label"}>
-                {email.sentiment}
-              </Badge>
-            )}
-          </CardTitle>
-          <CardDescription className="text-xs">{email.body}</CardDescription>
-        </CardHeader>
-        <CardContent className="text-xs">
-          <span className="text-muted-foreground">
-            {email.fromAddress === ownerEmail ? "you" : email.fromAddress} sent
-            to {email.toAddress === ownerEmail ? "you" : email.toAddress} -{" "}
-            {formatDistanceToNow(
-              new Date(email.receivedDateTime.toDateString()),
-              {
-                addSuffix: true,
-              }
-            )}
-          </span>
-        </CardContent>
-        {email.category === "Request for Information" ? (
-          <CardFooter className="flex justify-between text-xs">
-            <span className="mr-2 text-xs">Reply:</span>
-            <Textarea className="text-xs" value={emailTemplates[0].bodyText} />
-            <Button variant={"ghost"}>Send</Button>
-          </CardFooter>
-        ) : null}
-      </Card>
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium">Loading...</div>
     </div>
   );
 }
 
-function DropdownComponent() {
-  const [open, setOpen] = React.useState(false);
-  const [value, setValue] = React.useState("");
+if (error) {
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          role="combobox"
-          aria-expanded={open}
-          className="w-[200px] justify-between"
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium text-red-500">Error: {error}</div>
+    </div>
+  );
+}
+
+if (!conversations || conversations.length === 0) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium">No conversation data found.</div>
+    </div>
+  );
+}
+
+  const EmailComponent = ({ email }: { email: ConversationEntry }) => {
+    const isEmailFromOwner = email.sender === ownerEmail;
+  
+    return (
+      <div className="flex m-4 w-full">
+        <Avatar
+          className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+          onClick={() => toggleSidebar(true)}
         >
-          {value
-            ? frameworks.find((framework) => framework.value === value)?.label
-            : "Select framework..."}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent className="w-[200px] p-0">
-        <Command>
-          <CommandInput placeholder="Search framework..." />
+          <AvatarFallback>{isEmailFromOwner ? "NB" : "TP"}</AvatarFallback>
+        </Avatar>
+        <Card className="w-full mr-5">
+          <CardHeader>
+            <CardTitle className="text-sm">
+              {email.subject}{" "}
+              {!isEmailFromOwner && email.sentiment && (
+                <Badge className="ml-2" key={"label"}>
+                  {email.sentiment}
+                </Badge>
+              )}
+            </CardTitle>
+            <CardDescription className="text-xs">{email.body}</CardDescription>
+          </CardHeader>
+          <CardContent className="text-xs">
+            <span className="text-muted-foreground">
+              {email.sender === ownerEmail ? "you" : email.sender} sent to{" "}
+              {email.recipient === ownerEmail ? "you" : email.recipient} -{" "}
+              {email.received_datetime &&
+                formatDistanceToNow(
+                  new Date(email.received_datetime.toString()),
+                  {
+                    addSuffix: true,
+                  }
+                )}
+            </span>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  };
+  
+  const DraftEmailComponent = () => {
+    const [editable, setEditable] = React.useState(false);
+    const [title, setTitle] = React.useState("");
+    const [body, setBody] = React.useState("");
+  
+    return (
+      <div className="flex m-4 w-full">
+        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
+          <AvatarFallback>{"NB"}</AvatarFallback>
+        </Avatar>
+        <Card className="w-full mr-5">
+          <CardHeader>
+            <CardTitle className="text-sm flex">
+              <Input
+                value={draftEmail.title}
+                disabled={!editable}
+                className="text-xs"
+                placeholder="Subject"
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <Badge className="ml-2" key={"label"}>
+                Draft
+              </Badge> 
+
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs">
+            <Textarea
+              value={draftEmail.body}
+              disabled={!editable}
+              className="text-xs h-64"              
+              placeholder="Enter email body"
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </CardContent>
+
+          <CardFooter className="flex justify-between text-xs items-center">
+            <div>
+              <Button disabled={editable}>Approve</Button>
+              <Button className="ml-2" disabled={!editable}>
+                Send Now
+              </Button>
+              {editable && (
+                <Button variant={"ghost"} onClick={() => setEditable(false)}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <div>
+              <Button variant={"ghost"} onClick={() => setEditable(true)}>
+                <Edit3 className="mr-2 h-4 w-4" />
+              </Button>
+              <Button variant={"ghost"}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+              </Button>
+              <Button variant={"ghost"}>
+                <Trash2 className="mr-2 h-4 w-4" />
+              </Button>
+              <DropdownComponent />
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
+    );
+  };
+  
+  const DropdownComponent = () => {
+    const [open, setOpen] = React.useState(false);
+    const [value, setValue] = React.useState("manualmode");
+  
+    return (
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            role="combobox"
+            aria-expanded={open}
+            className="w-[200px] justify-between"
+          >
+            {value
+              ? frameworks.find((f) => f.value === value)?.label
+              : "Manual mode"}
+  
+            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-[200px] p-0">
+          <Command>
+            <CommandInput placeholder=" Search framework..." />
           <CommandEmpty>No framework found.</CommandEmpty>
           <CommandGroup>
             {frameworks.map((framework) => (
@@ -158,105 +273,22 @@ function DropdownComponent() {
       </PopoverContent>
     </Popover>
   );
-}
+};
 
-function DraftEmailComponent() {
-  const [editable, setEditable] = React.useState(false);
-  const [title, setTitle] = React.useState("");
-  const [body, setBody] = React.useState("");
-
-  return (
-    <div className="flex m-4 w-full">
-      <Avatar
-        className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-        // onClick={() => toggleSidebar(true)}
-      >
-        {/* <AvatarImage src="/user.png" alt="user" /> */}
-        <AvatarFallback>{"NB"}</AvatarFallback>
-      </Avatar>
-      <Card className="w-full mr-5">
-        <CardHeader>
-          <CardTitle className="text-sm flex">
-            <Input
-              disabled={!editable}
-              className="text-xs"
-              placeholder="Subject"
-              onChange={(e) => setTitle(e.target.value)}
-            />
-            <Badge className="ml-2" key={"label"}>
-              Draft
-            </Badge>
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-xs">
-          <Textarea
-            disabled={!editable}
-            className="text-xs"
-            placeholder={emailTemplates[0].bodyText}
-            onChange={(e) => setBody(e.target.value)}
-          />
-        </CardContent>
-
-        <CardFooter className="flex justify-between text-xs items-center">
-          <div>
-            <Button disabled={editable}>Send</Button>
-            {editable && (
-              <Button variant={"ghost"} onClick={() => setEditable(false)}>
-                <Check className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-          <div>
-            <Button variant={"ghost"} onClick={() => setEditable(true)}>
-              <Edit3 className="mr-2 h-4 w-4" />
-            </Button>
-            <Button variant={"ghost"}>
-              <RefreshCw className="mr-2 h-4 w-4" />
-            </Button>
-            <Button variant={"ghost"}>
-              <Trash2 className="mr-2 h-4 w-4" />
-            </Button>
-            <DropdownComponent />
-          </div>
-        </CardFooter>
-      </Card>
-    </div>
-  );
-}
-
-function SingleThreadDisplay({ threadData }: { threadData: any }) {
-  const emails = emailReplies;
-  //   const emailsWithType: EmailOrEventItem[] = threadData.data.emails.map(
-  //     (email: any) => ({
-  //       type: "email",
-  //       data: email,
-  //       timestamp: new Date(email.timestamp),
-  //     }),
-  //   );
-
-  //   const eventsWithType: EmailOrEventItem[] = threadData.data.threadEvents.map(
-  //     (event: any) => ({
-  //       type: "event",
-  //       data: event,
-  //       timestamp: new Date(event.timestamp),
-  //     }),
-  //   );
-
-  //   const messages: EmailOrEventItem[] = [...emailsWithType, ...eventsWithType];
-
-  //   messages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
-
-  return (
-    <div className="relative">
-      {emailReplies.map((email, index) => {
-        return <EmailComponent key={index} email={email} />;
-      })}
+return (
+  <div className="relative">
+  <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
+  {conversations.length > 0 && (
+    <>
+      {conversations.map((email, index) => (
+        <EmailComponent key={index} email={email} />
+      ))}
       <DraftEmailComponent />
-      {/* {messages.map((message, index) => {
-        if (message.type === "email") {
-          return <EmailComponent key={index} data={message} />;
-        }
-      })} */}
-    </div>
-  );
-}
+    </>
+  )}
+</div>
+);
+};
+
+export default ThreadDisplayMain;
+            
