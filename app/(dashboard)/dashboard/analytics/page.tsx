@@ -84,21 +84,8 @@ export default function Page() {
         <TabsContent value="overview" className="space-y-4"> */}
           
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
-          <div className="flex flex-col col-span-4">
-            <Card>
-                <CardContent className="flex items-center gap-5 pt-6">
-                  <div className="flex items-center gap-2">
-                    <Icons.mail/>
-                    <p className="font-medium">Emails Pending Approval</p>
-                  </div>
-                  <Badge variant={"secondary"}>120</Badge>
-                </CardContent>
-            </Card>
-
-            {/* <p className="font-semibold">Performance Overview</p> */}
-
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mt-4">
-              
+          {/* <div className="flex flex-col col-span-4"> */}
+            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 col-span-2">
               {cardData.map((card, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
@@ -126,72 +113,91 @@ export default function Page() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+            {/* </div> */}
           </div>
-          
+
           <Card className="col-span-2">
-            <ScrollArea className="lg:h-56 md:h-[26rem]">
+            <ScrollArea className="h-[20rem]">
               <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
-                <CardDescription>
-                  You made 265 sales this month.
-                </CardDescription>
+                <CardTitle>Hot Leads</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-8">
+                <div className="space-y-4">
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/01.png" alt="Avatar" />
                       <AvatarFallback>OM</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Ava <span className="text-muted-foreground">populated</span> leads</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">Olivia Martin - Descope</p>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
                       <AvatarImage src="/avatars/02.png" alt="Avatar" />
                       <AvatarFallback>JL</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Samirah <span className="text-muted-foreground">replied to your</span> Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - CodeSphere</p>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/03.png" alt="Avatar" />
                       <AvatarFallback>IN</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>  
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">Isabella Nguyen - GTM Buddy</p>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/04.png" alt="Avatar" />
                       <AvatarFallback>WK</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>  
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                      <AvatarFallback>SD</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm font-medium leading-none ml-4">Sofia Davis - CodeSphere</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                      <AvatarFallback>JL</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - GTM Buddy</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                      <AvatarFallback>WK</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
                   </div>
                 </div>
               </CardContent>
             </ScrollArea>
           </Card>
           
+          <Card className="col-span-2">
+            <ScrollArea className="h-[20rem]">
+              <CardHeader>
+                <CardTitle>Mailbox Health</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <p className="text-sm">olivia.maria@gmail.com - 80%</p>
+                  <Progress value={80} className="h-5 mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm">jane.doe@gmail.com - 30%</p>
+                  <Progress value={30} className="h-5 mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm">john.miller@gmail.com - 65%</p>
+                  <Progress value={65} className="h-5 mt-2" />
+                </div>
+              </CardContent>
+            </ScrollArea>
+          </Card>
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
@@ -260,89 +266,94 @@ export default function Page() {
             </ScrollArea>
           </Card>
 
-          <Card className="col-span-2">
-            <ScrollArea className="h-[26rem]">
-              <CardHeader>
-                <CardTitle>Hot Leads</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                      <AvatarFallback>OM</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Olivia Martin - Descope</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
-                      <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - CodeSphere</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                      <AvatarFallback>IN</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Isabella Nguyen - GTM Buddy</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/04.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>SD</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Sofia Davis - CodeSphere</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - GTM Buddy</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
-                  </div>
-                </div>
-              </CardContent>
-            </ScrollArea>
-          </Card>
-
-          <Card className="col-span-2">
+          <Card className="col-span-4">
             <CardHeader>
-              <CardTitle>Mailbox Health</CardTitle>
+              <CardTitle>Conversion Funnel</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <p className="text-sm">olivia.maria@gmail.com - 80%</p>
-                <Progress value={80} className="h-5 mt-2" />
+            <CardContent className="flex items-center justify-between">
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={80} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">4565</p>
+                  <p className="text-xs text-gray-500">Outreach</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm">jane.doe@gmail.com - 30%</p>
-                <Progress value={30} className="h-5 mt-2" />
+
+              <div className="flex flex-col items-center">
+                <p>69%</p>
+                <Icons.arrowRight size={20}/>
               </div>
-              <div>
-                <p className="text-sm">john.miller@gmail.com - 65%</p>
-                <Progress value={65} className="h-5 mt-2" />
+
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={60} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">3123</p>
+                  <p className="text-xs text-gray-500">Open</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <p>3%</p>
+                <Icons.arrowRight size={20}/>
+              </div>
+
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={10} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">77</p>
+                  <p className="text-xs text-gray-500">CTA Click</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <p>43%</p>
+                <Icons.arrowRight size={20}/>
+              </div>
+
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={5} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">33</p>
+                  <p className="text-xs text-gray-500">Goal</p>
+                </div>
               </div>
             </CardContent>
           </Card>
           
           <Card className="col-span-2 p-4">
-            <p className="text-sm">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of "de Finibus Bonorum et Malorum" (The Extremes of Good and Evil) by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, "Lorem ipsum dolor sit amet..", comes from a line in section 1.10.32.</p>
+            <ScrollArea className="h-[18.5rem]">
+              <CardContent className="text-sm space-y-4">
+                <p>
+                  Deliverability Rate - no. of email sent / total no. of email
+                </p>
+                <p>
+                  Open Rate - total email opened / total email
+                </p>
+                <p>
+                  Reply Rate - no. of leads who replied / no of total leads reached
+                </p>
+                <p>
+                  Positive Reply Rate - no. of people positive replied / total no. of people
+                </p>
+                <p>
+                  Negative Reply Rate - no. of people negative replied / total no. of people
+                </p>
+                <p>
+                  Conversion Rate / meeting booked - no. of people leads who booked meetings / total no. of people
+                </p>
+                <p>
+                  Unsubscribe Rate - people who asked to unsubscribe / total no. of people
+                </p>
+              </CardContent>
+            </ScrollArea>
           </Card>
 
           {/* <Card className="col-span-4 md:col-span-3">
