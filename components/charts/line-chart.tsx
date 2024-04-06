@@ -99,23 +99,17 @@ export function LineChartComponent() {
         />
         <Tooltip />
         <Line
-          name="Leads Enrolled in Workflow"
+          name="Emails sent"
           type="monotone"
           dataKey="lew"
           stroke="#8884d8"
           activeDot={{ r: 8 }}
         />
         <Line
-          name="Leads Engaged"
+          name="No. of leads reached out everyday"
           type="monotone"
           dataKey="le"
           stroke="#82ca9d"
-        />
-        <Line
-          name="Meeting Link Clicks"
-          type="monotone"
-          dataKey="mlc"
-          stroke="#a64490"
         />
       </LineChart>
     </ResponsiveContainer>
