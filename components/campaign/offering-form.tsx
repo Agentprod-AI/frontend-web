@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-
 // import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -44,7 +43,10 @@ const profileFormSchema = z.object({
 type ProfileFormValues = z.infer<typeof profileFormSchema>;
 
 // This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {};
+const defaultValues: Partial<ProfileFormValues> = {
+  product_offering: "",
+  offering_details: "",
+};
 
 export function OfferingForm({type}: {type: string}) {
   const router = useRouter();
@@ -120,8 +122,8 @@ export function OfferingForm({type}: {type: string}) {
               <FormLabel>Details of offers and details</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Write some details"
-                  className="resize-none"
+                  placeholder="Describe the product and features."
+                  // className="resize-none"
                   {...field}
                 />
               </FormControl>

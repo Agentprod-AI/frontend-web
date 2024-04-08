@@ -4,4 +4,3 @@ export const config = {
         ? 'http://localhost:3001/v2/'
         : 'https://agentprod-backend-framework-n1vm.onrender.com/',
   };
-  

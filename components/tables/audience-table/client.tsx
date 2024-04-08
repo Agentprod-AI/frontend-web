@@ -3,28 +3,76 @@ import { DataTable } from "@/components/ui/data-table";
 import { Heading } from "@/components/ui/heading";
 import { Separator } from "@/components/ui/separator";
 // import { User } from "@/constants/data";
-import { columns } from "./columns";
-import { useLeads } from "@/context/lead-user";
+import {
+  leadColumns,
+  // orgColumns
+  contactsColumn,
+} from "./columns";
+import { Organization, Lead, Contact, useLeads } from "@/context/lead-user";
 
 // interface ProductsClientProps {
 //   data: User[];
 // }
 
-export const AudienceTableClient = () => {
+function isOrganization(object: any): object is Organization {
+  return (object as Organization).type === "company";
+}
+
+export const AudienceTableClient = ({
+  isContacts,
+  contacts,
+}: {
+  isContacts?: boolean;
+  contacts?: Contact[];
+}) => {
   const { leads } = useLeads();
-  console.log(leads);
+
+  let tableColumns: any;
+  let tableDataComponent;
+  if (isContacts) {
+    tableColumns = contactsColumn;
+    tableDataComponent = (
+      <DataTable<Contact, (typeof leads)[0]> // Use the specific type for TValue if it's known
+        searchKey="name"
+        columns={tableColumns}
+        data={leads as Contact[]}
+        simple={true}
+      />
+    );
+  } else {
+    tableColumns = leadColumns;
+    tableDataComponent = (
+      <DataTable<Lead, (typeof leads)[0]> // Use the specific type for TValue if it's known
+        searchKey="name"
+        columns={tableColumns}
+        data={leads as Lead[]}
+        simple={true}
+      />
+    );
+  }
+
+  // let tableDataComponent;
+
+  if (leads.length > 0) {
+    // if (isOrganization(leads[0])) {
+    //   tableColumns = orgColumns;
+    //   tableDataComponent = (
+    //     <DataTable<Organization, (typeof leads)[0]> // Use the specific type for TValue if it's known
+    //       searchKey="name"
+    //       columns={tableColumns}
+    //       data={leads as Organization[]}
+    //       simple={true}
+    //     />
+    //   );
+    // } else {
+    // }
+  }
 
   return (
     <>
       <div className="flex items-start justify-between pb-2"></div>
       <Separator />
-      <DataTable
-        searchKey="name"
-        columns={columns}
-        data={leads}
-        simple={true}
-      />
-      {/* <AudienceTable columns={["Name", "Role"]} data={leads} /> */}
+      {tableDataComponent}
     </>
   );
 };

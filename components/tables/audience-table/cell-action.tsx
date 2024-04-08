@@ -1,5 +1,5 @@
 "use client";
-import { Lead } from "@/context/lead-user";
+import { Lead, Organization } from "@/context/lead-user";
 import { AlertModal } from "@/components/modal/alert-modal";
 import { Button } from "@/components/ui/button";
 import {
@@ -15,11 +15,13 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 
 interface CellActionProps {
-  data: Lead;
+  data: Lead | Organization;
+  type?: string;
 }
 
-export const CellAction: React.FC<CellActionProps> = ({ data }) => {
+export const CellAction: React.FC<CellActionProps> = ({ data, type }) => {
   const [loading, setLoading] = useState(false);
+  const [isHovering, setIsHovering] = useState(false);
   const [open, setOpen] = useState(false);
   const router = useRouter();
 
