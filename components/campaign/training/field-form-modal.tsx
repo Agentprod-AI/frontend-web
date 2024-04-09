@@ -24,12 +24,26 @@ import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { createTraining } from './training.api';
 
 const FormSchema = z.object({
   fieldName: z.string(),
   description: z.string(),
   length: z.string().optional(),
 });
+
+export class TrainingRequest {
+  campaign_id: string | undefined;
+  template: string | undefined;
+  follow_up_template?: string;
+  offering_variables?: Record<string, any>;
+  personalized_fields?: Record<string, any>;
+  enriched_fields?: string[];
+}
+
+export class TrainingResponse extends TrainingRequest {
+  id?: string;
+}
 
 export function FieldFormModal({
   children,
@@ -67,20 +81,26 @@ export function FieldFormModal({
     },
   });
 
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    if (modalType === "add") {
-      setFieldsList({
-        ...fieldsList,
-        [type]: [
-          ...fieldsList[type],
-          {
-            id: fieldsList[type].length + 1,
-            val: data.fieldName,
-            description: data.description,
-            ...(type === "variable" && { length: data.length }),
-          },
-        ],
-      });
+  async function onSubmit(data: z.infer<typeof FormSchema>) {
+    if (modalType === 'add') {
+      try {
+        const trainingInfo: TrainingRequest = {
+          campaign_id: 'your_campaign_id', // Replace with the actual campaign ID
+          template: data.fieldName,
+          follow_up_template: data.description,
+          offering_variables: {},
+          personalized_fields: {},
+          enriched_fields: [],
+        };
+
+        const createdTraining = await createTraining(trainingInfo);
+        setFieldsList({
+          ...fieldsList,
+          [type]: [...fieldsList[type], createdTraining],
+        });
+      } catch (error) {
+        console.error('Error creating training:', error);
+      }
     } else {
       const newfieldsList = { ...fieldsList };
       newfieldsList[type] = newfieldsList[type].map((val: any) => {
