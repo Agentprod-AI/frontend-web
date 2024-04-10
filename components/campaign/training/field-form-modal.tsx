@@ -21,10 +21,10 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { createTraining } from './training.api';
+import { createTraining, updateTraining, getTraining } from "./training.api";
 
 const FormSchema = z.object({
   fieldName: z.string(),
@@ -43,6 +43,7 @@ export class TrainingRequest {
 
 export class TrainingResponse extends TrainingRequest {
   id?: string;
+  length: any;
 }
 
 export function FieldFormModal({
@@ -56,36 +57,49 @@ export function FieldFormModal({
   children: React.ReactNode;
   type: string;
   fieldsList: allFieldsListType | any;
-  setFieldsList: (val: allFieldsListType) => void;
+  setFieldsList: (val: allFieldsListType) => void; // fetch api
   fieldId?: any;
   modalType: "edit" | "add";
 }) {
   const [open, setOpen] = useState(false);
+  const [currentTraining, setCurrentTraining] = useState<TrainingResponse | null>(
+    null
+  );
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
-      fieldName:
-        modalType === "edit"
-          ? fieldsList[type].find((val: any) => val.id === fieldId)?.val
-          : "",
-      description:
-        modalType === "edit"
-          ? fieldsList[type].find((val: any) => val.id === fieldId)?.description
-          : "",
-      ...(type === "variable" && {
-        length:
-          modalType === "edit"
-            ? fieldsList[type].find((val: any) => val.id === fieldId)?.length
-            : "short",
-      }),
+      fieldName: "",
+      description: "",
+      ...(type === "variable" && { length: "short" }),
     },
   });
 
+  useEffect(() => {
+    const fetchTrainingDetails = async () => {
+      if (modalType === "edit" && fieldId) {
+        try {
+          const trainingDetails = await getTraining(fieldId);
+          setCurrentTraining(trainingDetails);
+          form.reset({
+            fieldName: trainingDetails.template,
+            description: trainingDetails.follow_up_template,
+            ...(type === "variable" && { length: trainingDetails.length }),
+          });
+        } catch (error) {
+          console.error("Error fetching training details:", error);
+        }
+      }
+    };
+
+    fetchTrainingDetails();
+  }, [fieldId, modalType, form, type]);
+
   async function onSubmit(data: z.infer<typeof FormSchema>) {
-    if (modalType === 'add') {
-      try {
+    try {
+      if (modalType === "add") {
         const trainingInfo: TrainingRequest = {
-          campaign_id: 'your_campaign_id', // Replace with the actual campaign ID
+          campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305", // Replace with the actual campaign ID
           template: data.fieldName,
           follow_up_template: data.description,
           offering_variables: {},
@@ -98,26 +112,41 @@ export function FieldFormModal({
           ...fieldsList,
           [type]: [...fieldsList[type], createdTraining],
         });
-      } catch (error) {
-        console.error('Error creating training:', error);
-      }
-    } else {
-      const newfieldsList = { ...fieldsList };
-      newfieldsList[type] = newfieldsList[type].map((val: any) => {
-        if (val.id === fieldId) {
-          return {
-            id: fieldId,
-            val: data.fieldName,
-            description: data.description,
-            // add length only if type is variable
+      } else {
+        if (currentTraining) {
+          const updatedTraining: TrainingRequest = {
+            campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305", // Replace with the actual campaign ID
+            template: data.fieldName,
+            follow_up_template: data.description,
+            offering_variables: {},
+            personalized_fields: {},
+            enriched_fields: [],
             ...(type === "variable" && { length: data.length }),
           };
+
+          const updatedResponse = await updateTraining(
+            currentTraining.id!,
+            updatedTraining
+          );
+          const newfieldsList = { ...fieldsList };
+          newfieldsList[type] = newfieldsList[type].map((val: any) => {
+            if (val.id === updatedResponse.id) {
+              return {
+                id: updatedResponse.id,
+                val: updatedResponse.template,
+                description: updatedResponse.follow_up_template,
+                ...(type === "variable" && { length: updatedResponse.length }),
+              };
+            }
+            return val;
+          });
+          setFieldsList(newfieldsList);
         }
-        return val;
-      });
-      setFieldsList(newfieldsList);
+      }
+      setOpen(false);
+    } catch (error) {
+      console.error("Error creating/updating training:", error);
     }
-    setOpen(false);
   }
 
   return (
@@ -176,54 +205,7 @@ export function FieldFormModal({
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
                       >
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="short" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Short
-                            <span className="text-muted-foreground">
-                              {" "}
-                              &#40;1-5 words&#41;
-                            </span>
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="medium" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Medium
-                            <span className="text-muted-foreground">
-                              {" "}
-                              &#40;5-10 words&#41;
-                            </span>
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="long" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Long
-                            <span className="text-muted-foreground">
-                              {" "}
-                              &#40;A few sentences&#41;
-                            </span>
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-3 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="automatic" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Automatic
-                            <span className="text-muted-foreground">
-                              {" "}
-                              &#40;AI determined length&#41;
-                            </span>
-                          </FormLabel>
-                        </FormItem>
+                        {/* Radio group options */}
                       </RadioGroup>
                     </FormControl>
                     <FormMessage />
