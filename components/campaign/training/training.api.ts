@@ -2,14 +2,13 @@ import { TrainingRequest, TrainingResponse } from './field-form-modal';
 import axiosInstance from '@/utils/axiosInstance';
 export async function createTraining(trainingInfo: TrainingRequest): Promise<TrainingResponse> {
   try {
-    const response = await axiosInstance.post<TrainingResponse>('/v2/training/');
+    const response = await axiosInstance.post<TrainingResponse>('/v2/training/', trainingInfo);
     return response.data;
   } catch (error) {
     console.error('Error creating training:', error);
     throw error;
   }
 }
-
 export async function updateTraining(trainingId: string, trainingInfo: TrainingRequest): Promise<TrainingResponse> {
   try {
     const response = await axiosInstance.put<TrainingResponse>(`/v2/training/${trainingId}`, trainingInfo);

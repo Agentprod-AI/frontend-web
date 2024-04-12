@@ -21,7 +21,7 @@ import {
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { useState, useEffect } from "react";
+import { useState, useEffect, ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { createTraining, updateTraining, getTraining } from "./training.api";
@@ -33,9 +33,10 @@ const FormSchema = z.object({
 });
 
 export class TrainingRequest {
-  campaign_id: string | undefined;
-  template: string | undefined;
+  campaign_id!: string;
+  template!: string;
   follow_up_template?: string;
+  variables?: Record<string, any>;
   offering_variables?: Record<string, any>;
   personalized_fields?: Record<string, any>;
   enriched_fields?: string[];
@@ -44,6 +45,8 @@ export class TrainingRequest {
 export class TrainingResponse extends TrainingRequest {
   id?: string;
   length: any;
+  val: ReactNode;
+  type: string | undefined;
 }
 
 export function FieldFormModal({
@@ -75,28 +78,12 @@ export function FieldFormModal({
     },
   });
 
-  useEffect(() => {
-    const fetchTrainingDetails = async () => {
-      if (modalType === "edit" && fieldId) {
-        try {
-          const trainingDetails = await getTraining(fieldId);
-          setCurrentTraining(trainingDetails);
-          form.reset({
-            fieldName: trainingDetails.template,
-            description: trainingDetails.follow_up_template,
-            ...(type === "variable" && { length: trainingDetails.length }),
-          });
-        } catch (error) {
-          console.error("Error fetching training details:", error);
-        }
-      }
-    };
 
-    fetchTrainingDetails();
-  }, [fieldId, modalType, form, type]);
 
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
+      let updatedFieldsList: allFieldsListType;
+  
       if (modalType === "add") {
         const trainingInfo: TrainingRequest = {
           campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305", // Replace with the actual campaign ID
@@ -105,13 +92,22 @@ export function FieldFormModal({
           offering_variables: {},
           personalized_fields: {},
           enriched_fields: [],
+          ...(type === "variable" && { length: data.length }),
         };
-
-        const createdTraining = await createTraining(trainingInfo);
-        setFieldsList({
+  
+        const createdTraining: TrainingResponse = await createTraining(trainingInfo);
+        updatedFieldsList = {
           ...fieldsList,
-          [type]: [...fieldsList[type], createdTraining],
-        });
+          [type]: [
+            ...fieldsList[type],
+            {
+              id: createdTraining.id,
+              val: createdTraining.template,
+              description: createdTraining.follow_up_template,
+              ...(type === "variable" && { length: createdTraining.length }),
+            },
+          ],
+        };
       } else {
         if (currentTraining) {
           const updatedTraining: TrainingRequest = {
@@ -123,32 +119,36 @@ export function FieldFormModal({
             enriched_fields: [],
             ...(type === "variable" && { length: data.length }),
           };
-
-          const updatedResponse = await updateTraining(
+  
+          const updatedResponse: TrainingResponse = await updateTraining(
             currentTraining.id!,
             updatedTraining
           );
-          const newfieldsList = { ...fieldsList };
-          newfieldsList[type] = newfieldsList[type].map((val: any) => {
-            if (val.id === updatedResponse.id) {
-              return {
-                id: updatedResponse.id,
-                val: updatedResponse.template,
-                description: updatedResponse.follow_up_template,
-                ...(type === "variable" && { length: updatedResponse.length }),
-              };
-            }
-            return val;
-          });
-          setFieldsList(newfieldsList);
+          updatedFieldsList = {
+            ...fieldsList,
+            [type]: fieldsList[type].map((val: any) => {
+              if (val.id === updatedResponse.id) {
+                return {
+                  id: updatedResponse.id,
+                  val: updatedResponse.template,
+                  description: updatedResponse.follow_up_template,
+                  ...(type === "variable" && { length: updatedResponse.length }),
+                };
+              }
+              return val;
+            }),
+          };
+        } else {
+          updatedFieldsList = fieldsList;
         }
       }
+  
+      setFieldsList(updatedFieldsList);
       setOpen(false);
     } catch (error) {
       console.error("Error creating/updating training:", error);
     }
   }
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
