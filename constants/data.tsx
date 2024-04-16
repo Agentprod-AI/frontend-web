@@ -92,7 +92,7 @@ export const users: User[] = [
   },
 ];
 
-export type Employee = {
+export type Lead = {
   id: number;
   first_name: string;
   last_name: string;
@@ -140,26 +140,7 @@ export const navItems: NavInterface[] = [
         icon: "mail",
         label: "mail",
         isCollapsible: true,
-        subNavs: [
-          {
-            title: "Todo",
-            href: "/dashboard/mail/todo",
-            label: "Todo",
-            icon: "check",
-          },
-          {
-            title: "Scheduled",
-            href: "/dashboard/mail/scheduled",
-            label: "Scheduled",
-            icon: "clock",
-          },
-          {
-            title: "Completed",
-            href: "/dashboard/mail/completed",
-            label: "Completed",
-            icon: "checkCheck",
-          },
-        ],
+      
       },
       {
         title: "Campaign",
@@ -168,44 +149,32 @@ export const navItems: NavInterface[] = [
         label: "campaign",
         isCollapsible: false,
       },
+      {
+        title: "Leads",
+        href: "/dashboard/leads",
+        icon: "contact",
+        label: "leads",
+        isCollapsible: false,
+      },
     ],
   },
   {
     category: "Extras",
     items: [
       {
-        title: "User",
-        href: "/dashboard/user",
-        icon: "user",
-        label: "user",
+        title: "Leads",
+        href: "/dashboard/leads",
+        icon: "lead",
+        label: "leads",
         isCollapsible: false,
       },
       {
-        title: "Employee",
-        href: "/dashboard/employee",
-        icon: "employee",
-        label: "employee",
+        title: "Analytics",
+        href: "/dashboard/analytics",
+        // icon: "lead",
+        label: "analytics",
         isCollapsible: false,
       },
-      {
-        title: "Profile",
-        href: "/dashboard/profile",
-        icon: "profile",
-        label: "profile",
-        isCollapsible: false,
-      },
-      // {
-      //   title: "Login",
-      //   href: "/",
-      //   icon: "login",
-      //   label: "login",
-      //   isCollapsible: false,
-      // },
-    ],
-  },
-  {
-    category: "Extras",
-    items: [
       {
         title: "Settings",
         href: "/dashboard/settings/account-info",
@@ -515,5 +484,56 @@ export const contacts = [
     email: "scarlett.adams@example.com",
   },
 ];
+export const draftEmail = {
+  title: "Try Agentprod for your business!", 
+  body: `Hi Olliver,
+
+I wanted to tell you about this great new AI assistant tool called Agentprod that I think could really help your business. 
+
+Agentprod is an AI-powered virtual assistant that can understand customer questions and respond with accurate answers instantly. It's perfect for automating common customer service queries so your team can focus on more complex issues.
+
+Some key benefits:
+
+- 24/7 availability - Agentprod never sleeps! It can handle customer queries even when your team is offline.
+
+- Scalability - You can have as many conversations at once as you need. Agentprod can scale to handle increased demand seamlessly.
+
+- Customizable - Easily train Agentprod to understand industry/business specific language and terminology. 
+
+- Analytics - Get insights into the most common customer questions and queries. Use this to improve products/services.
+
+Let me know if you would like me to set up a demo of Agentprod for your customer service team. I really think this could help reduce workload and costs while also improving customer satisfaction.
+
+Looking forward to hearing your thoughts!
+
+Regards,
+Agent Prod`
+};
 
 export type Contact = (typeof contacts)[number];
+
+export const draftEmail = {
+  title: "Try Agentprod for your business!", 
+  body: `Hi Olliver,
+
+I wanted to tell you about this great new AI assistant tool called Agentprod that I think could really help your business. 
+
+Agentprod is an AI-powered virtual assistant that can understand customer questions and respond with accurate answers instantly. It's perfect for automating common customer service queries so your team can focus on more complex issues.
+
+Some key benefits:
+
+- 24/7 availability - Agentprod never sleeps! It can handle customer queries even when your team is offline.
+
+- Scalability - You can have as many conversations at once as you need. Agentprod can scale to handle increased demand seamlessly.
+
+- Customizable - Easily train Agentprod to understand industry/business specific language and terminology. 
+
+- Analytics - Get insights into the most common customer questions and queries. Use this to improve products/services.
+
+Let me know if you would like me to set up a demo of Agentprod for your customer service team. I really think this could help reduce workload and costs while also improving customer satisfaction.
+
+Looking forward to hearing your thoughts!
+
+Regards,
+Agent Prod`
+};

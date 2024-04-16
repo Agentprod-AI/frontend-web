@@ -34,13 +34,17 @@ import {
   Radio,
   Clock,
   CheckCheck,
+  Contact2,
+  SlidersHorizontal,
   Info,
   AlertCircle,
   PencilLine,
   Pen,
   Trash2,
   Circle,
-  Star
+  Star,
+  Zap,
+  Copy
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -61,7 +65,7 @@ export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   trash: Trash,
-  employee: UserX2Icon,
+  lead: UserX2Icon,
   post: FileText,
   page: File,
   media: Image,
@@ -77,6 +81,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
+  contact: Contact2,
   info: Info,
   alertCircle: AlertCircle,
   pencilLine: PencilLine,
@@ -84,6 +89,8 @@ export const Icons = {
   trash2: Trash2,
   circle: Circle,
   star: Star,
+  zap: Zap,
+  copy: Copy,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

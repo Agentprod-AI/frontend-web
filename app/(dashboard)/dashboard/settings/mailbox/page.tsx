@@ -1,4 +1,6 @@
-import React from 'react';
+"use client";
+
+import React, { useState } from 'react';
 
 import { Button } from '@/components/ui/button';
  
@@ -29,8 +31,38 @@ import {
 import { Icons } from '@/components/icons';
 import { Switch } from '@/components/ui/switch';
 import { GmailIcon } from '@/app/icons';
+import { Modal } from '@/components/ui/modal';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+
+const mailbox = [
+    {
+        name: "h66fgugabtde2xw3alnbdjcnkvkf2aic._domainkey.agentprod.com",
+        value: "h66fgugabtde2xw3alnbdjcnkvkf2aic.dkim.amazonses.com"
+    },
+    {
+        name: "t55xo37trffwlzb3u6htrj2lng7mx6h6._domainkey.agentprod.com",
+        value: "t55xo37trffwlzb3u6htrj2lng7mx6h6.dkim.amazonses.com"
+    },
+    {
+        name: "t4uiosaepu7vohinjqlagesy7lzh5rye._domainkey.agentprod.com",
+        value: "t4uiosaepu7vohinjqlagesy7lzh5rye.dkim.amazonses.com"
+    }
+]
 
 export default function Page () {
+  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
+  const handleOpenModal = () => setIsModalOpen(true);
+  const handleCloseModal = () => setIsModalOpen(false);
+
+  const handleCopy = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      // You might want to set a state to show a success message or tooltip
+    }, (err) => {
+      console.error('Could not copy text: ', err);
+    });
+  };
+
   return (
     <div className="w-full">
         <Alert>
@@ -95,9 +127,65 @@ export default function Page () {
                 </TableBody>
             </Table>
         </div>
-        <Button className="mt-5">
-            Add Mailbox
-        </Button>
+        
+        <Dialog>
+            <DialogTrigger asChild>
+                <Button className="mt-5">
+                    Add Mailbox
+                </Button>
+            </DialogTrigger>
+            <DialogContent className="w-full">
+                <DialogHeader>
+                <DialogTitle>Add mailbox</DialogTitle>
+                <DialogDescription>
+                    Enter the domain you want to add to the mailbox.
+                </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                    <div className="grid items-center gap-4">
+                        <p className="text-sm">Domain</p>
+                        <Input 
+                        //   value={domainValue}
+                        //   onChange={(e) => setDomainValue(e.target.value)}
+                        placeholder="Enter domain"
+                        />
+                    </div>
+                    <div className="grid items-center gap-4 w-full">
+                        <Table className="mt-4 w-full">
+                            <TableHeader>
+                                <TableRow>
+                                    <TableHead>Type</TableHead>
+                                    <TableHead>Name</TableHead>
+                                    <TableHead>Value</TableHead>
+                                </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                                {mailbox.map((mailbox, index) => (
+                                    <TableRow key={index}>
+                                        <TableCell>CNAME</TableCell>
+                                        <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Icons.copy className="cursor-pointer" onClick={() => handleCopy(mailbox.name)} />
+                                            <span>{mailbox.name}</span>
+                                        </div>
+                                        </TableCell>
+                                        <TableCell>
+                                        <div className="flex items-center gap-2">
+                                            <Icons.copy className="cursor-pointer" onClick={() => handleCopy(mailbox.value)} />
+                                            <span>{mailbox.value}</span>
+                                        </div>
+                                        </TableCell>
+                                  </TableRow>
+                                ))}
+                            </TableBody>
+                        </Table>
+                    </div>
+                </div>
+                <DialogFooter>
+                <Button type="submit">Save changes</Button>
+                </DialogFooter>
+            </DialogContent>
+        </Dialog>
     </div>
   );
 };

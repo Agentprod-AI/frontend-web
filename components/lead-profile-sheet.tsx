@@ -23,9 +23,11 @@ import {
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
-import { Lead, Organization, useLeads } from "@/context/lead-user";
+import { Contact, Lead, Organization, useLeads } from "@/context/lead-user";
 import { PeopleProfileSheet } from "./people-profile-sheet";
-import { CompanyProfileSheet } from "./company-profile-sheet";
+import { useCompanyInfo } from "@/context/company-linkedin";
+import { ContactProfileSheet } from "./contact-profile-sheet";
+// import { CompanyProfileSheet } from "./company-profile-sheet";
 
 // import { Playlist } from "../data/playlists";
 
@@ -37,8 +39,10 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   const { isOpen, itemId, toggleSidebar } = useLeadSheetSidebar();
   const { leads } = useLeads();
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
-  const [data, setData] = useState<Lead | Organization>();
+  const [data, setData] = useState<Lead | Contact>();
+  const { companyInfo } = useCompanyInfo();
 
+  console.log(useLeadSheetSidebar());
   useEffect(() => {
     if (isOpen && itemId) {
       const item = leads.find((lead) => lead.id === itemId);
@@ -58,13 +62,14 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           <MenuIcon />
         </SheetTrigger>
         <SheetContent side="right" className="!px-0">
-          {/* component people, company*/}
-          {data?.type === "people" && (
-            <PeopleProfileSheet {...(data as Lead)} />
+          {data?.type === "prospective" && (
+            <PeopleProfileSheet {...(data as Lead)} {...companyInfo} />
           )}
-          {data?.type === "company" && (
+          <ContactProfileSheet {...(data as Contact)} />
+          {/* {data?.type === "organization" && (
             <CompanyProfileSheet {...(data as Organization)} />
-          )}
+          )} */}
+          {/* component people, company*/}
         </SheetContent>
       </Sheet>
     </>

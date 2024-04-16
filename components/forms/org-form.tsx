@@ -35,7 +35,7 @@ import { useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 // import { toast } from "@/components/ui/use-toast";
-import { orgLocations } from "./people-form";
+import { orgLocations } from "./formUtils"
 import { v4 as uuid } from "uuid";
 import { truncateString } from "@/components/ui/tag/tag-input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -272,13 +272,13 @@ export default function OrgFormComponenet(): JSX.Element {
   const [loading, setLoading] = useState(false);
 
   interface inputValues {
-    organization_num_employees_ranges: string[];
+    organization_num_leads_ranges: string[];
     organization_locations: string[];
     q_organization_keyword_tags: string[];
   }
 
   const prevInputValues = React.useRef<inputValues>({
-    organization_num_employees_ranges: [],
+    organization_num_leads_ranges: [],
     organization_locations: [],
     q_organization_keyword_tags: [],
   });
@@ -389,8 +389,8 @@ export default function OrgFormComponenet(): JSX.Element {
     //       const data = await axios.post("/api/apollo", {
     //         url: "https://api.apollo.io/api/v1/mixed_companies/search",
     //         body: {
-    //           // organization_num_employees_ranges:
-    //           //   formValues.organization_num_employees_ranges.map(
+    //           // organization_num_leads_ranges:
+    //           //   formValues.organization_num_leads_ranges.map(
     //           //     (item) => item.text,
     //           //   ),
     //           // organization_locations: formValues.organization_locations.map(
@@ -401,7 +401,7 @@ export default function OrgFormComponenet(): JSX.Element {
     //           // q_organization_name: formValues.q_organization_name.text,
     //           page: 1,
     //           per_page: 2,
-    //           organization_num_employees_ranges: ["1,1000"],
+    //           organization_num_leads_ranges: ["1,1000"],
     //           organization_locations: ["United States"],
     //           q_organization_keyword_tags: ["sales strategy", "lead"],
     //           q_organization_name: "Apollo.io",
@@ -450,7 +450,7 @@ export default function OrgFormComponenet(): JSX.Element {
     const body = {
       page: 1,
       per_page: 10,
-      organization_num_employees_ranges: ["1,100", "1,1000"],
+      organization_num_leads_ranges: ["1,100", "1,1000"],
       organization_locations: ["United States"],
       q_organization_keyword_tags: ["sales strategy", "lead"],
       q_organization_name: "Apollo.io",
@@ -755,7 +755,7 @@ export default function OrgFormComponenet(): JSX.Element {
                     />
                   </FormControl>
                   <FormDescription>
-                    These are the number of employees that you&apos;re
+                    These are the number of leads that you&apos;re
                     interested in.
                   </FormDescription>
                   <FormMessage />

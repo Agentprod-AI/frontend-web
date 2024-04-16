@@ -52,7 +52,6 @@ export default function CollapseNavItem({ nav }: { nav: NavItem }) {
             )}
             onClick={() => setOpen(!open)}
           >
-            <ChevronsUpDown className="h-4 w-4 " />
           </Button>
         </span>
       </Link>
