@@ -9,7 +9,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-
 import { Button } from "@/components/ui/button";
 import { Contact, useLeads } from "@/context/lead-user";
 import { useEffect, useState } from "react";
@@ -19,7 +18,6 @@ import { useCompanyInfo } from "@/context/company-linkedin";
 import { ChevronDown } from "lucide-react";
 import { config } from "@/utils/config";
 import axiosInstance from "@/utils/axiosInstance";
-
 export default function Page() {
   const { leads, setLeads } = useLeads();
   const [loading, setLoading] = useState(true);
@@ -29,13 +27,11 @@ export default function Page() {
     campaignId: string;
   }>();
   // let lead = false;
-
   useEffect(() => {
     setLeads([] as Contact[]);
     console.log(leads);
     // lead = true;
   }, []);
-
   const dummyCompanyInfo = [
     {
       company_info: {
@@ -97,7 +93,6 @@ export default function Page() {
       },
     },
   ];
-
   useEffect(() => {
     async function fetchLeads(
       campaignId: string = "482b7b80-4681-422b-9d40-f7253f4a8305"
@@ -119,17 +114,13 @@ export default function Page() {
           setLoading(false);
         });
     }
-
     fetchLeads();
-
     async function fetchCompanyScrape(company: string) {}
   }, []);
-
   const { companyInfo, setCompanyInfo } = useCompanyInfo();
   useEffect(() => {
     setCompanyInfo(dummyCompanyInfo);
   }, []);
-
   const allCampaigns:
     | {
         campaignName: string;
@@ -141,7 +132,6 @@ export default function Page() {
       campaignId: "482b7b80-4681-422b-9d40-f7253f4a8305",
     },
   ];
-
   return (
     <>
       <div className="flex gap-8">

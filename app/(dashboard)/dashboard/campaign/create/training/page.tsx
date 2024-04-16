@@ -1,3 +1,9 @@
+import Training from "@/components/campaign/training/training-page";
+
 export default function Page() {
-  return <div>training</div>;
+  return (
+    <div>
+      <Training/>
+    </div>
+  );
 }

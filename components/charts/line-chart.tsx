@@ -16,55 +16,46 @@ const data = [
     name: "17 Dec",
     lew: 10,
     le: 20,
-    mlc: 15,
   },
   {
     name: "20 Dec",
     lew: 30,
     le: 40,
-    mlc: 45,
   },
   {
     name: "23 Dec",
     lew: 5,
     le: 10,
-    mlc: 35,
   },
   {
     name: "26 Dec",
     lew: 20,
     le: 30,
-    mlc: 25,
   },
   {
     name: "29 Dec",
     lew: 15,
     le: 40,
-    mlc: 20,
   },
   {
     name: "1 Jan",
     lew: 25,
     le: 30,
-    mlc: 30,
   },
   {
     name: "4 Jan",
     lew: 10,
     le: 20,
-    mlc: 15,
   },
   {
     name: "7 Jan",
     lew: 30,
     le: 40,
-    mlc: 45,
   },
   {
     name: "10 Jan",
     lew: 5,
     le: 10,
-    mlc: 35,
   },
 ];
 
@@ -99,23 +90,17 @@ export function LineChartComponent() {
         />
         <Tooltip />
         <Line
-          name="Leads Enrolled in Workflow"
+          name="Emails sent"
           type="monotone"
           dataKey="lew"
           stroke="#8884d8"
           activeDot={{ r: 8 }}
         />
         <Line
-          name="Leads Engaged"
+          name="No. of leads reached out everyday"
           type="monotone"
           dataKey="le"
           stroke="#82ca9d"
-        />
-        <Line
-          name="Meeting Link Clicks"
-          type="monotone"
-          dataKey="mlc"
-          stroke="#a64490"
         />
       </LineChart>
     </ResponsiveContainer>
