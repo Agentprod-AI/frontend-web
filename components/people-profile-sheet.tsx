@@ -19,6 +19,7 @@ import {
 import { Button } from "./ui/button";
 import { Lead } from "@/context/lead-user";
 import { ScrollArea } from "./ui/scroll-area";
+import { useCompanyInfo, CompanyInfo } from "@/context/company-linkedin";
 
 interface CompanyInfoDataItem {
   company_info: {
@@ -71,68 +72,6 @@ export const PeopleProfileSheet = (
   };
 
   // console.log(companyInfo);
-
-  const companyInfo = [
-    {
-      company_info: {
-        website: "https://goo.gle/3DLEokh",
-        industry: "Software Development",
-        "company size": "10,001+ employees",
-        headquarters: "Mountain View, CA",
-        type: "Public Company",
-        specialties:
-          "search, ads, mobile, android, online video, apps, machine learning, virtual reality, cloud, hardware, artificial intelligence, youtube, and software",
-      },
-      about_us:
-        "A problem isn't truly solved until it's solved for all. Googlers build products that help create opportunities for everyone, whether down the street or across the globe. Bring your insight, imagination and a healthy disregard for the impossible. Bring everything that makes you unique. Together, we can build for everyone.\n\nCheck out our career opportunities at goo.gle/3DLEokh",
-      addresses: [
-        "1600 Amphitheatre Parkway\nMountain View, CA 94043, US",
-        "111 8th Ave\nNew York, NY 10011, US",
-        "Claude Debussylaan 34\nAmsterdam, North Holland 1082 MD, NL",
-        "Avenida Brigadeiro Faria Lima, 3477\nSao Paulo, SP 04538-133, BR",
-      ],
-      employees: [
-        { name: "Linus Upson", role: "Mosquitoes & Operating Systems" },
-        { name: "Phillip Pearson", role: "" },
-        { name: "Lenny T.", role: "great with computers; good with people" },
-        {
-          name: "Heath Row",
-          role: "Research manager, marketer, journalist, editor, educator, professional speaker, poet",
-        },
-      ],
-      affiliated_pages: [
-        { title: "Google Cloud", description: "Software Development" },
-        {
-          title: "YouTube",
-          description: "Technology, Information and Internet",
-        },
-        {
-          title: "Google for Developers",
-          description: "Technology, Information and Internet",
-        },
-        { title: "Think with Google", description: "Advertising Services" },
-      ],
-      stock_info: {
-        symbol: "GOOGL",
-        date: "2024-03-28",
-        market: "NASDAQ",
-        delay_info: "20 minutes delay",
-        current_price: "$150.93",
-        open_price: "150.85",
-        low_price: "150.17",
-        high_price: "151.43",
-      },
-      funding_info: {
-        total_rounds: "Google 3 total rounds",
-        last_round_details: "Last Round\nSeries A Jul 7, 1999\nUS$ 25.0M",
-        investors: [
-          "Sequoia Capital",
-          "Kleiner Perkins",
-          "+ 7 Other investors",
-        ],
-      },
-    },
-  ];
 
   const formatText = (text: string) => {
     let spacedText = text.replace(/_+/g, " ");
