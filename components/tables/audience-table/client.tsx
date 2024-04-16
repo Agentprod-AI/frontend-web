@@ -7,6 +7,7 @@ import {
   leadColumns,
   // orgColumns
   contactsColumn,
+  selectContactsColumn,
 } from "./columns";
 import { Organization, Lead, Contact, useLeads } from "@/context/lead-user";
 
@@ -21,22 +22,24 @@ function isOrganization(object: any): object is Organization {
 export const AudienceTableClient = ({
   isContacts,
   contacts,
+  checkboxes,
 }: {
   isContacts?: boolean;
   contacts?: Contact[];
+  checkboxes?: boolean;
 }) => {
   const { leads } = useLeads();
 
   let tableColumns: any;
   let tableDataComponent;
   if (isContacts) {
-    tableColumns = contactsColumn;
+    tableColumns = checkboxes ? selectContactsColumn : contactsColumn;
     tableDataComponent = (
       <DataTable<Contact, (typeof leads)[0]> // Use the specific type for TValue if it's known
         searchKey="name"
         columns={tableColumns}
         data={leads as Contact[]}
-        simple={true}
+        simple={checkboxes ? false : true}
       />
     );
   } else {
