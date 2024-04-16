@@ -45,6 +45,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   useEffect(() => {
     if (isOpen && itemId) {
       const item = leads.find((lead) => lead.id);
+      console.log(item);
       setData(item);
     }
   }, [isOpen, itemId]);
