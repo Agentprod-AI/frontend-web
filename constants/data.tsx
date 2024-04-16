@@ -162,16 +162,9 @@ export const navItems: NavInterface[] = [
     category: "Extras",
     items: [
       {
-        title: "Leads",
-        href: "/dashboard/leads",
-        icon: "lead",
-        label: "leads",
-        isCollapsible: false,
-      },
-      {
         title: "Analytics",
         href: "/dashboard/analytics",
-        // icon: "lead",
+        icon: "activity",
         label: "analytics",
         isCollapsible: false,
       },
@@ -509,5 +502,81 @@ Looking forward to hearing your thoughts!
 Regards,
 Agent Prod`
 };
+
+export const card_data = [
+  {
+    title: "Total Emails Sent",
+    // value: dashboardData?.emails_sent,
+    value: "1579"
+  },
+  {
+    title: "Engaged Leads",
+    // value: dashboardData?.engaged
+    value: "362"
+  },
+  {
+    title: "Total Meetings Booked (Via Calendly)",
+    // value: dashboardData?.meetings_booked
+    value: "18"
+  },
+  {
+    title: "Response Rate",
+    // value: dashboardData?.response_rate
+    value: "7.94%"
+  }
+];
+
+export const campaigns = [
+  {
+    name: "Product Launch Announcement",
+    persona: "Alex - Tech Enthusiast - early adopter persona",
+    engaged: "45",
+    response_rate: "3.50",
+    bounce_rate: "1.00",
+    open_rate: "44.00",
+  },
+  {
+    name: "Monthly Newsletter",
+    persona: "Sam - Regular Subscriber - newsletter recipient persona",
+    engaged: "112",
+    response_rate: "2.10",
+    bounce_rate: "0.50",
+    open_rate: "58.00",
+  },
+  {
+    name: "Holiday Special Offer",
+    persona: "Jesse - Casual Shopper - holiday shopping persona",
+    engaged: "89",
+    response_rate: "4.25",
+    bounce_rate: "0.75",
+    open_rate: "39.00",
+  },
+  {
+    name: "Customer Feedback Survey",
+    persona: "Casey - Existing Customer - feedback survey persona",
+    engaged: "32",
+    response_rate: "5.00",
+    bounce_rate: "0.25",
+    open_rate: "35.00",
+  },
+  {
+    name: "B2B Partnership Proposal",
+    persona: "Jordan - Business Owner - strategic partnership persona",
+    engaged: "10",
+    response_rate: "12.00",
+    bounce_rate: "2.00",
+    open_rate: "22.00",
+  }
+]
+
+export const hot_leads = [
+  { id: 1, src: "/avatars/01.png", fallback: "OM", name: "Olivia Martin", company: "Descope" },
+  { id: 2, src: "/avatars/02.png", fallback: "JL", name: "Jackson Lee", company: "CodeSphere" },
+  { id: 3, src: "/avatars/03.png", fallback: "IN", name: "Isabella Nguyen", company: "GTM Buddy" },
+  { id: 4, src: "/avatars/04.png", fallback: "WK", name: "William Kim", company: "Descope" },
+  { id: 5, src: "/avatars/05.png", fallback: "SD", name: "Sofia Davis", company: "CodeSphere" },
+  { id: 6, src: "/avatars/05.png", fallback: "JL", name: "Jackson Lee", company: "GTM Buddy" },
+  { id: 7, src: "/avatars/05.png", fallback: "WK", name: "William Kim", company: "Descope" }
+];
 
 export type Contact = (typeof contacts)[number];
