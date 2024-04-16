@@ -59,7 +59,7 @@ interface ProductFormProps {
   categories: any;
 }
 
-export const EmployeeForm: React.FC<ProductFormProps> = ({
+export const LeadForm: React.FC<ProductFormProps> = ({
   initialData,
   categories,
 }) => {

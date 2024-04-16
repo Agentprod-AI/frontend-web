@@ -19,7 +19,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
   return (
     <div
       data-collapsed={isCollapsed}
-      className="md:pt-16 group flex-col gap-4 flex"
+      className="group flex-col gap-4 flex"
     >
       <nav className="grid gap-1 px-2 pt-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
         {/* <Separator /> */}
@@ -35,7 +35,6 @@ export function Nav({ links, isCollapsed }: NavProps) {
                   <CollapseNavItem nav={link} key={link.label} />
                 );
               })}
-              <Separator className="my-1" />
             </div>
           );
         })}

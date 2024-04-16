@@ -14,11 +14,11 @@ const campaignPages = [
     description: "How do you want to schedule this campaign?",
     href: "scheduling-budget",
   },
-  // {
-  //   title: "Offering",
-  //   description: "What are your products and services?",
-  //   href: "offering",
-  // },
+  {
+    title: "Offering",
+    description: "What are your products and services?",
+    href: "offering",
+  },
   {
     title: "Goal",
     description: "What do you want to achieve with this campaign?",

@@ -20,14 +20,7 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import {
-  Check,
-  ChevronsUpDown,
-  Clock,
-  Edit3,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
+import { Check, ChevronsUpDown, Edit3, RefreshCw, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -88,9 +81,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   React.useEffect(() => {
     axiosInstance
-      .get<ConversationEntry[]>(
-        `/v2/mailbox/conversation/7db97fce-37c4-476b-af57-3c3263c7750d`
-      )
+      .get<ConversationEntry[]>(`/v2/mailbox/conversation/7db97fce-37c4-476b-af57-3c3263c7750d`)
       .then((response) => {
         setConversations(response.data);
         setIsLoading(false);
@@ -102,33 +93,34 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       });
   }, [conversationId, ownerEmail]);
 
-  if (isLoading) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium">Loading...</div>
-      </div>
-    );
-  }
 
-  if (error) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium text-red-500">Error: {error}</div>
-      </div>
-    );
-  }
+if (isLoading) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium">Loading...</div>
+    </div>
+  );
+}
 
-  if (!conversations || conversations.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium">No conversation data found.</div>
-      </div>
-    );
-  }
+if (error) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium text-red-500">Error: {error}</div>
+    </div>
+  );
+}
+
+if (!conversations || conversations.length === 0) {
+  return (
+    <div className="flex justify-center items-center h-screen">
+      <div className="text-lg font-medium">No conversation data found.</div>
+    </div>
+  );
+}
 
   const EmailComponent = ({ email }: { email: ConversationEntry }) => {
     const isEmailFromOwner = email.sender === ownerEmail;
-
+  
     return (
       <div className="flex m-4 w-full">
         <Avatar
@@ -166,24 +158,20 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       </div>
     );
   };
-
+  
   const DraftEmailComponent = () => {
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
-
+  
     return (
-      <div className="flex m-4 w-full relative">
-        <div className="absolute top-2 left-14 flex items-center space-x-2  text-xs text-zinc-500">
-          <Clock className="h-4 w-4" />
-          <p>Wait until Saturday, March 3, 2024</p>
-        </div>
+      <div className="flex m-4 w-full">
         <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
           <AvatarFallback>{"NB"}</AvatarFallback>
         </Avatar>
         <Card className="w-full mr-5">
           <CardHeader>
-            <CardTitle className="text-sm flex py-2">
+            <CardTitle className="text-sm flex">
               <Input
                 value={draftEmail.title}
                 disabled={!editable}
@@ -191,43 +179,30 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 placeholder="Subject"
                 onChange={(e) => setTitle(e.target.value)}
               />
+              <Badge className="ml-2" key={"label"}>
+                Draft
+              </Badge> 
+
             </CardTitle>
           </CardHeader>
-
           <CardContent className="text-xs">
             <Textarea
               value={draftEmail.body}
               disabled={!editable}
-              className="text-xs h-64"
+              className="text-xs h-64"              
               placeholder="Enter email body"
               onChange={(e) => setBody(e.target.value)}
             />
           </CardContent>
 
           <CardFooter className="flex justify-between text-xs items-center">
-            <div className="flex flex-col sm:flex-row justify-start sm:justify-between items-start sm:items-center">
-              <div className="flex space-x-2">
-                <Button
-                  disabled={editable}
-                  className="px-4 py-2 text-xs sm:text-sm"
-                >
-                  Approve
-                </Button>
-                <Button
-                  className={`px-4 py-2 text-xs sm:text-sm ${
-                    !editable ? "ml-2" : ""
-                  }`}
-                  disabled={!editable}
-                >
-                  Send Now
-                </Button>
-              </div>
+            <div>
+              <Button disabled={editable}>Approve</Button>
+              <Button className="ml-2" disabled={!editable}>
+                Send Now
+              </Button>
               {editable && (
-                <Button
-                  variant={"ghost"}
-                  onClick={() => setEditable(false)}
-                  className="px-2 py-2 text-xs sm:text-sm"
-                >
+                <Button variant={"ghost"} onClick={() => setEditable(false)}>
                   <Check className="h-4 w-4" />
                 </Button>
               )}
@@ -249,11 +224,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       </div>
     );
   };
-
+  
   const DropdownComponent = () => {
     const [open, setOpen] = React.useState(false);
     const [value, setValue] = React.useState("manualmode");
-
+  
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -266,53 +241,54 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             {value
               ? frameworks.find((f) => f.value === value)?.label
               : "Manual mode"}
-
+  
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandInput placeholder=" Search framework..." />
-            <CommandEmpty>No framework found.</CommandEmpty>
-            <CommandGroup>
-              {frameworks.map((framework) => (
-                <CommandItem
-                  key={framework.value}
-                  value={framework.value}
-                  onSelect={(currentValue) => {
-                    setValue(currentValue === value ? "" : currentValue);
-                    setOpen(false);
-                  }}
-                >
-                  <Check
-                    className={cn(
-                      "mr-2 h-4 w-4",
-                      value === framework.value ? "opacity-100" : "opacity-0"
-                    )}
-                  />
-                  {framework.label}
-                </CommandItem>
-              ))}
-            </CommandGroup>
-          </Command>
-        </PopoverContent>
-      </Popover>
-    );
-  };
-
-  return (
-    <div className="relative">
-      <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
-      {conversations.length > 0 && (
-        <>
-          {conversations.map((email, index) => (
-            <EmailComponent key={index} email={email} />
-          ))}
-          <DraftEmailComponent />
-        </>
-      )}
-    </div>
+          <CommandEmpty>No framework found.</CommandEmpty>
+          <CommandGroup>
+            {frameworks.map((framework) => (
+              <CommandItem
+                key={framework.value}
+                value={framework.value}
+                onSelect={(currentValue) => {
+                  setValue(currentValue === value ? "" : currentValue);
+                  setOpen(false);
+                }}
+              >
+                <Check
+                  className={cn(
+                    "mr-2 h-4 w-4",
+                    value === framework.value ? "opacity-100" : "opacity-0"
+                  )}
+                />
+                {framework.label}
+              </CommandItem>
+            ))}
+          </CommandGroup>
+        </Command>
+      </PopoverContent>
+    </Popover>
   );
 };
 
+return (
+  <div className="relative">
+  <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
+  {conversations.length > 0 && (
+    <>
+      {conversations.map((email, index) => (
+        <EmailComponent key={index} email={email} />
+      ))}
+      <DraftEmailComponent />
+    </>
+  )}
+</div>
+);
+};
+
 export default ThreadDisplayMain;
+            

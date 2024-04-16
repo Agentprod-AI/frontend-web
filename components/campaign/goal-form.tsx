@@ -29,6 +29,7 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast"; 
+import { useCampaignContext } from '@/context/campaign-provider';
 
 
 const dummyEmails = [
@@ -64,6 +65,8 @@ const defaultValues: Partial<GoalFormValues> = {};
 export function GoalForm({type}: {type: string}) {
   const router = useRouter();
 
+  const { createGoal, editGoal } = useCampaignContext();
+
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
     defaultValues,
@@ -91,18 +94,31 @@ export function GoalForm({type}: {type: string}) {
     }
   };
 
-  const onSubmit: SubmitHandler<GoalFormValues> = (data) =>  {
+  const watchAllFields = form.watch();
+
+  const onSubmit: SubmitHandler<GoalFormValues> = (data) => {
     if (type === "create") {
-      console.log(data);
-      toast({
-        title: "You submitted the following values:",
-        description: (
-          <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-            <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-          </pre>
-        ),
-      });
-      router.push('/dashboard/campaign/create');
+      createGoal(data);
+    }
+    if (type === "edit") {
+      const changes = Object.keys(data).reduce((acc, key) => {
+        // Ensure the correct key type is used
+        const propertyKey = key as keyof GoalFormValues;
+
+        // Compare the stringified versions of the current and previous values
+        if (
+          JSON.stringify(data[propertyKey]) !==
+          JSON.stringify(watchAllFields[propertyKey])
+        ) {
+          // Assign only if types are compatible
+          acc = { ...acc, [propertyKey]: data[propertyKey] };
+        }
+        return acc;
+      }, {} as GoalFormValues);
+
+      if (Object.keys(changes).length > 0) {
+        editGoal(changes);
+      }
     }
   }
 

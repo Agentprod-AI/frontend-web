@@ -1,8 +1,9 @@
 // pageTitleConfig.js
 export const pageTitleConfig = [
-  { pathname: "/dashboard", title: "Dashboard", hidden: true },
+  { pathname: "/dashboard", title: "Dashboard", hidden: false },
   { pathname: "/dashboard/mail", title: "Mail", hidden: true },
   { pathname: "/dashboard/chat", title: "Chat with Prod", hidden: true },
+  { pathname: "/dashboard/analytics", title: "Analytics", hidden: false },
   { pathname: "/dashboard/campaign", title: "Campaign", hidden: false },
   { pathname: "/dashboard/leads", title: "Leads", hidden: false },
   { pathname: "/dashboard/campaign/create", title: "Create Campaign", hidden: false },
@@ -71,11 +72,6 @@ export const pageTitleConfig = [
   //   title: "Autopilot",
   //   hidden: false,
   // },
-  {
-    pathname: "/dashboard/profile",
-    title: "Profile",
-    hidden: false,
-  },
   {
     pathname: "/dashboard/settings/account-info",
     title: "Settings",

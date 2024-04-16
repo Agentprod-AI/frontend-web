@@ -1,4 +1,4 @@
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
 import {
   Form,
   FormControl,
@@ -22,15 +22,12 @@ import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 import { ChevronDown, ChevronUp } from "lucide-react";
+import { v4 as uuid } from "uuid";
 
-import {
-  orgLocations,
-  jobTitles,
-  emailStatusOptions,
-  seniorities,
-  InputType,
-} from "./formUtils";
+import { orgLocations, jobTitles, seniorities, InputType } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
+import { config } from "@/utils/config";
+import axiosInstance from "@/utils/axiosInstance";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -68,12 +65,7 @@ const FormSchema = z.object({
     )
     .optional(),
   company_headcount: z
-    .array(
-      z.object({
-        id: z.string(),
-        text: z.string(),
-      })
-    )
+    .array(z.object({ id: z.string(), text: z.string() }))
     .optional(),
   funding_rounds: z
     .array(
@@ -143,7 +135,8 @@ export default function PeopleForm(): JSX.Element {
   const { leads, setLeads } = useLeads();
 
   const [tab, setTab] = useState("tab1");
-  const [loading, setLoading] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(false);
+  const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
   const [campaignId, setCampaignId] = useState<string>(
     "482b7b80-4681-422b-9d40-f7253f4a8305"
   );
@@ -153,18 +146,21 @@ export default function PeopleForm(): JSX.Element {
     console.log(form.formState.isValid);
     if (form.formState.isValid) {
       setTab(value);
-      setLoading(true);
+      setIsTableLoading(true);
     }
   };
 
   //   const [tags, setTags] = React.useState<Tag[]>([]);
   const [organizationLocationsTags, setOrganizationLocationsTags] =
     React.useState<Tag[]>([]);
+
   const [personSenioritiesTags, setPersonSenioritiesTags] = React.useState<
     Tag[]
   >([]);
+
   const [qOrganizationDomainsTags, setQOrganizationDomainsTags] =
     React.useState<Tag[]>([]);
+
   const [personTitlesTags, setPersonTitlesTags] = React.useState<Tag[]>([]);
 
   const [checkedFundingRounds, setCheckedFundingRounds] =
@@ -184,9 +180,9 @@ export default function PeopleForm(): JSX.Element {
       id: "",
       text: 0,
     });
-  const [tradingStatusTags, setTradingStatusTags] = React.useState<Tag[]>([]);
 
   const [jobLocationTags, setJobLocationTags] = React.useState<Tag[]>([]);
+
   const [jobOfferingTags, setJobOfferingTags] = React.useState<Tag[]>([]);
 
   const { setValue } = form;
@@ -234,6 +230,8 @@ export default function PeopleForm(): JSX.Element {
       job_offerings: data.job_offerings,
     };
 
+    console.log("form data", formData);
+
     let shouldCallAPI = false;
 
     if (!prevInputValues) shouldCallAPI = true;
@@ -258,7 +256,11 @@ export default function PeopleForm(): JSX.Element {
       const checked: string[] = [];
       if (returnDashed) {
         field?.map((field) => {
-          checked.push(field.split("-").join(","));
+          if (field.split("-")[1] === "x") {
+            checked.push(`${field.split("-")[0]}+`);
+          } else {
+            checked.push(field.split("-").join(","));
+          }
         });
       } else {
         field?.map((field) => {
@@ -290,9 +292,6 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...{
-        funding_rounds: checkedFields(checkedFundingRounds, false),
-      },
       ...{
         organization_num_employees_ranges: checkedFields(
           checkedCompanyHeadcount,
@@ -332,6 +331,9 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
+      ...{
+        funding_rounds: checkedFields(checkedFundingRounds, false),
+      },
     };
     console.log(body);
 
@@ -345,7 +347,7 @@ export default function PeopleForm(): JSX.Element {
       `${prevInputValues.current?.minimum_company_funding?.text}-${prevInputValues.current?.maximum_company_funding?.text}` !==
         extraFilters.total_funding ||
       prevInputValues.current?.funding_rounds?.toString() !==
-        body.funding_rounds?.toString()
+        extraFilters.funding_rounds?.toString()
       // ||
       // prevInputValues.current?.prospected_by_current_team?.text !==
       //   body.prospected_by_current_team?.[0]
@@ -404,18 +406,31 @@ export default function PeopleForm(): JSX.Element {
       try {
         console.log(body);
         console.log("api called");
-        const response = await axios.post(
-          "/api/apollo",
-          {
-            url: "https://api.apollo.io/v1/mixed_people/search",
-            body: body,
-          },
-          {
-            headers: {
-              "Content-Type": "application/json",
-            },
-          }
-        );
+        setIsTableLoading(true);
+        const response = axiosInstance
+          .post<Lead[]>(`/v2/apollo/leads`, body)
+          .then((response: any) => {
+            const data = response.data;
+            // console.log("DATA from contacts: ", data);
+            console.log("DATA: ", JSON.stringify(response));
+            data.map((person: Lead): void => {
+              person.type = "prospective";
+              person.campaign_id = campaignId;
+            });
+            setLeads(data as Lead[]);
+            setIsTableLoading(false);
+            toast.success("Leads fetched successfully");
+            // if (data.isArray) {
+            //   setLeads(data);
+            // } else {
+            //   setLeads([data]);
+            // }
+          })
+          .catch((error: any) => {
+            console.log(error);
+            setError(error instanceof Error ? error.toString() : String(error));
+            setIsTableLoading(false);
+          });
 
         // const response = await axios.post(
         //   "/api/apollo",
@@ -432,12 +447,6 @@ export default function PeopleForm(): JSX.Element {
 
         // console.log(response);
 
-        console.log("DATA: ", JSON.stringify(response));
-        response.data.result.people.map((person: Lead): void => {
-          person.type = "prospective";
-          person.campaign_id = campaignId;
-        });
-        setLeads(response.data.result.people as Lead[]);
         console.log(leads);
         toast.success("api called");
 
@@ -447,11 +456,10 @@ export default function PeopleForm(): JSX.Element {
         toast.error("Error fetching data");
       } finally {
         shouldCallAPI = false;
-        setLoading(false);
       }
     } else {
       toast.error("no need to call api");
-      setLoading(false);
+      setIsTableLoading(false);
     }
   };
 
@@ -462,6 +470,7 @@ export default function PeopleForm(): JSX.Element {
     funding: false,
     headcount: false,
     jobPostings: false,
+    companyDomains: false,
   });
   const toggleDropdown = (id: string) => {
     setDropdownsOpen((prev) => ({
@@ -522,64 +531,66 @@ export default function PeopleForm(): JSX.Element {
   // const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  const createAudience = async () => {
-    const apiUrl = `${process.env.NEXT_PUBLIC_LOCAL_SERVER}/v2/contact/`;
-
-    const body: any = {
+  function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
+    return leads.map((lead) => ({
+      id: uuid(),
       campaign_id: campaignId,
       type: "prospective",
-      first_name: leads[0].first_name,
-      last_name: leads[0].last_name,
-      name: leads[0].name,
-      linkedin_url: leads[0].linkedin_url,
-      title: leads[0].title,
-      email_status: "verified",
-      photo_url: leads[0].photo_url,
-      twitter_url: leads[0].twitter_url,
-      github_url: leads[0].github_url,
-      facebook_url: leads[0].facebook_url,
-      extrapolated_email_confidence: leads[0].extrapolated_email_confidence,
-      headline: leads[0].headline,
-      email: "info.agentprod@gmail.com",
-      employment_history: leads[0].employment_history,
-      state: leads[0].state,
-      city: leads[0].city,
-      country: leads[0].country,
-      is_likely_to_engage: leads[0].is_likely_to_engage,
-      departments: leads[0].departments,
-      subdepartments: leads[0].subdepartments,
-      seniority: leads[0].seniority,
-      functions: leads[0].functions,
-      phone_numbers: leads[0].phone_numbers,
-      intent_strength: leads[0].intent_strength,
-      show_intent: leads[0].show_intent,
-      revealed_for_current_team: leads[0].revealed_for_current_team,
+      first_name: lead.first_name,
+      last_name: lead.last_name,
+      name: lead.name,
+      linkedin_url: lead.linkedin_url,
+      title: lead.title,
+      email_status: lead.email_status,
+      photo_url: lead.photo_url,
+      twitter_url: lead.twitter_url,
+      github_url: lead.github_url,
+      facebook_url: lead.facebook_url,
+      extrapolated_email_confidence: lead.extrapolated_email_confidence,
+      headline: lead.headline,
+      email: lead.email,
+      employment_history: lead.employment_history,
+      state: lead.state,
+      city: lead.city,
+      country: lead.country,
+      is_likely_to_engage: lead.is_likely_to_engage,
+      departments: lead.departments,
+      subdepartments: lead.subdepartments,
+      seniority: lead.seniority,
+      functions: lead.functions,
+      phone_numbers: lead.phone_numbers,
+      intent_strength: lead.intent_strength,
+      show_intent: lead.show_intent,
+      revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
-      personalized_social_info: "",
-    };
+    }));
+  }
 
-    try {
-      setLoading(true);
+  const createAudience = async () => {
+    const audienceBody = mapLeadsToBodies(leads as Lead[], campaignId);
+    console.log(audienceBody);
 
-      const response = await axios.post(apiUrl, body);
-      if (response.status !== 200) {
-        throw new Error(`Failed to fetch: ${response.statusText}`);
-      }
-      const data = await response.data;
+    setIsCreateBtnLoading(true);
+    const response = axiosInstance
+      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .then((response: any) => {
+        const data = response.data;
+        console.log("DATA from contacts: ", data);
+        if (data.isArray) {
+          setLeads(data);
+        } else {
+          setLeads([data]);
+        }
+        setIsCreateBtnLoading(false);
+        toast.success("Audience created successfully");
+      })
+      .catch((error: any) => {
+        console.log(error);
+        setError(error instanceof Error ? error.toString() : String(error));
+        setIsCreateBtnLoading(false);
+      });
 
-      console.log("DATA from contacts: ", data);
-
-      // if (data.isArray) {
-      //   setLeads(data);
-      // } else {
-      //   setLeads([data]);
-      // }
-    } catch (error) {
-      setError(error instanceof Error ? error.toString() : String(error));
-      console.log(error);
-    } finally {
-      setLoading(false);
-    }
+    console.log("response from creating contact", response);
   };
 
   return (
@@ -622,38 +633,6 @@ export default function PeopleForm(): JSX.Element {
                     dropdownsOpen.currentEmployment ? "block" : "hidden"
                   }`}
                 >
-                  <FormField
-                    control={form.control}
-                    name="q_organization_domains"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col items-start py-4 w-8/12">
-                        <FormLabel className="text-left">
-                          Company Domains
-                        </FormLabel>
-                        <FormControl>
-                          <TagInput
-                            {...field}
-                            tags={qOrganizationDomainsTags}
-                            placeholder="Enter company domain"
-                            variant={"base"}
-                            className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
-                            setTags={(newTags) => {
-                              setQOrganizationDomainsTags(newTags);
-                              setValue(
-                                "q_organization_domains",
-                                newTags as [Tag, ...Tag[]]
-                              );
-                            }}
-                          />
-                        </FormControl>
-                        {/* <FormDescription>
-                        These are the company domains that you&apos;re
-                        interested in.
-                      </FormDescription> */}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                   <FormField
                     control={form.control}
                     name="person_seniorities"
@@ -749,38 +728,71 @@ export default function PeopleForm(): JSX.Element {
                             dropdownsOpen.headcount ? "block" : "hidden"
                           }`}
                         >
-                          {companyHeadcountOptions.map((round, index) => (
-                            <div
-                              className="text-sm flex items-center mb-3"
-                              key={index}
-                            >
-                              <Checkbox
-                                {...field}
-                                className="mr-2"
-                                checked={checkedCompanyHeadcount?.includes(
-                                  round.name
-                                )}
-                                onCheckedChange={(e) => {
-                                  if (e.valueOf()) {
-                                    setCheckedCompanyHeadcount([
-                                      ...(checkedCompanyHeadcount
-                                        ? checkedCompanyHeadcount
-                                        : []),
-                                      round.name,
-                                    ]);
-                                  } else {
+                          {companyHeadcountOptions.map(
+                            (headcountOption, index) => (
+                              <div
+                                className="text-sm flex items-center mb-3"
+                                key={index}
+                              >
+                                <Checkbox
+                                  {...field}
+                                  className="mr-2"
+                                  checked={checkedCompanyHeadcount?.includes(
+                                    headcountOption.name.replace("+", "-x")
+                                  )}
+                                  onCheckedChange={(e) => {
                                     setCheckedCompanyHeadcount(
-                                      checkedCompanyHeadcount?.filter(
-                                        (item) => item !== round.name
-                                      )
+                                      (currentChecked) => {
+                                        if (e.valueOf()) {
+                                          // If the checkbox is checked
+                                          if (
+                                            currentChecked?.some(
+                                              (item) =>
+                                                item ===
+                                                headcountOption.name.replace(
+                                                  "+",
+                                                  "-x"
+                                                )
+                                            )
+                                          ) {
+                                            // If the checkbox was previously checked and unchecked
+                                            return (
+                                              currentChecked || []
+                                            ).filter(
+                                              (item) =>
+                                                item !==
+                                                headcountOption.name.replace(
+                                                  "+",
+                                                  "-x"
+                                                )
+                                            );
+                                          } else {
+                                            // If the checkbox was previously unchecked
+                                            return [
+                                              ...(currentChecked || []),
+                                              headcountOption.name.replace(
+                                                "+",
+                                                "-x"
+                                              ),
+                                            ];
+                                          }
+                                        } else {
+                                          // If the checkbox is unchecked
+                                          return (currentChecked || []).filter(
+                                            (item) =>
+                                              item !== headcountOption.name
+                                          );
+                                        }
+                                      }
                                     );
-                                  }
-                                }}
-                                value={round.name}
-                              />
-                              {round.name}
-                            </div>
-                          ))}
+                                    console.log(checkedCompanyHeadcount);
+                                  }}
+                                  value={headcountOption.name}
+                                />
+                                {headcountOption.name}
+                              </div>
+                            )
+                          )}
                         </div>
                       </FormControl>
                       {/* <FormDescription>
@@ -791,6 +803,171 @@ export default function PeopleForm(): JSX.Element {
                     </FormItem>
                   )}
                 />
+              </div>
+              <div className="bg-muted px-2 rounded">
+                <FormField
+                  control={form.control}
+                  name="organization_locations"
+                  render={({ field }) => (
+                    <FormItem className="flex flex-col items-start">
+                      <FormLabel
+                        className="w-full font-normal flex justify-between cursor-pointer py-3 "
+                        onClick={() => toggleDropdown("orgLocations")}
+                      >
+                        <div>Company Locations</div>
+                        {dropdownsOpen.orgLocations ? (
+                          <ChevronUp color="#000000" />
+                        ) : (
+                          <ChevronUp
+                            color="#000000"
+                            className="transition-transform duration-200 transform rotate-180"
+                          />
+                        )}
+                      </FormLabel>
+                      <FormControl>
+                        <div
+                          className={`${
+                            dropdownsOpen.orgLocations ? "block" : "hidden"
+                          }`}
+                        >
+                          <div className="w-2/3 sm:min-w-[300px] mb-3">
+                            <TagInput
+                              {...field}
+                              dropdown={true}
+                              dropdownPlaceholder="Enter a location"
+                              dropdownOptions={orgLocations}
+                              tags={organizationLocationsTags}
+                              variant={"base"}
+                              className="sm:min-w-[450px]"
+                              setTags={(newTags) => {
+                                setOrganizationLocationsTags(newTags);
+                                setValue(
+                                  "organization_locations",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </div>
+                        </div>
+                      </FormControl>
+                      {/* <FormDescription>
+                      These are the company locations that you&apos;re
+                      interested in.
+                    </FormDescription> */}
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <FormField
+                control={form.control}
+                name="per_page"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col items-start my-4">
+                    <FormLabel className="text-left">Number of Leads</FormLabel>
+                    <FormControl>
+                      <div className="flex items-center">
+                        <Input
+                          {...field}
+                          type="text"
+                          placeholder={"Enter the number of leads you want"}
+                          className="sm:min-w-[450px] outline-none"
+                          value={leadsNum}
+                          onChange={(
+                            e: React.ChangeEvent<HTMLInputElement>
+                          ) => {
+                            const numericValue = Math.max(
+                              min,
+                              Number(e.target.value)
+                            );
+                            if (!isNaN(numericValue)) {
+                              setLeadsNum(numericValue);
+                              field.onChange({
+                                id: "per_page",
+                                text: numericValue,
+                              });
+                            }
+                          }}
+                        />
+                        <div className="flex flex-col items-center">
+                          <ChevronUp
+                            className="cursor-pointer"
+                            height={10}
+                            onClick={() => {
+                              increment(field);
+                            }}
+                          />
+                          <ChevronDown
+                            className="cursor-pointer"
+                            height={10}
+                            onClick={() => {
+                              decrement(field);
+                            }}
+                          />
+                        </div>
+                      </div>
+                    </FormControl>
+                    <FormDescription>
+                      These are the number of leads that you&apos;re interested
+                      in.
+                    </FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
+            <div className="w-1/2 flex flex-col gap-2">
+              <div className="mb-2">Advanced</div>
+              <div className="bg-muted px-2 rounded">
+                <div
+                  className="flex justify-between w-full py-3 cursor-pointer"
+                  onClick={() => toggleDropdown("companyDomains")}
+                >
+                  <div className="text-sm">Company Domains</div>
+                  {dropdownsOpen.companyDomains ? (
+                    <ChevronUp color="#000000" />
+                  ) : (
+                    <ChevronUp
+                      color="#000000"
+                      className="transition-transform duration-200 transform rotate-180"
+                    />
+                  )}
+                </div>
+                <div
+                  className={`${
+                    dropdownsOpen.companyDomains ? "block" : "hidden"
+                  }`}
+                >
+                  <FormField
+                    control={form.control}
+                    name="q_organization_domains"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col items-start py-4 w-8/12">
+                        <FormControl>
+                          <TagInput
+                            {...field}
+                            tags={qOrganizationDomainsTags}
+                            placeholder="Enter company domain"
+                            variant={"base"}
+                            className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                            setTags={(newTags) => {
+                              setQOrganizationDomainsTags(newTags);
+                              setValue(
+                                "q_organization_domains",
+                                newTags as [Tag, ...Tag[]]
+                              );
+                            }}
+                          />
+                        </FormControl>
+                        {/* <FormDescription>
+                        These are the company domains that you&apos;re
+                        interested in.
+                      </FormDescription> */}
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
               </div>
               <div className="bg-muted px-2 rounded">
                 <div
@@ -960,158 +1137,12 @@ export default function PeopleForm(): JSX.Element {
                       </div>
                     </div>
                   </div>
-                  <FormField
-                    control={form.control}
-                    name="trading_statuses"
-                    render={({ field }) => (
-                      <FormItem className="flex flex-col items-start py-4 w-8/12">
-                        <FormLabel className="text-left h-1">
-                          Trading status
-                        </FormLabel>
-                        <FormControl>
-                          <TagInput
-                            {...field}
-                            dropdown={true}
-                            dropdownPlaceholder="Add trading statuses"
-                            // dropdownOptions={tradingStatuses}
-                            tags={tradingStatusTags}
-                            variant={"base"}
-                            className="sm:min-w-[450px]"
-                            setTags={(newTags) => {
-                              setTradingStatusTags(newTags);
-                              setValue(
-                                "trading_statuses",
-                                newTags as [Tag, ...Tag[]]
-                              );
-                            }}
-                          />
-                        </FormControl>
-                        {/* <FormDescription>
-                        These are the job titles that you&apos;re interested in.
-                      </FormDescription> */}
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
                 </div>
               </div>
               <div className="bg-muted px-2 rounded">
-                <FormField
-                  control={form.control}
-                  name="organization_locations"
-                  render={({ field }) => (
-                    <FormItem className="flex flex-col items-start">
-                      <FormLabel
-                        className="w-full font-normal flex justify-between cursor-pointer py-3 "
-                        onClick={() => toggleDropdown("orgLocations")}
-                      >
-                        <div>Company Locations</div>
-                        {dropdownsOpen.orgLocations ? (
-                          <ChevronUp color="#000000" />
-                        ) : (
-                          <ChevronUp
-                            color="#000000"
-                            className="transition-transform duration-200 transform rotate-180"
-                          />
-                        )}
-                      </FormLabel>
-                      <FormControl>
-                        <div
-                          className={`${
-                            dropdownsOpen.orgLocations ? "block" : "hidden"
-                          }`}
-                        >
-                          <div className="w-2/3 sm:min-w-[300px] mb-3">
-                            <TagInput
-                              {...field}
-                              dropdown={true}
-                              dropdownPlaceholder="Enter a location"
-                              dropdownOptions={orgLocations}
-                              tags={organizationLocationsTags}
-                              className="sm:min-w-[450px]"
-                              setTags={(newTags) => {
-                                setOrganizationLocationsTags(newTags);
-                                setValue(
-                                  "organization_locations",
-                                  newTags as [Tag, ...Tag[]]
-                                );
-                              }}
-                            />
-                          </div>
-                        </div>
-                      </FormControl>
-                      {/* <FormDescription>
-                      These are the company locations that you&apos;re
-                      interested in.
-                    </FormDescription> */}
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-              <FormField
-                control={form.control}
-                name="per_page"
-                render={({ field }) => (
-                  <FormItem className="flex flex-col items-start my-4">
-                    <FormLabel className="text-left">Number of Leads</FormLabel>
-                    <FormControl>
-                      <div className="flex items-center">
-                        <Input
-                          {...field}
-                          type="text"
-                          placeholder={"Enter the number of leads you want"}
-                          className="sm:min-w-[450px] outline-none"
-                          value={leadsNum}
-                          onChange={(
-                            e: React.ChangeEvent<HTMLInputElement>
-                          ) => {
-                            const numericValue = Math.max(
-                              min,
-                              Number(e.target.value)
-                            );
-                            if (!isNaN(numericValue)) {
-                              setLeadsNum(numericValue);
-                              field.onChange({
-                                id: "per_page",
-                                text: numericValue,
-                              });
-                            }
-                          }}
-                        />
-                        <div className="flex flex-col items-center">
-                          <ChevronUp
-                            className="cursor-pointer"
-                            height={10}
-                            onClick={() => {
-                              increment(field);
-                            }}
-                          />
-                          <ChevronDown
-                            className="cursor-pointer"
-                            height={10}
-                            onClick={() => {
-                              decrement(field);
-                            }}
-                          />
-                        </div>
-                      </div>
-                    </FormControl>
-                    <FormDescription>
-                      These are the number of leads that you&apos;re interested
-                      in.
-                    </FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </div>
-            <div className="w-1/2 flex flex-col gap-2">
-              <div className="mb-2">Advanced</div>
-              <div className="bg-muted px-2 rounded">
                 <div
                   className="flex justify-between w-full py-3 cursor-pointer"
-                  onClick={() => toggleDropdown("advanced")}
+                  onClick={() => toggleDropdown("jobPostings")}
                 >
                   <div className="text-sm">Job postings</div>
                   {dropdownsOpen.jobPostings ? (
@@ -1207,8 +1238,19 @@ export default function PeopleForm(): JSX.Element {
             </div>
           </TabsContent>
           <TabsContent value="tab2">
-            {loading ? <LoadingCircle /> : <AudienceTableClient />}
-            <Button onClick={() => createAudience()}>Create Audience</Button>
+            {isTableLoading ? <LoadingCircle /> : <AudienceTableClient />}
+            {isCreateBtnLoading ? (
+              <LoadingCircle />
+            ) : (
+              <Button
+                onClick={(event) => {
+                  event.preventDefault();
+                  createAudience();
+                }}
+              >
+                Create Audience
+              </Button>
+            )}
           </TabsContent>
         </Tabs>
       </form>

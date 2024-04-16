@@ -175,7 +175,8 @@ export const PeopleProfileSheet = (
               <div className="flex space-x-2">
                 <Briefcase className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.employment_history[0].organization_name}
+                  {data.employment_history &&
+                    data.employment_history[0].organization_name}
                 </span>
               </div>
               {data.phone_numbers && (
@@ -208,15 +209,17 @@ export const PeopleProfileSheet = (
                   </Button>
                 </CollapsibleTrigger>
               </div>
-              <div className="flex px-2 py-1 font-mono text-xs justify-between">
-                <span>
-                  {data.employment_history[0].start_date.substring(0, 4)} -
-                  present
-                </span>
-                <span className="w-[200px]">
-                  {data.employment_history[0].title}
-                </span>
-              </div>
+              {data.employment_history && (
+                <div className="flex px-2 py-1 font-mono text-xs justify-between">
+                  <span>
+                    {data.employment_history[0].start_date.substring(0, 4)} -
+                    present
+                  </span>
+                  <span className="w-[200px]">
+                    {data.employment_history[0].title}
+                  </span>
+                </div>
+              )}
               <CollapsibleContent className="space-y-2">
                 {data.employment_history.map((val, ind) => {
                   if (ind === 0) return null;

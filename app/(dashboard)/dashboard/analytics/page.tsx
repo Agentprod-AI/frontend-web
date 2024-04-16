@@ -41,45 +41,34 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { Progress } from "@/components/ui/progress"
-import axiosInstance from "@/utils/axiosInstance";
-import { useAuth } from "@/context/auth-provider";
-import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 
+
+const cardData = [
+  {
+    title: "Total Emails Sent",
+    value: "1063"
+  },
+  {
+    title: "Engaged Leads",
+    value: "325"
+  },
+  {
+    title: "Total Meetings Booked (Via Calendly)",
+    value: "3"
+  },
+  {
+    title: "Response Rate",
+    value: "4.62%"
+  }
+];
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
-  const { dashboardData, isLoading } = useDashboardContext();
-  const { user } = useAuth();
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
-
-  console.log(dashboardData)
-
-  const cardData = [
-    {
-      title: "Total Emails Sent",
-      // value: dashboardData?.emails_sent,
-      value: "2"
-    },
-    {
-      title: "Engaged Leads",
-      // value: dashboardData?.engaged
-      value: "2"
-    },
-    {
-      title: "Total Meetings Booked (Via Calendly)",
-      // value: dashboardData?.meetings_booked
-      value: "2"
-    },
-    {
-      title: "Response Rate",
-      // value: dashboardData?.response_rate
-      value: "2"
-    }
-  ];
 
   return (
     <ScrollArea className="h-full">
@@ -95,21 +84,8 @@ export default function Page() {
         <TabsContent value="overview" className="space-y-4"> */}
           
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
-          <div className="flex flex-col col-span-4">
-            <Card>
-                <CardContent className="flex items-center gap-5 pt-6">
-                  <div className="flex items-center gap-2">
-                    <Icons.mail/>
-                    <p className="font-medium">Emails Pending Approval</p>
-                  </div>
-                  <Badge variant={"secondary"}>120</Badge>
-                </CardContent>
-            </Card>
-
-            {/* <p className="font-semibold">Performance Overview</p> */}
-
-            <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mt-4">
-              
+          {/* <div className="flex flex-col col-span-4"> */}
+            <div className="grid gap-4 md:grid-cols-1 lg:grid-cols-2 col-span-2">
               {cardData.map((card, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
@@ -137,72 +113,91 @@ export default function Page() {
                   </CardContent>
                 </Card>
               ))}
-            </div>
+            {/* </div> */}
           </div>
-          
+
           <Card className="col-span-2">
-            <ScrollArea className="lg:h-56 md:h-[26rem]">
+            <ScrollArea className="h-[20rem]">
               <CardHeader>
-                <CardTitle>Recent Sales</CardTitle>
-                <CardDescription>
-                  You made 265 sales this month.
-                </CardDescription>
+                <CardTitle>Hot Leads</CardTitle>
               </CardHeader>
               <CardContent>
-                <div className="space-y-8">
+                <div className="space-y-4">
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/01.png" alt="Avatar" />
                       <AvatarFallback>OM</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Ava <span className="text-muted-foreground">populated</span> leads</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">Olivia Martin - Descope</p>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
                       <AvatarImage src="/avatars/02.png" alt="Avatar" />
                       <AvatarFallback>JL</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Samirah <span className="text-muted-foreground">replied to your</span> Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - CodeSphere</p>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/03.png" alt="Avatar" />
                       <AvatarFallback>IN</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>  
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">Isabella Nguyen - GTM Buddy</p>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/04.png" alt="Avatar" />
                       <AvatarFallback>WK</AvatarFallback>
                     </Avatar>
-                    <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
-                      <p className="text-sm text-muted-foreground">
-                        11 hours ago
-                      </p>  
-                    </div>
+                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                      <AvatarFallback>SD</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm font-medium leading-none ml-4">Sofia Davis - CodeSphere</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                      <AvatarFallback>JL</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - GTM Buddy</p>
+                  </div>
+                  <div className="flex items-center">
+                    <Avatar className="h-9 w-9">
+                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
+                      <AvatarFallback>WK</AvatarFallback>
+                    </Avatar>
+                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
                   </div>
                 </div>
               </CardContent>
             </ScrollArea>
           </Card>
           
+          <Card className="col-span-2">
+            <ScrollArea className="h-[20rem]">
+              <CardHeader>
+                <CardTitle>Mailbox Health</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <p className="text-sm">olivia.maria@gmail.com - 80%</p>
+                  <Progress value={80} className="h-5 mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm">jane.doe@gmail.com - 30%</p>
+                  <Progress value={30} className="h-5 mt-2" />
+                </div>
+                <div>
+                  <p className="text-sm">john.miller@gmail.com - 65%</p>
+                  <Progress value={65} className="h-5 mt-2" />
+                </div>
+              </CardContent>
+            </ScrollArea>
+          </Card>
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
@@ -271,126 +266,94 @@ export default function Page() {
             </ScrollArea>
           </Card>
 
-          <Card className="col-span-2">
-            <ScrollArea className="h-[16rem]">
-              <CardHeader>
-                <CardTitle>Hot Leads</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="space-y-4">
-                  {/* {dashboardData.hot_leads?.map((lead) => (
-                    <div className="flex items-center">
-                      <Avatar className="h-9 w-9">
-                        <AvatarImage src={lead?.avatar} alt="Avatar" />
-                        <AvatarFallback>OM</AvatarFallback>
-                      </Avatar>
-                      <p className="text-sm font-medium leading-none ml-4">{lead?.name - lead?.company}</p>
-                    </div>
-                  ))} */}
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                      <AvatarFallback>OM</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Olivia Martin - Descope</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
-                      <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - CodeSphere</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                      <AvatarFallback>IN</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Isabella Nguyen - GTM Buddy</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/04.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>SD</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Sofia Davis - CodeSphere</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - GTM Buddy</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
-                  </div>
-                </div>
-              </CardContent>
-            </ScrollArea>
-          </Card>
-
-          <Card className="col-span-2">
+          <Card className="col-span-4">
             <CardHeader>
-              <CardTitle>Mailbox Health</CardTitle>
+              <CardTitle>Conversion Funnel</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-6">
-              <div>
-                <p className="text-sm">olivia.maria@gmail.com - 80%</p>
-                <Progress value={80} className="h-5 mt-2" />
+            <CardContent className="flex items-center justify-between">
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={80} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">4565</p>
+                  <p className="text-xs text-gray-500">Outreach</p>
+                </div>
               </div>
-              <div>
-                <p className="text-sm">jane.doe@gmail.com - 30%</p>
-                <Progress value={30} className="h-5 mt-2" />
+
+              <div className="flex flex-col items-center">
+                <p>69%</p>
+                <Icons.arrowRight size={20}/>
               </div>
-              <div>
-                <p className="text-sm">john.miller@gmail.com - 65%</p>
-                <Progress value={65} className="h-5 mt-2" />
+
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={60} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">3123</p>
+                  <p className="text-xs text-gray-500">Open</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <p>3%</p>
+                <Icons.arrowRight size={20}/>
+              </div>
+
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={10} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">77</p>
+                  <p className="text-xs text-gray-500">CTA Click</p>
+                </div>
+              </div>
+
+              <div className="flex flex-col items-center">
+                <p>43%</p>
+                <Icons.arrowRight size={20}/>
+              </div>
+
+              <div className="flex items-center flex-col gap-24">
+                <div className="transform rotate-[-90deg] mt-20 w-full">
+                  <Progress value={5} className="h-2 w-40"/>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-semibold">33</p>
+                  <p className="text-xs text-gray-500">Goal</p>
+                </div>
               </div>
             </CardContent>
           </Card>
           
-          <Card className="col-span-2 p-4 space-y-16">
-            <div className="flex justify-between items-center gap-5 mb-4">
-              <div>
-                <div className="text-lg font-semibold">0 Day Streak</div>
-                <div className="text-sm text-gray-600">Approve emails today to start a new streak</div>
-              </div>
-              {/* Replace with an actual icon component */}
-              <Icons.zap size={35} className="fill-purple-500 text-purple-500" />
-            </div>
-
-            <div className="flex items-end justify-between"> {/* Container for the days and circles */}
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
-                <div
-                  key={index}
-                  className={`flex flex-col items-center justify-center ${
-                    index === 2 && 'text-purple-400' }`}
-                >
-                  <span className="text-sm mb-1">{day}</span> {/* Label above the circle */}
-                  <div
-                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      index === 2 
-                      ? 'bg-gradient-to-r from-purple-700 to-purple-400'
-                      : 'bg-muted-foreground opacity-20'
-                    }`}
-                  >
-                    {/* Circle */}
-                  </div>
-                </div>
-              ))}
-            </div>
+          <Card className="col-span-2 p-4">
+            <ScrollArea className="h-[18.5rem]">
+              <CardContent className="text-sm space-y-4">
+                <p>
+                  Deliverability Rate - no. of email sent / total no. of email
+                </p>
+                <p>
+                  Open Rate - total email opened / total email
+                </p>
+                <p>
+                  Reply Rate - no. of leads who replied / no of total leads reached
+                </p>
+                <p>
+                  Positive Reply Rate - no. of people positive replied / total no. of people
+                </p>
+                <p>
+                  Negative Reply Rate - no. of people negative replied / total no. of people
+                </p>
+                <p>
+                  Conversion Rate / meeting booked - no. of people leads who booked meetings / total no. of people
+                </p>
+                <p>
+                  Unsubscribe Rate - people who asked to unsubscribe / total no. of people
+                </p>
+              </CardContent>
+            </ScrollArea>
           </Card>
 
           {/* <Card className="col-span-4 md:col-span-3">

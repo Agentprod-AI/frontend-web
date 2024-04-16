@@ -9,11 +9,14 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { set } from "date-fns";
 import { ImportAudience } from "@/components/campaign/import-audience";
+import { SelectFromExisting } from "@/components/campaign/select-from-existing";
 
 export default function Page() {
   // const [isPeopleFormActive, setIsPeopleFormActive] = useState<boolean>(true);
   const [isProspectActive, setIsProspectActive] = useState<boolean>(true);
   const [isImportActive, setIsImportActive] = useState<boolean>(false);
+  // const [isFromExistingActive, setIsFromExistingActive] =
+  useState<boolean>(false);
 
   // function onFormRadioChange(value: string) {
   //   if (value === "org") {
@@ -32,6 +35,7 @@ export default function Page() {
         setIsImportActive(true);
       } else {
         setIsImportActive(false);
+        // setIsFromExistingActive(true);
       }
     }
   }
@@ -82,7 +86,7 @@ export default function Page() {
       ) : isImportActive ? (
         <ImportAudience />
       ) : (
-        <div>Select from existing placeholder</div>
+        <SelectFromExisting />
       )}
     </>
   );
