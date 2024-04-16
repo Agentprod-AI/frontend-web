@@ -1,3 +1,4 @@
+import { set } from "date-fns";
 import React, {
   createContext,
   useContext,
@@ -105,20 +106,24 @@ export interface Contact {
   is_likely_to_engage: boolean | null;
   revealed_for_current_team: boolean | null;
   show_intent: boolean | null;
-  last_contacted: string;
-  responded: "Responded" | "Not Responded";
+  last_contacted?: string;
+  is_responded?: boolean | null;
 }
 
 // Define the state structure for our context
 interface LeadsContextState {
   leads: Lead[] | Contact[];
   setLeads: (leads: Lead[] | Contact[]) => void;
+  existingLeads: Contact[];
+  setExistingLeads: (leads: Contact[]) => void;
 }
 
 // Default state with initial values
 const defaultState: LeadsContextState = {
   leads: [],
   setLeads: () => {},
+  existingLeads: [],
+  setExistingLeads: () => {},
 };
 
 // Creating the context
@@ -131,13 +136,18 @@ interface LeadsProviderProps {
 // Context provider component
 export const LeadsProvider: React.FC<LeadsProviderProps> = ({ children }) => {
   const [leads, setLeads] = useState<Lead[] | Contact[]>(defaultState.leads);
+  const [existingLeads, setExistingLeads] = useState<Contact[]>(
+    defaultState.existingLeads
+  );
 
   const contextValue = useMemo(
     () => ({
       leads,
       setLeads,
+      existingLeads,
+      setExistingLeads,
     }),
-    [leads]
+    [leads, existingLeads]
   );
 
   return (

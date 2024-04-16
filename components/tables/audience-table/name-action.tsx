@@ -11,7 +11,7 @@ export const NameAction: React.FC<NameActionProps> = ({ data }) => {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
 
   function handleSidebar() {
-    setItemId(data.id.toString());
+    setItemId(data.id);
     toggleSidebar(true);
   }
 
