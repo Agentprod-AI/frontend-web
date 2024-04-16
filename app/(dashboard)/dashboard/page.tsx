@@ -41,34 +41,45 @@ import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CircularProgressbar } from "react-circular-progressbar";
 import { Progress } from "@/components/ui/progress"
+import axiosInstance from "@/utils/axiosInstance";
+import { useAuth } from "@/context/auth-provider";
+import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 
-
-const cardData = [
-  {
-    title: "Total Emails Sent",
-    value: "1063"
-  },
-  {
-    title: "Engaged Leads",
-    value: "325"
-  },
-  {
-    title: "Total Meetings Booked (Via Calendly)",
-    value: "3"
-  },
-  {
-    title: "Response Rate",
-    value: "4.62%"
-  }
-];
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+  const { dashboardData, isLoading } = useDashboardContext();
+  const { user } = useAuth();
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
+
+  console.log(dashboardData)
+
+  const cardData = [
+    {
+      title: "Total Emails Sent",
+      // value: dashboardData?.emails_sent,
+      value: "2"
+    },
+    {
+      title: "Engaged Leads",
+      // value: dashboardData?.engaged
+      value: "2"
+    },
+    {
+      title: "Total Meetings Booked (Via Calendly)",
+      // value: dashboardData?.meetings_booked
+      value: "2"
+    },
+    {
+      title: "Response Rate",
+      // value: dashboardData?.response_rate
+      value: "2"
+    }
+  ];
 
   return (
     <ScrollArea className="h-full">
@@ -261,12 +272,21 @@ export default function Page() {
           </Card>
 
           <Card className="col-span-2">
-            <ScrollArea className="h-[26rem]">
+            <ScrollArea className="h-[16rem]">
               <CardHeader>
                 <CardTitle>Hot Leads</CardTitle>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
+                  {/* {dashboardData.hot_leads?.map((lead) => (
+                    <div className="flex items-center">
+                      <Avatar className="h-9 w-9">
+                        <AvatarImage src={lead?.avatar} alt="Avatar" />
+                        <AvatarFallback>OM</AvatarFallback>
+                      </Avatar>
+                      <p className="text-sm font-medium leading-none ml-4">{lead?.name - lead?.company}</p>
+                    </div>
+                  ))} */}
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/01.png" alt="Avatar" />
@@ -341,8 +361,36 @@ export default function Page() {
             </CardContent>
           </Card>
           
-          <Card className="col-span-2 p-4">
-            <p className="text-sm">Contrary to popular belief, Lorem Ipsum is not simply random text. It has roots in a piece of classical Latin literature from 45 BC, making it over 2000 years old. Richard McClintock, a Latin professor at Hampden-Sydney College in Virginia, looked up one of the more obscure Latin words, consectetur, from a Lorem Ipsum passage, and going through the cites of the word in classical literature, discovered the undoubtable source. Lorem Ipsum comes from sections 1.10.32 and 1.10.33 of de Finibus Bonorum et Malorum by Cicero, written in 45 BC. This book is a treatise on the theory of ethics, very popular during the Renaissance. The first line of Lorem Ipsum, Lorem ipsum dolor sit amet.., comes from a line in section 1.10.32.</p>
+          <Card className="col-span-2 p-4 space-y-16">
+            <div className="flex justify-between items-center gap-5 mb-4">
+              <div>
+                <div className="text-lg font-semibold">0 Day Streak</div>
+                <div className="text-sm text-gray-600">Approve emails today to start a new streak</div>
+              </div>
+              {/* Replace with an actual icon component */}
+              <Icons.zap size={35} className="fill-purple-500 text-purple-500" />
+            </div>
+
+            <div className="flex items-end justify-between"> {/* Container for the days and circles */}
+              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+                <div
+                  key={index}
+                  className={`flex flex-col items-center justify-center ${
+                    index === 2 && 'text-purple-400' }`}
+                >
+                  <span className="text-sm mb-1">{day}</span> {/* Label above the circle */}
+                  <div
+                    className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                      index === 2 
+                      ? 'bg-gradient-to-r from-purple-700 to-purple-400'
+                      : 'bg-muted-foreground opacity-20'
+                    }`}
+                  >
+                    {/* Circle */}
+                  </div>
+                </div>
+              ))}
+            </div>
           </Card>
 
           {/* <Card className="col-span-4 md:col-span-3">

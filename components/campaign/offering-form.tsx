@@ -27,7 +27,8 @@ import { Input } from "@/components/ui/input";
 // } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "@/components/ui/use-toast";
-import { useCreateCampaign } from '@/hooks/useCampaign';
+import { useCampaignContext } from '@/context/campaign-provider';
+import axiosInstance from '@/utils/axiosInstance';
 
 const profileFormSchema = z.object({
   product_offering: z
@@ -41,31 +42,50 @@ const profileFormSchema = z.object({
   offering_details: z.string().max(160).min(4),
 });
 
-type ProfileFormValues = z.infer<typeof profileFormSchema>;
+type OfferingFormValues = z.infer<typeof profileFormSchema>;
 
 // This can come from your database or API.
-const defaultValues: Partial<ProfileFormValues> = {};
+const defaultValues: Partial<OfferingFormValues> = {};
 
 export function OfferingForm({type}: {type: string}) {
   const router = useRouter();
   
-  const form = useForm<ProfileFormValues>({
+  const form = useForm<OfferingFormValues>({
     resolver: zodResolver(profileFormSchema),
     defaultValues,
     mode: "onChange",
   });
 
-  const { createOffering } = useCreateCampaign();
+  const { createOffering, editOffering } = useCampaignContext();
+  const watchAllFields = form.watch();
 
   //   const { fields, append } = useFieldArray({
   //     name: "urls",
   //     control: form.control,
   //   });
 
-  async function onSubmit(data: ProfileFormValues) {
+  async function onSubmit(data: OfferingFormValues) {
     if (type === "create") {
-      await createOffering(data);
-      router.push('/dashboard/campaign/create');
+      createOffering(data);
+    } if (type === "edit") {
+      const changes = Object.keys(data).reduce((acc, key) => {
+        // Ensure the correct key type is used
+        const propertyKey = key as keyof OfferingFormValues;
+
+        // Compare the stringified versions of the current and previous values
+        if (
+          JSON.stringify(data[propertyKey]) !==
+          JSON.stringify(watchAllFields[propertyKey])
+        ) {
+          // Assign only if types are compatible
+          acc = { ...acc, [propertyKey]: data[propertyKey] };
+        }
+        return acc;
+      }, {} as OfferingFormValues);
+
+      if (Object.keys(changes).length > 0) {
+        editOffering(changes);
+      }
     }
   }
 

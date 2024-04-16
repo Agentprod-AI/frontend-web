@@ -40,7 +40,9 @@ import {
   Pen,
   Trash2,
   Circle,
-  Star
+  Star,
+  Zap,
+  Copy
 } from "lucide-react";
 
 export type Icon = LucideIcon;
@@ -84,6 +86,8 @@ export const Icons = {
   trash2: Trash2,
   circle: Circle,
   star: Star,
+  zap: Zap,
+  copy: Copy,
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"

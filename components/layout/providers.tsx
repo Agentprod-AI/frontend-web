@@ -8,6 +8,7 @@ import { LeadSheetSidebarProvider } from "../../context/lead-sheet-sidebar";
 import { AuthProvider, AuthStateInterface } from "../../context/auth-provider";
 import { LeadsProvider } from "../../context/lead-user";
 import { CampaignProvider } from "../../context/campaign-provider";
+import { DashboardProvider } from "@/context/dashboard-analytics-provider";
 
 export default function Providers({
   // session,
@@ -26,9 +27,11 @@ export default function Providers({
             <LeadSheetSidebarProvider>
               <LeadsProvider>
                 <CampaignProvider>
-                  {/* <SessionProvider session={session}> */}
-                  {children}
-                  {/* </SessionProvider> */}
+                  <DashboardProvider>
+                    {/* <SessionProvider session={session}> */}
+                    {children}
+                    {/* </SessionProvider> */} 
+                  </DashboardProvider>
                 </CampaignProvider>
               </LeadsProvider>
             </LeadSheetSidebarProvider>
