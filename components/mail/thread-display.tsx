@@ -106,14 +106,17 @@ function SingleThreadDisplay({ threadData }: { threadData: any }) {
 
   messages.sort((a, b) => a.timestamp.getTime() - b.timestamp.getTime());
 
-  // console.log(messages);
+  console.log("Messages:", messages); // Added console log
+
   return (
     <div className="relative">
       {/* <div className="bg-accent w-[3px] h-[calc(100%+0.5rem)] absolute left-7 -z-10 border-b-8 border-primary"></div> */}
       {messages.map((message, index) => {
         if (message.type === "email") {
+          console.log("Email:", message); // Added console log
           return <EmailComponent key={index} data={message} />;
         }
+        console.log("Event:", message); // Added console log
         return <EventsComponent key={index} data={message} />;
       })}
     </div>

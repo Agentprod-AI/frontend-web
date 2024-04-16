@@ -98,4 +98,4 @@ function getBadgeVariantFromLabel(
   }
 
   return "secondary";
-} 
+}

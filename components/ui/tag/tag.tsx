@@ -14,6 +14,7 @@ export const tagVariants = cva(
           "bg-primary border-primary text-primary-foreground hover:bg-primary/90",
         destructive:
           "bg-destructive border-destructive text-destructive-foreground hover:bg-destructive/90",
+        base: "bg-black/60 text-secondary-foreground text-white hover:bg-black/70",
       },
       size: {
         sm: "text-xs h-7",

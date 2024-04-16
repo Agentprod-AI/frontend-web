@@ -34,6 +34,11 @@ const campaignPages = [
     description: "What messages do you want to send?",
     href: "training",
   },
+  // {
+  //   title: "Autopilot",
+  //   description: "How do you want to automate this campaign?",
+  //   href: "autopilot",
+  // },
 ];
 
 export default function Page({ params }: { params: { campaignId: string } }) {

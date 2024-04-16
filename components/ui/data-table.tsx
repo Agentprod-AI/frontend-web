@@ -20,11 +20,16 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { ScrollArea, ScrollBar } from "./scroll-area";
 
+import { useState, useEffect } from "react";
+import { Trash } from "lucide-react";
+import { Contact, useLeads } from "@/context/lead-user";
+
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   searchKey: string;
   simple?: boolean;
+  deleteAction?: boolean;
 }
 
 export function DataTable<TData, TValue>({
@@ -32,16 +37,28 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   simple,
+  deleteAction,
 }: DataTableProps<TData, TValue>) {
   const table = useReactTable({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
   });
+
+  const [isHovering, setIsHovering] = useState(false);
+  const { existingLeads, setExistingLeads } = useLeads();
 
   /* this can be used to get the selectedrows 
   console.log("value", table.getFilteredSelectedRowModel()); */
+
+  useEffect(() => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const leads: Contact[] = selectedRows.map((row) => row.original as Contact);
+    console.log("existing leads:", existingLeads);
+    setExistingLeads(leads as Contact[]);
+    // console.log("Selected rows:", selectedRows);
+    console.log("selected leads:", leads);
+  }, [table.getFilteredSelectedRowModel().rows]);
 
   return (
     <>
@@ -79,6 +96,8 @@ export function DataTable<TData, TValue>({
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
+                  onMouseEnter={() => setIsHovering(true)}
+                  onMouseLeave={() => setIsHovering(false)}
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
@@ -88,6 +107,18 @@ export function DataTable<TData, TValue>({
                       )}
                     </TableCell>
                   ))}
+                  {deleteAction && (
+                    <TableCell>
+                      <Button
+                        variant={"ghost"}
+                        className={`${
+                          isHovering ? "visible" : "invisible"
+                        } p-3  rounded-xl`}
+                      >
+                        <Trash className="h-4 w-4" />
+                      </Button>
+                    </TableCell>
+                  )}
                 </TableRow>
               ))
             ) : (

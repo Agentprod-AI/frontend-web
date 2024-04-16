@@ -9,6 +9,7 @@ import { AuthProvider, AuthStateInterface } from "../../context/auth-provider";
 import { LeadsProvider } from "../../context/lead-user";
 import { CampaignProvider } from "../../context/campaign-provider";
 import { DashboardProvider } from "@/context/dashboard-analytics-provider";
+import { CompanyProvider } from "@/context/company-linkedin";
 
 export default function Providers({
   // session,
@@ -28,9 +29,11 @@ export default function Providers({
               <LeadsProvider>
                 <CampaignProvider>
                   <DashboardProvider>
-                    {/* <SessionProvider session={session}> */}
-                    {children}
-                    {/* </SessionProvider> */} 
+                    <CompanyProvider>
+                      {/* <SessionProvider session={session}> */}
+                      {children}
+                      {/* </SessionProvider> */} 
+                    </CompanyProvider>
                   </DashboardProvider>
                 </CampaignProvider>
               </LeadsProvider>

@@ -5,6 +5,7 @@ export const pageTitleConfig = [
   { pathname: "/dashboard/chat", title: "Chat with Prod", hidden: true },
   { pathname: "/dashboard/analytics", title: "Analytics", hidden: false },
   { pathname: "/dashboard/campaign", title: "Campaign", hidden: false },
+  { pathname: "/dashboard/leads", title: "Leads", hidden: false },
   { pathname: "/dashboard/campaign/create", title: "Create Campaign", hidden: false },
   {
     pathname: "/dashboard/campaign/create/scheduling-budget",
@@ -46,11 +47,11 @@ export const pageTitleConfig = [
     title: "Scheduling and Budget",
     hidden: false,
   },
-  {
-    pathname: "/dashboard/campaign/:id/offering",
-    title: "Offering",
-    hidden: false,
-  },
+  // {
+  //   pathname: "/dashboard/campaign/:id/offering",
+  //   title: "Offering",
+  //   hidden: false,
+  // },
   {
     pathname: "/dashboard/campaign/:id/goal",
     title: "Goal",
@@ -66,11 +67,11 @@ export const pageTitleConfig = [
     title: "Training",
     hidden: false,
   },
-  {
-    pathname: "/dashboard/campaign/:id/autopilot",
-    title: "Autopilot",
-    hidden: false,
-  },
+  // {
+  //   pathname: "/dashboard/campaign/:id/autopilot",
+  //   title: "Autopilot",
+  //   hidden: false,
+  // },
   {
     pathname: "/dashboard/settings/account-info",
     title: "Settings",

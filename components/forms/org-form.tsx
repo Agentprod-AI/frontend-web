@@ -35,7 +35,7 @@ import { useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 // import { toast } from "@/components/ui/use-toast";
-import { orgLocations } from "./people-form";
+import { orgLocations } from "./formUtils"
 import { v4 as uuid } from "uuid";
 import { truncateString } from "@/components/ui/tag/tag-input";
 import { ScrollArea } from "@/components/ui/scroll-area";

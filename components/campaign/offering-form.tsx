@@ -5,7 +5,6 @@ import { useRouter } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm } from "react-hook-form";
 import { z } from "zod";
-
 // import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -140,8 +139,8 @@ export function OfferingForm({type}: {type: string}) {
               <FormLabel>Details of offers and details</FormLabel>
               <FormControl>
                 <Textarea
-                  placeholder="Write some details"
-                  className="resize-none"
+                  placeholder="Describe the product and features."
+                  // className="resize-none"
                   {...field}
                 />
               </FormControl>
