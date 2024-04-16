@@ -1,10 +1,9 @@
 "use client";
 
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import {
   BadgePercent,
   CurlyBraces,
-  ListRestart,
   ShieldCheck,
   TextQuote,
   UserCog2,
@@ -17,23 +16,33 @@ import {
   CommandItem,
   CommandList,
   CommandSeparator,
-  CommandShortcut,
 } from "@/components/ui/command";
 import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/page";
 import { Button } from "@/components/ui/button";
-import { FieldFormModal, TrainingResponse } from "./field-form-modal";
+import { FieldFormModal } from "./field-form-modal";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { getTraining } from "./training.api";
 
-export default function FieldList({ setFieldsList }: { setFieldsList: (val: allFieldsListType) => void }) {
-  const [fieldsList, setFieldsListState] = useState<allFieldsListType>({
-    variable: [],
-    personalized: [],
-    offering: [],
-    enriched: [],
-  });
+export interface TrainingResponse {
+  campaign_id: string;
+  template: string;
+  follow_up_template?: string;
+  variables: any | null;
+  offering_variables: Record<string, string>;
+  personalized_fields: Record<string, string>;
+  enriched_fields: string[];
+  id: string;
+  type?: string;
+}
 
+export default function FieldList({
+  fieldsList,
+  setFieldsList,
+}: {
+  fieldsList: allFieldsListType;
+  setFieldsList: (val: allFieldsListType) => void;
+}) {
   useEffect(() => {
     const fetchFields = async () => {
       try {
@@ -44,21 +53,36 @@ export default function FieldList({ setFieldsList }: { setFieldsList: (val: allF
           getTraining("enriched"),
         ]);
 
-        /**
-         * Updates the `fieldsList` state with the fetched training data.
-         * The `fieldsList` state is an object with four properties:
-         * - `variable`: an array of `TrainingResponse` objects for variable fields
-         * - `personalized`: an array of `TrainingResponse` objects for personalized fields
-         * - `offering`: an array of `TrainingResponse` objects for offering fields
-         * - `enriched`: an array of `TrainingResponse` objects for enriched fields
-         */
         const updatedFieldsList: allFieldsListType = {
-          variable: fields[0],
-          personalized: fields[1],
-          offering: fields[2],
-          enriched: fields[3],
+          variable: fields
+            .filter((field) => field.variables !== null)
+            .map((field) => ({
+              id: field.id,
+              val: field.template,
+              description: field.follow_up_template || "",
+              length: "",
+            })),
+          personalized: Object.entries(fields[0].personalized_fields).map(([key, value]) => ({
+            id: fields[0].id,
+            val: value,
+            description: "",
+            length: "",
+          })),
+          offering: Object.entries(fields[0].offering_variables).map(([key, value]) => ({
+            id: fields[0].id,
+            val: value,
+            description: "",
+            length: "",
+          })),
+          enriched: fields[0].enriched_fields.map((field) => ({
+            id: fields[0].id,
+            val: field,
+            description: "",
+            length: "",
+          })),
         };
-        setFieldsListState(updatedFieldsList);
+
+        setFieldsList(updatedFieldsList);
       } catch (error) {
         console.error("Error fetching fields:", error);
       }
@@ -66,6 +90,7 @@ export default function FieldList({ setFieldsList }: { setFieldsList: (val: allF
 
     fetchFields();
   }, [setFieldsList]);
+
   return (
     <Command className="rounded-lg border shadow-md">
       <CommandInput placeholder="Search..." />
@@ -74,32 +99,42 @@ export default function FieldList({ setFieldsList }: { setFieldsList: (val: allF
         {Object.keys(fieldsList).map((field, ind) => (
           <div key={ind}>
             <CommandGroup heading={capitalizeFirstLetter(field + " Fields")}>
-              {fieldsList[field as keyof allFieldsListType].map((val: any, ind: any) => (
-                <CommandItem key={ind}>
-                  {
+              {fieldsList[field as keyof allFieldsListType].map(
+                (val: any, ind: any) => (
+                  <CommandItem key={ind}>
                     {
-                      variable: <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />,
-                      personalized: <UserCog2 className="mr-2 h-4 w-4 min-w-3" />,
-                      offering: <BadgePercent className="mr-2 h-4 w-4 min-w-3" />,
-                      enriched: <ShieldCheck className="mr-2 h-4 w-4 min-w-3" />,
-                    }[field]
-                  }
-                  <FieldFormModal
-                    modalType="edit"
-                    type={field}
-                    setFieldsList={setFieldsList}
-                    fieldsList={fieldsList}
-                    fieldId={val.id}
-                  >
-                    <span className="w-full">{val.val}</span>
-                  </FieldFormModal>
-                  {field === "variable" && (
-                    <Badge variant={"outline"}>
-                      <TextQuote className="h-3 w-3 mr-1" /> {val.length}
-                    </Badge>
-                  )}
-                </CommandItem>
-              ))}
+                      {
+                        variable: (
+                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
+                        ),
+                        personalized: (
+                          <UserCog2 className="mr-2 h-4 w-4 min-w-3" />
+                        ),
+                        offering: (
+                          <BadgePercent className="mr-2 h-4 w-4 min-w-3" />
+                        ),
+                        enriched: (
+                          <ShieldCheck className="mr-2 h-4 w-4 min-w-3" />
+                        ),
+                      }[field]
+                    }
+                    <FieldFormModal
+                      modalType="edit"
+                      type={field}
+                      setFieldsList={setFieldsList}
+                      fieldsList={fieldsList}
+                      fieldId={val.id}
+                    >
+                      <span className="w-full">{val.val}</span>
+                    </FieldFormModal>
+                    {field === "variable" && (
+                      <Badge variant="outline">
+                        <TextQuote className="h-3 w-3 mr-1" /> {val.val.length}
+                      </Badge>
+                    )}
+                  </CommandItem>
+                )
+              )}
             </CommandGroup>
             <FieldFormModal
               type={field}
@@ -107,7 +142,7 @@ export default function FieldList({ setFieldsList }: { setFieldsList: (val: allF
               setFieldsList={setFieldsList}
               fieldsList={fieldsList}
             >
-              <Button variant={"outline"} size={"sm"} className="m-2">
+              <Button variant="outline" size="sm" className="m-2">
                 Add Field
               </Button>
             </FieldFormModal>

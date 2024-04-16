@@ -33,8 +33,8 @@ const FormSchema = z.object({
 });
 
 export class TrainingRequest {
-  campaign_id!: string;
-  template!: string;
+  campaign_id: string | undefined;
+  template: string | undefined;
   follow_up_template?: string;
   variables?: Record<string, any>;
   offering_variables?: Record<string, any>;
@@ -47,6 +47,7 @@ export class TrainingResponse extends TrainingRequest {
   length: any;
   val: ReactNode;
   type: string | undefined;
+  description: string | undefined; // Add the description property
 }
 
 export function FieldFormModal({
@@ -86,7 +87,7 @@ export function FieldFormModal({
   
       if (modalType === "add") {
         const trainingInfo: TrainingRequest = {
-          campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305", // Replace with the actual campaign ID
+          campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305",
           template: data.fieldName,
           follow_up_template: data.description,
           offering_variables: {},
@@ -103,15 +104,15 @@ export function FieldFormModal({
             {
               id: createdTraining.id,
               val: createdTraining.template,
-              description: createdTraining.follow_up_template,
-              ...(type === "variable" && { length: createdTraining.length }),
+              description: createdTraining.follow_up_template, // Add the description property
+              ...(type === "variable" && { length: createdTraining.length }), // Add the length property
             },
           ],
         };
       } else {
         if (currentTraining) {
           const updatedTraining: TrainingRequest = {
-            campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305", // Replace with the actual campaign ID
+            campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305",
             template: data.fieldName,
             follow_up_template: data.description,
             offering_variables: {},
@@ -131,8 +132,8 @@ export function FieldFormModal({
                 return {
                   id: updatedResponse.id,
                   val: updatedResponse.template,
-                  description: updatedResponse.follow_up_template,
-                  ...(type === "variable" && { length: updatedResponse.length }),
+                  description: updatedResponse.follow_up_template, // Add the description property
+                  ...(type === "variable" && { length: updatedResponse.length }), // Add the length property
                 };
               }
               return val;
@@ -224,3 +225,5 @@ export function FieldFormModal({
     </Dialog>
   );
 }
+
+export type { allFieldsListType };

@@ -21,13 +21,13 @@ import FieldTextArea from "@/components/campaign/training/field-text-area";
 const allFieldsList: allFieldsListType = {
   variable: [
     {
-      id: 1,
+      id: "1",
       val: "company name",
       description: "The name of the company",
       length: "short",
     },
     {
-      id: 2,
+      id: "2",
       val: "first name",
       description: "The first name of the customer",
       length: "automatic",
@@ -35,31 +35,31 @@ const allFieldsList: allFieldsListType = {
   ],
   offering: [
     {
-      id: 4,
+      id: "4",
       val: "customer per industry",
       description: "The industry of the customer",
     },
     {
-      id: 5,
+      id: "5",
       val: "customer per region",
       description: "The region of the customer",
     },
   ],
   personalized: [
     {
-      id: 7,
+      id: "7",
       val: "customer name",
       description: "The name of the customer",
     },
     {
-      id: 8,
+      id: "8",
       val: "customer company",
       description: "The company of the customer",
     },
   ],
   enriched: [
     {
-      id: 10,
+      id: "10",
       val: "enriched",
       description: "The enriched data",
     },
@@ -69,28 +69,27 @@ const allFieldsList: allFieldsListType = {
 // make a type for all variables
 export type allFieldsListType = {
   variable: {
-    id: number;
+    id?: string;
     val: string;
     description: string;
     length: string;
   }[];
   offering: {
-    id: number;
+    id?: string;
     val: string;
     description: string;
   }[];
   personalized: {
-    id: number;
+    id?: string;
     val: string;
     description: string;
   }[];
   enriched: {
-    id: number;
+    id?: string;
     val: string;
     description: string;
   }[];
 };
-
 export default function Training() {
   const [isOpen, setIsOpen] = React.useState(false);
 
