@@ -215,7 +215,7 @@ export default function Home() {
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
     useChat({
-      api: `${BACKEND_URL}/v2/chat/completion`,
+      api: `/v2/chat/completion`,
       body: {
         userId: userId,
         content: inputRef.current?.value,

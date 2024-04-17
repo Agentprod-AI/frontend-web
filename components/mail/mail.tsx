@@ -69,9 +69,9 @@ export function Mail({
     async function fetchMails(userId: string) {
       setLoading(true);
       await axiosInstance
-        .get<Mail[]>(`/v2/mailbox/${userId}`)
+        .get<{ mails: Mail[] }>(`/v2/mailbox/${userId}`)
         .then((response) => {
-          setMails(response.data as Mail[]);
+          setMails(response.data.mails as Mail[]);
           setLoading(false);
         })
 

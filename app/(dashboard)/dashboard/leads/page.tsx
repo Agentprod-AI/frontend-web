@@ -90,8 +90,8 @@ export default function Page() {
       campaignId: string = "482b7b80-4681-422b-9d40-f7253f4a8305"
     ) {
       setLoading(true);
-      const response = axiosInstance
-        .get(`v2/contacts/campaign/${campaignId}`)
+      axiosInstance
+        .get(`v2/lead/campaign/${campaignId}`)
         .then((response) => {
           const data = response.data;
           if (data.isArray) {
