@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
 // import type { Metadata } from "next";
-import { Nav } from "@/components/layout/nav";
+import { Nav } from "@/components/layout/nav/nav";
 import { navItems } from "@/constants/data";
 import { DummyCampaign } from "@/constants/campaign";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +20,6 @@ import { redirect } from "next/navigation";
 import { PageHeaderProvider } from "@/context/page-header";
 import { useCampaignContext } from "@/context/campaign-provider";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
-
 
 // export const metadata: Metadata = {
 //   title: "Next Shadcn Dashboard Starter",
@@ -36,26 +35,21 @@ export default function DashboardLayout({
 
   const { width } = useWindowSize();
   const { user } = useAuth();
-  const { updateCampaignState } = useCampaignContext();
 
   if (!user) {
     redirect("/");
   }
 
-  useEffect(() => {
-    updateCampaignState({ campaign: DummyCampaign });
-  }, []);
-
   return (
     <>
       <Header />
-      <div className="flex h-screen overflow-hidden">
+      <div className="flex h-screen overflow-hidden md:pt-16">
         <TooltipProvider delayDuration={0}>
           <ResizablePanelGroup
             direction="horizontal"
             onLayout={(sizes: number[]) => {
               document.cookie = `react-resizable-panels:layout=${JSON.stringify(
-                sizes,
+                sizes
               )}`;
             }}
             className="h-full items-stretch"
@@ -71,18 +65,18 @@ export default function DashboardLayout({
                 onCollapse={() => {
                   setIsCollapsed(true);
                   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                    true,
+                    true
                   )}`;
                 }}
                 onExpand={() => {
                   setIsCollapsed(false);
                   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
-                    false,
+                    false
                   )}`;
                 }}
                 className={cn(
                   isCollapsed &&
-                    "min-w-[50px] transition-all duration-300 ease-in-out",
+                    "min-w-[50px] transition-all duration-300 ease-in-out"
                 )}
               >
                 {/* <Sidebar isCollapsed={isCollapsed} /> */}
@@ -93,7 +87,7 @@ export default function DashboardLayout({
             <ResizablePanel minSize={30} defaultSize={85}>
               <ScrollArea className="h-screen">
                 <PageHeaderProvider>
-                  <main className="px-4 pt-[56px]">
+                  <main className="px-4 pb-20">
                     <DashboardPageHeader />
                     {children}
                   </main>

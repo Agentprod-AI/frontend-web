@@ -16,7 +16,7 @@ export async function POST(req: Request, res: Response) {
         headers: {
           "Content-Type": "application/json",
         },
-      },
+      }
     );
 
     // console.log("RESULT: ", result.data);

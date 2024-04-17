@@ -5,15 +5,14 @@ import { Mail } from "../../../../components/mail/mail";
 import { accounts, mails } from "@/constants/data";
 
 export default function MailPage() {
-  const layout = cookies().get("react-resizable-panels:layout");
   const collapsed = cookies().get("react-resizable-panels:collapsed");
 
-  const defaultLayout = layout ? JSON.parse(layout.value) : undefined;
+  const defaultLayout = [100, 200, 5];
   const defaultCollapsed = collapsed ? JSON.parse(collapsed.value) : undefined;
 
   return (
     <>
-      <div className="md:hidden">
+      {/* <div className="md:hidden">
         <Image
           src="/examples/mail-dark.png"
           width={1280}
@@ -28,7 +27,7 @@ export default function MailPage() {
           alt="Mail"
           className="block dark:hidden"
         />
-      </div>
+      </div> */}
       <div className="hidden flex-col md:flex">
         <Mail
           accounts={accounts}
@@ -41,3 +40,4 @@ export default function MailPage() {
     </>
   );
 }
+

@@ -1,5 +1,8 @@
 "use client";
 
+import { useRouter } from 'next/navigation';
+
+import axios from 'axios';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,10 +20,13 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React from "react";
+import Link from 'next/link';
+import { useCampaignContext } from '@/context/campaign-provider';
+import axiosInstance from '@/utils/axiosInstance';
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
-const accountFormSchema = z.object({
+const campaignFormSchema = z.object({
   campaignName: z
     .string()
     .min(2, "Campaign Name must be at least 2 characters.")
@@ -39,7 +45,7 @@ const accountFormSchema = z.object({
     z
       .number()
       .min(1, "You must outreach to at least 1 prospect per day.")
-      .max(500, "You cannot outreach to more than 500 prospects per day."),
+      .max(500, "You cannot outreach to more than 500 prospects per day.")
   ),
   schedule: z.object({
     mondayStartTime: z.string().optional(),
@@ -52,40 +58,60 @@ const accountFormSchema = z.object({
     thursdayEndTime: z.string().optional(),
     fridayStartTime: z.string().optional(),
     fridayEndTime: z.string().optional(),
-    // Assuming Saturday and Sunday are not working days as per the image
-    // If they are, you can add them similarly to the weekdays
   }),
 });
 
-type AccountFormValues = z.infer<typeof accountFormSchema>;
+type CampaignFormValues = z.infer<typeof campaignFormSchema>;
 
 // This can come from your database or API.
-const defaultValues: Partial<AccountFormValues> = {
+const defaultValues: Partial<CampaignFormValues> = {
   // name: "Your name",
   // dob: new Date("2023-01-23"),
 };
 
-export function SchedulingForm() {
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountFormSchema),
+export function SchedulingForm({type}: {type: string}) {
+  const router = useRouter();
+
+  const form = useForm<CampaignFormValues>({
+    resolver: zodResolver(campaignFormSchema),
     defaultValues,
   });
 
-  function onSubmit(data: AccountFormValues) {
-    console.log("Data: ", data);
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
+  const { createCampaign, editCampaign } = useCampaignContext();
+  const watchAllFields = form.watch();
+
+  const onSubmit = async (data: CampaignFormValues) => {
+    if (type === "create") {
+      createCampaign(data);
+    } else if (type === "edit") {
+      const changes = Object.keys(data).reduce((acc, key) => {
+        // Ensure the correct key type is used
+        const propertyKey = key as keyof CampaignFormValues;
+
+        // Compare the stringified versions of the current and previous values
+        if (
+          JSON.stringify(data[propertyKey]) !==
+          JSON.stringify(watchAllFields[propertyKey])
+        ) {
+          // Assign only if types are compatible
+          acc = { ...acc, [propertyKey]: data[propertyKey] };
+        }
+        return acc;
+      }, {} as CampaignFormValues);
+
+      if (Object.keys(changes).length > 0) {
+        editCampaign(changes);
+      } else {
+        console.log('No changes detected.');
+        // Handle no changes scenario
+      }
+    }
+  };
+
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mb-5">
         <FormField
           control={form.control}
           name="campaignName"
@@ -199,7 +225,16 @@ export function SchedulingForm() {
           </div>
         ))}
 
-        <Button type="submit">Update Campaign</Button>
+        <Button type="submit">
+          {/* {
+            type === "create" ?
+            <a href="/dashboard/campaign/create">
+              Add Campagin
+            </a> :
+            "Update Campagin"
+          } */}
+          {type === "create" ? "Add" : "Update"} Campaign
+          </Button>
       </form>
     </Form>
   );

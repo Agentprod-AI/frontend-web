@@ -348,7 +348,7 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>(
                     setTagCount((prevTagCount) => prevTagCount + 1);
                   }}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger className="w-full bg-white/90 text-black">
                     <SelectValue placeholder={dropdownPlaceholder} />
                   </SelectTrigger>
                   <SelectContent>
@@ -441,7 +441,7 @@ const TagInput = React.forwardRef<HTMLInputElement, TagInputProps>(
         )}
       </div>
     );
-  },
+  }
 );
 
 TagInput.displayName = "TagInput";

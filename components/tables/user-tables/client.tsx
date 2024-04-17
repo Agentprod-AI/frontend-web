@@ -8,6 +8,7 @@ import { Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { columns } from "./columns";
 import { useLeads } from "@/context/lead-user";
+import { Lead } from "@/context/lead-user";
 
 // interface ProductsClientProps {
 //   data: User[];
@@ -33,7 +34,7 @@ export const UserClient = () => {
         </Button>
       </div>
       <Separator />
-      <DataTable searchKey="name" columns={columns} data={leads} />
+      <DataTable searchKey="name" columns={columns} data={leads as Lead[]} />
     </>
   );
 };

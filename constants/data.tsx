@@ -92,7 +92,7 @@ export const users: User[] = [
   },
 ];
 
-export type Employee = {
+export type Lead = {
   id: number;
   first_name: string;
   last_name: string;
@@ -139,7 +139,8 @@ export const navItems: NavInterface[] = [
         href: "/dashboard/mail",
         icon: "mail",
         label: "mail",
-        isCollapsible: false,
+        isCollapsible: true,
+      
       },
       {
         title: "Campaign",
@@ -148,41 +149,41 @@ export const navItems: NavInterface[] = [
         label: "campaign",
         isCollapsible: false,
       },
+      {
+        title: "Leads",
+        href: "/dashboard/leads",
+        icon: "contact",
+        label: "leads",
+        isCollapsible: false,
+      },
     ],
   },
   {
     category: "Extras",
     items: [
       {
-        title: "User",
-        href: "/dashboard/user",
-        icon: "user",
-        label: "user",
+        title: "Leads",
+        href: "/dashboard/leads",
+        icon: "lead",
+        label: "leads",
         isCollapsible: false,
       },
       {
-        title: "Employee",
-        href: "/dashboard/employee",
-        icon: "employee",
-        label: "employee",
+        title: "Analytics",
+        href: "/dashboard/analytics",
+        // icon: "lead",
+        label: "analytics",
         isCollapsible: false,
       },
       {
-        title: "Profile",
-        href: "/dashboard/profile",
-        icon: "profile",
-        label: "profile",
+        title: "Settings",
+        href: "/dashboard/settings/account-info",
+        icon: "settings",
+        label: "settings",
         isCollapsible: false,
-      },
-      // {
-      //   title: "Login",
-      //   href: "/",
-      //   icon: "login",
-      //   label: "login",
-      //   isCollapsible: false,
-      // },
+      }
     ],
-  },
+  }
 ];
 
 export const mails = [
@@ -371,32 +372,32 @@ export const accounts = [
       </svg>
     ),
   },
-  {
-    label: "Alicia Koch",
-    email: "alicia@gmail.com",
-    icon: (
-      <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <title>Gmail</title>
-        <path
-          d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"
-          fill="currentColor"
-        />
-      </svg>
-    ),
-  },
-  {
-    label: "Alicia Koch",
-    email: "alicia@me.com",
-    icon: (
-      <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <title>iCloud</title>
-        <path
-          d="M13.762 4.29a6.51 6.51 0 0 0-5.669 3.332 3.571 3.571 0 0 0-1.558-.36 3.571 3.571 0 0 0-3.516 3A4.918 4.918 0 0 0 0 14.796a4.918 4.918 0 0 0 4.92 4.914 4.93 4.93 0 0 0 .617-.045h14.42c2.305-.272 4.041-2.258 4.043-4.589v-.009a4.594 4.594 0 0 0-3.727-4.508 6.51 6.51 0 0 0-6.511-6.27z"
-          fill="currentColor"
-        />
-      </svg>
-    ),
-  },
+  // {
+  //   label: "Alicia Koch",
+  //   email: "alicia@gmail.com",
+  //   icon: (
+  //     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  //       <title>Gmail</title>
+  //       <path
+  //         d="M24 5.457v13.909c0 .904-.732 1.636-1.636 1.636h-3.819V11.73L12 16.64l-6.545-4.91v9.273H1.636A1.636 1.636 0 0 1 0 19.366V5.457c0-2.023 2.309-3.178 3.927-1.964L5.455 4.64 12 9.548l6.545-4.91 1.528-1.145C21.69 2.28 24 3.434 24 5.457z"
+  //         fill="currentColor"
+  //       />
+  //     </svg>
+  //   ),
+  // },
+  // {
+  //   label: "Alicia Koch",
+  //   email: "alicia@me.com",
+  //   icon: (
+  //     <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+  //       <title>iCloud</title>
+  //       <path
+  //         d="M13.762 4.29a6.51 6.51 0 0 0-5.669 3.332 3.571 3.571 0 0 0-1.558-.36 3.571 3.571 0 0 0-3.516 3A4.918 4.918 0 0 0 0 14.796a4.918 4.918 0 0 0 4.92 4.914 4.93 4.93 0 0 0 .617-.045h14.42c2.305-.272 4.041-2.258 4.043-4.589v-.009a4.594 4.594 0 0 0-3.727-4.508 6.51 6.51 0 0 0-6.511-6.27z"
+  //         fill="currentColor"
+  //       />
+  //     </svg>
+  //   ),
+  // },
 ];
 
 export type Account = (typeof accounts)[number];
@@ -483,5 +484,31 @@ export const contacts = [
     email: "scarlett.adams@example.com",
   },
 ];
+export const draftEmail = {
+  title: "Try Agentprod for your business!",
+  body: `Hi Olliver,
+
+I wanted to tell you about this great new AI assistant tool called Agentprod that I think could really help your business. 
+
+Agentprod is an AI-powered virtual assistant that can understand customer questions and respond with accurate answers instantly. It's perfect for automating common customer service queries so your team can focus on more complex issues.
+
+Some key benefits:
+
+- 24/7 availability - Agentprod never sleeps! It can handle customer queries even when your team is offline.
+
+- Scalability - You can have as many conversations at once as you need. Agentprod can scale to handle increased demand seamlessly.
+
+- Customizable - Easily train Agentprod to understand industry/business specific language and terminology. 
+
+- Analytics - Get insights into the most common customer questions and queries. Use this to improve products/services.
+
+Let me know if you would like me to set up a demo of Agentprod for your customer service team. I really think this could help reduce workload and costs while also improving customer satisfaction.
+
+Looking forward to hearing your thoughts!
+
+Regards,
+Agent Prod`,
+};
 
 export type Contact = (typeof contacts)[number];
+

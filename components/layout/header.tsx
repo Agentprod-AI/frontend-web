@@ -1,6 +1,6 @@
 import ThemeToggle from "@/components/layout/ThemeToggle/theme-toggle";
 import { cn } from "@/lib/utils";
-import { MobileSidebar } from "./mobile-sidebar";
+import { MobileSidebar } from "./nav/mobile-sidebar";
 import { UserNav } from "./user-nav";
 import Link from "next/link";
 import { AccountSwitcher } from "./account-switcher";
@@ -28,7 +28,7 @@ export default function Header() {
           </Link> */}
           <div
             className={cn(
-              "flex h-[52px] items-center justify-center px-2",
+              "flex h-[52px] items-center justify-center px-2"
               // isCollapsed ? "h-[52px]" : "px-2",
             )}
           >
