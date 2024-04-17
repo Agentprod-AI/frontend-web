@@ -42,6 +42,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   const [data, setData] = useState<Lead | Contact>();
   const { companyInfo } = useCompanyInfo();
 
+  console.log(useLeadSheetSidebar());
   useEffect(() => {
     if (isOpen && itemId) {
       const item = leads.find((lead) => lead.id === itemId);

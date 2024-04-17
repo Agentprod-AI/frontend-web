@@ -3,29 +3,50 @@ import React from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
-import { Activity, MoreHorizontal, Plus } from "lucide-react";
+import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
-import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
 import { Icons } from "@/components/icons";
 import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { UKFlag, USAFlag } from "@/app/icons";
+import { LoadingCircle } from "@/app/icons";
+
+
+interface CampaignEntry {
+  user_id: string;
+  campaignId?: string;
+  campaign_name: string;
+  is_active: boolean;
+  campaign_type: string;
+  daily_outreach_number?: number;
+  start_date?: string;
+  end_date?: string;
+  schedule_type: string;
+  description?: string;
+  additional_details?: string;
+  monday_start?: string;
+  monday_end?: string;
+  tuesday_start?: string;
+  tuesday_end?: string;
+  wednesday_start?: string;
+  wednesday_end?: string;
+  thursday_start?: string;
+  thursday_end?: string;
+  friday_start?: string;
+  friday_end?: string;
+  id: string;
+}
 
 
 export default function Page() {
-  const { campaign, toggleCampaignEnabled, deleteCampaign } =
+  const { campaigns, deleteCampaign, toggleCampaignIsActive, isLoading } =
     useCampaignContext();
 
   return (
@@ -40,10 +61,10 @@ export default function Page() {
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {campaign &&
-          campaign.map((campaignItem) => (
+        {!isLoading ?
+          campaigns.map((campaignItem) => (
             // className="hover:bg-accent" for card
-            <Card key={campaignItem.campaignId} >
+            <Card key={campaignItem.id} >
               <CardContent className="flex flex-col items-left p-4 gap-4">
                 <div className="flex justify-between items-center">
                   <div className="relative h-12 w-24 pt-2"> {/* Adjust height and width as needed */}
@@ -62,12 +83,12 @@ export default function Page() {
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <p className="text-sm font-medium leading-none truncate w-full max-w-72">
-                          {campaignItem?.campaignName}
+                          {campaignItem?.campaign_name}
                         </p>
                       </TooltipTrigger>
                       <TooltipContent >
                         <p className="text-sm font-medium leading-none">
-                          {campaignItem?.campaignName}
+                          {campaignItem?.campaign_name}
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -88,19 +109,19 @@ export default function Page() {
 
                 <div className="flex gap-4 justify-between items-center">
                   <Switch
-                    checked={campaignItem?.status}
+                    checked={campaignItem?.is_active}
                     onCheckedChange={() =>
-                      campaignItem.campaignId !== undefined &&
-                      toggleCampaignEnabled(campaignItem.campaignId)
+                      campaignItem.id !== undefined &&
+                      toggleCampaignIsActive(campaignItem.id)
                     }
                     className="flex-none"
                   />
                   <div>
-                    <Button variant={"ghost"} onClick={() => deleteCampaign(campaignItem.campaignId)}>
+                    <Button variant={"ghost"} onClick={() => deleteCampaign(campaignItem.id)}>
                       <Icons.trash2 size={16}/>
                     </Button>
                     <Button variant={"ghost"}>
-                      <Link href={`/dashboard/campaign/${campaignItem.campaignId}`}>
+                      <Link href={`/dashboard/campaign/${campaignItem.id}`}>
                         <Icons.pen size={16}/>
                       </Link>
                     </Button>
@@ -108,7 +129,7 @@ export default function Page() {
                 </div>
               </CardContent>
             </Card>
-          ))}
+          )) : <LoadingCircle />}
       </div>
     </div>
   );

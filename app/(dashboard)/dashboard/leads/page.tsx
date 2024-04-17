@@ -1,13 +1,6 @@
 "use client";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -16,32 +9,29 @@ import {
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
-
 import { Button } from "@/components/ui/button";
 import { Contact, useLeads } from "@/context/lead-user";
-import React, { useEffect } from "react";
-import { LucideUsers2, SlidersHorizontal } from "lucide-react";
+import { useEffect, useState } from "react";
+import { LucideUsers2 } from "lucide-react";
 import axios from "axios";
-// import { config } from "@/utils/config";
 import { useCompanyInfo } from "@/context/company-linkedin";
 import { ChevronDown } from "lucide-react";
-
+import { config } from "@/utils/config";
+import axiosInstance from "@/utils/axiosInstance";
 export default function Page() {
   const { leads, setLeads } = useLeads();
-  const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
-  const [campaign, setCampaign] = React.useState<{
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [campaign, setCampaign] = useState<{
     campaignName: string;
     campaignId: string;
   }>();
   // let lead = false;
-
-  React.useEffect(() => {
+  useEffect(() => {
     setLeads([] as Contact[]);
     console.log(leads);
     // lead = true;
   }, []);
-
   const dummyCompanyInfo = [
     {
       company_info: {
@@ -103,43 +93,34 @@ export default function Page() {
       },
     },
   ];
-
-  React.useEffect(() => {
+  useEffect(() => {
     async function fetchLeads(
       campaignId: string = "482b7b80-4681-422b-9d40-f7253f4a8305"
     ) {
-      const apiUrl = `${process.env.NEXT_PUBLIC_LOCAL_SERVER}/v2/contacts/campaign/${campaignId}`;
-      try {
-        setLoading(true);
-
-        const response = await axios.get(apiUrl);
-        if (response.status !== 200) {
-          throw new Error(`Failed to fetch: ${response.statusText}`);
-        }
-        const data = await response.data;
-
-        if (data.isArray) {
-          setLeads(data);
-        } else {
-          setLeads([data]);
-        }
-      } catch (error) {
-        setError(error instanceof Error ? error.toString() : String(error));
-      } finally {
-        setLoading(false);
-      }
+      setLoading(true);
+      const response = axiosInstance
+        .get(`${config.serverUrl}v2/contacts/campaign/${campaignId}`)
+        .then((response) => {
+          const data = response.data;
+          if (data.isArray) {
+            setLeads(data);
+          } else {
+            setLeads([data]);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+          setError(error instanceof Error ? error.toString() : String(error));
+          setLoading(false);
+        });
     }
-
     fetchLeads();
-
     async function fetchCompanyScrape(company: string) {}
   }, []);
-
   const { companyInfo, setCompanyInfo } = useCompanyInfo();
-  React.useEffect(() => {
+  useEffect(() => {
     setCompanyInfo(dummyCompanyInfo);
   }, []);
-
   const allCampaigns:
     | {
         campaignName: string;
@@ -151,7 +132,6 @@ export default function Page() {
       campaignId: "482b7b80-4681-422b-9d40-f7253f4a8305",
     },
   ];
-
   return (
     <>
       <div className="flex gap-8">
@@ -183,14 +163,14 @@ export default function Page() {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-56">
             <DropdownMenuGroup>
-              <DropdownMenuItem
+              {/* <DropdownMenuItem
                 className="flex space-x-2"
                 onClick={() => {
                   setCampaign(undefined);
                 }}
               >
                 Select Campaign
-              </DropdownMenuItem>
+              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
               {allCampaigns &&
                 allCampaigns?.map((campaignItem, index) => (

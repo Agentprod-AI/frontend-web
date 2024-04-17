@@ -20,8 +20,9 @@ import { Input } from "./input";
 import { Button } from "./button";
 import { ScrollArea, ScrollBar } from "./scroll-area";
 
-import { useState } from "react";
-import { Ghost, Trash } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trash } from "lucide-react";
+import { Contact, useLeads } from "@/context/lead-user";
 
 interface DataTableProps<TData, TValue> {
   columns: ColumnDef<TData, TValue>[];
@@ -42,13 +43,22 @@ export function DataTable<TData, TValue>({
     data,
     columns,
     getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
   });
 
   const [isHovering, setIsHovering] = useState(false);
+  const { existingLeads, setExistingLeads } = useLeads();
 
   /* this can be used to get the selectedrows 
   console.log("value", table.getFilteredSelectedRowModel()); */
+
+  useEffect(() => {
+    const selectedRows = table.getFilteredSelectedRowModel().rows;
+    const leads: Contact[] = selectedRows.map((row) => row.original as Contact);
+    console.log("existing leads:", existingLeads);
+    setExistingLeads(leads as Contact[]);
+    // console.log("Selected rows:", selectedRows);
+    console.log("selected leads:", leads);
+  }, [table.getFilteredSelectedRowModel().rows]);
 
   return (
     <>
