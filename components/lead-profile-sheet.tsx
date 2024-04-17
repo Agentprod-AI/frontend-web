@@ -36,7 +36,7 @@ interface SidebarProps extends React.HTMLAttributes<HTMLDivElement> {
 }
 
 export function LeadProfileSheet({ className }: SidebarProps) {
-  const { isOpen, itemId, toggleSidebar } = useLeadSheetSidebar();
+  const { isOpen, itemId, toggleSidebar, setItemId } = useLeadSheetSidebar();
   const { leads } = useLeads();
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [data, setData] = useState<Lead | Contact>();
@@ -45,7 +45,9 @@ export function LeadProfileSheet({ className }: SidebarProps) {
   console.log(useLeadSheetSidebar());
   useEffect(() => {
     if (isOpen && itemId) {
-      const item = leads.find((lead: Lead | Contact) => lead.id === itemId);
+      // console.log(itemId);
+      const item = leads.find((lead) => lead.id === itemId);
+      console.log("item", item);
       setData(item);
     }
   }, [isOpen, itemId]);
@@ -62,10 +64,10 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           <MenuIcon />
         </SheetTrigger>
         <SheetContent side="right" className="!px-0">
-          {data?.type === "prospective" && (
-            <PeopleProfileSheet {...(data as Lead)} {...companyInfo} />
-          )}
-          <ContactProfileSheet {...(data as Contact)} />
+          {/* {data?.type === "prospective" && ( */}
+          <PeopleProfileSheet {...(data as Lead)} {...companyInfo} />
+          {/* )} */}
+          {/* <ContactProfileSheet {...(data as Contact)} /> */}
           {/* {data?.type === "organization" && (
             <CompanyProfileSheet {...(data as Organization)} />
           )} */}

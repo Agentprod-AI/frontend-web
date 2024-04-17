@@ -38,10 +38,10 @@ export default function Home() {
   const { user } = useAuth();
   // console.log("User: ", user);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [userEmail, setUserEmail] = useState(user?.email);
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState("9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c");
   const [loading, setLoading] = useState(true);
 
   // console.log("Id: ", userId);
@@ -163,11 +163,11 @@ export default function Home() {
             ],
           }),
         },
-        {
-          id: Math.random().toString(),
-          role: "user",
-          content: "How much revenue did we close this month?",
-        },
+        // {
+        //   id: Math.random().toString(),
+        //   role: "user",
+        //   content: "How much revenue did we close this month?",
+        // },
       ]);
     } catch (err) {
       console.log("Something went wrong!", err);
@@ -177,9 +177,10 @@ export default function Home() {
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
     useChat({
-      api: `${BACKEND_URL}/chat-completion`,
+      api: `${BACKEND_URL}/v2/chat/completion`,
       body: {
         userId: userId,
+        content: inputRef.current?.value,
       },
       onResponse: (response) => {
         if (response.status === 429) {

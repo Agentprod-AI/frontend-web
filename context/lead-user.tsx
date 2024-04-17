@@ -46,7 +46,7 @@ export interface Organization {
 export interface Lead {
   id: string;
   type: string;
-  campaign_id: string | undefined;
+  campaign_id: string;
   first_name: string;
   last_name: string;
   name: string;

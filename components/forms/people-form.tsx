@@ -416,6 +416,7 @@ export default function PeopleForm(): JSX.Element {
             data.map((person: Lead): void => {
               person.type = "prospective";
               person.campaign_id = campaignId;
+              person.id = uuid();
             });
             setLeads(data as Lead[]);
             setIsTableLoading(false);
@@ -533,7 +534,7 @@ export default function PeopleForm(): JSX.Element {
 
   function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
-      id: uuid(),
+      id: lead.id,
       campaign_id: campaignId,
       type: "prospective",
       first_name: lead.first_name,

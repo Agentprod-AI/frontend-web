@@ -62,6 +62,7 @@ export const PeopleProfileSheet = (
   // companyInfo: CompanyInfoDataItem[]
 ) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
+  console.log(data);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -149,37 +150,39 @@ export const PeopleProfileSheet = (
                 </CollapsibleTrigger>
               </div>
               {data.employment_history && (
-                <div className="flex px-2 py-1 font-mono text-xs justify-between">
-                  <span>
-                    {data.employment_history[0].start_date.substring(0, 4)} -
-                    present
-                  </span>
-                  <span className="w-[200px]">
-                    {data.employment_history[0].title}
-                  </span>
-                </div>
-              )}
-              <CollapsibleContent className="space-y-2">
-                {data.employment_history.map((val, ind) => {
-                  if (ind === 0) return null;
-                  return (
-                    <div
-                      className="flex px-2 py-1 font-mono text-xs justify-between"
-                      key={`e_his${ind}`}
-                    >
-                      <span>
-                        {val.start_date.substring(0, 4)} -{" "}
-                        {val.end_date ? val.end_date.substring(0, 4) : ""}
-                      </span>
-                      <span className="w-[200px]">{val.title}</span>
-                    </div>
-                  );
-                })}
-                {/* <div className="flex px-2 py-1 font-mono text-sm justify-between">
+                <>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between">
+                    <span>
+                      {data.employment_history[0].start_date.substring(0, 4)} -
+                      present
+                    </span>
+                    <span className="w-[200px]">
+                      {data.employment_history[0].title}
+                    </span>
+                  </div>
+                  <CollapsibleContent className="space-y-2">
+                    {data.employment_history.map((val, ind) => {
+                      if (ind === 0) return null;
+                      return (
+                        <div
+                          className="flex px-2 py-1 font-mono text-xs justify-between"
+                          key={`e_his${ind}`}
+                        >
+                          <span>
+                            {val.start_date.substring(0, 4)} -{" "}
+                            {val.end_date ? val.end_date.substring(0, 4) : ""}
+                          </span>
+                          <span className="w-[200px]">{val.title}</span>
+                        </div>
+                      );
+                    })}
+                    {/* <div className="flex px-2 py-1 font-mono text-sm justify-between">
                       <span></span>
                       <span>Software Developer</span>
                     </div> */}
-              </CollapsibleContent>
+                  </CollapsibleContent>
+                </>
+              )}
             </Collapsible>
             <br />
             <br />
@@ -235,7 +238,8 @@ export const PeopleProfileSheet = (
             )}
             <div>
               <p className="text-sm font-medium leading-none">
-                {data.employment_history[0].organization_name}
+                {data.employment_history &&
+                  data.employment_history[0].organization_name}
               </p>
               {companyInfo.map((item, index) => (
                 <div key={index}>
