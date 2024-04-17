@@ -26,7 +26,6 @@ import { v4 as uuid } from "uuid";
 
 import { orgLocations, jobTitles, seniorities, InputType } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { config } from "@/utils/config";
 import axiosInstance from "@/utils/axiosInstance";
 
 const FormSchema = z.object({

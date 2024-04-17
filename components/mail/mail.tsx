@@ -36,7 +36,7 @@ import {
 // import ThreadDisplay from "./thread-display";
 import ThreadDisplayMain from "./thread-display-main";
 import { ScrollArea } from "../ui/scroll-area";
-import { config } from "@/utils/config";
+import axiosInstance from "@/utils/axiosInstance";
 
 interface MailProps {
   accounts: {
@@ -62,24 +62,23 @@ export function Mail({
 
   const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
 
+  //make sure envs are set up correctly on vercel
+
   React.useEffect(() => {
     // Define the function for fetching mails using axios
     async function fetchMails(userId: string) {
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/v2/mailbox/${userId}`;
+      setLoading(true);
+      await axiosInstance
+        .get<Mail[]>(`/v2/mailbox/${userId}`)
+        .then((response) => {
+          setMails(response.data as Mail[]);
+          setLoading(false);
+        })
 
-      try {
-        setLoading(true);
-        const response = await axios.get(apiUrl);
-        setMails(response.data.mails); // Assuming the response structure contains { mails: [...] }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          setError(error.message); // Handling Axios errors
-        } else {
-          setError("An unknown error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
+        .catch((err: any) => {
+          console.error("Error fetching mails:", error);
+          setError(err.message || "Failed to load mails.");
+        });
     }
 
     fetchMails(testUserId);

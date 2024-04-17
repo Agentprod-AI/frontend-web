@@ -27,15 +27,13 @@ import {
   Twitter,
   User,
   User2Icon,
-  UserX2Icon,
   X,
   Mail,
   MessageCircle,
   Radio,
   Clock,
   CheckCheck,
-  Contact2,
-  SlidersHorizontal,
+  Users,
   Info,
   AlertCircle,
   PencilLine,
@@ -45,13 +43,15 @@ import {
   Star,
   Zap,
   Copy,
-  Activity
+  Activity,
+  BarChart3,
+  Sparkles,
 } from "lucide-react";
 
 export type Icon = LucideIcon;
 
 export const Icons = {
-  chat: MessageCircle,
+  chat: Sparkles,
   clock: Clock,
   checkCheck: CheckCheck,
   campaign: Radio,
@@ -66,7 +66,7 @@ export const Icons = {
   chevronLeft: ChevronLeft,
   chevronRight: ChevronRight,
   trash: Trash,
-  lead: UserX2Icon,
+  lead: Users,
   post: FileText,
   page: File,
   media: Image,
@@ -82,7 +82,7 @@ export const Icons = {
   sun: SunMedium,
   moon: Moon,
   laptop: Laptop,
-  contact: Contact2,
+  contact: Users,
   info: Info,
   alertCircle: AlertCircle,
   pencilLine: PencilLine,
@@ -93,6 +93,8 @@ export const Icons = {
   zap: Zap,
   copy: Copy,
   activity: Activity,
+  analytics: BarChart3,
+
   gitHub: ({ ...props }: LucideProps) => (
     <svg
       aria-hidden="true"
