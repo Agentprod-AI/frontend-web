@@ -24,11 +24,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "ai/react";
 // import { useSession } from "next-auth/react";
 
-const examples = [
-  `How much revenue did we close this month?`,
-  `Send an email wishing happy new year to me`,
-  `Schedule my meeting with info@agentprod.com tomorrow`,
-];
+// const examples = [
+//   `How much revenue did we close this month?`,
+//   `Send an email wishing happy new year to me`,
+//   `Schedule my meeting with info@agentprod.com tomorrow`,
+// ];
 
 export default function Home() {
   // const { data: session } = useSession();
@@ -54,19 +54,6 @@ export default function Home() {
           {
             buttonTitle: "Check out our website",
             url: "https://agentprod.com",
-          },
-        ],
-      }),
-    },
-    {
-      id: Math.random().toString(),
-      role: "assistant",
-      content: JSON.stringify({
-        content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
-        buttons: [
-          {
-            buttonTitle: "Google Login",
-            url: `hello.com/test`,
           },
         ],
       }),
@@ -287,7 +274,10 @@ export default function Home() {
                   ) : (
                     <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
                       {/* <AvatarFallback>JL</AvatarFallback> */}
-                      <AvatarImage src="/bw-logo.png" alt="agentprod logo" />
+                      <AvatarImage
+                        src="/ai-sales-rep.png"
+                        alt="agentprod logo"
+                      />
                       {/* <Image
                         // className="mx-auto"
                         width={100}
@@ -356,43 +346,7 @@ export default function Home() {
             </div>
           ))
         ) : (
-          <Card className="w-[90%] mt-5 mb-0">
-            <div className="flex flex-col space-y-4 p-7 sm:p-10">
-              <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-                Welcome to AgentProd
-              </h2>
-              <p className="leading-7 [&:not(:first-child)]:mt-6">
-                👋 Hey, I'm Agentprod, your AI work assistant! First, allow me
-                to showcase Agentprod's capabilities, designed to supercharge
-                your workflow.
-              </p>
-              {/* <EmailForm
-                userEmail={userEmail}
-                setUserEmail={setUserEmail}
-                disabled={userEmail !== ""}
-              /> */}
-              <p className="leading-7 [&:not(:first-child)]:mt-6">
-                {userEmail === ""
-                  ? "*Enter you email to start using AgentProd!"
-                  : "You can now try AgentProd!"}
-              </p>
-            </div>
-            <div className="flex flex-col space-y-4 border-t p-7 sm:px-10 sm:py-4">
-              {examples.map((example, i) => (
-                <Button
-                  key={i}
-                  className="rounded-md border h-auto"
-                  variant={"outline"}
-                  onClick={() => {
-                    setInput(example);
-                    inputRef.current?.focus();
-                  }}
-                >
-                  {example}
-                </Button>
-              ))}
-            </div>
-          </Card>
+          <LoadingCircle />
         )}
         <div className="fixed bottom-0 flex w-full flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
