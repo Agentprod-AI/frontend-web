@@ -215,9 +215,9 @@ export default function Home() {
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
     useChat({
-      api: `/v2/chat/completion`,
+      api: `${process.env.NEXT_PUBLIC_SERVER_URL}/v2/chat/completion`,
       body: {
-        userId: userId,
+        user_id: userId,
         content: inputRef.current?.value,
       },
       onResponse: async (response) => {
