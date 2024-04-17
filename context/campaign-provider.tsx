@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from '@/utils/axiosInstance';
 import { useAuth } from './auth-provider';
+import axios from 'axios';
 
 interface CampaignFormData {
   [key: string]: any;
@@ -106,7 +107,8 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
 
   const createCampaign = (data: CampaignFormData) => {
     const postData = {
-      user_id: user?.id,
+      // user_id: user?.id,
+      user_id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c",
       campaign_name: data.campaignName,
       campaign_type: data.campaignType,
       daily_outreach_number: data.dailyOutreach,
@@ -125,7 +127,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
       schedule_type: "none",
     };
 
-    axiosInstance
+    axios
       .post("/v2/campaigns/", postData)
       .then((response) => {
         console.log("Campaign created successfully:", response);
@@ -181,7 +183,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
 
   const createOffering = (data: OfferingFormData) => {
     const postData = {
-      campaign_id: campaignId,
+      campaign_id: localStorage.getItem('campaignId'),
       name: data.product_offering,
       details: data.offering_details
     };
@@ -221,8 +223,8 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
 
   const createGoal = (data: GoalFormData) => {
     const postData = {
-      campaign_id: campaignId,
-      emails: data.emails,
+      campaign_id: localStorage.getItem('campaignId'),
+      emails: data.emails.map(email => email.value),
       success_metric: data.success_metric,
       scheduling_link: data.scheduling_link,
       follow_up_days: data.follow_up_days,
@@ -240,7 +242,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
         localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
         console.log("Goal created successfully:", response.data);
-        router.push("/dashboard");
+        router.push("/dashboard/create");
       })
       .catch((error) => {
         console.error("Error creating goal:", error);
