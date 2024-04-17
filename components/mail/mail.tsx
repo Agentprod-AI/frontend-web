@@ -68,6 +68,7 @@ export function Mail({
     // Define the function for fetching mails using axios
     async function fetchMails(userId: string) {
       setLoading(true);
+      console.log(axiosInstance);
       await axiosInstance
         .get<{ mails: Mail[] }>(`v2/mailbox/${userId}`)
         .then((response) => {
