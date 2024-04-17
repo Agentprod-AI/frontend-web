@@ -21,11 +21,12 @@ import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React from "react";
 import Link from 'next/link';
-import { useCreateCampaign } from '@/hooks/useCampaign';
+import { useCampaignContext } from '@/context/campaign-provider';
+import axiosInstance from '@/utils/axiosInstance';
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
-const accountFormSchema = z.object({
+const campaignFormSchema = z.object({
   campaignName: z
     .string()
     .min(2, "Campaign Name must be at least 2 characters.")
@@ -57,15 +58,13 @@ const accountFormSchema = z.object({
     thursdayEndTime: z.string().optional(),
     fridayStartTime: z.string().optional(),
     fridayEndTime: z.string().optional(),
-    // Assuming Saturday and Sunday are not working days as per the image
-    // If they are, you can add them similarly to the weekdays
   }),
 });
 
-type AccountFormValues = z.infer<typeof accountFormSchema>;
+type CampaignFormValues = z.infer<typeof campaignFormSchema>;
 
 // This can come from your database or API.
-const defaultValues: Partial<AccountFormValues> = {
+const defaultValues: Partial<CampaignFormValues> = {
   // name: "Your name",
   // dob: new Date("2023-01-23"),
 };
@@ -73,19 +72,40 @@ const defaultValues: Partial<AccountFormValues> = {
 export function SchedulingForm({type}: {type: string}) {
   const router = useRouter();
 
-  const form = useForm<AccountFormValues>({
-    resolver: zodResolver(accountFormSchema),
+  const form = useForm<CampaignFormValues>({
+    resolver: zodResolver(campaignFormSchema),
     defaultValues,
   });
 
-  const { createCampaign, isLoading, error } = useCreateCampaign();
+  const { createCampaign, editCampaign } = useCampaignContext();
+  const watchAllFields = form.watch();
 
-  const onSubmit = async (data: AccountFormValues) => {
+  const onSubmit = async (data: CampaignFormValues) => {
     if (type === "create") {
-      await createCampaign(data);
-      router.push('/dashboard/campaign/create');
+      createCampaign(data);
+    } else if (type === "edit") {
+      const changes = Object.keys(data).reduce((acc, key) => {
+        // Ensure the correct key type is used
+        const propertyKey = key as keyof CampaignFormValues;
+
+        // Compare the stringified versions of the current and previous values
+        if (
+          JSON.stringify(data[propertyKey]) !==
+          JSON.stringify(watchAllFields[propertyKey])
+        ) {
+          // Assign only if types are compatible
+          acc = { ...acc, [propertyKey]: data[propertyKey] };
+        }
+        return acc;
+      }, {} as CampaignFormValues);
+
+      if (Object.keys(changes).length > 0) {
+        editCampaign(changes);
+      } else {
+        console.log('No changes detected.');
+        // Handle no changes scenario
+      }
     }
-    // handle other types if necessary
   };
 
 

@@ -35,15 +35,10 @@ export default function DashboardLayout({
 
   const { width } = useWindowSize();
   const { user } = useAuth();
-  const { updateCampaignState } = useCampaignContext();
 
   if (!user) {
     redirect("/");
   }
-
-  useEffect(() => {
-    updateCampaignState({ campaign: DummyCampaign });
-  }, []);
 
   return (
     <>
