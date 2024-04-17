@@ -21,6 +21,7 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Message } from "ai/react";
 // import { useSession } from "next-auth/react";
 
 const examples = [
@@ -38,11 +39,39 @@ export default function Home() {
   const { user } = useAuth();
   // console.log("User: ", user);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [userEmail, setUserEmail] = useState(user?.email);
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState("9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c");
   const [loading, setLoading] = useState(true);
+  const [allMessages, setAllMessages] = useState<Message[]>([
+    {
+      id: Math.random().toString(),
+      role: "assistant",
+      content: JSON.stringify({
+        content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+        buttons: [
+          {
+            buttonTitle: "Check out our website",
+            url: "https://agentprod.com",
+          },
+        ],
+      }),
+    },
+    {
+      id: Math.random().toString(),
+      role: "assistant",
+      content: JSON.stringify({
+        content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
+        buttons: [
+          {
+            buttonTitle: "Google Login",
+            url: `hello.com/test`,
+          },
+        ],
+      }),
+    },
+  ]);
 
   // console.log("Id: ", userId);
 
@@ -133,61 +162,82 @@ export default function Home() {
     }
   }, [userId]);
 
+  // useEffect(() => {
+  //   try {
+  //     // fetchUserIdFromEmail(userEmail);
+  //     // setMessages([
+  //     //   {
+  //     //     id: Math.random().toString(),
+  //     //     role: "assistant",
+  //     //     content: JSON.stringify({
+  //     //       content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+  //     //       buttons: [
+  //     //         {
+  //     //           buttonTitle: "Check out our website",
+  //     //           url: "https://agentprod.com",
+  //     //         },
+  //     //       ],
+  //     //     }),
+  //     //   },
+  //     //   {
+  //     //     id: Math.random().toString(),
+  //     //     role: "assistant",
+  //     //     content: JSON.stringify({
+  //     //       content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
+  //     //       buttons: [
+  //     //         {
+  //     //           buttonTitle: "Google Login",
+  //     //           url: `hello.com/test`,
+  //     //         },
+  //     //       ],
+  //     //     }),
+  //     //   },
+  //     //   // {
+  //     //   //   id: Math.random().toString(),
+  //     //   //   role: "user",
+  //     //   //   content: "How much revenue did we close this month?",
+  //     //   // },
+  //     // ]);
+  //     setAllMessages();
+  //   } catch (err) {
+  //     console.log("Something went wrong!", err);
+  //   }
+  // }, []);
+
   useEffect(() => {
     try {
-      // fetchUserIdFromEmail(userEmail);
-      setMessages([
-        {
-          id: Math.random().toString(),
-          role: "assistant",
-          content: JSON.stringify({
-            content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-            buttons: [
-              {
-                buttonTitle: "Check out our website",
-                url: "https://agentprod.com",
-              },
-            ],
-          }),
-        },
-        {
-          id: Math.random().toString(),
-          role: "assistant",
-          content: JSON.stringify({
-            content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
-            buttons: [
-              {
-                buttonTitle: "Google Login",
-                url: `hello.com/test`,
-              },
-            ],
-          }),
-        },
-        {
-          id: Math.random().toString(),
-          role: "user",
-          content: "How much revenue did we close this month?",
-        },
-      ]);
+      setMessages(allMessages);
     } catch (err) {
       console.log("Something went wrong!", err);
     }
-  }, []);
+  }, [allMessages]);
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
     useChat({
-      api: `${BACKEND_URL}/chat-completion`,
+      api: `${BACKEND_URL}/v2/chat/completion`,
       body: {
         userId: userId,
+        content: inputRef.current?.value,
       },
-      onResponse: (response) => {
+      onResponse: async (response) => {
         if (response.status === 429) {
           toast.error("You have reached your request limit for the day.");
           va.track("Rate limited");
           return;
         } else {
           va.track("Chat initiated");
+          const assistantResponse = await response.json();
+          setAllMessages((prevMessages) => [
+            ...prevMessages,
+            {
+              id: Math.random().toString(),
+              role: "assistant",
+              content: JSON.stringify({
+                content: assistantResponse,
+              }),
+            },
+          ]);
         }
       },
       onError: (error) => {
@@ -196,9 +246,12 @@ export default function Home() {
           error: error.message,
         });
       },
+      onFinish(message) {
+        console.log(message);
+      },
     });
 
-  useEffect(() => {}, []);
+  useEffect(() => {}, [inputRef.current?.value]);
 
   const disabled = isLoading || input.length === 0;
 
@@ -344,7 +397,19 @@ export default function Home() {
         <div className="fixed bottom-0 flex w-full flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
             ref={formRef}
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              e.preventDefault();
+              setAllMessages([
+                ...allMessages,
+                {
+                  id: Math.random().toString(),
+                  role: "user",
+                  content: input,
+                },
+              ]);
+              console.log(allMessages);
+              handleSubmit(e);
+            }}
             className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex"
           >
             <Input

@@ -13,6 +13,7 @@ import { Button } from "@/components/ui/button";
 import { Contact, useLeads } from "@/context/lead-user";
 import { useEffect, useState } from "react";
 import { LucideUsers2 } from "lucide-react";
+import { v4 as uuid } from "uuid";
 import axios from "axios";
 import { useCompanyInfo } from "@/context/company-linkedin";
 import { ChevronDown } from "lucide-react";
@@ -34,6 +35,7 @@ export default function Page() {
   }, []);
   const dummyCompanyInfo = [
     {
+      id: uuid(),
       company_info: {
         website: "https://goo.gle/3DLEokh",
         industry: "Software Development",
@@ -43,7 +45,7 @@ export default function Page() {
         specialties:
           "search, ads, mobile, android, online video, apps, machine learning, virtual reality, cloud, hardware, artificial intelligence, youtube, and software",
       },
-      about_us_description:
+      about_us:
         "A problem isn't truly solved until it's solved for all. Googlers build products that help create opportunities for everyone, whether down the street or across the globe. Bring your insight, imagination and a healthy disregard for the impossible. Bring everything that makes you unique. Together, we can build for everyone.\n\nCheck out our career opportunities at goo.gle/3DLEokh",
       addresses: [
         "1600 Amphitheatre Parkway\nMountain View, CA 94043, US",
@@ -51,16 +53,7 @@ export default function Page() {
         "Claude Debussylaan 34\nAmsterdam, North Holland 1082 MD, NL",
         "Avenida Brigadeiro Faria Lima, 3477\nSao Paulo, SP 04538-133, BR",
       ],
-      employees: [
-        { name: "Linus Upson", role: "Mosquitoes & Operating Systems" },
-        { name: "Phillip Pearson", role: "" },
-        { name: "Lenny T.", role: "great with computers; good with people" },
-        {
-          name: "Heath Row",
-          role: "Research manager, marketer, journalist, editor, educator, professional speaker, poet",
-        },
-      ],
-      affiliated_pages: [
+      affiliataed_pages: [
         { title: "Google Cloud", description: "Software Development" },
         {
           title: "YouTube",

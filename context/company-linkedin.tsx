@@ -7,40 +7,14 @@ import React, {
 } from "react";
 
 // Define the schema for company info
-interface CompanyInfo {
-  company_info: {
-    website: string;
-    industry: string;
-    "company size": string;
-    headquarters: string;
-    type: string;
-    specialties: string;
-  };
-  about_us_description: string;
+export interface CompanyInfo {
+  id: string;
+  company_info: any;
+  about_us: string;
   addresses: string[];
-  employees: {
-    name: string;
-    role: string;
-  }[];
-  affiliated_pages: {
-    title: string;
-    description: string;
-  }[];
-  stock_info: {
-    symbol: string;
-    date: string;
-    market: string;
-    delay_info: string;
-    current_price: string;
-    open_price: string;
-    low_price: string;
-    high_price: string;
-  };
-  funding_info: {
-    total_rounds: string;
-    last_round_details: string;
-    investors: string[];
-  };
+  affiliataed_pages: any;
+  stock_info: any;
+  funding_info: any;
 }
 
 // Define the state structure for company context

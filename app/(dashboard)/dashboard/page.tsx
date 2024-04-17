@@ -22,7 +22,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table"
+} from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { barChartData } from "@/constants/chart";
 import { useCampaignContext } from "@/context/campaign-provider";
@@ -32,12 +32,11 @@ import { Icons } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CircularProgressbar } from "react-circular-progressbar";
-import { Progress } from "@/components/ui/progress"
+import { Progress } from "@/components/ui/progress";
 import axiosInstance from "@/utils/axiosInstance";
 import { useAuth } from "@/context/auth-provider";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { card_data, hot_leads, campaigns } from "@/constants/data";
-
 
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
@@ -49,12 +48,11 @@ export default function Page() {
     toggleSidebar(true);
   };
 
-  console.log(dashboardData)
+  console.log(dashboardData);
 
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4">
-
         {/* <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
@@ -63,23 +61,22 @@ export default function Page() {
             </TabsTrigger>
           </TabsList>
         <TabsContent value="overview" className="space-y-4"> */}
-          
+
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
           <div className="flex flex-col col-span-4">
             <Card>
-                <CardContent className="flex items-center gap-5 pt-6">
-                  <div className="flex items-center gap-2">
-                    <Icons.mail/>
-                    <p className="font-medium">Emails Pending Approval</p>
-                  </div>
-                  <Badge variant={"secondary"}>120</Badge>
-                </CardContent>
+              <CardContent className="flex items-center gap-5 pt-6">
+                <div className="flex items-center gap-2">
+                  <Icons.mail />
+                  <p className="font-medium">Emails Pending Approval</p>
+                </div>
+                <Badge variant={"secondary"}>120</Badge>
+              </CardContent>
             </Card>
 
             {/* <p className="font-semibold">Performance Overview</p> */}
 
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mt-4">
-              
               {card_data.map((card, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
@@ -101,15 +98,13 @@ export default function Page() {
                     </svg> */}
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
-                    <div className="text-2xl font-bold">
-                      {card.value}
-                    </div>
+                    <div className="text-2xl font-bold">{card.value}</div>
                   </CardContent>
                 </Card>
               ))}
             </div>
           </div>
-          
+
           <Card className="col-span-2">
             <ScrollArea className="lg:h-56 md:h-[26rem]">
               <CardHeader>
@@ -126,7 +121,11 @@ export default function Page() {
                       <AvatarFallback>A</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Ava <span className="text-muted-foreground">populated</span> leads</p>
+                      <p className="text-sm font-medium leading-none">
+                        Ava{" "}
+                        <span className="text-muted-foreground">populated</span>{" "}
+                        leads
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         11 hours ago
                       </p>
@@ -138,7 +137,13 @@ export default function Page() {
                       <AvatarFallback>S</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Samirah <span className="text-muted-foreground">replied to your</span> Email</p>
+                      <p className="text-sm font-medium leading-none">
+                        Samirah{" "}
+                        <span className="text-muted-foreground">
+                          replied to your
+                        </span>{" "}
+                        Email
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         6 hours ago
                       </p>
@@ -150,10 +155,16 @@ export default function Page() {
                       <AvatarFallback>TL</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
+                      <p className="text-sm font-medium leading-none">
+                        Tommy Lee{" "}
+                        <span className="text-muted-foreground">
+                          replied to your
+                        </span>{" "}
+                        Email
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         8 hours ago
-                      </p>  
+                      </p>
                     </div>
                   </div>
                   <div className="flex items-center">
@@ -162,17 +173,20 @@ export default function Page() {
                       <AvatarFallback>CM</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Charles Smith <span className="text-muted-foreground">populated</span> Leads</p>
+                      <p className="text-sm font-medium leading-none">
+                        Charles Smith{" "}
+                        <span className="text-muted-foreground">populated</span>{" "}
+                        Leads
+                      </p>
                       <p className="text-sm text-muted-foreground">
                         13 hours ago
-                      </p>  
+                      </p>
                     </div>
                   </div>
                 </div>
               </CardContent>
             </ScrollArea>
           </Card>
-          
         </div>
 
         <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
@@ -186,7 +200,7 @@ export default function Page() {
           </Card>
 
           <Card className="col-span-3">
-            <ScrollArea className="h-[26rem]">  
+            <ScrollArea className="h-[26rem]">
               <CardHeader className="px-7">
                 <CardTitle>Top Performing Campaigns</CardTitle>
               </CardHeader>
@@ -195,24 +209,40 @@ export default function Page() {
                   <TableHeader>
                     <TableRow>
                       <TableHead>NAME</TableHead>
-                      <TableHead className="hidden sm:table-cell">PERSONA</TableHead>
-                      <TableHead className="hidden sm:table-cell">ENGAGED LEADS</TableHead>
-                      <TableHead className="hidden md:table-cell">RESPONSE RATE</TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        PERSONA
+                      </TableHead>
+                      <TableHead className="hidden sm:table-cell">
+                        ENGAGED LEADS
+                      </TableHead>
+                      <TableHead className="hidden md:table-cell">
+                        RESPONSE RATE
+                      </TableHead>
                       <TableHead className="text-right">BOUNCE RATE</TableHead>
                       <TableHead className="text-right">OPEN RATE</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {campaigns.map((campaign) => 
-                      <TableRow>
+                    {campaigns.map((campaign, index) => (
+                      <TableRow key={index}>
                         <TableCell>{campaign.name}</TableCell>
-                        <TableCell className="hidden sm:table-cell">{campaign.persona}</TableCell>
-                        <TableCell className="hidden sm:table-cell">{campaign.engaged}</TableCell>
-                        <TableCell className="hidden sm:table-cell">{campaign.response_rate}</TableCell>
-                        <TableCell className="hidden md:table-cell">{campaign.bounce_rate}</TableCell>
-                        <TableCell className="text-right">{campaign.open_rate}</TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {campaign.persona}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {campaign.engaged}
+                        </TableCell>
+                        <TableCell className="hidden sm:table-cell">
+                          {campaign.response_rate}
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          {campaign.bounce_rate}
+                        </TableCell>
+                        <TableCell className="text-right">
+                          {campaign.open_rate}
+                        </TableCell>
                       </TableRow>
-                    )}
+                    ))}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -226,7 +256,7 @@ export default function Page() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {hot_leads.map(lead => (
+                  {hot_leads.map((lead) => (
                     <div key={lead.id} className="flex items-center">
                       <Avatar className="h-9 w-9">
                         <AvatarImage src={lead.src} alt="Avatar" />
@@ -259,30 +289,39 @@ export default function Page() {
               </div>
             </CardContent>
           </Card>
-          
+
           <Card className="col-span-2 p-4 space-y-16">
             <div className="flex justify-between items-center gap-5 mb-4">
               <div>
                 <div className="text-lg font-semibold">3 Day Streak</div>
-                <div className="text-sm text-gray-600">Approve emails today to start a new streak</div>
+                <div className="text-sm text-gray-600">
+                  Approve emails today to start a new streak
+                </div>
               </div>
               {/* Replace with an actual icon component */}
-              <Icons.zap size={35} className="fill-purple-500 text-purple-500" />
+              <Icons.zap
+                size={35}
+                className="fill-purple-500 text-purple-500"
+              />
             </div>
 
-            <div className="flex items-end justify-between"> {/* Container for the days and circles */}
-              {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((day, index) => (
+            <div className="flex items-end justify-between">
+              {" "}
+              {/* Container for the days and circles */}
+              {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
                 <div
                   key={index}
                   className={`flex flex-col items-center justify-center ${
-                    index < 3 && 'text-purple-400' }`}
+                    index < 3 && "text-purple-400"
+                  }`}
                 >
-                  <span className="text-sm mb-1">{day}</span> {/* Label above the circle */}
+                  <span className="text-sm mb-1">{day}</span>{" "}
+                  {/* Label above the circle */}
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      index < 3 
-                      ? 'bg-gradient-to-r from-purple-700 to-purple-400'
-                      : 'bg-muted-foreground opacity-20'
+                      index < 3
+                        ? "bg-gradient-to-r from-purple-700 to-purple-400"
+                        : "bg-muted-foreground opacity-20"
                     }`}
                   >
                     {/* Circle */}

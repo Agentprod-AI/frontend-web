@@ -159,10 +159,15 @@ export const ImportAudience = () => {
     console.log(leadsToEnrich);
 
     const enrichedLeads = axiosInstance
-      .post(`/v2/apollo/leads/enrich`, leadsToEnrich)
+      .post(`/v2/apollo/leads/bulk_enrich`, leadsToEnrich)
       .then((response) => {
-        console.log(response);
-        setLeads(response.data);
+        const data = response.data;
+        data.map((person: Lead): void => {
+          person.type = "prospective";
+          person.campaign_id = campaignId;
+          person.id = uuid();
+        });
+        setLeads(data);
         setIsAudienceLoading(false);
         setIsLeadsTableActive(true);
       })
@@ -177,9 +182,9 @@ export const ImportAudience = () => {
 
   function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
-      id: uuid(),
-      campaign_id: campaignId,
-      type: "prospective",
+      id: lead.id,
+      campaign_id: lead.campaign_id,
+      type: lead.type,
       first_name: lead.first_name,
       last_name: lead.last_name,
       name: lead.name,
