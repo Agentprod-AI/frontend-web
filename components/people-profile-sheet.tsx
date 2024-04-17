@@ -64,6 +64,8 @@ export const PeopleProfileSheet = (
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   console.log(data);
 
+  const { companyInfo } = useCompanyInfo();
+
   const initials = (name: string) => {
     const names = name.split(" ");
     return names
@@ -241,103 +243,6 @@ export const PeopleProfileSheet = (
                 {data.employment_history &&
                   data.employment_history[0].organization_name}
               </p>
-              {companyInfo.map((item, index) => (
-                <div key={index}>
-                  {/* Display company_info data */}
-                  <div className="flex space-x-2">
-                    {/* <p>About Us:</p> */}
-                    {/* <br /> */}
-                    {/* <Search width={150} className="h-5 text-muted-foreground" /> */}
-                    <span className="text-sm text-muted-foreground">
-                      {item.about_us}
-                    </span>
-                  </div>
-                  <br />
-                  <br />
-                  <div className="flex flex-col gap-2">
-                    {Object.entries(item.company_info).map(([key, value]) => (
-                      <div
-                        className="text-sm font-semibold text-muted-foreground"
-                        key={key}
-                      >
-                        {formatText(key)}:{" "}
-                        <span className="text-sm font-normal text-muted-foreground">
-                          {value}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                  <br />
-                  <br />
-                  {/* Display about_us_description */}
-                  {/* Display addresses */}
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Addresses:
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {item.addresses.map((address, index) => (
-                        <div
-                          className="text-sm text-muted-foreground"
-                          key={index}
-                        >
-                          {address}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Display affiliated_pages */}
-                  <br />
-                  <br />
-                  <div>
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Affiliated Pages:
-                    </div>
-                    <div className="flex flex-col gap-2">
-                      {item.affiliated_pages.map((page, index) => (
-                        <div
-                          className="text-sm text-muted-foreground"
-                          key={index}
-                        >
-                          {index + 1}. {page.title} - {page.description}
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                  {/* Display stock_info */}
-                  <br />
-                  <br />
-                  <div>
-                    <div className="text-sm font-semibold text-muted-foreground">
-                      Stock Info:
-                    </div>
-                    {Object.entries(item.stock_info).map(([key, value]) => (
-                      <div className="text-muted-foreground text-sm" key={key}>
-                        {formatText(key)}:{" "}
-                        <span className="font-normal">{value}</span>
-                      </div>
-                    ))}
-                  </div>
-                  {/* Display funding_info */}
-                  <br />
-                  <br />
-                  <div>
-                    <div className="text-sm font-semibold text-muted-foreground">
-                      Funding Info:
-                    </div>
-                    <div>
-                      {Object.entries(item.funding_info).map(([key, value]) => (
-                        <div
-                          className="text-muted-foreground text-sm"
-                          key={key}
-                        >
-                          {formatText(key)}: <span>{value}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              ))}
             </div>
           </div>
         </div>
@@ -345,3 +250,105 @@ export const PeopleProfileSheet = (
     </ScrollArea>
   );
 };
+
+// "
+// {(
+//   {companyInfo.map((item, index) => (
+//     <div key={index}>
+//       {/* Display company_info data */}
+//       <div className="flex space-x-2">
+//         {/* <p>About Us:</p> */}
+//         {/* <br /> */}
+//         {/* <Search width={150} className="h-5 text-muted-foreground" /> */}
+//         <span className="text-sm text-muted-foreground">
+//           {item.about_us}
+//         </span>
+//       </div>
+//       <br />
+//       <br />
+//       <div className="flex flex-col gap-2">
+//         {Object.entries(item.company_info).map(([key, value]) => (
+//           <div
+//             className="text-sm font-semibold text-muted-foreground"
+//             key={key}
+//           >
+//             {formatText(key)}:{" "}
+//             <span className="text-sm font-normal text-muted-foreground">
+//               {value}
+//             </span>
+//           </div>
+//         ))}
+//       </div>
+//       <br />
+//       <br />
+//       {/* Display about_us_description */}
+//       {/* Display addresses */}
+//       <div>
+//         <div className="text-sm font-medium text-muted-foreground">
+//           Addresses:
+//         </div>
+//         <div className="flex flex-col gap-2">
+//           {item.addresses.map((address, index) => (
+//             <div
+//               className="text-sm text-muted-foreground"
+//               key={index}
+//             >
+//               {address}
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+//       {/* Display affiliated_pages */}
+//       <br />
+//       <br />
+//       <div>
+//         <div className="text-sm font-medium text-muted-foreground">
+//           Affiliated Pages:
+//         </div>
+//         <div className="flex flex-col gap-2">
+//           {item.affiliataed_pages.map((page, index) => (
+//             <div
+//               className="text-sm text-muted-foreground"
+//               key={index}
+//             >
+//               {index + 1}. {page.title} - {page.description}
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+//       {/* Display stock_info */}
+//       <br />
+//       <br />
+//       <div>
+//         <div className="text-sm font-semibold text-muted-foreground">
+//           Stock Info:
+//         </div>
+//         {Object.entries(item.stock_info).map(([key, value]) => (
+//           <div className="text-muted-foreground text-sm" key={key}>
+//             {formatText(key)}:{" "}
+//             <span className="font-normal">{value}</span>
+//           </div>
+//         ))}
+//       </div>
+//       {/* Display funding_info */}
+//       <br />
+//       <br />
+//       <div>
+//         <div className="text-sm font-semibold text-muted-foreground">
+//           Funding Info:
+//         </div>
+//         <div>
+//           {Object.entries(item.funding_info).map(([key, value]) => (
+//             <div
+//               className="text-muted-foreground text-sm"
+//               key={key}
+//             >
+//               {formatText(key)}: <span>{value}</span>
+//             </div>
+//           ))}
+//         </div>
+//       </div>
+//     </div>
+//   ))}
+//   ) }
+// "
