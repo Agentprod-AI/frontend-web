@@ -159,7 +159,7 @@ export const ImportAudience = () => {
     console.log(leadsToEnrich);
 
     const enrichedLeads = axiosInstance
-      .post(`/v2/apollo/leads/enrich`, leadsToEnrich)
+      .post(`/v2/apollo/leads/bulk_enrich`, leadsToEnrich)
       .then((response) => {
         const data = response.data;
         data.map((person: Lead): void => {
