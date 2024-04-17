@@ -1,7 +1,6 @@
 import { useState, useEffect } from "react";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
 import axios from "axios";
-import { config } from "@/utils/config";
 import { Contact, useLeads } from "@/context/lead-user";
 import { toast } from "sonner";
 import axiosInstance from "@/utils/axiosInstance";

@@ -17,7 +17,6 @@ import { v4 as uuid } from "uuid";
 import axios from "axios";
 import { useCompanyInfo } from "@/context/company-linkedin";
 import { ChevronDown } from "lucide-react";
-import { config } from "@/utils/config";
 import axiosInstance from "@/utils/axiosInstance";
 export default function Page() {
   const { leads, setLeads } = useLeads();
@@ -92,7 +91,7 @@ export default function Page() {
     ) {
       setLoading(true);
       const response = axiosInstance
-        .get(`${config.serverUrl}v2/contacts/campaign/${campaignId}`)
+        .get(`v2/contacts/campaign/${campaignId}`)
         .then((response) => {
           const data = response.data;
           if (data.isArray) {

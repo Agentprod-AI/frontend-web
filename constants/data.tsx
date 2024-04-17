@@ -148,13 +148,6 @@ export const navItems: NavInterface[] = [
         label: "campaign",
         isCollapsible: false,
       },
-      {
-        title: "Leads",
-        href: "/dashboard/leads",
-        icon: "contact",
-        label: "leads",
-        isCollapsible: false,
-      },
     ],
   },
   {
@@ -170,7 +163,7 @@ export const navItems: NavInterface[] = [
       {
         title: "Analytics",
         href: "/dashboard/analytics",
-        // icon: "lead",
+        icon: "analytics",
         label: "analytics",
         isCollapsible: false,
       },
