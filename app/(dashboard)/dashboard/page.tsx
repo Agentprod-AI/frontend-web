@@ -16,14 +16,6 @@ import {
 } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import {
   Table,
   TableBody,
   TableCell,
@@ -44,6 +36,7 @@ import { Progress } from "@/components/ui/progress"
 import axiosInstance from "@/utils/axiosInstance";
 import { useAuth } from "@/context/auth-provider";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
+import { card_data, hot_leads, campaigns } from "@/constants/data";
 
 
 export default function Page() {
@@ -57,29 +50,6 @@ export default function Page() {
   };
 
   console.log(dashboardData)
-
-  const cardData = [
-    {
-      title: "Total Emails Sent",
-      // value: dashboardData?.emails_sent,
-      value: "2"
-    },
-    {
-      title: "Engaged Leads",
-      // value: dashboardData?.engaged
-      value: "2"
-    },
-    {
-      title: "Total Meetings Booked (Via Calendly)",
-      // value: dashboardData?.meetings_booked
-      value: "2"
-    },
-    {
-      title: "Response Rate",
-      // value: dashboardData?.response_rate
-      value: "2"
-    }
-  ];
 
   return (
     <ScrollArea className="h-full">
@@ -110,7 +80,7 @@ export default function Page() {
 
             <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mt-4">
               
-              {cardData.map((card, index) => (
+              {card_data.map((card, index) => (
                 <Card key={index}>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
                     <CardTitle className="text-sm font-medium">
@@ -153,7 +123,7 @@ export default function Page() {
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                      <AvatarFallback>OM</AvatarFallback>
+                      <AvatarFallback>A</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
                       <p className="text-sm font-medium leading-none">Ava <span className="text-muted-foreground">populated</span> leads</p>
@@ -165,36 +135,36 @@ export default function Page() {
                   <div className="flex items-center">
                     <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
                       <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
+                      <AvatarFallback>S</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
                       <p className="text-sm font-medium leading-none">Samirah <span className="text-muted-foreground">replied to your</span> Email</p>
                       <p className="text-sm text-muted-foreground">
-                        11 hours ago
+                        6 hours ago
                       </p>
                     </div>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                      <AvatarFallback>IN</AvatarFallback>
+                      <AvatarFallback>TL</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
                       <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
                       <p className="text-sm text-muted-foreground">
-                        11 hours ago
+                        8 hours ago
                       </p>  
                     </div>
                   </div>
                   <div className="flex items-center">
                     <Avatar className="h-9 w-9">
                       <AvatarImage src="/avatars/04.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
+                      <AvatarFallback>CM</AvatarFallback>
                     </Avatar>
                     <div className="ml-4 space-y-1">
-                      <p className="text-sm font-medium leading-none">Tommy Lee <span className="text-muted-foreground">replied to your</span> Email</p>
+                      <p className="text-sm font-medium leading-none">Charles Smith <span className="text-muted-foreground">populated</span> Leads</p>
                       <p className="text-sm text-muted-foreground">
-                        11 hours ago
+                        13 hours ago
                       </p>  
                     </div>
                   </div>
@@ -233,38 +203,16 @@ export default function Page() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    <TableRow>
-                      <TableCell>Waitlist registration campaign</TableCell>
-                      <TableCell className="hidden sm:table-cell">Yuri - Founder - waitlist follow-up persona</TableCell>
-                      <TableCell className="hidden sm:table-cell">16</TableCell>
-                      <TableCell className="hidden sm:table-cell">18.75%</TableCell>
-                      <TableCell className="hidden md:table-cell">0.00%</TableCell>
-                      <TableCell className="text-right">N/A</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>LinkedIn personalization test campaign</TableCell>
-                      <TableCell className="hidden sm:table-cell">Yuri - Founder - persona (outbound, short)</TableCell>
-                      <TableCell className="hidden sm:table-cell">111</TableCell>
-                      <TableCell className="hidden sm:table-cell">8.11%</TableCell>
-                      <TableCell className="hidden md:table-cell">0.00%</TableCell>
-                      <TableCell className="text-right">N/A</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>LinkedIn personalization test campaign</TableCell>
-                      <TableCell className="hidden sm:table-cell">Yuri - Founder - persona (outbound, short)</TableCell>
-                      <TableCell className="hidden sm:table-cell">111</TableCell>
-                      <TableCell className="hidden sm:table-cell">8.11%</TableCell>
-                      <TableCell className="hidden md:table-cell">0.00%</TableCell>
-                      <TableCell className="text-right">N/A</TableCell>
-                    </TableRow>
-                    <TableRow>
-                      <TableCell>LinkedIn personalization test campaign</TableCell>
-                      <TableCell className="hidden sm:table-cell">Yuri - Founder - persona (outbound, short)</TableCell>
-                      <TableCell className="hidden sm:table-cell">111</TableCell>
-                      <TableCell className="hidden sm:table-cell">8.11%</TableCell>
-                      <TableCell className="hidden md:table-cell">0.00%</TableCell>
-                      <TableCell className="text-right">N/A</TableCell>
-                    </TableRow>
+                    {campaigns.map((campaign) => 
+                      <TableRow>
+                        <TableCell>{campaign.name}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{campaign.persona}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{campaign.engaged}</TableCell>
+                        <TableCell className="hidden sm:table-cell">{campaign.response_rate}</TableCell>
+                        <TableCell className="hidden md:table-cell">{campaign.bounce_rate}</TableCell>
+                        <TableCell className="text-right">{campaign.open_rate}</TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
@@ -278,64 +226,15 @@ export default function Page() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {/* {dashboardData.hot_leads?.map((lead) => (
-                    <div className="flex items-center">
+                  {hot_leads.map(lead => (
+                    <div key={lead.id} className="flex items-center">
                       <Avatar className="h-9 w-9">
-                        <AvatarImage src={lead?.avatar} alt="Avatar" />
-                        <AvatarFallback>OM</AvatarFallback>
+                        <AvatarImage src={lead.src} alt="Avatar" />
+                        <AvatarFallback>{lead.fallback}</AvatarFallback>
                       </Avatar>
-                      <p className="text-sm font-medium leading-none ml-4">{lead?.name - lead?.company}</p>
+                      <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company}`}</p>
                     </div>
-                  ))} */}
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/01.png" alt="Avatar" />
-                      <AvatarFallback>OM</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Olivia Martin - Descope</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
-                      <AvatarImage src="/avatars/02.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - CodeSphere</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/03.png" alt="Avatar" />
-                      <AvatarFallback>IN</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Isabella Nguyen - GTM Buddy</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/04.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>SD</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Sofia Davis - CodeSphere</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>JL</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">Jackson Lee - GTM Buddy</p>
-                  </div>
-                  <div className="flex items-center">
-                    <Avatar className="h-9 w-9">
-                      <AvatarImage src="/avatars/05.png" alt="Avatar" />
-                      <AvatarFallback>WK</AvatarFallback>
-                    </Avatar>
-                    <p className="text-sm font-medium leading-none ml-4">William Kim - Descope</p>
-                  </div>
+                  ))}
                 </div>
               </CardContent>
             </ScrollArea>
@@ -364,7 +263,7 @@ export default function Page() {
           <Card className="col-span-2 p-4 space-y-16">
             <div className="flex justify-between items-center gap-5 mb-4">
               <div>
-                <div className="text-lg font-semibold">0 Day Streak</div>
+                <div className="text-lg font-semibold">3 Day Streak</div>
                 <div className="text-sm text-gray-600">Approve emails today to start a new streak</div>
               </div>
               {/* Replace with an actual icon component */}
@@ -376,12 +275,12 @@ export default function Page() {
                 <div
                   key={index}
                   className={`flex flex-col items-center justify-center ${
-                    index === 2 && 'text-purple-400' }`}
+                    index < 3 && 'text-purple-400' }`}
                 >
                   <span className="text-sm mb-1">{day}</span> {/* Label above the circle */}
                   <div
                     className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      index === 2 
+                      index < 3 
                       ? 'bg-gradient-to-r from-purple-700 to-purple-400'
                       : 'bg-muted-foreground opacity-20'
                     }`}

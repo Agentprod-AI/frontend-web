@@ -485,7 +485,7 @@ export const contacts = [
   },
 ];
 export const draftEmail = {
-  title: "Try Agentprod for your business!", 
+  title: "Try Agentprod for your business!",
   body: `Hi Olliver,
 
 I wanted to tell you about this great new AI assistant tool called Agentprod that I think could really help your business. 
@@ -507,7 +507,8 @@ Let me know if you would like me to set up a demo of Agentprod for your customer
 Looking forward to hearing your thoughts!
 
 Regards,
-Agent Prod`
+Agent Prod`,
 };
 
 export type Contact = (typeof contacts)[number];
+
