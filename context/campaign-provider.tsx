@@ -136,7 +136,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     };
 
     axios
-      .post("/v2/campaigns/", postData)
+      .post("v2/campaigns/", postData)
       .then((response) => {
         console.log("Campaign created successfully:", response);
 
