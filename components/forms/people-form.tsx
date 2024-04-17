@@ -407,7 +407,7 @@ export default function PeopleForm(): JSX.Element {
         console.log("api called");
         setIsTableLoading(true);
         const response = axiosInstance
-          .post<Lead[]>(`/v2/apollo/leads`, body)
+          .post<Lead[]>(`v2/apollo/leads`, body)
           .then((response: any) => {
             const data = response.data;
             // console.log("DATA from contacts: ", data);
@@ -572,7 +572,7 @@ export default function PeopleForm(): JSX.Element {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);
