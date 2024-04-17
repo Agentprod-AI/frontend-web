@@ -25,17 +25,16 @@ import { Badge } from "@/components/ui/badge";
 import { getTraining } from "./training.api";
 
 export interface TrainingResponse {
-  campaign_id: string;
-  template: string;
-  follow_up_template?: string;
-  variables: any | null;
-  offering_variables: Record<string, string>;
-  personalized_fields: Record<string, string>;
-  enriched_fields: string[];
-  id: string;
+  campaign_id?: string;
+  template?: string;
+  follow_up_template?: string | null;
+  variables?: any | null;
+  offering_variables?: Record<string, string> | null;
+  personalized_fields: Record<string, any> | undefined 
+  enriched_fields?: string[] | null;
+  id?: string;
   type?: string;
 }
-
 export default function FieldList({
   fieldsList,
   setFieldsList,
@@ -58,28 +57,38 @@ export default function FieldList({
             .filter((field) => field.variables !== null)
             .map((field) => ({
               id: field.id,
-              val: field.template,
+              val: field.template || "",
               description: field.follow_up_template || "",
               length: "",
             })),
-          personalized: Object.entries(fields[0].personalized_fields).map(([key, value]) => ({
-            id: fields[0].id,
-            val: value,
-            description: "",
-            length: "",
-          })),
-          offering: Object.entries(fields[0].offering_variables).map(([key, value]) => ({
-            id: fields[0].id,
-            val: value,
-            description: "",
-            length: "",
-          })),
-          enriched: fields[0].enriched_fields.map((field) => ({
-            id: fields[0].id,
-            val: field,
-            description: "",
-            length: "",
-          })),
+          personalized: fields[0].personalized_fields
+            ? Object.entries(fields[0].personalized_fields).map(
+                ([key, value]) => ({
+                  id: fields[0].id,
+                  val: value,
+                  description: "",
+                  length: "",
+                })
+              )
+            : [],
+          offering: fields[0].offering_variables
+            ? Object.entries(fields[0].offering_variables).map(
+                ([key, value]) => ({
+                  id: fields[0].id,
+                  val: value,
+                  description: "",
+                  length: "",
+                })
+              )
+            : [],
+          enriched: fields[0].enriched_fields
+            ? fields[0].enriched_fields.map((field) => ({
+                id: fields[0].id,
+                val: field,
+                description: "",
+                length: "",
+              }))
+            : [],
         };
 
         setFieldsList(updatedFieldsList);

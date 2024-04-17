@@ -37,8 +37,8 @@ export class TrainingRequest {
   template: string | undefined;
   follow_up_template?: string;
   variables?: Record<string, any>;
-  offering_variables?: Record<string, any>;
-  personalized_fields?: Record<string, any>;
+  offering_variables?: Record<string, any> | undefined;
+  personalized_fields: Record<string, any> | undefined;
   enriched_fields?: string[];
 }
 
@@ -47,9 +47,8 @@ export class TrainingResponse extends TrainingRequest {
   length: any;
   val: ReactNode;
   type: string | undefined;
-  description: string | undefined; // Add the description property
+  description: string | undefined;
 }
-
 export function FieldFormModal({
   children,
   type,
@@ -91,7 +90,7 @@ export function FieldFormModal({
           template: data.fieldName,
           follow_up_template: data.description,
           offering_variables: {},
-          personalized_fields: {},
+          personalized_fields: {} ,
           enriched_fields: [],
           ...(type === "variable" && { length: data.length }),
         };
