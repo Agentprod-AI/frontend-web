@@ -223,8 +223,8 @@ export default function Page() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {campaigns.map((campaign) => (
-                      <TableRow>
+                    {campaigns.map((campaign, index) => (
+                      <TableRow key={index}>
                         <TableCell>{campaign.name}</TableCell>
                         <TableCell className="hidden sm:table-cell">
                           {campaign.persona}
