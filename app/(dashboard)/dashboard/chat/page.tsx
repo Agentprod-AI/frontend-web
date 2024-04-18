@@ -48,9 +48,9 @@ export default function Home() {
   const [allMessages, setAllMessages] = useState<Message[]>([
     {
       id: Math.random().toString(),
-      type: "assistant",
-      message: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-    } as Message,
+      role: "assistant",
+      content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+    },
   ]);
 
   // console.log("Id: ", userId);
@@ -198,8 +198,8 @@ export default function Home() {
             ...prevMessages,
             {
               id: Math.random().toString(),
-              type: "assistant",
-              message: assistantResponse.message,
+              role: "assistant",
+              content: assistantResponse.message,
             },
           ]);
         }
@@ -234,16 +234,16 @@ export default function Home() {
               <div
                 className={clsx(
                   "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                  message.type === "user" ? "flex-row-reverse" : "flex-row"
+                  message.role === "user" ? "flex-row-reverse" : "flex-row"
                 )}
               >
                 <div
                   className={clsx(
                     "p-1.5 text-white",
-                    message.type === "assistant" ? "" : ""
+                    message.role === "assistant" ? "" : ""
                   )}
                 >
-                  {message.type === "user" ? (
+                  {message.role === "user" ? (
                     <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
                       <AvatarImage src="/user.png" alt="user" />
                       {/* <AvatarFallback>NB</AvatarFallback> */}
@@ -268,11 +268,11 @@ export default function Home() {
                 <div
                   className={clsx(
                     "flex flex-col !mr-3 space-y-1",
-                    message.type === "assistant" ? "items-start" : "items-end"
+                    message.role === "assistant" ? "items-start" : "items-end"
                   )}
                 >
                   <span className="text-xs">
-                    {message.type === "assistant" ? "Prod" : "User"} 05:07 PM
+                    {message.role === "assistant" ? "Prod" : "User"} 05:07 PM
                   </span>
                   <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
                     <ReactMarkdown
@@ -289,7 +289,7 @@ export default function Home() {
                         ),
                       }}
                     >
-                      {message.message.replace("Assistant: ", "")}
+                      {message.content.replace("Assistant: ", "")}
                     </ReactMarkdown>
 
                     {/* <div
@@ -329,11 +329,11 @@ export default function Home() {
             onSubmit={(e) => {
               e.preventDefault();
               setAllMessages([
-                ...(allMessages ?? []),
+                ...allMessages,
                 {
                   id: Math.random().toString(),
-                  type: "user",
-                  message: input,
+                  role: "user",
+                  content: input,
                 },
               ]);
               console.log(allMessages);
