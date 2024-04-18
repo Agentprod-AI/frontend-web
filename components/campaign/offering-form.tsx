@@ -1,11 +1,10 @@
-"use client";
+"use client"; // This directive must be at the very top
 
-// import Link from "next/link";
-import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation'; // Make sure this import is correct for client-only usage
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useFieldArray, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
 import { z } from "zod";
-// import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -17,77 +16,75 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-// import {
-//   Select,
-//   SelectContent,
-//   SelectItem,
-//   SelectTrigger,
-//   SelectValue,
-// } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { toast } from "@/components/ui/use-toast";
 import { useCampaignContext } from '@/context/campaign-provider';
-import axiosInstance from '@/utils/axiosInstance';
+import axios from 'axios'; // Ensure axios is suitable for client-side
 
+// Define the validation schema using Zod
 const profileFormSchema = z.object({
-  product_offering: z
-    .string()
-    .min(2, {
-      message: "Product offering must be at least 2 characters.",
-    })
-    .max(30, {
-      message: "Product offering must not be longer than 30 characters.",
-    }),
+  product_offering: z.string().min(2).max(30),
   offering_details: z.string().max(160).min(4),
+  pain_point: z.array(z.string()), // Handling pain points as an array of strings
+  values: z.array(z.string()) // Handling values as an array of strings
 });
 
 type OfferingFormValues = z.infer<typeof profileFormSchema>;
 
-// This can come from your database or API.
-const defaultValues: Partial<OfferingFormValues> = {};
-
-export function OfferingForm({type}: {type: string}) {
+export function OfferingForm({ type }: { type: string }) {
   const router = useRouter();
-  
+  const [formData, setFormData] = useState<OfferingFormValues>({
+    product_offering: '',
+    offering_details: '',
+    pain_point: [
+      "People don't want to hire BDRs because they're too expense",
+      "you need to use too many platforms to do cold email",
+      "cold email requires specialized hires and skills",
+      "lead research and personalized email is time consuming",
+      "setting up outbound sales takes too long"
+    ],
+    values: [
+      "Our first AI employee, SDR Sally, actively searches for leads within a database of 300 million contacts, analyzing over 60+ data points across the internet.",
+      "It crafts and sends personalized email sequences to thousands of prospects after researching their profiles.",
+      "Sally responds to inquiries, follows up, and schedules meetings directly into SDRs' calendars while auto updating CRM for all actions taken by AI.",
+      "Enabling fully automated and scalable sales.",
+      "Reply to any Email in <10 min",
+      "Grow your sales pipeline at 10% of cost",
+      "Book meetings 10x faster",
+      "Put on autopilot"
+    ]
+  });
+
   const form = useForm<OfferingFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues,
+    defaultValues: formData,
     mode: "onChange",
   });
 
   const { createOffering, editOffering } = useCampaignContext();
-  const watchAllFields = form.watch();
-
-  //   const { fields, append } = useFieldArray({
-  //     name: "urls",
-  //     control: form.control,
-  //   });
 
   async function onSubmit(data: OfferingFormValues) {
     if (type === "create") {
       createOffering(data);
-    } if (type === "edit") {
-      const changes = Object.keys(data).reduce((acc, key) => {
-        // Ensure the correct key type is used
-        const propertyKey = key as keyof OfferingFormValues;
-
-        // Compare the stringified versions of the current and previous values
-        if (
-          JSON.stringify(data[propertyKey]) !==
-          JSON.stringify(watchAllFields[propertyKey])
-        ) {
-          // Assign only if types are compatible
-          acc = { ...acc, [propertyKey]: data[propertyKey] };
-        }
-        return acc;
-      }, {} as OfferingFormValues);
-
-      if (Object.keys(changes).length > 0) {
-        editOffering(changes);
-      }
+    } else if (type === "edit") {
+      editOffering(data);
     }
   }
-
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axios.get('https://agentprod-backend-framework-9e52.onrender.com/v2/personas/db02731a-cf14-4bb4-b56c-c1b5df9802bc');
+        setFormData({
+          product_offering: response.data.product_offering,
+          offering_details: response.data.offering_details,
+          pain_point: response.data.pain_point || [],
+          values: response.data.values || []
+        });
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+    fetchData();
+  }, []);
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
@@ -105,32 +102,6 @@ export function OfferingForm({type}: {type: string}) {
             </FormItem>
           )}
         />
-        {/* <FormField
-          control={form.control}
-          name="email"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Email</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a verified email to display" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  <SelectItem value="m@example.com">m@example.com</SelectItem>
-                  <SelectItem value="m@google.com">m@google.com</SelectItem>
-                  <SelectItem value="m@support.com">m@support.com</SelectItem>
-                </SelectContent>
-              </Select>
-              <FormDescription>
-                You can manage verified email addresses in your{" "}
-                <Link href="/examples/forms">email settings</Link>.
-              </FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
         <FormField
           control={form.control}
           name="offering_details"
@@ -138,51 +109,37 @@ export function OfferingForm({type}: {type: string}) {
             <FormItem>
               <FormLabel>Details of offers and details</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Describe the product and features."
-                  // className="resize-none"
-                  {...field}
-                />
+                <Textarea placeholder="Describe the product and features." {...field} />
               </FormControl>
-              <FormDescription>
-                You can write details of your product here
-              </FormDescription>
+              <FormDescription>You can write details of your product here</FormDescription>
               <FormMessage />
             </FormItem>
           )}
         />
-        {/* <div>
-          {fields.map((field, index) => (
-            <FormField
-              control={form.control}
-              key={field.id}
-              name={`urls.${index}.value`}
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className={cn(index !== 0 && "sr-only")}>
-                    URLs
-                  </FormLabel>
-                  <FormDescription className={cn(index !== 0 && "sr-only")}>
-                    Add links to your website, blog, or social media profiles.
-                  </FormDescription>
-                  <FormControl>
-                    <Input {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          ))}
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            className="mt-2"
-            onClick={() => append({ value: "" })}
-          >
-            Add URL
-          </Button>
-        </div> */}
+        <FormField
+          control={form.control}
+          name="pain_point"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Pain Points</FormLabel>
+              <FormControl>
+                <Textarea placeholder="List pain points" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="values"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Values</FormLabel>
+              <FormControl>
+                <Textarea placeholder="List values" {...field} />
+              </FormControl>
+            </FormItem>
+          )}
+        />
         <Button type="submit">Create Offer</Button>
       </form>
     </Form>
