@@ -84,38 +84,6 @@ export default function Home() {
       if (error) {
         console.error(error);
       } else if (createdUser && createdUser[0].id) {
-        setMessages([
-          {
-            id: Math.random().toString(),
-            type: "assistant",
-            message: JSON.stringify({
-              content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-              buttons: [
-                {
-                  buttonTitle: "Check out our website",
-                  url: "https://agentprod.com",
-                },
-              ],
-            }),
-          },
-          {
-            id: Math.random().toString(),
-            type: "assistant",
-            message: JSON.stringify({
-              content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
-              buttons: [
-                {
-                  buttonTitle: "Google Login",
-                  url: `${BACKEND_URL}/googlelogin?userId=${createdUser[0].id}`,
-                },
-                {
-                  buttonTitle: "Hubspot Login",
-                  url: `${BACKEND_URL}/hubspotlogin?userId=${createdUser[0].id}`,
-                },
-              ],
-            }),
-          },
-        ]);
         setUserId(createdUser[0].id);
         let { data: tokenUsers, error: tokenTableError } = await supabase
           .from("UserTokens")
