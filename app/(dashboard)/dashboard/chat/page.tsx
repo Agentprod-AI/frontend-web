@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "ai/react";
+import axiosInstance from "@/utils/axiosInstance";
 // import { useSession } from "next-auth/react";
 
 // const examples = [
@@ -44,21 +45,7 @@ export default function Home() {
   const [userEmail, setUserEmail] = useState(user?.email);
   const [userId, setUserId] = useState("9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c");
   const [loading, setLoading] = useState(true);
-  const [allMessages, setAllMessages] = useState<Message[]>([
-    {
-      id: Math.random().toString(),
-      role: "assistant",
-      content: JSON.stringify({
-        content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-        buttons: [
-          {
-            buttonTitle: "Check out our website",
-            url: "https://agentprod.com",
-          },
-        ],
-      }),
-    },
-  ]);
+  const [allMessages, setAllMessages] = useState<Message[]>();
 
   // console.log("Id: ", userId);
 
@@ -100,8 +87,8 @@ export default function Home() {
         setMessages([
           {
             id: Math.random().toString(),
-            role: "assistant",
-            content: JSON.stringify({
+            type: "assistant",
+            message: JSON.stringify({
               content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
               buttons: [
                 {
@@ -113,8 +100,8 @@ export default function Home() {
           },
           {
             id: Math.random().toString(),
-            role: "assistant",
-            content: JSON.stringify({
+            type: "assistant",
+            message: JSON.stringify({
               content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
               buttons: [
                 {
@@ -144,6 +131,22 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const fetchMessages = () => {
+      axiosInstance
+        .get(`v2/conversation/${userId}`)
+        .then((response) => {
+          console.log(response);
+          setAllMessages([...response.data]);
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
     if (userId) {
       setLoading(false);
     }
@@ -155,7 +158,7 @@ export default function Home() {
   //     // setMessages([
   //     //   {
   //     //     id: Math.random().toString(),
-  //     //     role: "assistant",
+  //     //     type: "assistant",
   //     //     content: JSON.stringify({
   //     //       content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
   //     //       buttons: [
@@ -168,7 +171,7 @@ export default function Home() {
   //     //   },
   //     //   {
   //     //     id: Math.random().toString(),
-  //     //     role: "assistant",
+  //     //     type: "assistant",
   //     //     content: JSON.stringify({
   //     //       content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
   //     //       buttons: [
@@ -181,11 +184,11 @@ export default function Home() {
   //     //   },
   //     //   // {
   //     //   //   id: Math.random().toString(),
-  //     //   //   role: "user",
+  //     //   //   type: "user",
   //     //   //   content: "How much revenue did we close this month?",
   //     //   // },
   //     // ]);
-  //     setAllMessages();
+  //     setAllMessages(messagesFromBackend.data);
   //   } catch (err) {
   //     console.log("Something went wrong!", err);
   //   }
@@ -193,7 +196,9 @@ export default function Home() {
 
   useEffect(() => {
     try {
-      setMessages(allMessages);
+      if (allMessages) {
+        setMessages(allMessages);
+      }
     } catch (err) {
       console.log("Something went wrong!", err);
     }
@@ -215,14 +220,12 @@ export default function Home() {
         } else {
           va.track("Chat initiated");
           const assistantResponse = await response.json();
-          setAllMessages((prevMessages) => [
-            ...prevMessages,
+          setAllMessages((prevMessages?: Message[]) => [
+            ...(prevMessages ?? []),
             {
               id: Math.random().toString(),
-              role: "assistant",
-              content: JSON.stringify({
-                content: assistantResponse,
-              }),
+              type: "assistant",
+              message: assistantResponse.message,
             },
           ]);
         }
@@ -251,22 +254,22 @@ export default function Home() {
               key={i}
               className={clsx(
                 "flex w-full items-center justify-center py-4"
-                // message.role === "user" ? "bg-black" : "bg-black/5",
+                // message.type === "user" ? "bg-black" : "bg-black/5",
               )}
             >
               <div
                 className={clsx(
                   "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
+                  message.type === "user" ? "flex-row-reverse" : "flex-row"
                 )}
               >
                 <div
                   className={clsx(
                     "p-1.5 text-white",
-                    message.role === "assistant" ? "" : ""
+                    message.type === "assistant" ? "" : ""
                   )}
                 >
-                  {message.role === "user" ? (
+                  {message.type === "user" ? (
                     <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
                       <AvatarImage src="/user.png" alt="user" />
                       {/* <AvatarFallback>NB</AvatarFallback> */}
@@ -291,11 +294,11 @@ export default function Home() {
                 <div
                   className={clsx(
                     "flex flex-col !mr-3 space-y-1",
-                    message.role === "assistant" ? "items-start" : "items-end"
+                    message.type === "assistant" ? "items-start" : "items-end"
                   )}
                 >
                   <span className="text-xs">
-                    {message.role === "assistant" ? "Prod" : "User"} 05:07 PM
+                    {message.type === "assistant" ? "Prod" : "User"} 05:07 PM
                   </span>
                   <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
                     <ReactMarkdown
@@ -312,20 +315,18 @@ export default function Home() {
                         ),
                       }}
                     >
-                      {message.role === "assistant"
-                        ? JSON.parse(message.content).content
-                        : message.content}
+                      {message.message.replace("Assistant: ", "")}
                     </ReactMarkdown>
 
-                    <div
+                    {/* <div
                       className={clsx(
                         "button-container mt-4",
-                        message.role === "assistant" ? "pb-4" : "pb-0"
+                        message.type === "assistant" ? "pb-4" : "pb-0"
                       )}
                     >
-                      {message.role === "assistant" &&
-                      JSON.parse(message.content).buttons
-                        ? JSON.parse(message.content).buttons.map(
+                      {message.type === "assistant" &&
+                      JSON.parse(message.message).buttons
+                        ? JSON.parse(message.message).buttons.map(
                             (button: any, index: number) => (
                               <a
                                 key={index}
@@ -339,7 +340,7 @@ export default function Home() {
                             )
                           )
                         : null}
-                    </div>
+                    </div> */}
                   </div>
                 </div>
               </div>
@@ -354,11 +355,11 @@ export default function Home() {
             onSubmit={(e) => {
               e.preventDefault();
               setAllMessages([
-                ...allMessages,
+                ...(allMessages ?? []),
                 {
                   id: Math.random().toString(),
-                  role: "user",
-                  content: input,
+                  type: "user",
+                  message: input,
                 },
               ]);
               console.log(allMessages);
