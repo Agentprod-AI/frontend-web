@@ -2,8 +2,8 @@
 import axios from "axios";
 
 const axiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_SERVER_URL,
-  // 10 second timeout
+  baseURL: "https://agentprod-backend-framework-9e52.onrender.com",
+   // 10 second timeout
   headers: {
     "Content-Type": "application/json",
   },

@@ -31,6 +31,7 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { draftEmail } from "@/constants/data";
+import axios from "axios";
 
 interface ConversationEntry {
   id: string;
@@ -162,68 +163,123 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const DraftEmailComponent = () => {
     const [editable, setEditable] = React.useState(false);
-    const [title, setTitle] = React.useState("");
-    const [body, setBody] = React.useState("");
+    const [title, setTitle] = React.useState('');
+    const [body, setBody] = React.useState('');
+    const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
+    const [emails, setEmails] = React.useState<ConversationEntry[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [error, setError] = React.useState('');
+
+    React.useEffect(() => {
+        const fetchDraftEmail = async () => {
+            setIsLoading(true);
+            try {
+                const response = await axios.get('https://agentprod-backend-framework-9e52.onrender.com/v2/mailbox/draft/7db97fce-37c4-476b-af57-3c3263c7750d');
+                setEmails(response.data);
+                if (response.data.length > 0) {
+                    setTitle(response.data[0].subject);
+                    setBody(response.data[0].body);
+                }
+                setIsLoading(false);
+            } catch (err) {
+                setError('Failed to load draft emails');
+                setIsLoading(false);
+                console.error(err);
+            }
+        };
+
+        fetchDraftEmail();
+    }, []);
+
+    const handleNextEmail = () => {
+        const nextIndex = (currentEmailIndex + 1) % emails.length;
+        setCurrentEmailIndex(nextIndex);
+        setTitle(emails[nextIndex].subject);
+        setBody(emails[nextIndex].body);
+    };
+
+    const handleSendNow = async () => {
+        const payload = {
+            conversation_id: "7db97fce-37c4-476b-af57-3c3263c7750d",
+            sender: "info@agentprod.com",
+            recipient: "info@agentemployee.com",
+            subject: title,
+            body: body
+        };
+
+        try {
+            const response = await axios.post('https://agentprod-backend-framework-9e52.onrender.com/v2/mailbox/draft/send', payload);
+            alert('Your email has been sent successfully!');
+            console.log(response.data); // Optional: handle response data
+            setEditable(false); // Disable editing after sending
+        } catch (error) {
+            console.error('Failed to send email:', error);
+            alert('Failed to send the email. Please try again.');
+        }
+    };
+
+    if (isLoading) {
+        return <div>Loading...</div>;
+    }
+
+    if (error) {
+        return <div>Error: {error}</div>;
+    }
 
     return (
-      <div className="flex m-4 w-full">
-        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
-          <AvatarFallback>{"NB"}</AvatarFallback>
-        </Avatar>
-        <Card className="w-full mr-5">
-          <CardHeader>
-            <CardTitle className="text-sm flex">
-              <Input
-                value={draftEmail.title}
-                disabled={!editable}
-                className="text-xs"
-                placeholder="Subject"
-                onChange={(e) => setTitle(e.target.value)}
-              />
-              <Badge className="ml-2" key={"label"}>
-                Draft
-              </Badge>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs">
-            <Textarea
-              value={draftEmail.body}
-              disabled={!editable}
-              className="text-xs h-64"
-              placeholder="Enter email body"
-              onChange={(e) => setBody(e.target.value)}
-            />
-          </CardContent>
-
-          <CardFooter className="flex justify-between text-xs items-center">
-            <div>
-              <Button disabled={editable}>Approve</Button>
-              <Button className="ml-2" disabled={!editable}>
-                Send Now
-              </Button>
-              {editable && (
-                <Button variant={"ghost"} onClick={() => setEditable(false)}>
-                  <Check className="h-4 w-4" />
-                </Button>
-              )}
-            </div>
-            <div>
-              <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                <Edit3 className="mr-2 h-4 w-4" />
-              </Button>
-              <Button variant={"ghost"}>
-                <RefreshCw className="mr-2 h-4 w-4" />
-              </Button>
-              <Button variant={"ghost"}>
-                <Trash2 className="mr-2 h-4 w-4" />
-              </Button>
-              <DropdownComponent />
-            </div>
-          </CardFooter>
-        </Card>
-      </div>
+        <div className="flex m-4 w-full">
+            <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
+                <AvatarFallback>{"NB"}</AvatarFallback>
+            </Avatar>
+            <Card className="w-full mr-5">
+                <CardHeader>
+                    <CardTitle className="text-sm flex">
+                        <Input
+                            value={title}
+                            disabled={!editable}
+                            className="text-xs"
+                            placeholder="Subject"
+                            onChange={(e) => setTitle(e.target.value)}
+                        />
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs">
+                    <Textarea
+                        value={body}
+                        disabled={!editable}
+                        className="text-xs h-64"
+                        placeholder="Enter email body"
+                        onChange={(e) => setBody(e.target.value)}
+                    />
+                </CardContent>
+                <CardFooter className="flex justify-between text-xs items-center">
+                    <div>
+                        <Button disabled={editable} onClick={() => setEditable(true)}>Approve</Button>
+                        <Button className="ml-2" disabled={!editable} onClick={handleSendNow}>
+                            Send Now
+                        </Button>
+                        {editable && (
+                            <Button variant={"ghost"} onClick={() => setEditable(false)}>
+                                <Check className="h-4 w-4" />
+                            </Button>
+                        )}
+                    </div>
+                    <div>
+                        <Button variant={"ghost"} onClick={() => setEditable(true)}>
+                            <Edit3 className="mr-2 h-4 w-4" />
+                        </Button>
+                        <Button variant={"ghost"} onClick={handleNextEmail}>
+                            <RefreshCw className="mr-2 h-4 w-4" />
+                        </Button>
+                        <Button variant={"ghost"}>
+                            <Trash2 className="mr-2 h-4 w-4" />
+                        </Button>
+                    </div>
+                </CardFooter>
+            </Card>
+        </div>
     );
-  };
+};
 
   const DropdownComponent = () => {
     const [open, setOpen] = React.useState(false);
