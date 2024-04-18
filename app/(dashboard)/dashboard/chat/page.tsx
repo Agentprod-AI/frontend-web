@@ -45,7 +45,13 @@ export default function Home() {
   const [userEmail, setUserEmail] = useState(user?.email);
   const [userId, setUserId] = useState("9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c");
   const [loading, setLoading] = useState(true);
-  const [allMessages, setAllMessages] = useState<Message[]>();
+  const [allMessages, setAllMessages] = useState<Message[]>([
+    {
+      id: Math.random().toString(),
+      type: "assistant",
+      message: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+    },
+  ]);
 
   // console.log("Id: ", userId);
 
@@ -188,8 +194,8 @@ export default function Home() {
         } else {
           va.track("Chat initiated");
           const assistantResponse = await response.json();
-          setAllMessages((prevMessages?: Message[]) => [
-            ...(prevMessages ?? []),
+          setAllMessages((prevMessages: Message[]) => [
+            ...prevMessages,
             {
               id: Math.random().toString(),
               type: "assistant",
