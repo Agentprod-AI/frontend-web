@@ -50,7 +50,7 @@ export default function Home() {
       id: Math.random().toString(),
       type: "assistant",
       message: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-    },
+    } as Message,
   ]);
 
   // console.log("Id: ", userId);
