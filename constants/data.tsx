@@ -1,5 +1,6 @@
 import { Icons } from "@/components/icons";
 import { NavInterface, NavItem, SidebarNavItem } from "@/types";
+import Image from "next/image";
 
 export type User = {
   id: number;
@@ -355,14 +356,9 @@ export type Mail = (typeof mails)[number];
 
 export const accounts = [
   {
-    label: "Prod - Sales Rep",
+    label: "Sally - Sales Rep",
     email: "alicia@example.com",
-    icon: (
-      <svg role="img" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-        <title>Vercel</title>
-        <path d="M24 22.525H0l12-21.05 12 21.05z" fill="currentColor" />
-      </svg>
-    ),
+    icon: <Image src={"/bw-logo.png"} width={24} height={24} alt="Sally" />,
   },
   // {
   //   label: "Alicia Koch",

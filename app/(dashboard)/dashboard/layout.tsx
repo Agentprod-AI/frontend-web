@@ -88,7 +88,7 @@ export default function DashboardLayout({
               <ScrollArea className="h-screen">
                 <PageHeaderProvider>
                   <main className="px-4 pb-20">
-                    <DashboardPageHeader />
+                    {/* <DashboardPageHeader /> */}
                     {children}
                   </main>
                 </PageHeaderProvider>

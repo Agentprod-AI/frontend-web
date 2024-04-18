@@ -22,7 +22,7 @@ export const SelectFromExisting = () => {
     async function fetchAllLeads() {
       setIsTableLoading(true);
       axiosInstance
-        .get(`/v2/lead/all/`)
+        .get(`v2/lead/all/`)
         .then((response) => {
           console.log(response);
           setLeads(response.data);
@@ -84,7 +84,7 @@ export const SelectFromExisting = () => {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);

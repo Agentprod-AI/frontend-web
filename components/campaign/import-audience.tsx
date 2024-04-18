@@ -159,7 +159,7 @@ export const ImportAudience = () => {
     console.log(leadsToEnrich);
 
     const enrichedLeads = axiosInstance
-      .post(`/v2/apollo/leads/bulk_enrich`, leadsToEnrich)
+      .post(`v2/apollo/leads/bulk_enrich`, leadsToEnrich)
       .then((response) => {
         const data = response.data;
         data.map((person: Lead): void => {
@@ -221,7 +221,7 @@ export const ImportAudience = () => {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);
