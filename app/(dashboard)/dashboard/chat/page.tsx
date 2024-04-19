@@ -110,7 +110,9 @@ export default function Home() {
         .get(`v2/conversation/${userId}`)
         .then((response) => {
           console.log(response);
-          setAllMessages([...response.data]);
+          if (response.data.length > 0) {
+            setAllMessages([...response.data]);
+          }
         })
         .catch((error) => {
           console.log(error);
@@ -194,12 +196,13 @@ export default function Home() {
         } else {
           va.track("Chat initiated");
           const assistantResponse = await response.json();
+          console.log(assistantResponse);
           setAllMessages((prevMessages: Message[]) => [
             ...prevMessages,
             {
               id: Math.random().toString(),
               role: "assistant",
-              content: assistantResponse.message,
+              content: assistantResponse,
             },
           ]);
         }
@@ -223,76 +226,82 @@ export default function Home() {
     <div>
       <main className="flex flex-col items-center justify-between pb-20">
         {messages.length > 0 ? (
-          messages.map((message, i) => (
-            <div
-              key={i}
-              className={clsx(
-                "flex w-full items-center justify-center py-4"
-                // message.type === "user" ? "bg-black" : "bg-black/5",
-              )}
-            >
-              <div
-                className={clsx(
-                  "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
-                )}
-              >
+          messages.map(
+            (message, i) =>
+              message && (
                 <div
+                  key={i}
                   className={clsx(
-                    "p-1.5 text-white",
-                    message.role === "assistant" ? "" : ""
+                    "flex w-full items-center justify-center py-4"
+                    // message.type === "user" ? "bg-black" : "bg-black/5",
                   )}
                 >
-                  {message.role === "user" ? (
-                    <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
-                      <AvatarImage src="/user.png" alt="user" />
-                      {/* <AvatarFallback>NB</AvatarFallback> */}
-                    </Avatar>
-                  ) : (
-                    <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
-                      {/* <AvatarFallback>JL</AvatarFallback> */}
-                      <AvatarImage
-                        src="/ai-sales-rep.png"
-                        alt="agentprod logo"
-                      />
-                      {/* <Image
+                  <div
+                    className={clsx(
+                      "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
+                    )}
+                  >
+                    <div
+                      className={clsx(
+                        "p-1.5 text-white",
+                        message.role === "assistant" ? "" : ""
+                      )}
+                    >
+                      {message.role === "user" ? (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
+                          <AvatarImage src="/user.png" alt="user" />
+                          {/* <AvatarFallback>NB</AvatarFallback> */}
+                        </Avatar>
+                      ) : (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
+                          {/* <AvatarFallback>JL</AvatarFallback> */}
+                          <AvatarImage
+                            src="/ai-sales-rep.png"
+                            alt="agentprod logo"
+                          />
+                          {/* <Image
                         // className="mx-auto"
                         width={100}
                         height={100}
                         src={"/bw-logo.png"}
                         alt="AgentProd"
                       /> */}
-                    </Avatar>
-                  )}
-                </div>
-                <div
-                  className={clsx(
-                    "flex flex-col !mr-3 space-y-1",
-                    message.role === "assistant" ? "items-start" : "items-end"
-                  )}
-                >
-                  <span className="text-xs">
-                    {message.role === "assistant" ? "Prod" : "User"} 05:07 PM
-                  </span>
-                  <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
-                    <ReactMarkdown
-                      className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        // open links in new tab
-                        a: (props) => (
-                          <a
-                            {...props}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          />
-                        ),
-                      }}
+                        </Avatar>
+                      )}
+                    </div>
+                    <div
+                      className={clsx(
+                        "flex flex-col !mr-3 space-y-1",
+                        message.role === "assistant"
+                          ? "items-start"
+                          : "items-end"
+                      )}
                     >
-                      {message.content.replace("Assistant: ", "")}
-                    </ReactMarkdown>
+                      <span className="text-xs">
+                        {message.role === "assistant" ? "Prod" : "User"} 05:07
+                        PM
+                      </span>
+                      <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                        <ReactMarkdown
+                          className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // open links in new tab
+                            a: (props) => (
+                              <a
+                                {...props}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              />
+                            ),
+                          }}
+                        >
+                          {message.content &&
+                            message.content.replace("Assistant: ", "")}
+                        </ReactMarkdown>
 
-                    {/* <div
+                        {/* <div
                       className={clsx(
                         "button-container mt-4",
                         message.type === "assistant" ? "pb-4" : "pb-0"
@@ -315,11 +324,12 @@ export default function Home() {
                           )
                         : null}
                     </div> */}
+                      </div>
+                    </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))
+              )
+          )
         ) : (
           <LoadingCircle />
         )}
