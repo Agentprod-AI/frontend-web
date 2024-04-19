@@ -279,7 +279,7 @@ export default function Home() {
                       )}
                     >
                       <span className="text-xs">
-                        {message.role === "assistant" ? "Prod" : "User"} 05:07
+                        {message.role === "assistant" ? "Sally" : "User"} 05:07
                         PM
                       </span>
                       <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
