@@ -73,7 +73,7 @@ export default function Page() {
                     <Icons.mail />
                     <p className="font-medium">Emails Pending Approval</p>
                   </div>
-                  <Badge variant={"secondary"}>120</Badge>
+                  <Badge variant={"secondary"}>12</Badge>
                 </CardContent>
               </Card>
 
@@ -113,7 +113,7 @@ export default function Page() {
                 <CardHeader>
                   <CardTitle>Recent Sales</CardTitle>
                   <CardDescription>
-                    You made 265 sales this month.
+                    You made 34 sales this month.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
@@ -125,7 +125,7 @@ export default function Page() {
                       </Avatar>
                       <div className="ml-4 space-y-1">
                         <p className="text-sm font-medium leading-none">
-                          Ava{" "}
+                          Sally{" "}
                           <span className="text-muted-foreground">
                             populated
                           </span>{" "}
@@ -285,15 +285,15 @@ export default function Page() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <p className="text-sm">olivia.maria@gmail.com - 80%</p>
+                  <p className="text-sm">muskaan@agentprod.com - 80%</p>
                   <Progress value={80} className="h-5 mt-2" />
                 </div>
                 <div>
-                  <p className="text-sm">jane.doe@gmail.com - 30%</p>
+                  <p className="text-sm">muskaan.m@agentprod.com - 30%</p>
                   <Progress value={30} className="h-5 mt-2" />
                 </div>
                 <div>
-                  <p className="text-sm">john.miller@gmail.com - 65%</p>
+                  <p className="text-sm">muskaan.ms@agentprod.com - 65%</p>
                   <Progress value={65} className="h-5 mt-2" />
                 </div>
               </CardContent>

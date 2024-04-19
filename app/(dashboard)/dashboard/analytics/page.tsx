@@ -122,15 +122,15 @@ export default function Page() {
               </CardHeader>
               <CardContent className="space-y-6">
                 <div>
-                  <p className="text-sm">olivia.maria@gmail.com - 80%</p>
+                  <p className="text-sm">muskaan@agentprod.com - 80%</p>
                   <Progress value={80} className="h-5 mt-2" />
                 </div>
                 <div>
-                  <p className="text-sm">jane.doe@gmail.com - 30%</p>
+                  <p className="text-sm">muskaan.m@agentprod.com - 30%</p>
                   <Progress value={30} className="h-5 mt-2" />
                 </div>
                 <div>
-                  <p className="text-sm">john.miller@gmail.com - 65%</p>
+                  <p className="text-sm">muskaan.ms@agentprod.com - 65%</p>
                   <Progress value={65} className="h-5 mt-2" />
                 </div>
               </CardContent>
@@ -208,13 +208,13 @@ export default function Page() {
                   <Progress value={80} className="h-2 w-40" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold">4565</p>
+                  <p className="text-sm font-semibold">396</p>
                   <p className="text-xs text-gray-500">Outreach</p>
                 </div>
               </div>
 
               <div className="flex flex-col items-center">
-                <p>69%</p>
+                <p>52%</p>
                 <Icons.arrowRight size={20} />
               </div>
 
@@ -223,13 +223,13 @@ export default function Page() {
                   <Progress value={60} className="h-2 w-40" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold">3123</p>
+                  <p className="text-sm font-semibold">207</p>
                   <p className="text-xs text-gray-500">Open</p>
                 </div>
               </div>
 
               <div className="flex flex-col items-center">
-                <p>3%</p>
+                <p>8.7%</p>
                 <Icons.arrowRight size={20} />
               </div>
 
@@ -238,13 +238,13 @@ export default function Page() {
                   <Progress value={10} className="h-2 w-40" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold">77</p>
+                  <p className="text-sm font-semibold">18</p>
                   <p className="text-xs text-gray-500">CTA Click</p>
                 </div>
               </div>
 
               <div className="flex flex-col items-center">
-                <p>43%</p>
+                <p>5.56%</p>
                 <Icons.arrowRight size={20} />
               </div>
 
@@ -253,7 +253,7 @@ export default function Page() {
                   <Progress value={5} className="h-2 w-40" />
                 </div>
                 <div className="text-center">
-                  <p className="text-sm font-semibold">33</p>
+                  <p className="text-sm font-semibold">22</p>
                   <p className="text-xs text-gray-500">Goal</p>
                 </div>
               </div>
@@ -263,30 +263,13 @@ export default function Page() {
           <Card className="col-span-2 p-4">
             <ScrollArea className="h-[18.5rem]">
               <CardContent className="text-sm space-y-4">
-                <p>
-                  Deliverability Rate - no. of email sent / total no. of email
-                </p>
-                <p>Open Rate - total email opened / total email</p>
-                <p>
-                  Reply Rate - no. of leads who replied / no of total leads
-                  reached
-                </p>
-                <p>
-                  Positive Reply Rate - no. of people positive replied / total
-                  no. of people
-                </p>
-                <p>
-                  Negative Reply Rate - no. of people negative replied / total
-                  no. of people
-                </p>
-                <p>
-                  Conversion Rate / meeting booked - no. of people leads who
-                  booked meetings / total no. of people
-                </p>
-                <p>
-                  Unsubscribe Rate - people who asked to unsubscribe / total no.
-                  of people
-                </p>
+                <p>Deliverability Rate - 100%</p>
+                <p>Open Rate - 52%</p>
+                <p>Reply Rate - 2.27%</p>
+                <p>Positive Reply Rate - 70%</p>
+                <p>Negative Reply Rate - 30%</p>
+                <p>Conversion Rate - 5.5%</p>
+                <p>Unsubscribe Rate - 0.5%</p>
               </CardContent>
             </ScrollArea>
           </Card>
