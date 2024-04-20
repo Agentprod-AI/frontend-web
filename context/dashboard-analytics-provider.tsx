@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
 import { useAuth } from "./auth-provider";
+import { useUserContext } from "./user-context";
 
 interface DashboardEntry {
   id: number;
@@ -44,15 +45,15 @@ interface Props {
 export const DashboardProvider: React.FunctionComponent<Props> = ({
   children,
 }) => {
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const { user } = useUserContext();
   const [dashboardData, setDashboardData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
-    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
     axiosInstance
-      .get<DashboardEntry[]>(`v2/dashboard/${testUserId}`)
+      .get<DashboardEntry[]>(`v2/dashboard/${user?.id}`)
       .then((response) => {
         setDashboardData(response.data);
         setIsLoading(false);
