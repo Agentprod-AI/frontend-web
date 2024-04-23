@@ -1,4 +1,5 @@
 import "./globals.css";
+import { ClerkProvider } from "@clerk/nextjs";
 import "@uploadthing/react/styles.css";
 import type { Metadata } from "next";
 import Providers from "@/components/layout/providers";
@@ -34,13 +35,15 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} overflow-hidden`}>
-        <Providers userAuthData={authData}>
-          <Toaster />
-          {children}
-        </Providers>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${inter.className} overflow-hidden`}>
+          <Providers userAuthData={authData}>
+            <Toaster />
+            {children}
+          </Providers>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

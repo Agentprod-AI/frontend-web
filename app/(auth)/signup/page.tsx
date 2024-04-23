@@ -1,11 +1,12 @@
 "use client";
 import { Metadata } from "next";
 import Link from "next/link";
-import UserAuthForm from "@/components/forms/auth/user-auth-form";
+// import UserAuthForm from "@/components/forms/auth/user-auth-form";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
+import { SignIn, SignUp } from "@clerk/nextjs";
 
 // export const metadata: Metadata = {
 //   title: "Authentication",
@@ -13,10 +14,10 @@ import { redirect } from "next/navigation";
 // };
 
 export default function AuthenticationPage() {
-  const { user } = useAuth();
-  if (user) {
-    redirect("/dashboard");
-  }
+  // const { user } = useAuth();
+  // if (user) {
+  //   redirect("/dashboard");
+  // }
 
   return (
     <div className="p-4 lg:p-8 h-full flex items-center">
@@ -27,7 +28,8 @@ export default function AuthenticationPage() {
           </h1>
           <p className="text-sm text-muted-foreground">Create your account</p>
         </div>
-        <UserAuthForm formType="signup" />
+        {/* <UserAuthForm formType="signup" /> */}
+        <SignUp routing="hash" />
         <Link href={"/"}>Login instead</Link>
         <p className="px-8 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}

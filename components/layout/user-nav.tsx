@@ -12,30 +12,33 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { useAuth } from "../../context/auth-provider";
+// import { useAuth } from "../../context/auth-provider";
+import { useAuth, useClerk, useUser } from "@clerk/nextjs";
+import { useRouter } from "next/navigation";
 
 export function UserNav() {
-  const { logout, user } = useAuth();
+  // const { logout, user } = useAuth();
+  const { signOut } = useClerk();
+  const router = useRouter();
 
-  const logoutUser = async () => {
-    await supabaseLogout();
-    logout();
-    // window.location.reload();
-  };
+  // const logoutUser = async () => {
+  //   await supabaseLogout();
+  //   logout();
+  //   // window.location.reload();
+  // };
 
-  if (user?.email) {
+  const { user } = useUser();
+
+  console.log(user?.primaryEmailAddress?.emailAddress);
+
+  if (user?.primaryEmailAddress?.emailAddress) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8 bg-accent">
-              <AvatarImage
-                src="/user.png"
-                alt={user?.user_metadata?.profile?.first_name ?? ""}
-              />
-              <AvatarFallback>
-                {user?.user_metadata?.profile?.first_name?.[0]}
-              </AvatarFallback>
+              <AvatarImage src="/user.png" alt={user?.firstName ?? ""} />
+              <AvatarFallback>{user.firstName}</AvatarFallback>
             </Avatar>
           </Button>
         </DropdownMenuTrigger>
@@ -43,13 +46,11 @@ export function UserNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {`${user?.user_metadata?.profile?.first_name ?? ""} ${
-                  user?.user_metadata?.profile?.last_name ?? ""
-                }`}
+                {`${user.firstName ?? ""} ${user.lastName ?? ""}`}
               </p>
 
               <p className="text-xs leading-none text-muted-foreground">
-                {user?.email}
+                {user?.primaryEmailAddress?.emailAddress}
               </p>
             </div>
           </DropdownMenuLabel>
@@ -70,7 +71,7 @@ export function UserNav() {
             <DropdownMenuItem>New Team</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => logoutUser()}>
+          <DropdownMenuItem onClick={() => signOut(() => router.push("/"))}>
             Log out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>
