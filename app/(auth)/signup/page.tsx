@@ -6,7 +6,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
-import { SignIn, SignUp } from "@clerk/nextjs";
+import { SignIn } from "@clerk/nextjs";
 
 // export const metadata: Metadata = {
 //   title: "Authentication",
@@ -29,7 +29,12 @@ export default function AuthenticationPage() {
           <p className="text-sm text-muted-foreground">Create your account</p>
         </div>
         {/* <UserAuthForm formType="signup" /> */}
-        <SignUp routing="hash" />
+        <SignIn
+          forceRedirectUrl={"/dashboard"}
+          afterSignInUrl={"/dashboard"}
+          afterSignUpUrl={"/dashboard"}
+          redirectUrl={"/dashboard"}
+        />
         <Link href={"/"}>Login instead</Link>
         <p className="px-8 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}

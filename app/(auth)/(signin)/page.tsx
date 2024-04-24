@@ -1,9 +1,9 @@
-"use client";
 import Link from "next/link";
 import UserAuthForm from "@/components/forms/auth/user-auth-form";
 // import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
-import { SignIn, SignUp, useAuth } from "@clerk/nextjs";
+import { SignIn, SignUp, SignedIn, useAuth } from "@clerk/nextjs";
+import { auth } from "@clerk/nextjs/server";
 
 // export const metadata: Metadata = {
 //   title: "Authentication",
@@ -11,10 +11,11 @@ import { SignIn, SignUp, useAuth } from "@clerk/nextjs";
 // };
 
 export default function AuthenticationPage() {
-  const { isSignedIn } = useAuth();
-  if (isSignedIn) {
-    redirect("/dashboard");
-  }
+  // const { userId } = auth();
+  // if (userId) {
+  //   redirect("/dashboard");
+  // }
+
   return (
     <div className="p-4 lg:p-8 h-full flex items-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
@@ -28,7 +29,12 @@ export default function AuthenticationPage() {
         </div> */}
         {/* <UserAuthForm formType="signin" /> */}
 
-        <SignIn routing="hash" />
+        <SignIn
+          routing="hash"
+          afterSignInUrl={"/dashboard"}
+          afterSignUpUrl={"/dashboard"}
+          redirectUrl={"/dashboard"}
+        />
         {/* <Link href={"/signup"}>Create an account</Link> */}
         <p className="px-8 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}
