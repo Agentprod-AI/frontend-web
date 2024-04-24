@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
 import { useAuth } from "./auth-provider";
 import axios from "axios";
+import { useUserContext } from "./user-context";
 
 interface CampaignFormData {
   [key: string]: any;
@@ -107,7 +108,8 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   children,
 }) => {
   const router = useRouter();
-  const { user } = useAuth();
+  // const { user } = useAuth();
+  const { user } = useUserContext();
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -117,8 +119,8 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
 
   const createCampaign = (data: CampaignFormData) => {
     const postData = {
-      // user_id: user?.id,
-      user_id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c",
+      user_id: user?.id,
+      // user_id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c",
       campaign_name: data.campaignName,
       campaign_type: data.campaignType,
       daily_outreach_number: data.dailyOutreach,
@@ -296,9 +298,8 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   };
 
   React.useEffect(() => {
-    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
     axiosInstance
-      .get<CampaignEntry[]>(`v2/campaigns/all/${testUserId}`)
+      .get<CampaignEntry[]>(`v2/campaigns/all/${user?.id}`)
       .then((response) => {
         setCampaigns(response.data);
         setIsLoading(false);

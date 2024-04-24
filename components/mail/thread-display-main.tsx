@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
@@ -32,6 +32,8 @@ import {
 } from "@/components/ui/popover";
 import { draftEmail } from "@/constants/data";
 import axios from "axios";
+import { useMailbox, Mailbox, EmailMessage } from "@/context/mailbox-provider";
+import { Lead, useLeads, Contact } from "@/context/lead-user";
 
 interface ConversationEntry {
   id: string;
@@ -54,7 +56,6 @@ interface ConversationEntry {
 }
 
 interface ThreadDisplayMainProps {
-  conversationId: string;
   ownerEmail: string;
 }
 
@@ -70,23 +71,30 @@ const frameworks = [
 ];
 
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
-  conversationId,
   ownerEmail,
 }) => {
-  const [conversations, setConversations] = React.useState<ConversationEntry[]>(
-    []
-  );
+  // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
+  //   []
+  // );
+  const { conversationId, thread, setThread, recipientEmail } = useMailbox();
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
-  const { toggleSidebar } = useLeadSheetSidebar();
+  const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+  const { leads, setLeads } = useLeads();
+
+  const initials = (name: string) => {
+    const names = name.split(" ");
+    return names
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   React.useEffect(() => {
     axiosInstance
-      .get<ConversationEntry[]>(
-        `v2/mailbox/conversation/7db97fce-37c4-476b-af57-3c3263c7750d`
-      )
+      .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
-        setConversations(response.data);
+        setThread(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -94,7 +102,24 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         setError(error.message || "Failed to load conversation.");
         setIsLoading(false);
       });
-  }, [conversationId, ownerEmail]);
+  }, [conversationId]);
+
+  React.useEffect(() => {
+    if (recipientEmail) {
+      axiosInstance
+        .get(`v2/lead/info/${recipientEmail}`)
+        .then((response) => {
+          setItemId(response.data.id);
+          setLeads([response.data]);
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+          setError(error.message || "Failed to load data.");
+          // setIsLoading(false);
+        });
+    }
+  }, [recipientEmail]);
 
   if (isLoading) {
     return (
@@ -112,24 +137,23 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     );
   }
 
-  if (!conversations || conversations.length === 0) {
-    return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium">No conversation data found.</div>
-      </div>
-    );
-  }
-
-  const EmailComponent = ({ email }: { email: ConversationEntry }) => {
+  const EmailComponent = ({ email }: { email: EmailMessage }) => {
     const isEmailFromOwner = email.sender === ownerEmail;
 
     return (
       <div className="flex m-4 w-full">
         <Avatar
           className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-          onClick={() => toggleSidebar(true)}
+          onClick={() => {
+            // handleLeadFromEmail();
+            toggleSidebar(true);
+          }}
         >
-          <AvatarFallback>{isEmailFromOwner ? "NB" : "TP"}</AvatarFallback>
+          <AvatarImage
+            src={leads[0].photo_url ? leads[0].photo_url : ""}
+            alt="avatar"
+          />
+          <AvatarFallback>{initials(leads[0].name)}</AvatarFallback>
         </Avatar>
         <Card className="w-full mr-5">
           <CardHeader>
@@ -163,123 +187,145 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const DraftEmailComponent = () => {
     const [editable, setEditable] = React.useState(false);
-    const [title, setTitle] = React.useState('');
-    const [body, setBody] = React.useState('');
+    const [title, setTitle] = React.useState("");
+    const [body, setBody] = React.useState("");
+    const [draftEmail, setDraftEmail] = React.useState("");
     const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
-    const [emails, setEmails] = React.useState<ConversationEntry[]>([]);
+    const [emails, setEmails] = React.useState<EmailMessage[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
-    const [error, setError] = React.useState('');
+    const [error, setError] = React.useState("");
 
     React.useEffect(() => {
-        const fetchDraftEmail = async () => {
-            setIsLoading(true);
-            try {
-                const response = await axios.get('https://agentprod-backend-framework-9e52.onrender.com/v2/mailbox/draft/7db97fce-37c4-476b-af57-3c3263c7750d');
-                setEmails(response.data);
-                if (response.data.length > 0) {
-                    setTitle(response.data[0].subject);
-                    setBody(response.data[0].body);
-                }
-                setIsLoading(false);
-            } catch (err) {
-                setError('Failed to load draft emails');
-                setIsLoading(false);
-                console.error(err);
-            }
-        };
-
-        fetchDraftEmail();
-    }, []);
+      axiosInstance
+        .get(`/v2/mailbox/draft/${conversationId}`)
+        .then((response) => {
+          console.log(response);
+          if (response.data.length > 0) {
+            setTitle(response.data[0].subject);
+            setBody(response.data[0].body);
+            setEmails(response.data[0]);
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setError("Failed to load draft emails");
+          setIsLoading(false);
+          console.error(err);
+        });
+    }, [conversationId]);
 
     const handleNextEmail = () => {
-        const nextIndex = (currentEmailIndex + 1) % emails.length;
-        setCurrentEmailIndex(nextIndex);
-        setTitle(emails[nextIndex].subject);
-        setBody(emails[nextIndex].body);
+      const nextIndex = (currentEmailIndex + 1) % emails.length;
+      setCurrentEmailIndex(nextIndex);
+      setTitle(emails[nextIndex].subject);
+      setBody(emails[nextIndex].body);
     };
 
     const handleSendNow = async () => {
-        const payload = {
-            conversation_id: "7db97fce-37c4-476b-af57-3c3263c7750d",
-            sender: "info@agentprod.com",
-            recipient: "info@agentemployee.com",
-            subject: title,
-            body: body
-        };
+      const payload = {
+        conversation_id: "7db97fce-37c4-476b-af57-3c3263c7750d",
+        sender: "info@agentprod.com",
+        recipient: "info@agentemployee.com",
+        subject: title,
+        body: body,
+      };
 
-        try {
-            const response = await axios.post('https://agentprod-backend-framework-9e52.onrender.com/v2/mailbox/draft/send', payload);
-            alert('Your email has been sent successfully!');
-            console.log(response.data); // Optional: handle response data
-            setEditable(false); // Disable editing after sending
-        } catch (error) {
-            console.error('Failed to send email:', error);
-            alert('Failed to send the email. Please try again.');
-        }
+      axiosInstance
+        .post("/v2/mailbox/draft/send", payload)
+        .then((response) => {
+          alert("Your email has been sent successfully!");
+          console.log(response.data); // Optional: handle response data
+          setEditable(false); // Disable editing after sending
+        })
+        .catch((error) => {
+          console.error("Failed to send email:", error);
+          alert("Failed to send the email. Please try again.");
+        });
     };
 
     if (isLoading) {
-        return <div>Loading...</div>;
+      return <div>Loading...</div>;
     }
 
     if (error) {
-        return <div>Error: {error}</div>;
+      return <div>Error: {error}</div>;
     }
 
     return (
-        <div className="flex m-4 w-full">
-            <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
-                <AvatarFallback>{"NB"}</AvatarFallback>
-            </Avatar>
-            <Card className="w-full mr-5">
-                <CardHeader>
-                    <CardTitle className="text-sm flex">
-                        <Input
-                            value={title}
-                            disabled={!editable}
-                            className="text-xs"
-                            placeholder="Subject"
-                            onChange={(e) => setTitle(e.target.value)}
-                        />
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="text-xs">
-                    <Textarea
-                        value={body}
-                        disabled={!editable}
-                        className="text-xs h-64"
-                        placeholder="Enter email body"
-                        onChange={(e) => setBody(e.target.value)}
-                    />
-                </CardContent>
-                <CardFooter className="flex justify-between text-xs items-center">
-                    <div>
-                        <Button disabled={editable} onClick={() => setEditable(true)}>Approve</Button>
-                        <Button className="ml-2" disabled={!editable} onClick={handleSendNow}>
-                            Send Now
-                        </Button>
-                        {editable && (
-                            <Button variant={"ghost"} onClick={() => setEditable(false)}>
-                                <Check className="h-4 w-4" />
-                            </Button>
-                        )}
-                    </div>
-                    <div>
-                        <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                            <Edit3 className="mr-2 h-4 w-4" />
-                        </Button>
-                        <Button variant={"ghost"} onClick={handleNextEmail}>
-                            <RefreshCw className="mr-2 h-4 w-4" />
-                        </Button>
-                        <Button variant={"ghost"}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                        </Button>
-                    </div>
-                </CardFooter>
-            </Card>
-        </div>
+      <div className="flex m-4 w-full">
+        <Avatar
+          className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+          onClick={() => {
+            // handleLeadFromEmail();
+            toggleSidebar(true);
+          }}
+        >
+          {/* avatar fallback -> email initials */}
+          <AvatarFallback>SG</AvatarFallback>
+        </Avatar>
+        <Card className="w-full mr-5">
+          <CardHeader>
+            <CardTitle className="text-sm flex">
+              <Input
+                value={title}
+                disabled={!editable}
+                className="text-xs"
+                placeholder="Subject"
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-xs">
+            <Textarea
+              value={body}
+              disabled={!editable}
+              className="text-xs h-64"
+              placeholder="Enter email body"
+              onChange={(e) => setBody(e.target.value)}
+            />
+          </CardContent>
+          <CardFooter className="flex justify-between text-xs items-center">
+            <div>
+              <Button disabled={editable} onClick={() => setEditable(true)}>
+                Approve
+              </Button>
+              <Button
+                className="ml-2"
+                disabled={!editable}
+                onClick={handleSendNow}
+              >
+                Send Now
+              </Button>
+              {editable && (
+                <Button variant={"ghost"} onClick={() => setEditable(false)}>
+                  <Check className="h-4 w-4" />
+                </Button>
+              )}
+            </div>
+            <div>
+              <Button variant={"ghost"} onClick={() => setEditable(true)}>
+                <Edit3 className="mr-2 h-4 w-4" />
+              </Button>
+              <Button variant={"ghost"} onClick={handleNextEmail}>
+                <RefreshCw className="mr-2 h-4 w-4" />
+              </Button>
+              <Button variant={"ghost"}>
+                <Trash2 className="mr-2 h-4 w-4" />
+              </Button>
+            </div>
+          </CardFooter>
+        </Card>
+      </div>
     );
-};
+  };
+
+  // if (!thread || (thread.length === 0 && !draft) || draft.length === 0) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <div className="text-lg font-medium">No conversation data found.</div>
+  //     </div>
+  //   );
+  // }
 
   const DropdownComponent = () => {
     const [open, setOpen] = React.useState(false);
@@ -334,14 +380,16 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
-      {conversations.length > 0 && (
-        <>
-          {conversations.map((email, index) => (
-            <EmailComponent key={index} email={email} />
-          ))}
-          <DraftEmailComponent />
-        </>
-      )}
+      <>
+        {thread.length > 0 && (
+          <div>
+            {thread.map((email, index) => (
+              <EmailComponent key={index} email={email} />
+            ))}
+          </div>
+        )}
+        <DraftEmailComponent />
+      </>
     </div>
   );
 };
