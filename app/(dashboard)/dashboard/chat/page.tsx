@@ -21,13 +21,15 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { useAuth } from "@/context/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Message } from "ai/react";
+import axiosInstance from "@/utils/axiosInstance";
 // import { useSession } from "next-auth/react";
 
-const examples = [
-  `How much revenue did we close this month?`,
-  `Send an email wishing happy new year to me`,
-  `Schedule my meeting with info@agentprod.com tomorrow`,
-];
+// const examples = [
+//   `How much revenue did we close this month?`,
+//   `Send an email wishing happy new year to me`,
+//   `Schedule my meeting with info@agentprod.com tomorrow`,
+// ];
 
 export default function Home() {
   // const { data: session } = useSession();
@@ -38,11 +40,18 @@ export default function Home() {
   const { user } = useAuth();
   // console.log("User: ", user);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
 
   const [userEmail, setUserEmail] = useState(user?.email);
-  const [userId, setUserId] = useState("");
+  const [userId, setUserId] = useState("9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c");
   const [loading, setLoading] = useState(true);
+  const [allMessages, setAllMessages] = useState<Message[]>([
+    {
+      id: Math.random().toString(),
+      role: "assistant",
+      content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+    },
+  ]);
 
   // console.log("Id: ", userId);
 
@@ -81,38 +90,6 @@ export default function Home() {
       if (error) {
         console.error(error);
       } else if (createdUser && createdUser[0].id) {
-        setMessages([
-          {
-            id: Math.random().toString(),
-            role: "assistant",
-            content: JSON.stringify({
-              content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-              buttons: [
-                {
-                  buttonTitle: "Check out our website",
-                  url: "https://agentprod.com",
-                },
-              ],
-            }),
-          },
-          {
-            id: Math.random().toString(),
-            role: "assistant",
-            content: JSON.stringify({
-              content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
-              buttons: [
-                {
-                  buttonTitle: "Google Login",
-                  url: `${BACKEND_URL}/googlelogin?userId=${createdUser[0].id}`,
-                },
-                {
-                  buttonTitle: "Hubspot Login",
-                  url: `${BACKEND_URL}/hubspotlogin?userId=${createdUser[0].id}`,
-                },
-              ],
-            }),
-          },
-        ]);
         setUserId(createdUser[0].id);
         let { data: tokenUsers, error: tokenTableError } = await supabase
           .from("UserTokens")
@@ -128,66 +105,106 @@ export default function Home() {
   };
 
   useEffect(() => {
+    const fetchMessages = () => {
+      axiosInstance
+        .get(`v2/conversation/${userId}`)
+        .then((response) => {
+          console.log(response);
+          if (response.data.length > 0) {
+            setAllMessages([...response.data]);
+          }
+        })
+        .catch((error) => {
+          console.log(error);
+        });
+    };
+
+    fetchMessages();
+  }, []);
+
+  useEffect(() => {
     if (userId) {
       setLoading(false);
     }
   }, [userId]);
 
+  // useEffect(() => {
+  //   try {
+  //     // fetchUserIdFromEmail(userEmail);
+  //     // setMessages([
+  //     //   {
+  //     //     id: Math.random().toString(),
+  //     //     type: "assistant",
+  //     //     content: JSON.stringify({
+  //     //       content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+  //     //       buttons: [
+  //     //         {
+  //     //           buttonTitle: "Check out our website",
+  //     //           url: "https://agentprod.com",
+  //     //         },
+  //     //       ],
+  //     //     }),
+  //     //   },
+  //     //   {
+  //     //     id: Math.random().toString(),
+  //     //     type: "assistant",
+  //     //     content: JSON.stringify({
+  //     //       content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
+  //     //       buttons: [
+  //     //         {
+  //     //           buttonTitle: "Google Login",
+  //     //           url: `hello.com/test`,
+  //     //         },
+  //     //       ],
+  //     //     }),
+  //     //   },
+  //     //   // {
+  //     //   //   id: Math.random().toString(),
+  //     //   //   type: "user",
+  //     //   //   content: "How much revenue did we close this month?",
+  //     //   // },
+  //     // ]);
+  //     setAllMessages(messagesFromBackend.data);
+  //   } catch (err) {
+  //     console.log("Something went wrong!", err);
+  //   }
+  // }, []);
+
   useEffect(() => {
     try {
-      // fetchUserIdFromEmail(userEmail);
-      setMessages([
-        {
-          id: Math.random().toString(),
-          role: "assistant",
-          content: JSON.stringify({
-            content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-            buttons: [
-              {
-                buttonTitle: "Check out our website",
-                url: "https://agentprod.com",
-              },
-            ],
-          }),
-        },
-        {
-          id: Math.random().toString(),
-          role: "assistant",
-          content: JSON.stringify({
-            content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
-            buttons: [
-              {
-                buttonTitle: "Google Login",
-                url: `hello.com/test`,
-              },
-            ],
-          }),
-        },
-        {
-          id: Math.random().toString(),
-          role: "user",
-          content: "How much revenue did we close this month?",
-        },
-      ]);
+      if (allMessages) {
+        setMessages(allMessages);
+      }
     } catch (err) {
       console.log("Something went wrong!", err);
     }
-  }, []);
+  }, [allMessages]);
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
     useChat({
-      api: `${BACKEND_URL}/chat-completion`,
+      api: `${process.env.NEXT_PUBLIC_SERVER_URL}v2/chat/completion`,
       body: {
-        userId: userId,
+        user_id: userId,
+        content: inputRef.current?.value,
       },
-      onResponse: (response) => {
+      onResponse: async (response) => {
         if (response.status === 429) {
           toast.error("You have reached your request limit for the day.");
           va.track("Rate limited");
           return;
         } else {
           va.track("Chat initiated");
+          const assistantResponse = await response.json();
+          console.log(assistantResponse);
+          setAllMessages((prevMessages: Message[]) => [
+            ...prevMessages,
+            {
+              id: Math.random().toString(),
+              role: "assistant",
+              content: assistantResponse,
+            },
+          ]);
         }
       },
       onError: (error) => {
@@ -196,9 +213,12 @@ export default function Home() {
           error: error.message,
         });
       },
+      onFinish(message) {
+        console.log(message);
+      },
     });
 
-  useEffect(() => {}, []);
+  useEffect(() => {}, [inputRef.current?.value]);
 
   const disabled = isLoading || input.length === 0;
 
@@ -206,83 +226,90 @@ export default function Home() {
     <div>
       <main className="flex flex-col items-center justify-between pb-20">
         {messages.length > 0 ? (
-          messages.map((message, i) => (
-            <div
-              key={i}
-              className={clsx(
-                "flex w-full items-center justify-center py-4"
-                // message.role === "user" ? "bg-black" : "bg-black/5",
-              )}
-            >
-              <div
-                className={clsx(
-                  "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                  message.role === "user" ? "flex-row-reverse" : "flex-row"
-                )}
-              >
+          messages.map(
+            (message, i) =>
+              message && (
                 <div
+                  key={i}
                   className={clsx(
-                    "p-1.5 text-white",
-                    message.role === "assistant" ? "" : ""
+                    "flex w-full items-center justify-center py-4"
+                    // message.type === "user" ? "bg-black" : "bg-black/5",
                   )}
                 >
-                  {message.role === "user" ? (
-                    <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
-                      <AvatarImage src="/user.png" alt="user" />
-                      {/* <AvatarFallback>NB</AvatarFallback> */}
-                    </Avatar>
-                  ) : (
-                    <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
-                      {/* <AvatarFallback>JL</AvatarFallback> */}
-                      <AvatarImage src="/bw-logo.png" alt="agentprod logo" />
-                      {/* <Image
+                  <div
+                    className={clsx(
+                      "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
+                    )}
+                  >
+                    <div
+                      className={clsx(
+                        "p-1.5 text-white",
+                        message.role === "assistant" ? "" : ""
+                      )}
+                    >
+                      {message.role === "user" ? (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
+                          <AvatarImage src="/user.png" alt="user" />
+                          {/* <AvatarFallback>NB</AvatarFallback> */}
+                        </Avatar>
+                      ) : (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
+                          {/* <AvatarFallback>JL</AvatarFallback> */}
+                          <AvatarImage
+                            src="/ai-sales-rep.png"
+                            alt="agentprod logo"
+                          />
+                          {/* <Image
                         // className="mx-auto"
                         width={100}
                         height={100}
                         src={"/bw-logo.png"}
                         alt="AgentProd"
                       /> */}
-                    </Avatar>
-                  )}
-                </div>
-                <div
-                  className={clsx(
-                    "flex flex-col !mr-3 space-y-1",
-                    message.role === "assistant" ? "items-start" : "items-end"
-                  )}
-                >
-                  <span className="text-xs">
-                    {message.role === "assistant" ? "Prod" : "User"} 05:07 PM
-                  </span>
-                  <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
-                    <ReactMarkdown
-                      className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
-                      remarkPlugins={[remarkGfm]}
-                      components={{
-                        // open links in new tab
-                        a: (props) => (
-                          <a
-                            {...props}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          />
-                        ),
-                      }}
-                    >
-                      {message.role === "assistant"
-                        ? JSON.parse(message.content).content
-                        : message.content}
-                    </ReactMarkdown>
-
+                        </Avatar>
+                      )}
+                    </div>
                     <div
                       className={clsx(
-                        "button-container mt-4",
-                        message.role === "assistant" ? "pb-4" : "pb-0"
+                        "flex flex-col !mr-3 space-y-1",
+                        message.role === "assistant"
+                          ? "items-start"
+                          : "items-end"
                       )}
                     >
-                      {message.role === "assistant" &&
-                      JSON.parse(message.content).buttons
-                        ? JSON.parse(message.content).buttons.map(
+                      <span className="text-xs">
+                        {message.role === "assistant" ? "Sally" : "User"} 05:07
+                        PM
+                      </span>
+                      <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                        <ReactMarkdown
+                          className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // open links in new tab
+                            a: (props) => (
+                              <a
+                                {...props}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              />
+                            ),
+                          }}
+                        >
+                          {message.content &&
+                            message.content.replace("Assistant: ", "")}
+                        </ReactMarkdown>
+
+                        {/* <div
+                      className={clsx(
+                        "button-container mt-4",
+                        message.type === "assistant" ? "pb-4" : "pb-0"
+                      )}
+                    >
+                      {message.type === "assistant" &&
+                      JSON.parse(message.message).buttons
+                        ? JSON.parse(message.message).buttons.map(
                             (button: any, index: number) => (
                               <a
                                 key={index}
@@ -296,55 +323,32 @@ export default function Home() {
                             )
                           )
                         : null}
+                    </div> */}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            </div>
-          ))
+              )
+          )
         ) : (
-          <Card className="w-[90%] mt-5 mb-0">
-            <div className="flex flex-col space-y-4 p-7 sm:p-10">
-              <h2 className="mt-10 scroll-m-20 border-b pb-2 text-3xl font-semibold tracking-tight transition-colors first:mt-0">
-                Welcome to AgentProd
-              </h2>
-              <p className="leading-7 [&:not(:first-child)]:mt-6">
-                👋 Hey, I'm Agentprod, your AI work assistant! First, allow me
-                to showcase Agentprod's capabilities, designed to supercharge
-                your workflow.
-              </p>
-              {/* <EmailForm
-                userEmail={userEmail}
-                setUserEmail={setUserEmail}
-                disabled={userEmail !== ""}
-              /> */}
-              <p className="leading-7 [&:not(:first-child)]:mt-6">
-                {userEmail === ""
-                  ? "*Enter you email to start using AgentProd!"
-                  : "You can now try AgentProd!"}
-              </p>
-            </div>
-            <div className="flex flex-col space-y-4 border-t p-7 sm:px-10 sm:py-4">
-              {examples.map((example, i) => (
-                <Button
-                  key={i}
-                  className="rounded-md border h-auto"
-                  variant={"outline"}
-                  onClick={() => {
-                    setInput(example);
-                    inputRef.current?.focus();
-                  }}
-                >
-                  {example}
-                </Button>
-              ))}
-            </div>
-          </Card>
+          <LoadingCircle />
         )}
         <div className="fixed bottom-0 flex w-full flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
             ref={formRef}
-            onSubmit={handleSubmit}
+            onSubmit={(e) => {
+              e.preventDefault();
+              setAllMessages([
+                ...allMessages,
+                {
+                  id: Math.random().toString(),
+                  role: "user",
+                  content: input,
+                },
+              ]);
+              console.log(allMessages);
+              handleSubmit(e);
+            }}
             className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex"
           >
             <Input

@@ -43,10 +43,11 @@ export interface Organization {
   organization_country?: string | null;
   organization_postal_code?: string | null;
 }
+
 export interface Lead {
   id: string;
   type: string;
-  campaign_id: string | undefined;
+  campaign_id: string;
   first_name: string;
   last_name: string;
   name: string;
@@ -57,7 +58,7 @@ export interface Lead {
   twitter_url: string | null;
   github_url: string | null;
   facebook_url: string | null;
-  extrapolated_email_confidence: null; // Assuming null, adjust if there's a specific type
+  extrapolated_email_confidence: string | null; // Assuming null, adjust if there's a specific type
   headline: string;
   email: string;
   organization_id: string;
@@ -65,7 +66,9 @@ export interface Lead {
   state: string;
   city: string;
   country: string;
-  organization: Organization;
+  organization: {
+    linkedin_url: string | null;
+  };
   is_likely_to_engage: boolean;
   departments: string[];
   subdepartments: string[];
@@ -78,6 +81,7 @@ export interface Lead {
 }
 
 export interface Contact {
+  user_id: string;
   id: string;
   campaign_id: string;
   type: string;
@@ -91,14 +95,14 @@ export interface Contact {
   state: string | null;
   departments: string[];
   email: string;
-  employment_history: any;
+  employment_history: any[];
   extrapolated_email_confidence: string | null;
   facebook_url: string | null;
   github_url: string | null;
   linkedin_url: string | null;
   twitter_url: string | null;
   phone_numbers: any;
-  photo_url: string | null;
+  photo_url: string;
   functions: string[] | null;
   seniority: string | null;
   subdepartments: string[] | null;
@@ -108,6 +112,7 @@ export interface Contact {
   show_intent: boolean | null;
   last_contacted?: string;
   is_responded?: boolean | null;
+  company_linkedin_url: string | null;
 }
 
 // Define the state structure for our context

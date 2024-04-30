@@ -36,7 +36,9 @@ import {
 // import ThreadDisplay from "./thread-display";
 import ThreadDisplayMain from "./thread-display-main";
 import { ScrollArea } from "../ui/scroll-area";
-import { config } from "@/utils/config";
+import axiosInstance from "@/utils/axiosInstance";
+import { useMailbox } from "@/context/mailbox-provider";
+import { useUserContext } from "@/context/user-context";
 
 interface MailProps {
   accounts: {
@@ -50,39 +52,53 @@ interface MailProps {
   navCollapsedSize: number;
 }
 
+export interface Conversations {
+  id: string;
+  user_id: string;
+  sender: string;
+  recipient: string;
+  subject: string;
+  body_substr: string;
+  campaign_id: string;
+  updated_at: string;
+  status: string;
+}
+
 export function Mail({
   defaultLayout = [265, 440, 655],
   defaultCollapsed = false,
   navCollapsedSize,
 }: MailProps) {
   const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
-  const [mails, setMails] = React.useState<Mail[]>([]);
+  const [mails, setMails] = React.useState<Conversations[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
-  const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
+  const { user } = useUserContext();
+
+  const { conversationId, setConversationId } = useMailbox();
+
+  //make sure envs are set up correctly on vercel
 
   React.useEffect(() => {
     // Define the function for fetching mails using axios
-    async function fetchMails(userId: string) {
-      const apiUrl = `${process.env.NEXT_PUBLIC_API_URL}/v2/mailbox/${userId}`;
+    async function fetchConversations() {
+      setLoading(true);
+      await axiosInstance
+        .get<{ mails: Conversations[] }>(`v2/mailbox/${user?.id}`)
+        .then((response) => {
+          // console.log(response);
+          setMails(response.data.mails as Conversations[]);
+          setLoading(false);
+        })
 
-      try {
-        setLoading(true);
-        const response = await axios.get(apiUrl);
-        setMails(response.data.mails); // Assuming the response structure contains { mails: [...] }
-      } catch (error) {
-        if (axios.isAxiosError(error)) {
-          setError(error.message); // Handling Axios errors
-        } else {
-          setError("An unknown error occurred");
-        }
-      } finally {
-        setLoading(false);
-      }
+        .catch((err: any) => {
+          console.error("Error fetching mails:", error);
+          setError(err.message || "Failed to load mails.");
+        });
     }
 
-    fetchMails(testUserId);
+    fetchConversations();
   }, []); // Dependency array remains empty to run once on mount
 
   return (
@@ -165,11 +181,13 @@ export function Mail({
               </form>
             </div>
             <TabsContent value="all" className="m-0">
-              <MailList items={mails as Mail[]} />
+              <MailList items={mails as Conversations[]} />
             </TabsContent>
-            <TabsContent value="unread" className="m-0">
-              <MailList items={mails.filter((item) => !item.read) as Mail[]} />
-            </TabsContent>
+            {/* <TabsContent value="unread" className="m-0">
+              <MailList
+                items={mails.filter((item) => !item.read) as Conversations[]}
+              />
+            </TabsContent> */}
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
@@ -178,7 +196,7 @@ export function Mail({
             mail={mails.find((item) => item.id === mail.selected) || null}
           /> */}
           <ScrollArea className="h-full">
-            <ThreadDisplayMain conversationId={""} ownerEmail={""} />
+            <ThreadDisplayMain ownerEmail={""} />
           </ScrollArea>
         </ResizablePanel>
       </ResizablePanelGroup>

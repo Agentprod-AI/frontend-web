@@ -13,49 +13,79 @@ import {
 
 const data = [
   {
-    name: "17 Dec",
-    lew: 10,
+    name: "18 Apr",
+    lew: 35,
     le: 20,
   },
   {
-    name: "20 Dec",
-    lew: 30,
-    le: 40,
+    name: "17 Apr",
+    lew: 36,
+    le: 23,
   },
   {
-    name: "23 Dec",
-    lew: 5,
-    le: 10,
+    name: "16 Apr",
+    lew: 40,
+    le: 24,
   },
   {
-    name: "26 Dec",
-    lew: 20,
-    le: 30,
-  },
-  {
-    name: "29 Dec",
-    lew: 15,
-    le: 40,
-  },
-  {
-    name: "1 Jan",
-    lew: 25,
-    le: 30,
-  },
-  {
-    name: "4 Jan",
-    lew: 10,
+    name: "15 Apr",
+    lew: 38,
     le: 20,
   },
   {
-    name: "7 Jan",
-    lew: 30,
-    le: 40,
+    name: "14 Apr",
+    lew: 0,
+    le: 0,
   },
   {
-    name: "10 Jan",
-    lew: 5,
-    le: 10,
+    name: "13 Apr",
+    lew: 0,
+    le: 0,
+  },
+  {
+    name: "12 Apr",
+    lew: 40,
+    le: 22,
+  },
+  {
+    name: "11 Apr",
+    lew: 38,
+    le: 21,
+  },
+  {
+    name: "10 Apr",
+    lew: 35,
+    le: 24,
+  },
+  {
+    name: "9 Apr",
+    lew: 36,
+    le: 20,
+  },
+  {
+    name: "8 Apr",
+    lew: 36,
+    le: 21,
+  },
+  {
+    name: "7 Apr",
+    lew: 0,
+    le: 0,
+  },
+  {
+    name: "6 Apr",
+    lew: 0,
+    le: 0,
+  },
+  {
+    name: "5 Apr",
+    lew: 40,
+    le: 25,
+  },
+  {
+    name: "4 Apr",
+    lew: 38,
+    le: 20,
   },
 ];
 

@@ -9,7 +9,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
@@ -31,6 +31,10 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { draftEmail } from "@/constants/data";
+import axios from "axios";
+import { useMailbox, Mailbox, EmailMessage } from "@/context/mailbox-provider";
+import { Lead, useLeads, Contact } from "@/context/lead-user";
+import { toast } from "sonner";
 
 interface ConversationEntry {
   id: string;
@@ -53,7 +57,6 @@ interface ConversationEntry {
 }
 
 interface ThreadDisplayMainProps {
-  conversationId: string;
   ownerEmail: string;
 }
 
@@ -69,21 +72,31 @@ const frameworks = [
 ];
 
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
-  conversationId,
   ownerEmail,
 }) => {
-  const [conversations, setConversations] = React.useState<ConversationEntry[]>(
-    []
-  );
+  // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
+  //   []
+  // );
+  const { conversationId, thread, setThread, recipientEmail, senderEmail } =
+    useMailbox();
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
-  const { toggleSidebar } = useLeadSheetSidebar();
+  const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+  const { leads, setLeads } = useLeads();
+
+  const initials = (name: string) => {
+    const names = name.split(" ");
+    return names
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase();
+  };
 
   React.useEffect(() => {
     axiosInstance
-      .get<ConversationEntry[]>(`/v2/mailbox/conversation/7db97fce-37c4-476b-af57-3c3263c7750d`)
+      .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
-        setConversations(response.data);
+        setThread(response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -91,43 +104,58 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         setError(error.message || "Failed to load conversation.");
         setIsLoading(false);
       });
-  }, [conversationId, ownerEmail]);
+  }, [conversationId]);
 
+  React.useEffect(() => {
+    if (recipientEmail) {
+      axiosInstance
+        .get(`v2/lead/info/${recipientEmail}`)
+        .then((response) => {
+          setItemId(response.data.id);
+          setLeads([response.data]);
+          console.log(response.data);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+          setError(error.message || "Failed to load data.");
+          // setIsLoading(false);
+        });
+    }
+  }, [recipientEmail]);
 
-if (isLoading) {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="text-lg font-medium">Loading...</div>
-    </div>
-  );
-}
+  if (isLoading) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-lg font-medium">Loading...</div>
+      </div>
+    );
+  }
 
-if (error) {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="text-lg font-medium text-red-500">Error: {error}</div>
-    </div>
-  );
-}
+  if (error) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="text-lg font-medium text-red-500">Error: {error}</div>
+      </div>
+    );
+  }
 
-if (!conversations || conversations.length === 0) {
-  return (
-    <div className="flex justify-center items-center h-screen">
-      <div className="text-lg font-medium">No conversation data found.</div>
-    </div>
-  );
-}
-
-  const EmailComponent = ({ email }: { email: ConversationEntry }) => {
+  const EmailComponent = ({ email }: { email: EmailMessage }) => {
     const isEmailFromOwner = email.sender === ownerEmail;
-  
+
     return (
       <div className="flex m-4 w-full">
         <Avatar
           className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-          onClick={() => toggleSidebar(true)}
+          onClick={() => {
+            // handleLeadFromEmail();
+            toggleSidebar(true);
+          }}
         >
-          <AvatarFallback>{isEmailFromOwner ? "NB" : "TP"}</AvatarFallback>
+          <AvatarImage
+            src={leads[0].photo_url ? leads[0].photo_url : ""}
+            alt="avatar"
+          />
+          <AvatarFallback>{initials(leads[0].name)}</AvatarFallback>
         </Avatar>
         <Card className="w-full mr-5">
           <CardHeader>
@@ -158,47 +186,129 @@ if (!conversations || conversations.length === 0) {
       </div>
     );
   };
-  
+
   const DraftEmailComponent = () => {
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
-  
+    const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
+    const [emails, setEmails] = React.useState<EmailMessage[]>([]);
+    const [isLoading, setIsLoading] = React.useState(true);
+    const [error, setError] = React.useState("");
+
+    React.useEffect(() => {
+      axiosInstance
+        .get(`/v2/mailbox/draft/${conversationId}`)
+        .then((response) => {
+          console.log(response);
+          if (response.data.length > 0) {
+            setTitle(response.data[0].subject);
+            setBody(response.data[0].body);
+            setEmails(response.data[0]);
+          }
+          setIsLoading(false);
+        })
+        .catch((err) => {
+          setError("Failed to load draft emails");
+          setIsLoading(false);
+          console.error(err);
+        });
+    }, [conversationId]);
+
+    const handleNextEmail = () => {
+      const nextIndex = (currentEmailIndex + 1) % emails.length;
+      setCurrentEmailIndex(nextIndex);
+      setTitle(emails[nextIndex].subject);
+      setBody(emails[nextIndex].body);
+    };
+
+    const handleSendNow = () => {
+      const payload = {
+        conversation_id: conversationId,
+        sender: senderEmail,
+        recipient: recipientEmail,
+        subject: title,
+        body: body,
+      };
+
+      axiosInstance
+        .post("/v2/mailbox/draft/send", payload)
+        .then((response) => {
+          toast.success("Your email has been sent successfully!");
+          console.log(response.data); // Optional: handle response data
+          setEditable(false); // Disable editing after sending
+        })
+        .catch((error) => {
+          console.error("Failed to send email:", error);
+          toast.error("Failed to send the email. Please try again.");
+        });
+    };
+
+    const handleDeleteDraft = () => {
+      axiosInstance
+        .delete(`/v2/mailbox/draft/${conversationId}`)
+        .then((response) => {
+          toast.success("Your draft has been deleted successfully!");
+          console.log(response.data); // Optional: handle response data
+          setEditable(false); // Disable editing after sending
+        })
+        .catch((error) => {
+          console.error("Failed to delete draft:", error);
+          toast.error("Failed to delete the draft. Please try again.");
+        });
+    };
+
+    if (isLoading) {
+      return <div>Loading...</div>;
+    }
+
+    if (error) {
+      return <div>Error: {error}</div>;
+    }
+
     return (
       <div className="flex m-4 w-full">
-        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
-          <AvatarFallback>{"NB"}</AvatarFallback>
+        <Avatar
+          className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+          onClick={() => {
+            // handleLeadFromEmail();
+            toggleSidebar(true);
+          }}
+        >
+          {/* avatar fallback -> email initials */}
+          <AvatarFallback>SG</AvatarFallback>
         </Avatar>
         <Card className="w-full mr-5">
           <CardHeader>
             <CardTitle className="text-sm flex">
               <Input
-                value={draftEmail.title}
+                value={title}
                 disabled={!editable}
                 className="text-xs"
                 placeholder="Subject"
                 onChange={(e) => setTitle(e.target.value)}
               />
-              <Badge className="ml-2" key={"label"}>
-                Draft
-              </Badge> 
-
             </CardTitle>
           </CardHeader>
           <CardContent className="text-xs">
             <Textarea
-              value={draftEmail.body}
+              value={body}
               disabled={!editable}
-              className="text-xs h-64"              
+              className="text-xs h-64"
               placeholder="Enter email body"
               onChange={(e) => setBody(e.target.value)}
             />
           </CardContent>
-
           <CardFooter className="flex justify-between text-xs items-center">
             <div>
-              <Button disabled={editable}>Approve</Button>
-              <Button className="ml-2" disabled={!editable}>
+              <Button disabled={editable} onClick={handleSendNow}>
+                Approve
+              </Button>
+              <Button
+                className="ml-2"
+                disabled={!editable}
+                onClick={handleSendNow}
+              >
                 Send Now
               </Button>
               {editable && (
@@ -209,26 +319,33 @@ if (!conversations || conversations.length === 0) {
             </div>
             <div>
               <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                <Edit3 className="mr-2 h-4 w-4" />
+                <Edit3 className="h-4 w-4" />
               </Button>
               <Button variant={"ghost"}>
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
               </Button>
-              <Button variant={"ghost"}>
-                <Trash2 className="mr-2 h-4 w-4" />
+              <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                <Trash2 className="h-4 w-4" />
               </Button>
-              <DropdownComponent />
             </div>
           </CardFooter>
         </Card>
       </div>
     );
   };
-  
+
+  // if (!thread || (thread.length === 0 && !draft) || draft.length === 0) {
+  //   return (
+  //     <div className="flex justify-center items-center h-screen">
+  //       <div className="text-lg font-medium">No conversation data found.</div>
+  //     </div>
+  //   );
+  // }
+
   const DropdownComponent = () => {
     const [open, setOpen] = React.useState(false);
     const [value, setValue] = React.useState("manualmode");
-  
+
     return (
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
@@ -241,54 +358,55 @@ if (!conversations || conversations.length === 0) {
             {value
               ? frameworks.find((f) => f.value === value)?.label
               : "Manual mode"}
-  
+
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
           </Button>
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
             <CommandInput placeholder=" Search framework..." />
-          <CommandEmpty>No framework found.</CommandEmpty>
-          <CommandGroup>
-            {frameworks.map((framework) => (
-              <CommandItem
-                key={framework.value}
-                value={framework.value}
-                onSelect={(currentValue) => {
-                  setValue(currentValue === value ? "" : currentValue);
-                  setOpen(false);
-                }}
-              >
-                <Check
-                  className={cn(
-                    "mr-2 h-4 w-4",
-                    value === framework.value ? "opacity-100" : "opacity-0"
-                  )}
-                />
-                {framework.label}
-              </CommandItem>
+            <CommandEmpty>No framework found.</CommandEmpty>
+            <CommandGroup>
+              {frameworks.map((framework) => (
+                <CommandItem
+                  key={framework.value}
+                  value={framework.value}
+                  onSelect={(currentValue) => {
+                    setValue(currentValue === value ? "" : currentValue);
+                    setOpen(false);
+                  }}
+                >
+                  <Check
+                    className={cn(
+                      "mr-2 h-4 w-4",
+                      value === framework.value ? "opacity-100" : "opacity-0"
+                    )}
+                  />
+                  {framework.label}
+                </CommandItem>
+              ))}
+            </CommandGroup>
+          </Command>
+        </PopoverContent>
+      </Popover>
+    );
+  };
+
+  return (
+    <div className="relative">
+      <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
+      <>
+        {thread.length > 0 && (
+          <div>
+            {thread.map((email, index) => (
+              <EmailComponent key={index} email={email} />
             ))}
-          </CommandGroup>
-        </Command>
-      </PopoverContent>
-    </Popover>
+          </div>
+        )}
+        <DraftEmailComponent />
+      </>
+    </div>
   );
 };
 
-return (
-  <div className="relative">
-  <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
-  {conversations.length > 0 && (
-    <>
-      {conversations.map((email, index) => (
-        <EmailComponent key={index} email={email} />
-      ))}
-      <DraftEmailComponent />
-    </>
-  )}
-</div>
-);
-};
-
 export default ThreadDisplayMain;
-            

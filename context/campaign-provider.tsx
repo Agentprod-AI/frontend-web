@@ -1,9 +1,17 @@
 // hooks/useCreateCampaign.tsx
-import React, { useState, createContext, useContext, useMemo, ReactNode, } from 'react';
-import { useRouter } from 'next/navigation';
+import React, {
+  useState,
+  createContext,
+  useContext,
+  useMemo,
+  ReactNode,
+} from "react";
+import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
-import axiosInstance from '@/utils/axiosInstance';
-import { useAuth } from './auth-provider';
+import axiosInstance from "@/utils/axiosInstance";
+import { useAuth } from "./auth-provider";
+import axios from "axios";
+import { useUserContext } from "./user-context";
 
 interface CampaignFormData {
   [key: string]: any;
@@ -23,7 +31,6 @@ interface CampaignFormData {
     fridayEndTime?: string;
   };
 }
-
 interface OfferingFormData {
   product_offering: string;
   offering_details: string;
@@ -36,7 +43,7 @@ interface GoalFormData {
   follow_up_days: number;
   follow_up_times: number;
   mark_as_lost: number;
-};
+}
 
 interface CampaignEntry {
   id: string;
@@ -62,6 +69,43 @@ interface CampaignEntry {
   friday_end?: string;
 }
 
+const defaultCampaignEntry: CampaignEntry = {
+  id: "",
+  user_id: "",
+  campaign_name: "",
+  is_active: false,
+  campaign_type: "",
+  daily_outreach_number: 0,
+  start_date: "",
+  end_date: "",
+  schedule_type: "",
+  description: "",
+  additional_details: "",
+  monday_start: "",
+  monday_end: "",
+  tuesday_start: "",
+  tuesday_end: "",
+  wednesday_start: "",
+  wednesday_end: "",
+  thursday_start: "",
+  thursday_end: "",
+  friday_start: "",
+  friday_end: "",
+};
+
+const defaultGoalEntry: GoalFormData = {
+  success_metric: "",
+  scheduling_link: "",
+  emails: [],
+  follow_up_days: 0,
+  follow_up_times: 0,
+  mark_as_lost: 0
+}
+
+const defaultOfferingEntry: OfferingFormData = {
+  product_offering: "",
+  offering_details: ""
+}
 
 interface CampaignContextType {
   campaigns: CampaignEntry[];
@@ -73,6 +117,9 @@ interface CampaignContextType {
   createGoal: (data: GoalFormData) => void;
   editGoal: (data: GoalFormData) => void;
   toggleCampaignIsActive: (campaignId: string) => void;
+  getCampaignById: (campaignId: string) => CampaignEntry;
+  getGoalById: (campaignId: string) => GoalFormData;
+  getOfferingById: (campaignId: string) => OfferingFormData;  
   isLoading: boolean;
 }
 
@@ -86,20 +133,27 @@ const defaultCampaignState: CampaignContextType = {
   createGoal: () => {},
   editGoal: () => {},
   toggleCampaignIsActive: () => {},
+  getCampaignById: (campaignId: string) => ({ ...defaultCampaignEntry }),
+  getGoalById: (campaignId: string) => ({ ...defaultGoalEntry }),
+  getOfferingById: (campaignId: string) => ({ ...defaultOfferingEntry }),
   isLoading: true,
 };
 
 // Use the default state when creating the context
-const CampaignContext = createContext<CampaignContextType>(defaultCampaignState);
+const CampaignContext =
+  createContext<CampaignContextType>(defaultCampaignState);
 
 interface Props {
   children: ReactNode;
 }
 
-export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) => {
+export const CampaignProvider: React.FunctionComponent<Props> = ({
+  children,
+}) => {
   const router = useRouter();
-  const { user } = useAuth();
-  const [ campaignId, setCampaignId ] = useState<string | null>(null);
+  // const { user } = useAuth();
+  const { user } = useUserContext();
+  const [campaignId, setCampaignId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
@@ -126,7 +180,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
     };
 
     axiosInstance
-      .post("/v2/campaigns/", postData)
+      .post("v2/campaigns/", postData)
       .then((response) => {
         console.log("Campaign created successfully:", response);
 
@@ -150,53 +204,58 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
   };
 
   const editCampaign = (data: CampaignFormData) => {
-      axiosInstance.put(`/v2/campaigns/${campaignId}`, data)
-        .then(response => {
-          console.log('Campaign edited successfully:', response.data);
-          router.push('/dashboard/campaign/create');
-        })
-        .catch(error => {
-          console.error('Error editing campaign:', error);
-          toast({
-            title: "Error editing campaign",
-            description: error.message || "Failed to edit campaign.",
-          });
+    axiosInstance
+      .put(`v2/campaigns/${campaignId}`, data)
+      .then((response) => {
+        console.log("Campaign edited successfully:", response.data);
+        router.push("/dashboard/campaign/create");
+      })
+      .catch((error) => {
+        console.error("Error editing campaign:", error);
+        toast({
+          title: "Error editing campaign",
+          description: error.message || "Failed to edit campaign.",
         });
-  }
+      });
+  };
 
   const deleteCampaign = (campaignId: string) => {
-    axiosInstance.delete(`/v2/campaigns/${campaignId}`)
-      .then(response => {
-        console.log('Campaign deleted successfully:', response.data);
-        router.push('/dashboard/campaigns');
+    axiosInstance
+      .delete(`v2/campaigns/${campaignId}`)
+      .then((response) => {
+        console.log("Campaign deleted successfully:", response.data);
+        router.push("/dashboard/campaigns");
       })
-      .catch(error => {
-        console.error('Error deleting campaign:', error);
+      .catch((error) => {
+        console.error("Error deleting campaign:", error);
         toast({
           title: "Error deleting campaign",
           description: error.message || "Failed to delete campaign.",
         });
-      })
-  }
+      });
+  };
 
   const createOffering = (data: OfferingFormData) => {
     const postData = {
-      campaign_id: campaignId,
+      campaign_id: localStorage.getItem("campaignId"),
       name: data.product_offering,
-      details: data.offering_details
+      details: data.offering_details,
     };
 
-    axiosInstance.post('/v2/offerings/', postData)
-      .then(response => {
-        let formsTracker = JSON.parse(localStorage.getItem('formsTracker') || '{}');
+    axiosInstance
+      .post("v2/offerings/", postData)
+      .then((response) => {
+        let formsTracker = JSON.parse(
+          localStorage.getItem("formsTracker") || "{}"
+        );
         formsTracker.offering = true;
-        localStorage.setItem('formsTracker', JSON.stringify(formsTracker));
+        localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
-        console.log('Offering created successfully:', response.data);
-        router.push('/dashboard/campaign/create');
+        console.log("Offering created successfully:", response.data);
+        router.push("/dashboard/campaign/create");
       })
-      .catch(error => {
-        console.error('Error creating offering:', error);
+      .catch((error) => {
+        console.error("Error creating offering:", error);
         toast({
           title: "Error creating offering",
           description: error.message || "Failed to create offering.",
@@ -205,24 +264,25 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
   };
 
   const editOffering = (data: OfferingFormData) => {
-      axiosInstance.put(`/v2/offerings/${campaignId}`, data)
-        .then(response => {
-          console.log('Offering edited successfully:', response.data);
-          router.push('/dashboard/campaign/create');
-        })
-        .catch(error => {
-          console.error('Error editing offering:', error);
-          toast({
-            title: "Error editing offering",
-            description: error.message || "Failed to edit offering.",
-          });
+    axiosInstance
+      .put(`v2/offerings/${campaignId}`, data)
+      .then((response) => {
+        console.log("Offering edited successfully:", response.data);
+        router.push("/dashboard/campaign/create");
+      })
+      .catch((error) => {
+        console.error("Error editing offering:", error);
+        toast({
+          title: "Error editing offering",
+          description: error.message || "Failed to edit offering.",
         });
+      });
   };
 
   const createGoal = (data: GoalFormData) => {
     const postData = {
-      campaign_id: campaignId,
-      emails: data.emails,
+      campaign_id: localStorage.getItem("campaignId"),
+      emails: data.emails.map((email) => email.value),
       success_metric: data.success_metric,
       scheduling_link: data.scheduling_link,
       follow_up_days: data.follow_up_days,
@@ -231,7 +291,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
     };
 
     axiosInstance
-      .post("/v2/goals/", postData)
+      .post("v2/goals/", postData)
       .then((response) => {
         let formsTracker = JSON.parse(
           localStorage.getItem("formsTracker") || "{}"
@@ -240,7 +300,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
         localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
         console.log("Goal created successfully:", response.data);
-        router.push("/dashboard");
+        router.push("/dashboard/campaign/create");
       })
       .catch((error) => {
         console.error("Error creating goal:", error);
@@ -252,30 +312,87 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
   };
 
   const editGoal = (data: GoalFormData) => {
-      axiosInstance.put(`/v2/goals/${campaignId}`, data)
-        .then(response => {
-          console.log('Goal edited successfully:', response.data);
-          router.push('/dashboard/campaign/create');
-        })
-        .catch(error => {
-          console.error('Error editing goal:', error);
-          toast({
-            title: "Error editing offering",
-            description: error.message || "Failed to edit goal.",
-          });
+    axiosInstance
+      .put(`v2/goals/${campaignId}`, data)
+      .then((response) => {
+        console.log("Goal edited successfully:", response.data);
+        router.push("/dashboard/campaign/create");
+      })
+      .catch((error) => {
+        console.error("Error editing goal:", error);
+        toast({
+          title: "Error editing offering",
+          description: error.message || "Failed to edit goal.",
         });
+      });
+  };
+
+  const getCampaignById = (campaignId: string): CampaignEntry => {
+    axiosInstance
+    .get(`v2/campaigns/${campaignId}`)
+    .then((response) => {
+      console.log("Campaign fetched successfully:", response.data);
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("Error fetching campaign:", error);
+      toast({
+        title: "Error fetching campaign",
+        description: error.message || "Failed to fetch campaign.",
+      });
+    });
+
+    return defaultCampaignEntry;
+  };
+
+  const getGoalById = (campaignId: string): GoalFormData => {
+    axiosInstance
+    .get(`v2/goals/${campaignId}`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("Error fetching goal:", error);
+      toast({
+        title: "Error fetching goal",
+        description: error.message || "Failed to fetch goal.",
+      });
+    });
+
+    return defaultGoalEntry;
+  };
+
+  const getOfferingById = (campaignId: string): OfferingFormData => {
+    axiosInstance
+    .get(`v2/offerings/${campaignId}`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("Error fetching offering:", error);
+      toast({
+        title: "Error fetching offering",
+        description: error.message || "Failed to fetch offering.",
+      });
+    });
+
+    return defaultOfferingEntry;
   };
 
   const toggleCampaignIsActive = (id: string) => {
-    setCampaigns((currentCampaigns) => currentCampaigns.map(campaign =>
-      campaign.campaignId === id ? { ...campaign, is_active: !campaign.is_active } : campaign
-    ));
+    setCampaigns((currentCampaigns) =>
+      currentCampaigns.map((campaign) =>
+        campaign.campaignId === id
+          ? { ...campaign, is_active: !campaign.is_active }
+          : campaign
+      )
+    );
   };
 
   React.useEffect(() => {
-    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
+    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c"
     axiosInstance
-      .get<CampaignEntry[]>(`/v2/campaigns/all/${testUserId}`)
+      .get<CampaignEntry[]>(`v2/campaigns/all/${testUserId}`)
       .then((response) => {
         setCampaigns(response.data);
         setIsLoading(false);
@@ -297,9 +414,13 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({ children }) =
       createGoal,
       editGoal,
       toggleCampaignIsActive,
+      getCampaignById,
+      getGoalById,
+      getOfferingById,
       campaigns,
       isLoading,
-    }), [campaignId, campaigns]
+    }),
+    [campaignId, campaigns]
   );
 
   return (

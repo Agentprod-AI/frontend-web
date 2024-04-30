@@ -37,16 +37,7 @@ import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { AudienceTableClient } from "../tables/audience-table/client";
 import { v4 as uuid } from "uuid";
 import { toast } from "sonner";
-
-// interface CSVData {
-//   "First Name"?: string;
-//   "Last Name"?: string;
-//   Title?: string;
-//   "Company Name"?: string;
-//   Email?: string;
-//   Phone?: string;
-//   Stage?: string;
-// }
+import { useUserContext } from "@/context/user-context";
 
 interface CSVData {
   [key: string]: string;
@@ -61,9 +52,18 @@ export const ImportAudience = () => {
   const [isLeadsTableActive, setIsLeadsTableActive] = useState(false);
   const [isAudienceLoading, setIsAudienceLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
-  const [campaignId, setCampaignId] = useState<string>(
-    "482b7b80-4681-422b-9d40-f7253f4a8305"
-  );
+  const [campaignId, setCampaignId] = useState("");
+  const { user } = useUserContext();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedValue = window.localStorage.getItem("campaignId");
+
+      if (storedValue) {
+        setCampaignId(storedValue);
+      }
+    }
+  }, []);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log("analyzing filez");
@@ -159,10 +159,15 @@ export const ImportAudience = () => {
     console.log(leadsToEnrich);
 
     const enrichedLeads = axiosInstance
-      .post(`/v2/apollo/leads/enrich`, leadsToEnrich)
+      .post(`v2/apollo/leads/bulk_enrich`, leadsToEnrich)
       .then((response) => {
-        console.log(response);
-        setLeads(response.data);
+        const data = response.data;
+        data.map((person: Lead): void => {
+          person.type = "prospective";
+          person.campaign_id = campaignId;
+          person.id = uuid();
+        });
+        setLeads(data);
         setIsAudienceLoading(false);
         setIsLeadsTableActive(true);
       })
@@ -177,14 +182,15 @@ export const ImportAudience = () => {
 
   function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
-      id: uuid(),
+      id: lead.id,
+      user_id: user.id,
       campaign_id: campaignId,
       type: "prospective",
       first_name: lead.first_name,
       last_name: lead.last_name,
       name: lead.name,
-      linkedin_url: lead.linkedin_url,
       title: lead.title,
+      linkedin_url: lead.linkedin_url,
       email_status: lead.email_status,
       photo_url: lead.photo_url,
       twitter_url: lead.twitter_url,
@@ -207,6 +213,7 @@ export const ImportAudience = () => {
       show_intent: lead.show_intent,
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
+      company_linkedin_url: lead.organization.linkedin_url,
     }));
   }
 
@@ -216,7 +223,7 @@ export const ImportAudience = () => {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);

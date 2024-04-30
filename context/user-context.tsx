@@ -1,27 +1,27 @@
 import React, { useState } from "react";
 
 export interface UserInterface {
-  id?: number;
+  id: string;
   username?: string;
   firstName?: string;
   email?: string;
 }
 
 export const DummyUser: UserInterface = {
-  id: 1,
+  id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c",
   username: "Agentprod",
   firstName: "Agent",
   email: "agentprod@agentprod.com",
 };
 
 export interface AppState {
-  user?: UserInterface;
+  user: UserInterface;
   updateState: (newState: Partial<AppState>) => void;
 }
 
 const defaultState: AppState = {
   user: DummyUser,
-  updateState: (newState?: Partial<AppState>) => {},
+  updateState: (newState: Partial<AppState>) => {},
 };
 
 const UserContext = React.createContext<AppState>(defaultState);

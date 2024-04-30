@@ -1,13 +1,13 @@
 import { useState, useEffect } from "react";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
 import axios from "axios";
-import { config } from "@/utils/config";
 import { Contact, useLeads } from "@/context/lead-user";
 import { toast } from "sonner";
 import axiosInstance from "@/utils/axiosInstance";
 import { Button } from "@/components/ui/button";
 import { LoadingCircle } from "@/app/icons";
 import { v4 as uuid } from "uuid";
+import { useUserContext } from "@/context/user-context";
 
 export const SelectFromExisting = () => {
   const { setLeads, existingLeads } = useLeads();
@@ -15,15 +15,23 @@ export const SelectFromExisting = () => {
   const [error, setError] = useState<string | null>(null);
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
-  const [campaignId, setCampaignId] = useState<string>(
-    "9b0660ce-7333-4315-aa3f-e9b0ed6653c4"
-  );
+  const [campaignId, setCampaignId] = useState("");
+  const { user } = useUserContext();
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedValue = window.localStorage.getItem("campaignId");
+
+      if (storedValue) {
+        setCampaignId(storedValue);
+      }
+    }
+  }, []);
   useEffect(() => {
     async function fetchAllLeads() {
       setIsTableLoading(true);
       axiosInstance
-        .get(`/v2/lead/all/`)
+        .get(`v2/lead/all/`)
         .then((response) => {
           console.log(response);
           setLeads(response.data);
@@ -44,13 +52,14 @@ export const SelectFromExisting = () => {
   function mapLeadsToBodies(leads: Contact[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
       id: uuid(),
+      user_id: user.id,
       campaign_id: campaignId,
-      type: lead.type,
+      type: "prospective",
       first_name: lead.first_name,
       last_name: lead.last_name,
       name: lead.name,
-      linkedin_url: lead.linkedin_url,
       title: lead.title,
+      linkedin_url: lead.linkedin_url,
       photo_url: lead.photo_url,
       twitter_url: lead.twitter_url,
       github_url: lead.github_url,
@@ -71,7 +80,8 @@ export const SelectFromExisting = () => {
       intent_strength: lead.intent_strength,
       show_intent: lead.show_intent,
       revealed_for_current_team: lead.revealed_for_current_team,
-      is_responded: lead.is_responded,
+      is_responded: false,
+      company_linkedin_url: lead.company_linkedin_url,
     }));
   }
 
@@ -85,7 +95,7 @@ export const SelectFromExisting = () => {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);

@@ -10,6 +10,7 @@ import { LeadsProvider } from "../../context/lead-user";
 import { CampaignProvider } from "../../context/campaign-provider";
 import { DashboardProvider } from "@/context/dashboard-analytics-provider";
 import { CompanyProvider } from "@/context/company-linkedin";
+import { MailboxProvider } from "@/context/mailbox-provider";
 
 export default function Providers({
   // session,
@@ -30,9 +31,11 @@ export default function Providers({
                 <CampaignProvider>
                   <DashboardProvider>
                     <CompanyProvider>
-                      {/* <SessionProvider session={session}> */}
-                      {children}
-                      {/* </SessionProvider> */} 
+                      <MailboxProvider>
+                        {/* <SessionProvider session={session}> */}
+                        {children}
+                        {/* </SessionProvider> */}
+                      </MailboxProvider>
                     </CompanyProvider>
                   </DashboardProvider>
                 </CampaignProvider>

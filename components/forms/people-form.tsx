@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { boolean, input, z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "sonner";
 import axios from "axios";
@@ -23,11 +23,10 @@ import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { v4 as uuid } from "uuid";
-
 import { orgLocations, jobTitles, seniorities, InputType } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
-import { config } from "@/utils/config";
 import axiosInstance from "@/utils/axiosInstance";
+import { useUserContext } from "@/context/user-context";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -126,6 +125,19 @@ const FormSchema = z.object({
 });
 
 export default function PeopleForm(): JSX.Element {
+  const [campaignId, setCampaignId] = useState("");
+  const { user } = useUserContext();
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const storedValue = window.localStorage.getItem("campaignId");
+
+      if (storedValue) {
+        setCampaignId(storedValue);
+      }
+    }
+  }, []);
+
   const router = useRouter();
 
   const form = useForm<z.infer<typeof FormSchema>>({
@@ -137,16 +149,17 @@ export default function PeopleForm(): JSX.Element {
   const [tab, setTab] = useState("tab1");
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
-  const [campaignId, setCampaignId] = useState<string>(
-    "482b7b80-4681-422b-9d40-f7253f4a8305"
-  );
 
   const onTabChange = async (value: any) => {
     //TODO: only change the value if form is correct
-    console.log(form.formState.isValid);
-    if (form.formState.isValid) {
+    if (value === "tab1") {
       setTab(value);
-      setIsTableLoading(true);
+    } else {
+      console.log(form.formState.isValid);
+      if (form.formState.isValid) {
+        setTab(value);
+        setIsTableLoading(true);
+      }
     }
   };
 
@@ -407,15 +420,16 @@ export default function PeopleForm(): JSX.Element {
         console.log(body);
         console.log("api called");
         setIsTableLoading(true);
-        const response = axiosInstance
-          .post<Lead[]>(`/v2/apollo/leads`, body)
+        axiosInstance
+          .post<Lead[]>(`v2/apollo/leads`, body)
           .then((response: any) => {
             const data = response.data;
             // console.log("DATA from contacts: ", data);
-            console.log("DATA: ", JSON.stringify(response));
+            console.log("DATA: ", data);
             data.map((person: Lead): void => {
               person.type = "prospective";
               person.campaign_id = campaignId;
+              person.id = uuid();
             });
             setLeads(data as Lead[]);
             setIsTableLoading(false);
@@ -455,6 +469,7 @@ export default function PeopleForm(): JSX.Element {
         console.log("ERR: ", err);
         toast.error("Error fetching data");
       } finally {
+        setTab("tab2");
         shouldCallAPI = false;
       }
     } else {
@@ -495,10 +510,11 @@ export default function PeopleForm(): JSX.Element {
   };
   type CheckboxOptions = {
     name: string;
+    value: string;
     checked: boolean;
   };
 
-  const fundingRounds: CheckboxOptions[] = [
+  const fundingRounds = [
     { name: "Seed", checked: false },
     { name: "Venture (Round not Specified)", checked: false },
     { name: "Series A", checked: false },
@@ -515,17 +531,17 @@ export default function PeopleForm(): JSX.Element {
   ];
 
   const companyHeadcountOptions: CheckboxOptions[] = [
-    { name: "1-10", checked: false },
-    { name: "11-20", checked: false },
-    { name: "21-50", checked: false },
-    { name: "51-100", checked: false },
-    { name: "101-200", checked: false },
-    { name: "201-500", checked: false },
-    { name: "501-1000", checked: false },
-    { name: "1001-2000", checked: false },
-    { name: "2001-5000", checked: false },
-    { name: "5001-10000", checked: false },
-    { name: "10000+", checked: false },
+    { name: "1-10", value: "1-10", checked: false },
+    { name: "11-20", value: "11-20", checked: false },
+    { name: "21-50", value: "21-50", checked: false },
+    { name: "51-100", value: "51-100", checked: false },
+    { name: "101-200", value: "101-200", checked: false },
+    { name: "201-500", value: "201-500", checked: false },
+    { name: "501-1000", value: "501-1000", checked: false },
+    { name: "1001-2000", value: "1001-2000", checked: false },
+    { name: "2001-5000", value: "2001-5000", checked: false },
+    { name: "5001-10000", value: "5001-10000", checked: false },
+    { name: "10000+", value: "10000+", checked: false },
   ];
 
   // const [loading, setLoading] = React.useState(true);
@@ -533,14 +549,15 @@ export default function PeopleForm(): JSX.Element {
 
   function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
-      id: uuid(),
+      id: lead.id,
+      user_id: user.id,
       campaign_id: campaignId,
       type: "prospective",
       first_name: lead.first_name,
       last_name: lead.last_name,
       name: lead.name,
-      linkedin_url: lead.linkedin_url,
       title: lead.title,
+      linkedin_url: lead.linkedin_url,
       email_status: lead.email_status,
       photo_url: lead.photo_url,
       twitter_url: lead.twitter_url,
@@ -563,6 +580,7 @@ export default function PeopleForm(): JSX.Element {
       show_intent: lead.show_intent,
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
+      company_linkedin_url: lead.organization.linkedin_url,
     }));
   }
 
@@ -572,7 +590,7 @@ export default function PeopleForm(): JSX.Element {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`/v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);
@@ -583,6 +601,7 @@ export default function PeopleForm(): JSX.Element {
         }
         setIsCreateBtnLoading(false);
         toast.success("Audience created successfully");
+        router.push("/dashboard/campaign/create");
       })
       .catch((error: any) => {
         console.log(error);
@@ -737,50 +756,21 @@ export default function PeopleForm(): JSX.Element {
                                 <Checkbox
                                   {...field}
                                   className="mr-2"
-                                  checked={checkedCompanyHeadcount?.includes(
-                                    headcountOption.name.replace("+", "-x")
-                                  )}
+                                  // checked={checkedCompanyHeadcount?.includes(
+                                  //   headcountOption.name.replace("+", "-x")
+                                  // )}
                                   onCheckedChange={(e) => {
                                     setCheckedCompanyHeadcount(
                                       (currentChecked) => {
                                         if (e.valueOf()) {
-                                          // If the checkbox is checked
-                                          if (
-                                            currentChecked?.some(
-                                              (item) =>
-                                                item ===
-                                                headcountOption.name.replace(
-                                                  "+",
-                                                  "-x"
-                                                )
-                                            )
-                                          ) {
-                                            // If the checkbox was previously checked and unchecked
-                                            return (
-                                              currentChecked || []
-                                            ).filter(
-                                              (item) =>
-                                                item !==
-                                                headcountOption.name.replace(
-                                                  "+",
-                                                  "-x"
-                                                )
-                                            );
-                                          } else {
-                                            // If the checkbox was previously unchecked
-                                            return [
-                                              ...(currentChecked || []),
-                                              headcountOption.name.replace(
-                                                "+",
-                                                "-x"
-                                              ),
-                                            ];
-                                          }
+                                          return [
+                                            headcountOption.value,
+                                            ...(currentChecked || []),
+                                          ];
                                         } else {
-                                          // If the checkbox is unchecked
                                           return (currentChecked || []).filter(
                                             (item) =>
-                                              item !== headcountOption.name
+                                              item !== headcountOption.value
                                           );
                                         }
                                       }

@@ -1,3 +1,4 @@
+import axiosInstance from "@/utils/axiosInstance";
 import React, {
   createContext,
   useContext,
@@ -7,52 +8,36 @@ import React, {
 } from "react";
 
 // Define the schema for company info
-interface CompanyInfo {
-  company_info: {
-    website: string;
-    industry: string;
-    "company size": string;
-    headquarters: string;
-    type: string;
-    specialties: string;
-  };
-  about_us_description: string;
+export interface CompanyInfo {
+  id: string;
+  company_info: any;
+  about_us: string;
   addresses: string[];
-  employees: {
-    name: string;
-    role: string;
-  }[];
-  affiliated_pages: {
-    title: string;
-    description: string;
-  }[];
-  stock_info: {
-    symbol: string;
-    date: string;
-    market: string;
-    delay_info: string;
-    current_price: string;
-    open_price: string;
-    low_price: string;
-    high_price: string;
-  };
-  funding_info: {
-    total_rounds: string;
-    last_round_details: string;
-    investors: string[];
-  };
+  affiliated_pages: any;
+  stock_info: any;
+  funding_info: any;
 }
 
 // Define the state structure for company context
 interface CompanyContextState {
-  companyInfo: CompanyInfo[];
-  setCompanyInfo: (companyInfo: CompanyInfo[]) => void;
+  companyInfo: CompanyInfo;
+  setCompanyInfo: (companyInfo: CompanyInfo) => void;
+  getCompanyInfo: (companyLinkedin: string) => void;
 }
 
 // Default state with initial values
 const defaultState: CompanyContextState = {
-  companyInfo: [],
+  companyInfo: {
+    id: "",
+    company_info: {},
+    about_us: "",
+    addresses: [],
+    affiliated_pages: {},
+    stock_info: [],
+    funding_info: [],
+  },
   setCompanyInfo: () => {},
+  getCompanyInfo: (companyLinkedin: string) => {},
 };
 
 // Create company context
@@ -66,14 +51,33 @@ interface CompanyProviderProps {
 export const CompanyProvider: React.FC<CompanyProviderProps> = ({
   children,
 }) => {
-  const [companyInfo, setCompanyInfo] = useState<CompanyInfo[]>(
+  const [companyInfo, setCompanyInfo] = useState<CompanyInfo>(
     defaultState.companyInfo
   );
+
+  const getCompanyInfo = (companyLinkedin: string) => {
+    console.log("get company info", companyLinkedin);
+    axiosInstance
+      .post("v2/linkedin_scraper/company/", {
+        company_linkedin_url: companyLinkedin,
+      })
+      .then((res) => {
+        setCompanyInfo(res.data);
+        console.log("company info", res.data);
+        Object.values(res.data).map((item) => {
+          console.log(item);
+        });
+      })
+      .catch((err) => {
+        console.log(err);
+      });
+  };
 
   const contextValue = useMemo(
     () => ({
       companyInfo,
       setCompanyInfo,
+      getCompanyInfo,
     }),
     [companyInfo]
   );
