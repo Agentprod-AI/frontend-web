@@ -115,8 +115,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
 
-  console.log(axiosInstance);
-
   const createCampaign = (data: CampaignFormData) => {
     const postData = {
       user_id: user?.id,

@@ -84,7 +84,6 @@ export function Mail({
     // Define the function for fetching mails using axios
     async function fetchConversations() {
       setLoading(true);
-      console.log(axiosInstance);
       await axiosInstance
         .get<{ mails: Conversations[] }>(`v2/mailbox/${user?.id}`)
         .then((response) => {

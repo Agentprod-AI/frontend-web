@@ -34,6 +34,8 @@ export interface Mailbox {
   setThread: (thread: EmailMessage[]) => void;
   recipientEmail: string;
   setRecipientEmail: (email: string) => void;
+  senderEmail: string;
+  setSenderEmail: (email: string) => void;
 }
 
 const defaultState: Mailbox = {
@@ -43,6 +45,8 @@ const defaultState: Mailbox = {
   setThread: () => {},
   recipientEmail: "",
   setRecipientEmail: () => {},
+  senderEmail: "",
+  setSenderEmail: () => {},
 };
 
 // Creating the context
@@ -63,6 +67,9 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({
   const [recipientEmail, setRecipientEmail] = useState<string>(
     defaultState.recipientEmail
   );
+  const [senderEmail, setSenderEmail] = useState<string>(
+    defaultState.senderEmail
+  );
 
   const contextValue = useMemo(
     () => ({
@@ -72,6 +79,8 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({
       setThread,
       recipientEmail,
       setRecipientEmail,
+      senderEmail,
+      setSenderEmail,
     }),
     [conversationId, thread]
   );

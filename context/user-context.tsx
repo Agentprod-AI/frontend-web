@@ -15,13 +15,13 @@ export const DummyUser: UserInterface = {
 };
 
 export interface AppState {
-  user?: UserInterface;
+  user: UserInterface;
   updateState: (newState: Partial<AppState>) => void;
 }
 
 const defaultState: AppState = {
   user: DummyUser,
-  updateState: (newState?: Partial<AppState>) => {},
+  updateState: (newState: Partial<AppState>) => {},
 };
 
 const UserContext = React.createContext<AppState>(defaultState);
