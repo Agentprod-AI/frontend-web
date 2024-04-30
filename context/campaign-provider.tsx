@@ -31,7 +31,6 @@ interface CampaignFormData {
     fridayEndTime?: string;
   };
 }
-
 interface OfferingFormData {
   product_offering: string;
   offering_details: string;
@@ -70,6 +69,44 @@ interface CampaignEntry {
   friday_end?: string;
 }
 
+const defaultCampaignEntry: CampaignEntry = {
+  id: "",
+  user_id: "",
+  campaign_name: "",
+  is_active: false,
+  campaign_type: "",
+  daily_outreach_number: 0,
+  start_date: "",
+  end_date: "",
+  schedule_type: "",
+  description: "",
+  additional_details: "",
+  monday_start: "",
+  monday_end: "",
+  tuesday_start: "",
+  tuesday_end: "",
+  wednesday_start: "",
+  wednesday_end: "",
+  thursday_start: "",
+  thursday_end: "",
+  friday_start: "",
+  friday_end: "",
+};
+
+const defaultGoalEntry: GoalFormData = {
+  success_metric: "",
+  scheduling_link: "",
+  emails: [],
+  follow_up_days: 0,
+  follow_up_times: 0,
+  mark_as_lost: 0
+}
+
+const defaultOfferingEntry: OfferingFormData = {
+  product_offering: "",
+  offering_details: ""
+}
+
 interface CampaignContextType {
   campaigns: CampaignEntry[];
   createCampaign: (data: CampaignFormData) => void;
@@ -80,6 +117,9 @@ interface CampaignContextType {
   createGoal: (data: GoalFormData) => void;
   editGoal: (data: GoalFormData) => void;
   toggleCampaignIsActive: (campaignId: string) => void;
+  getCampaignById: (campaignId: string) => CampaignEntry;
+  getGoalById: (campaignId: string) => GoalFormData;
+  getOfferingById: (campaignId: string) => OfferingFormData;  
   isLoading: boolean;
 }
 
@@ -93,6 +133,9 @@ const defaultCampaignState: CampaignContextType = {
   createGoal: () => {},
   editGoal: () => {},
   toggleCampaignIsActive: () => {},
+  getCampaignById: (campaignId: string) => ({ ...defaultCampaignEntry }),
+  getGoalById: (campaignId: string) => ({ ...defaultGoalEntry }),
+  getOfferingById: (campaignId: string) => ({ ...defaultOfferingEntry }),
   isLoading: true,
 };
 
@@ -115,12 +158,9 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
 
-  console.log(axiosInstance);
-
   const createCampaign = (data: CampaignFormData) => {
     const postData = {
       user_id: user?.id,
-      // user_id: "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c",
       campaign_name: data.campaignName,
       campaign_type: data.campaignType,
       daily_outreach_number: data.dailyOutreach,
@@ -260,7 +300,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
         console.log("Goal created successfully:", response.data);
-        router.push("/dashboard/create");
+        router.push("/dashboard/campaign/create");
       })
       .catch((error) => {
         console.error("Error creating goal:", error);
@@ -287,6 +327,58 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       });
   };
 
+  const getCampaignById = (campaignId: string): CampaignEntry => {
+    axiosInstance
+    .get(`v2/campaigns/${campaignId}`)
+    .then((response) => {
+      console.log("Campaign fetched successfully:", response.data);
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("Error fetching campaign:", error);
+      toast({
+        title: "Error fetching campaign",
+        description: error.message || "Failed to fetch campaign.",
+      });
+    });
+
+    return defaultCampaignEntry;
+  };
+
+  const getGoalById = (campaignId: string): GoalFormData => {
+    axiosInstance
+    .get(`v2/goals/${campaignId}`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("Error fetching goal:", error);
+      toast({
+        title: "Error fetching goal",
+        description: error.message || "Failed to fetch goal.",
+      });
+    });
+
+    return defaultGoalEntry;
+  };
+
+  const getOfferingById = (campaignId: string): OfferingFormData => {
+    axiosInstance
+    .get(`v2/offerings/${campaignId}`)
+    .then((response) => {
+      return response.data;
+    })
+    .catch((error) => {
+      console.error("Error fetching offering:", error);
+      toast({
+        title: "Error fetching offering",
+        description: error.message || "Failed to fetch offering.",
+      });
+    });
+
+    return defaultOfferingEntry;
+  };
+
   const toggleCampaignIsActive = (id: string) => {
     setCampaigns((currentCampaigns) =>
       currentCampaigns.map((campaign) =>
@@ -298,8 +390,9 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   };
 
   React.useEffect(() => {
+    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c"
     axiosInstance
-      .get<CampaignEntry[]>(`v2/campaigns/all/${user?.id}`)
+      .get<CampaignEntry[]>(`v2/campaigns/all/${testUserId}`)
       .then((response) => {
         setCampaigns(response.data);
         setIsLoading(false);
@@ -321,6 +414,9 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       createGoal,
       editGoal,
       toggleCampaignIsActive,
+      getCampaignById,
+      getGoalById,
+      getOfferingById,
       campaigns,
       isLoading,
     }),

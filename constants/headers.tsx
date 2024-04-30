@@ -47,11 +47,11 @@ export const pageTitleConfig = [
     title: "Scheduling and Budget",
     hidden: false,
   },
-  // {
-  //   pathname: "/dashboard/campaign/:id/offering",
-  //   title: "Offering",
-  //   hidden: false,
-  // },
+  {
+    pathname: "/dashboard/campaign/:id/offering",
+    title: "Offering",
+    hidden: false,
+  },
   {
     pathname: "/dashboard/campaign/:id/goal",
     title: "Goal",

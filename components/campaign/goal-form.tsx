@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
+import { useRouter, useParams } from 'next/navigation';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -30,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast"; 
 import { useCampaignContext } from '@/context/campaign-provider';
+import { useEffect } from 'react';
 
 
 const dummyEmails = [
@@ -64,8 +65,9 @@ const defaultValues: Partial<GoalFormValues> = {};
 
 export function GoalForm({type}: {type: string}) {
   const router = useRouter();
+  const params = useParams<{ campaignId: string}>()
 
-  const { createGoal, editGoal } = useCampaignContext();
+  const { createGoal, editGoal, getGoalById } = useCampaignContext();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -121,6 +123,23 @@ export function GoalForm({type}: {type: string}) {
       }
     }
   }
+
+  useEffect(() => {
+    if (type === "edit") {
+      const id = params.campaignId;
+      console.log(id);
+      if (id) {
+        const goal = getGoalById(id);
+        if (goal) {
+          form.setValue('success_metric', goal.success_metric);
+          form.setValue('scheduling_link', goal.scheduling_link);
+          form.setValue('follow_up_days', goal.follow_up_days);
+          form.setValue('follow_up_times', goal.follow_up_times);
+          form.setValue('mark_as_lost', goal.mark_as_lost);
+        }
+      }
+    }
+  }, []);
 
   return (
     <Form {...form}>

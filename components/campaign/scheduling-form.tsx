@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-
+import { useRouter, useParams } from 'next/navigation';
 import axios from 'axios';
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
@@ -19,7 +18,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import React from "react";
+import React, { useState } from "react";
 import Link from 'next/link';
 import { useCampaignContext } from '@/context/campaign-provider';
 import axiosInstance from '@/utils/axiosInstance';
@@ -71,13 +70,32 @@ const defaultValues: Partial<CampaignFormValues> = {
 
 export function SchedulingForm({type}: {type: string}) {
   const router = useRouter();
+  const params = useParams<{ campaignId: string}>()
+
+  // const [formData, setFormData] = useState<CampaignFormValues>({
+  //   campaignName: '',
+  //   campaignType: '',
+  //   dailyOutreach: 0,
+  //   schedule: {
+  //     mondayStartTime: '',
+  //     mondayEndTime: '',
+  //     tuesdayStartTime: '',
+  //     tuesdayEndTime: '',
+  //     wednesdayStartTime: '',
+  //     wednesdayEndTime: '',
+  //     thursdayStartTime: '',
+  //     thursdayEndTime: '',
+  //     fridayStartTime: '',
+  //     fridayEndTime: '',
+  //   },
+  // });
 
   const form = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignFormSchema),
-    defaultValues,
+    defaultValues
   });
 
-  const { createCampaign, editCampaign } = useCampaignContext();
+  const { createCampaign, editCampaign, getCampaignById } = useCampaignContext();
   const watchAllFields = form.watch();
 
   const onSubmit = async (data: CampaignFormValues) => {
@@ -108,6 +126,37 @@ export function SchedulingForm({type}: {type: string}) {
     }
   };
 
+  React.useEffect(() => {
+    if (type === "edit") {
+      const id = params.campaignId;
+      console.log(id);
+      if (id) {
+        const campaign = getCampaignById(id);
+        if (campaign) {
+          // setFormData({
+          //           product_offering: response.data.product_offering,
+          //           offering_details: response.data.offering_details,
+          //           pain_point: response.data.pain_point || [],
+          //           values: response.data.values || []
+          // });
+
+          form.setValue('campaignName', campaign.campaign_name);
+          form.setValue('campaignType', campaign.campaign_type as "Outbound" | "Inbound" | "Nurturing");
+          form.setValue('dailyOutreach', campaign?.daily_outreach_number || 0);
+          form.setValue('schedule.mondayStartTime', campaign.monday_start);
+          form.setValue('schedule.mondayEndTime', campaign.monday_end);
+          form.setValue('schedule.tuesdayStartTime', campaign.tuesday_start);
+          form.setValue('schedule.tuesdayEndTime', campaign.tuesday_end);
+          form.setValue('schedule.wednesdayStartTime', campaign.wednesday_start);
+          form.setValue('schedule.wednesdayEndTime', campaign.wednesday_end);
+          form.setValue('schedule.thursdayStartTime', campaign.thursday_start);
+          form.setValue('schedule.thursdayEndTime', campaign.thursday_end);
+          form.setValue('schedule.fridayStartTime', campaign.friday_start);
+          form.setValue('schedule.fridayEndTime', campaign.friday_end);
+        }
+      }
+    } 
+  }, [])
 
   return (
     <Form {...form}>

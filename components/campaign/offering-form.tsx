@@ -1,7 +1,7 @@
 "use client"; // This directive must be at the very top
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation'; // Make sure this import is correct for client-only usage
+import { useRouter, useSearchParams, useParams } from 'next/navigation'; // Make sure this import is correct for client-only usage
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -32,6 +32,8 @@ type OfferingFormValues = z.infer<typeof profileFormSchema>;
 
 export function OfferingForm({ type }: { type: string }) {
   const router = useRouter();
+  const params = useParams<{ campaignId: string}>()
+
   const [formData, setFormData] = useState<OfferingFormValues>({
     product_offering: '',
     offering_details: '',
@@ -60,7 +62,7 @@ export function OfferingForm({ type }: { type: string }) {
     mode: "onChange",
   });
 
-  const { createOffering, editOffering } = useCampaignContext();
+  const { createOffering, editOffering, getOfferingById } = useCampaignContext();
 
   async function onSubmit(data: OfferingFormValues) {
     if (type === "create") {
@@ -69,22 +71,38 @@ export function OfferingForm({ type }: { type: string }) {
       editOffering(data);
     }
   }
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axios.get('https://agentprod-backend-framework-9e52.onrender.com/v2/personas/db02731a-cf14-4bb4-b56c-c1b5df9802bc');
+  //       setFormData({
+  //         product_offering: response.data.product_offering,
+  //         offering_details: response.data.offering_details,
+  //         pain_point: response.data.pain_point || [],
+  //         values: response.data.values || []
+  //       });
+  //     } catch (error) {
+  //       console.error('Failed to fetch data:', error);
+  //     }
+  //   };
+  //   fetchData();
+  // }, []);
+
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axios.get('https://agentprod-backend-framework-9e52.onrender.com/v2/personas/db02731a-cf14-4bb4-b56c-c1b5df9802bc');
-        setFormData({
-          product_offering: response.data.product_offering,
-          offering_details: response.data.offering_details,
-          pain_point: response.data.pain_point || [],
-          values: response.data.values || []
-        });
-      } catch (error) {
-        console.error('Failed to fetch data:', error);
+    if (type === "edit") {
+      const id = params.campaignId;
+      console.log(id);
+      if (id) {
+        const offering = getOfferingById(id);
+        if (offering) {
+          form.setValue('product_offering', offering.product_offering);
+          form.setValue('offering_details', offering.offering_details);
+        }
       }
-    };
-    fetchData();
-  }, []);
+    } 
+  }, [])
+
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
