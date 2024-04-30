@@ -38,12 +38,15 @@ export function MailList({ items }: MailListProps) {
     setConversationId,
     setRecipientEmail,
     recipientEmail,
+    setSenderEmail,
+    senderEmail,
   } = useMailbox();
   const { user } = useUserContext();
 
   useEffect(() => {
     console.log(conversationId);
     console.log(recipientEmail);
+    console.log("sender email", senderEmail);
   }, [conversationId]);
 
   useEffect(() => {
@@ -52,6 +55,7 @@ export function MailList({ items }: MailListProps) {
       .then((response) => {
         setConversationId(response.data.mails[0].id); //defaults convo id to the first mail's id
         setRecipientEmail(response.data.mails[0].recipient);
+        setSenderEmail(response.data.mails[0].sender);
       })
       .catch((error) => {
         console.log(error);

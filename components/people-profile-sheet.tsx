@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Briefcase,
   ChevronsUpDown,
@@ -17,54 +17,21 @@ import {
   CollapsibleTrigger,
 } from "./ui/collapsible";
 import { Button } from "./ui/button";
-import { Lead } from "@/context/lead-user";
+import { Lead, Contact } from "@/context/lead-user";
 import { ScrollArea } from "./ui/scroll-area";
-import { useCompanyInfo, CompanyInfo } from "@/context/company-linkedin";
-
-interface CompanyInfoDataItem {
-  company_info: {
-    website: string;
-    industry: string;
-    "company size": string;
-    headquarters: string;
-    type: string;
-    specialties: string;
-  };
-  about_us: string;
-  addresses: string[];
-  employees: {
-    name: string;
-    role: string;
-  }[];
-  affiliated_pages: {
-    title: string;
-    description: string;
-  }[];
-  stock_info: {
-    symbol: string;
-    date: string;
-    market: string;
-    delay_info: string;
-    current_price: string;
-    open_price: string;
-    low_price: string;
-    high_price: string;
-  };
-  funding_info: {
-    total_rounds: string;
-    last_round_details: string;
-    investors: string[];
-  };
-}
+import { useCompanyInfo } from "@/context/company-linkedin";
 
 export const PeopleProfileSheet = (
-  data: Lead
+  data: Lead | Contact
   // companyInfo: CompanyInfoDataItem[]
 ) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
+  const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
+  const [affiliatedPagesCollapsibleOpen, setAffiliatedPagesCollapsibleOpen] =
+    useState(false);
   console.log(data);
 
-  const { companyInfo } = useCompanyInfo();
+  const { getCompanyInfo, companyInfo } = useCompanyInfo();
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -80,6 +47,14 @@ export const PeopleProfileSheet = (
     let spacedText = text.replace(/_+/g, " ");
     return spacedText[0].toUpperCase() + spacedText.slice(1).toLowerCase();
   };
+
+  useEffect(() => {
+    if ("organization" in data && data.organization.linkedin_url) {
+      getCompanyInfo(data.organization.linkedin_url);
+    } else if ("company_linkedin_url" in data && data.company_linkedin_url) {
+      getCompanyInfo(data.company_linkedin_url);
+    }
+  }, [data]);
 
   return (
     <ScrollArea className="h-full">
@@ -188,7 +163,7 @@ export const PeopleProfileSheet = (
             </Collapsible>
             <br />
             <br />
-            {data.organization && (
+            {/* {data.organization && (
               <>
                 <div className="flex">
                   <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
@@ -237,12 +212,168 @@ export const PeopleProfileSheet = (
                   </div>
                 </div>
               </>
-            )}
+            )} */}
             <div>
               <p className="text-sm font-medium leading-none">
                 {data.employment_history &&
                   data.employment_history[0].organization_name}
               </p>
+            </div>
+            <div className="space-y-3">
+              <div className="flex space-x-2">
+                <span className="text-sm text-muted-foreground">
+                  {companyInfo.about_us}
+                </span>
+              </div>
+              <br />
+              <br />
+              <div className="flex flex-col gap-2">
+                {companyInfo.company_info &&
+                  Object.entries(companyInfo.company_info).map(
+                    ([key, value]) => (
+                      <div
+                        className="text-sm font-semibold text-muted-foreground"
+                        key={key}
+                      >
+                        {formatText(key)}:{" "}
+                        <span className="text-sm font-normal text-muted-foreground">
+                          {value as string}
+                        </span>
+                      </div>
+                    )
+                  )}
+              </div>
+              <br />
+              <br />
+
+              <Collapsible
+                open={addressCollapsibleOpen}
+                onOpenChange={setAddressCollapsibleOpen}
+                className="w-[350px] pt-4 space-y-2 text-muted-foreground"
+              >
+                <div className="flex items-center justify-between space-x-4">
+                  <h4 className="text-sm font-semibold">Addresses</h4>
+                  <CollapsibleTrigger asChild>
+                    <Button variant="ghost" size="sm" className="w-9 p-0">
+                      <ChevronsUpDown className="h-4 w-4" />
+                      <span className="sr-only">Toggle</span>
+                    </Button>
+                  </CollapsibleTrigger>
+                </div>
+                <div className="px-2 py-1 text-xs">
+                  {companyInfo.addresses &&
+                    companyInfo.addresses.length > 0 &&
+                    companyInfo.addresses[0].replace("Get directions", "")}
+                </div>
+                <CollapsibleContent className="space-y-2">
+                  <div className="flex flex-col gap-2 px-2">
+                    {companyInfo.addresses &&
+                      companyInfo.addresses.length > 0 &&
+                      companyInfo.addresses.map((address, index) => {
+                        if (index === 0) return null;
+                        else {
+                          return (
+                            <div
+                              className="text-xs text-muted-foreground"
+                              key={index}
+                            >
+                              {address.replace("Get directions", "")}
+                            </div>
+                          );
+                        }
+                      })}
+                  </div>
+                </CollapsibleContent>
+              </Collapsible>
+
+              <br />
+              <br />
+              <div>
+                <Collapsible
+                  open={affiliatedPagesCollapsibleOpen}
+                  onOpenChange={setAffiliatedPagesCollapsibleOpen}
+                  className="w-[350px] pt-4 space-y-2 text-muted-foreground"
+                >
+                  <div className="flex items-center justify-between space-x-4">
+                    <div className="text-sm font-medium text-muted-foreground">
+                      Affiliated Pages:
+                    </div>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="w-9 p-0">
+                        <ChevronsUpDown className="h-4 w-4" />
+                        <span className="sr-only">Toggle</span>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  <div className="px-2 py-1 text-xs">
+                    {companyInfo.affiliated_pages.title && (
+                      <div className="text-muted-foreground">
+                        {companyInfo.affiliated_pages.title[0]}
+                        {companyInfo.affiliated_pages.description[0] &&
+                          ` - ${companyInfo.affiliated_pages.description[0]}`}
+                      </div>
+                    )}
+                  </div>
+                  <CollapsibleContent className="space-y-2">
+                    <div className="flex flex-col gap-2">
+                      {companyInfo.affiliated_pages.title &&
+                        companyInfo.affiliated_pages.title.map(
+                          (title: string, index: number) => {
+                            if (index === 0) return null;
+                            else {
+                              return (
+                                <div
+                                  key={index}
+                                  className="px-2 py-1 text-xs text-muted-foreground"
+                                >
+                                  {title}
+                                  {companyInfo.affiliated_pages.description[
+                                    index
+                                  ] &&
+                                    ` - ${companyInfo.affiliated_pages.description[index]}`}
+                                </div>
+                              );
+                            }
+                          }
+                        )}
+                    </div>
+                  </CollapsibleContent>
+                </Collapsible>
+              </div>
+              <br />
+              <br />
+              <div>
+                <div className="text-sm font-semibold text-muted-foreground">
+                  Stock Info:
+                </div>
+                {companyInfo.stock_info &&
+                  Object.entries(companyInfo.stock_info).map(([key, value]) => (
+                    <div className="text-muted-foreground text-sm" key={key}>
+                      {formatText(key)}:{" "}
+                      <span className="font-normal">{value as string}</span>
+                    </div>
+                  ))}
+              </div>
+              <br />
+              <br />
+              <div>
+                <div className="text-sm font-semibold text-muted-foreground">
+                  Funding Info:
+                </div>
+                <div>
+                  {companyInfo.funding_info &&
+                    Object.entries(companyInfo.funding_info).map(
+                      ([key, value]) => (
+                        <div
+                          className="text-muted-foreground text-sm"
+                          key={key}
+                        >
+                          {formatText(key)}: <span>{value as string}</span>
+                        </div>
+                      )
+                    )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -250,105 +381,3 @@ export const PeopleProfileSheet = (
     </ScrollArea>
   );
 };
-
-// "
-// {(
-//   {companyInfo.map((item, index) => (
-//     <div key={index}>
-//       {/* Display company_info data */}
-//       <div className="flex space-x-2">
-//         {/* <p>About Us:</p> */}
-//         {/* <br /> */}
-//         {/* <Search width={150} className="h-5 text-muted-foreground" /> */}
-//         <span className="text-sm text-muted-foreground">
-//           {item.about_us}
-//         </span>
-//       </div>
-//       <br />
-//       <br />
-//       <div className="flex flex-col gap-2">
-//         {Object.entries(item.company_info).map(([key, value]) => (
-//           <div
-//             className="text-sm font-semibold text-muted-foreground"
-//             key={key}
-//           >
-//             {formatText(key)}:{" "}
-//             <span className="text-sm font-normal text-muted-foreground">
-//               {value}
-//             </span>
-//           </div>
-//         ))}
-//       </div>
-//       <br />
-//       <br />
-//       {/* Display about_us_description */}
-//       {/* Display addresses */}
-//       <div>
-//         <div className="text-sm font-medium text-muted-foreground">
-//           Addresses:
-//         </div>
-//         <div className="flex flex-col gap-2">
-//           {item.addresses.map((address, index) => (
-//             <div
-//               className="text-sm text-muted-foreground"
-//               key={index}
-//             >
-//               {address}
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//       {/* Display affiliated_pages */}
-//       <br />
-//       <br />
-//       <div>
-//         <div className="text-sm font-medium text-muted-foreground">
-//           Affiliated Pages:
-//         </div>
-//         <div className="flex flex-col gap-2">
-//           {item.affiliataed_pages.map((page, index) => (
-//             <div
-//               className="text-sm text-muted-foreground"
-//               key={index}
-//             >
-//               {index + 1}. {page.title} - {page.description}
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//       {/* Display stock_info */}
-//       <br />
-//       <br />
-//       <div>
-//         <div className="text-sm font-semibold text-muted-foreground">
-//           Stock Info:
-//         </div>
-//         {Object.entries(item.stock_info).map(([key, value]) => (
-//           <div className="text-muted-foreground text-sm" key={key}>
-//             {formatText(key)}:{" "}
-//             <span className="font-normal">{value}</span>
-//           </div>
-//         ))}
-//       </div>
-//       {/* Display funding_info */}
-//       <br />
-//       <br />
-//       <div>
-//         <div className="text-sm font-semibold text-muted-foreground">
-//           Funding Info:
-//         </div>
-//         <div>
-//           {Object.entries(item.funding_info).map(([key, value]) => (
-//             <div
-//               className="text-muted-foreground text-sm"
-//               key={key}
-//             >
-//               {formatText(key)}: <span>{value}</span>
-//             </div>
-//           ))}
-//         </div>
-//       </div>
-//     </div>
-//   ))}
-//   ) }
-// "

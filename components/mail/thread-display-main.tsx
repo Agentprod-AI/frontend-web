@@ -34,6 +34,7 @@ import { draftEmail } from "@/constants/data";
 import axios from "axios";
 import { useMailbox, Mailbox, EmailMessage } from "@/context/mailbox-provider";
 import { Lead, useLeads, Contact } from "@/context/lead-user";
+import { toast } from "sonner";
 
 interface ConversationEntry {
   id: string;
@@ -76,7 +77,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
   //   []
   // );
-  const { conversationId, thread, setThread, recipientEmail } = useMailbox();
+  const { conversationId, thread, setThread, recipientEmail, senderEmail } =
+    useMailbox();
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
@@ -189,7 +191,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
-    const [draftEmail, setDraftEmail] = React.useState("");
     const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
     const [emails, setEmails] = React.useState<EmailMessage[]>([]);
     const [isLoading, setIsLoading] = React.useState(true);
@@ -221,11 +222,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       setBody(emails[nextIndex].body);
     };
 
-    const handleSendNow = async () => {
+    const handleSendNow = () => {
       const payload = {
-        conversation_id: "7db97fce-37c4-476b-af57-3c3263c7750d",
-        sender: "info@agentprod.com",
-        recipient: "info@agentemployee.com",
+        conversation_id: conversationId,
+        sender: senderEmail,
+        recipient: recipientEmail,
         subject: title,
         body: body,
       };
@@ -233,13 +234,27 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .post("/v2/mailbox/draft/send", payload)
         .then((response) => {
-          alert("Your email has been sent successfully!");
+          toast.success("Your email has been sent successfully!");
           console.log(response.data); // Optional: handle response data
           setEditable(false); // Disable editing after sending
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
-          alert("Failed to send the email. Please try again.");
+          toast.error("Failed to send the email. Please try again.");
+        });
+    };
+
+    const handleDeleteDraft = () => {
+      axiosInstance
+        .delete(`/v2/mailbox/draft/${conversationId}`)
+        .then((response) => {
+          toast.success("Your draft has been deleted successfully!");
+          console.log(response.data); // Optional: handle response data
+          setEditable(false); // Disable editing after sending
+        })
+        .catch((error) => {
+          console.error("Failed to delete draft:", error);
+          toast.error("Failed to delete the draft. Please try again.");
         });
     };
 
@@ -286,7 +301,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </CardContent>
           <CardFooter className="flex justify-between text-xs items-center">
             <div>
-              <Button disabled={editable} onClick={() => setEditable(true)}>
+              <Button disabled={editable} onClick={handleSendNow}>
                 Approve
               </Button>
               <Button
@@ -304,13 +319,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             </div>
             <div>
               <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                <Edit3 className="mr-2 h-4 w-4" />
-              </Button>
-              <Button variant={"ghost"} onClick={handleNextEmail}>
-                <RefreshCw className="mr-2 h-4 w-4" />
+                <Edit3 className="h-4 w-4" />
               </Button>
               <Button variant={"ghost"}>
-                <Trash2 className="mr-2 h-4 w-4" />
+                <RefreshCw className="h-4 w-4" />
+              </Button>
+              <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                <Trash2 className="h-4 w-4" />
               </Button>
             </div>
           </CardFooter>
