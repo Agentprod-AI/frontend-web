@@ -7,16 +7,20 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Input } from "@/components/ui/input";
-import { Settings } from "lucide-react";
+import { Settings, X, Pencil, Eye } from "lucide-react";
+
 import React from "react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import SubjectForm from "@/components/campaign/training/subject-form";
 import FieldList from "@/components/campaign/training/field-list";
 import FieldTextArea from "@/components/campaign/training/field-text-area";
+import { Button } from "@/components/ui/button";
 
 const allFieldsList: allFieldsListType = {
   variable: [
@@ -66,65 +70,28 @@ const allFieldsList: allFieldsListType = {
   ],
 };
 
-// make a type for all variables
-export type allFieldsListType = {
-  variable: {
-    id?: string;
-    val: string;
-    description: string;
-    length: string;
-  }[];
-  offering: {
-    id?: string;
-    val: string;
-    description: string;
-  }[];
-  personalized: {
-    id?: string;
-    val: string;
-    description: string;
-  }[];
-  enriched: {
-    id?: string;
-    val: string;
-    description: string;
-  }[];
-};
 export default function Training() {
   const [isOpen, setIsOpen] = React.useState(false);
+  const [fieldsList, setFieldsList] = React.useState(allFieldsList);
+  const [activeTab, setActiveTab] = React.useState("editor");
 
-  const [fieldsList, setFieldsList] =
-    React.useState<allFieldsListType>(allFieldsList);
-
-  // useEffect(() => {
-  //   setVariableList([
-  //     ...variableListMain,
-  //     {
-  //       id: 4,
-  //       val: "C-3PO",
-  //     },
-  //   ]);
-  // }, []);
-
-  return (
-    <ResizablePanelGroup direction="horizontal" className="rounded-lg border">
+  const editorContent = (
+    <ResizablePanelGroup direction="horizontal" className="">
       <ResizablePanel defaultSize={75}>
         <div className="flex justify-center p-6">
           <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-2">
-            {/* <AvatarImage src="/user.png" alt="user" /> */}
             <AvatarFallback>NB</AvatarFallback>
           </Avatar>
-          {/* <Textarea cols={10} /> */}
           <div className="flex-col w-full">
             <Collapsible
               open={isOpen}
               onOpenChange={setIsOpen}
-              className=" space-y-2"
+              className="space-y-2"
             >
               <div className="flex items-center gap-2">
                 <Input placeholder="Subject" className="flex-1" />
                 <CollapsibleTrigger asChild>
-                  <Settings className="h-5 w-5" />
+                  <Settings className="h-5 w-5 cursor-pointer" />
                 </CollapsibleTrigger>
               </div>
               <CollapsibleContent className="space-y-2">
@@ -145,5 +112,38 @@ export default function Training() {
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
+  );
+
+  const previewContent = null; // Define your preview content here if needed
+
+  return (
+    <>
+      <div className="w-full h-14 px-4 flex flex-row justify-between items-center rounded-lg border">
+        <div className="flex flex-row gap-3 items-center">
+          <X className="h-4 w-4 cursor-pointer" />
+          <p>Training</p>
+        </div>
+        <div className="flex items-center flex-row">
+          <Tabs
+            defaultValue="editor"
+            className="w-[200px]"
+            onValueChange={setActiveTab}
+          >
+            <TabsList>
+              <TabsTrigger value="editor" className="flex gap-1">
+                <Pencil className="h-3 w-3" />
+                Editor
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="flex gap-1">
+                <Eye className="h-3 w-3" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button>Start campaign</Button>
+        </div>
+      </div>
+      {activeTab === "editor" ? editorContent : previewContent}
+    </>
   );
 }
