@@ -10,7 +10,7 @@ import { Button } from "@/components/ui/button";
 import FieldTextArea from "./field-text-area";
 import { allFieldsListType } from "./field-form-modal";
 // import UserDetails from "./user-details";
-import { PeopleProfileSheet } from "@/components/people-profile-sheet";
+// import { PeopleProfileSheet } from "@/components/people-profile-sheet";
 
 const allFieldsList: allFieldsListType = {
   variable: [
@@ -83,7 +83,7 @@ function PreviewContent() {
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={25}>
         <div className="flex h-full items-center">
-          <PeopleProfileSheet />
+          {/* <PeopleProfileSheet /> */}
         </div>
       </ResizablePanel>
     </ResizablePanelGroup>
