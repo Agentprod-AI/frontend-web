@@ -17,6 +17,7 @@ import {
 import SubjectForm from "@/components/campaign/training/subject-form";
 import FieldList from "@/components/campaign/training/field-list";
 import FieldTextArea from "@/components/campaign/training/field-text-area";
+import { useClerk } from "@clerk/nextjs";
 
 const allFieldsList: allFieldsListType = {
   variable: [

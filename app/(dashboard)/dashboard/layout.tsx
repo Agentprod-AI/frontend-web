@@ -36,9 +36,9 @@ export default function DashboardLayout({
   const { width } = useWindowSize();
   const { user } = useAuth();
 
-  if (!user) {
-    redirect("/");
-  }
+  // if (!user) {
+  //   redirect("/");
+  // }
 
   return (
     <>
