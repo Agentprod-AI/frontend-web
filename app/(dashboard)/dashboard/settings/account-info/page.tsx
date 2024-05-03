@@ -1,40 +1,53 @@
 "use client";
 
-import React, { useState } from 'react';
-import { Button } from '@/components/ui/button';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableRow,
-} from "@/components/ui/table";
-import { Input } from '@/components/ui/input';
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
+import { Input } from "@/components/ui/input";
+import { useClerk } from "@clerk/nextjs";
 
 type Info = {
   id: string;
-  value: string | number;
+  // value: string | undefined | null;
+  value: string | undefined | null | number;
   isEditable: boolean;
 };
 
-const initialAccountInfo: Info[] = [
-  { id: "ID", value: 315, isEditable: false },
-  { id: "Sender First Name", value: "Siddhant", isEditable: true },
-  { id: "Sender Last Name", value: "Goswami", isEditable: true },
-  { id: "Sender Job", value: "CTO", isEditable: true },
-  { id: "Email", value: "siddhant@100xengineers.com", isEditable: true },
-  { id: "Company", value: "100xengineers", isEditable: true },
-  { id: "Company ID", value: 126, isEditable: false },
-  { id: "Notifications", value: "siddhant@100xengineers.com", isEditable: true },
-  { id: "Plan", value: "Starter", isEditable: false },
-  { id: "Leads used", value: "876/1000", isEditable: false }
-];
-
-export default function Page () {
+export default function Page() {
+  const { user } = useClerk();
   const [isEditing, setIsEditing] = useState(false);
-  const [accountInfo, setAccountInfo] = useState(initialAccountInfo);
+  const [accountInfo, setAccountInfo] = useState<Info[]>([]);
+
+  React.useEffect(() => {
+    if (user) {
+      const initialAccountInfo: Info[] = [
+        { id: "ID", value: user.id, isEditable: false },
+        { id: "Sender First Name", value: user.firstName, isEditable: true },
+        { id: "Sender Last Name", value: user.lastName, isEditable: true },
+        { id: "Sender Job", value: "CTO", isEditable: true },
+        {
+          id: "Email",
+          value: user.emailAddresses[0]?.emailAddress,
+          isEditable: true,
+        },
+        { id: "Company", value: "100xengineers", isEditable: true },
+        { id: "Company ID", value: 126, isEditable: false },
+        {
+          id: "Notifications",
+          value: user.emailAddresses[0]?.emailAddress,
+          isEditable: true,
+        },
+        { id: "Plan", value: "Starter", isEditable: false },
+        { id: "Leads used", value: "876/1000", isEditable: false },
+      ];
+      setAccountInfo(initialAccountInfo);
+    }
+  }, [user]);
 
   const handleInputChange = (id: string, value: string) => {
-    setAccountInfo(accountInfo.map(info => info.id === id ? {...info, value} : info));
+    setAccountInfo(
+      accountInfo.map((info) => (info.id === id ? { ...info, value } : info))
+    );
   };
 
   const handleEditClick = () => {
@@ -55,8 +68,10 @@ export default function Page () {
                   {isEditing && info.isEditable ? (
                     <Input
                       type="text"
-                      value={info.value.toString()}
-                      onChange={(e) => handleInputChange(info.id, e.target.value)}
+                      value={info?.value?.toString()}
+                      onChange={(e) =>
+                        handleInputChange(info.id, e.target.value)
+                      }
                     />
                   ) : (
                     info.value
@@ -69,7 +84,7 @@ export default function Page () {
       </div>
       <div className="flex gap-4">
         <Button onClick={handleEditClick}>
-          {isEditing ? 'Update' : 'Edit'}
+          {isEditing ? "Update" : "Edit"}
         </Button>
         {isEditing && (
           <Button variant="outline" onClick={() => setIsEditing(false)}>
@@ -77,11 +92,9 @@ export default function Page () {
           </Button>
         )}
         {!isEditing && (
-          <Button variant="outline">
-            Manage your subscription
-          </Button>
+          <Button variant="outline">Manage your subscription</Button>
         )}
       </div>
     </div>
   );
-};
+}
