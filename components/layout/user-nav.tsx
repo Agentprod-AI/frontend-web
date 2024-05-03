@@ -29,15 +29,13 @@ export function UserNav() {
 
   const { user } = useUser();
 
-  console.log(user?.primaryEmailAddress?.emailAddress);
-
   if (user?.primaryEmailAddress?.emailAddress) {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8 bg-accent">
-              <AvatarImage src="/user.png" alt={user?.firstName ?? ""} />
+              <AvatarImage src={user?.imageUrl} alt={user?.firstName ?? ""} />
               <AvatarFallback>{user.firstName}</AvatarFallback>
             </Avatar>
           </Button>

@@ -74,7 +74,7 @@ export default function Page() {
                       }
                     />
                   ) : (
-                    info.value
+                    info?.value
                   )}
                 </TableCell>
               </TableRow>
