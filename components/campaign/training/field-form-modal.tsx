@@ -65,9 +65,8 @@ export function FieldFormModal({
   modalType: "edit" | "add";
 }) {
   const [open, setOpen] = useState(false);
-  const [currentTraining, setCurrentTraining] = useState<TrainingResponse | null>(
-    null
-  );
+  const [currentTraining, setCurrentTraining] =
+    useState<TrainingResponse | null>(null);
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -78,24 +77,23 @@ export function FieldFormModal({
     },
   });
 
-
-
   async function onSubmit(data: z.infer<typeof FormSchema>) {
     try {
       let updatedFieldsList: allFieldsListType;
-  
+
       if (modalType === "add") {
         const trainingInfo: TrainingRequest = {
           campaign_id: "482b7b80-4681-422b-9d40-f7253f4a8305",
           template: data.fieldName,
           follow_up_template: data.description,
           offering_variables: {},
-          personalized_fields: {} ,
+          personalized_fields: {},
           enriched_fields: [],
           ...(type === "variable" && { length: data.length }),
         };
-  
-        const createdTraining: TrainingResponse = await createTraining(trainingInfo);
+
+        const createdTraining: TrainingResponse =
+          await createTraining(trainingInfo);
         updatedFieldsList = {
           ...fieldsList,
           [type]: [
@@ -119,7 +117,7 @@ export function FieldFormModal({
             enriched_fields: [],
             ...(type === "variable" && { length: data.length }),
           };
-  
+
           const updatedResponse: TrainingResponse = await updateTraining(
             currentTraining.id!,
             updatedTraining
@@ -132,7 +130,9 @@ export function FieldFormModal({
                   id: updatedResponse.id,
                   val: updatedResponse.template,
                   description: updatedResponse.follow_up_template, // Add the description property
-                  ...(type === "variable" && { length: updatedResponse.length }), // Add the length property
+                  ...(type === "variable" && {
+                    length: updatedResponse.length,
+                  }), // Add the length property
                 };
               }
               return val;
@@ -142,7 +142,7 @@ export function FieldFormModal({
           updatedFieldsList = fieldsList;
         }
       }
-  
+
       setFieldsList(updatedFieldsList);
       setOpen(false);
     } catch (error) {
@@ -205,7 +205,7 @@ export function FieldFormModal({
                         defaultValue={field.value}
                         className="flex flex-col space-y-1"
                       >
-                        {/* Radio group options */}
+                        {/* Radio group option */}
                       </RadioGroup>
                     </FormControl>
                     <FormMessage />
