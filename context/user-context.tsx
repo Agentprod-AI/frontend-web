@@ -16,12 +16,14 @@ export const DummyUser: UserInterface = {
 
 export interface AppState {
   user: UserInterface;
-  updateState: (newState: Partial<AppState>) => void;
+  setUser: (newState: UserInterface) => void;
+  // updateState: (newState: UserInterface) => void;
 }
 
 const defaultState: AppState = {
   user: DummyUser,
-  updateState: (newState: Partial<AppState>) => {},
+  // updateState: () => {},
+  setUser: () => {},
 };
 
 const UserContext = React.createContext<AppState>(defaultState);
@@ -34,18 +36,28 @@ interface Props {
 export const UserContextProvider: React.FunctionComponent<Props> = (
   props: Props
 ): JSX.Element => {
-  const [state, setState] = useState<AppState>({
-    user: DummyUser,
-    updateState: () => {},
-  });
+  // const [state, setState] = useState<AppState>({
+  //   user: DummyUser,
+  //   updateState: () => {},
+  // });
 
-  const updateState = (newState: Partial<AppState>) => {
-    setState((prevState) => ({ ...prevState, ...newState }));
-  };
+  // const updateState = (newState: any) => {
+  //   // setState((prevState) => ({ ...prevState, ...newState }));
+  //   setState(newState);
+  // };
+
+  // const contextValue = React.useMemo(
+  //   () => ({ ...state, updateState }),
+  //   [state]
+  // );
+  const [user, setUser] = useState<UserInterface>(defaultState.user);
 
   const contextValue = React.useMemo(
-    () => ({ ...state, updateState }),
-    [state]
+    () => ({
+      user,
+      setUser,
+    }),
+    [user]
   );
 
   return (

@@ -11,17 +11,19 @@ import {
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 // import { signIn } from "next-auth/react";
-import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-// import GoogleSignInButton from "../github-auth-button";
+import { AppState, UserInterface } from "@/context/user-context";
+
 import {
   login as supabaseLogin,
   signup as supabaseSignup,
 } from "@/app/(auth)/actions";
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-provider";
+import { useUserContext } from "@/context/user-context";
+// import GoogleSignInButton from "@/components/github-auth-button";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -37,20 +39,20 @@ export default function UserAuthForm({
 }: {
   formType: "signin" | "signup";
 }) {
-  const searchParams = useSearchParams();
   const { login } = useAuth();
+
+  const { user, setUser } = useUserContext();
 
   // const callbackUrl = searchParams.get("callbackUrl");
   const [loading, setLoading] = useState(false);
 
-  const defaultValues = {
-    email: "mrtechnobot02@gmail.com",
-    password: "naman123",
-  };
+  // const defaultValues = {
+  //   email: "mrtechnobot02@gmail.com",
+  //   password: "naman123",
+  // };
 
   const form = useForm<UserFormValue>({
     resolver: zodResolver(formSchema),
-    defaultValues,
   });
 
   const onSubmit = async (data: UserFormValue) => {
@@ -60,8 +62,14 @@ export default function UserAuthForm({
           email: data.email,
           password: data.password,
         });
+        const newState: UserInterface = {
+          id: userData.user.id,
+          email: userData.user.email,
+        };
 
+        console.log("userrrr", userData.user.id);
         login(userData.user);
+        setUser(newState);
       } catch (error: any) {
         toast.error(error.message);
       }
@@ -83,6 +91,52 @@ export default function UserAuthForm({
     //   callbackUrl: callbackUrl ?? "/dashboard",
     // });
   };
+
+  // const onSubmit = async (data: UserFormValue) => {
+  //   setLoading(true);
+  //   try {
+  //     if (formType === "signin") {
+  //       const response = await fetch(
+  //         "https://agentprod-backend-framework-zahq.onrender.com/v2/users/login",
+  //         {
+  //           method: "POST",
+  //           headers: {
+  //             "Content-Type": "application/json",
+  //           },
+  //           body: JSON.stringify({
+  //             email: data.email,
+  //             password: data.password,
+  //           }),
+  //         }
+  //       );
+
+  //       const userData = await response.json();
+  //       console.log("UserDetails", userData);
+  //       if (response.ok) {
+  //         const supabaseResponse = await supabaseLogin({
+  //           email: data.email,
+  //           password: data.password,
+  //         });
+  //         login(supabaseResponse.user);
+  //       } else {
+  //         throw new Error(userData.message || "Failed to log in");
+  //       }
+  //     } else if (formType === "signup") {
+  //       try {
+  //         await supabaseSignup({
+  //           email: data.email,
+  //           password: data.password,
+  //         });
+  //         toast.success("Verification email sent!");
+  //         // redirect("/");
+  //       } catch (error: any) {
+  //         toast.error(error.message);
+  //       }
+  //     }
+  //   } catch (error: any) {
+  //     toast.error(error.message);
+  //   }
+  // };
 
   return (
     <>

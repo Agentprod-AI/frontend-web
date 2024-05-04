@@ -16,12 +16,16 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-
+import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import SubjectForm from "@/components/campaign/training/subject-form";
 import FieldList from "@/components/campaign/training/field-list";
 import FieldTextArea from "@/components/campaign/training/field-text-area";
 import { Button } from "@/components/ui/button";
 import { allFieldsListType } from "./field-form-modal";
+
+interface EditorContentProps {
+  onGenerateWithAI: () => void;
+}
 
 const allFieldsList: allFieldsListType = {
   variable: [
@@ -71,7 +75,7 @@ const allFieldsList: allFieldsListType = {
   ],
 };
 
-function EditorContent() {
+function EditorContent({ onGenerateWithAI }: EditorContentProps) {
   const [isOpen, setIsOpen] = React.useState(false);
   const [fieldsList, setFieldsList] = React.useState(allFieldsList);
   const [showAdditionalTextArea, setShowAdditionalTextArea] =
@@ -84,7 +88,13 @@ function EditorContent() {
   return (
     <ResizablePanelGroup direction="horizontal" className="">
       <ResizablePanel defaultSize={75}>
-        <div className="flex justify-center p-6">
+        <div
+          className="px-16 mt-3  hover:underline cursor-pointer"
+          onClick={onGenerateWithAI}
+        >
+          Let AI write email on its own <AutoAwesomeIcon />
+        </div>
+        <div className="flex justify-center px-6 py-4">
           <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border bg-white mr-2">
             <AvatarFallback>AV</AvatarFallback>
           </Avatar>
@@ -104,12 +114,12 @@ function EditorContent() {
                 <SubjectForm />
               </CollapsibleContent>
             </Collapsible>
-            <FieldTextArea fieldsList={fieldsList} />
+            <FieldTextArea fieldsList={fieldsList} emailContent={""} />
             <span className="text-xs text-gray-500">
               *use variables like: &#123;variable_name&#125;
             </span>
             {showAdditionalTextArea && (
-              <FieldTextArea fieldsList={fieldsList} />
+              <FieldTextArea fieldsList={fieldsList} emailContent={""} />
             )}
             <div className="mt-4 flex flex-row gap-4">
               <Button
