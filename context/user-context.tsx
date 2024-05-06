@@ -1,4 +1,4 @@
-// import React, { useState } from "react";
+// import React, { useState, useMemo } from "react";
 
 // export interface UserInterface {
 //   id: string;
@@ -16,13 +16,11 @@
 
 // export interface AppState {
 //   user: UserInterface;
-//   setUser: (newState: UserInterface) => void;
-//   // updateState: (newState: UserInterface) => void;
+//   setUser: (user: UserInterface) => void;
 // }
 
 // const defaultState: AppState = {
 //   user: DummyUser,
-//   // updateState: () => {},
 //   setUser: () => {},
 // };
 
@@ -33,26 +31,12 @@
 //   children: React.ReactNode;
 // }
 
-// export const UserContextProvider: React.FunctionComponent<Props> = (
-//   props: Props
-// ): JSX.Element => {
-//   // const [state, setState] = useState<AppState>({
-//   //   user: DummyUser,
-//   //   updateState: () => {},
-//   // });
+// export const UserContextProvider: React.FunctionComponent<Props> = ({
+//   children,
+// }) => {
+//   const [user, setUser] = useState<UserInterface>(DummyUser);
 
-//   // const updateState = (newState: any) => {
-//   //   // setState((prevState) => ({ ...prevState, ...newState }));
-//   //   setState(newState);
-//   // };
-
-//   // const contextValue = React.useMemo(
-//   //   () => ({ ...state, updateState }),
-//   //   [state]
-//   // );
-//   const [user, setUser] = useState<UserInterface>(defaultState.user);
-
-//   const contextValue = React.useMemo(
+//   const contextValue = useMemo(
 //     () => ({
 //       user,
 //       setUser,
@@ -61,13 +45,11 @@
 //   );
 
 //   return (
-//     <UserContext.Provider value={contextValue}>
-//       {props.children}
-//     </UserContext.Provider>
+//     <UserContext.Provider value={contextValue}>{children}</UserContext.Provider>
 //   );
 // };
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 export interface UserInterface {
   id: string;
@@ -96,6 +78,18 @@ const defaultState: AppState = {
 const UserContext = React.createContext<AppState>(defaultState);
 export const useUserContext = () => React.useContext(UserContext);
 
+// Helper functions for local storage management
+const userKey = "user";
+
+function getUserFromLocalStorage(): UserInterface {
+  const storedUser = localStorage.getItem(userKey);
+  return storedUser ? JSON.parse(storedUser) : DummyUser;
+}
+
+function setUserInLocalStorage(user: UserInterface) {
+  localStorage.setItem(userKey, JSON.stringify(user));
+}
+
 interface Props {
   children: React.ReactNode;
 }
@@ -103,7 +97,12 @@ interface Props {
 export const UserContextProvider: React.FunctionComponent<Props> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserInterface>(DummyUser);
+  const [user, setUser] = useState<UserInterface>(getUserFromLocalStorage());
+
+  useEffect(() => {
+    // Update local storage when user changes
+    setUserInLocalStorage(user);
+  }, [user]);
 
   const contextValue = useMemo(
     () => ({
