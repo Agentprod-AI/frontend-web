@@ -112,8 +112,9 @@ export default function UserAuthForm({
       }
 
       if (userData.user) {
+        console.log("UserData just after logged in", userData);
         setUser({
-          id: userData.user.id,
+          id: userData?.user?.id,
           email: userData?.user?.email,
           username: userData?.user?.username,
           firstName: userData?.user?.firstName,

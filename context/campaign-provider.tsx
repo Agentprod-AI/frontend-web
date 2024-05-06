@@ -153,6 +153,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const router = useRouter();
   // const { user } = useAuth();
   const { user } = useUserContext();
+  console.log("campaign-providder", user?.id);
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
