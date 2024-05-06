@@ -84,7 +84,7 @@ const userKey = "user";
 
 function getUserFromCookies(): UserInterface {
   const cookie = getCookie(userKey);
-  return cookie ? JSON.parse(cookie as string) : DummyUser;
+  return cookie ? JSON.parse(cookie as string) : null;
 }
 
 function setUserInCookies(user: UserInterface) {

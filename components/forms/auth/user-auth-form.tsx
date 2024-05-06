@@ -15,6 +15,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { AppState, UserInterface } from "@/context/user-context";
+import { setCookie, getCookie } from "cookies-next";
 
 import {
   login as supabaseLogin,
@@ -118,6 +119,9 @@ export default function UserAuthForm({
           firstName: userData?.user?.firstName,
         });
         login(userData.user);
+        const userKey = "user";
+
+        setCookie(userKey, JSON.stringify(user), { maxAge: 3600 * 24 * 7 }); // Expires in one week
       }
     } catch (error) {
       toast.error(error.message || "An error occurred");
