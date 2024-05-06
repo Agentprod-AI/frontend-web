@@ -99,13 +99,13 @@ const defaultGoalEntry: GoalFormData = {
   emails: [],
   follow_up_days: 0,
   follow_up_times: 0,
-  mark_as_lost: 0
-}
+  mark_as_lost: 0,
+};
 
 const defaultOfferingEntry: OfferingFormData = {
   product_offering: "",
-  offering_details: ""
-}
+  offering_details: "",
+};
 
 interface CampaignContextType {
   campaigns: CampaignEntry[];
@@ -119,7 +119,7 @@ interface CampaignContextType {
   toggleCampaignIsActive: (campaignId: string) => void;
   getCampaignById: (campaignId: string) => CampaignEntry;
   getGoalById: (campaignId: string) => GoalFormData;
-  getOfferingById: (campaignId: string) => OfferingFormData;  
+  getOfferingById: (campaignId: string) => OfferingFormData;
   isLoading: boolean;
 }
 
@@ -153,6 +153,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const router = useRouter();
   // const { user } = useAuth();
   const { user } = useUserContext();
+  console.log("campaign-providder", user?.id);
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -329,52 +330,52 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
 
   const getCampaignById = (campaignId: string): CampaignEntry => {
     axiosInstance
-    .get(`v2/campaigns/${campaignId}`)
-    .then((response) => {
-      console.log("Campaign fetched successfully:", response.data);
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching campaign:", error);
-      toast({
-        title: "Error fetching campaign",
-        description: error.message || "Failed to fetch campaign.",
+      .get(`v2/campaigns/${campaignId}`)
+      .then((response) => {
+        console.log("Campaign fetched successfully:", response.data);
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching campaign:", error);
+        toast({
+          title: "Error fetching campaign",
+          description: error.message || "Failed to fetch campaign.",
+        });
       });
-    });
 
     return defaultCampaignEntry;
   };
 
   const getGoalById = (campaignId: string): GoalFormData => {
     axiosInstance
-    .get(`v2/goals/${campaignId}`)
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching goal:", error);
-      toast({
-        title: "Error fetching goal",
-        description: error.message || "Failed to fetch goal.",
+      .get(`v2/goals/${campaignId}`)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching goal:", error);
+        toast({
+          title: "Error fetching goal",
+          description: error.message || "Failed to fetch goal.",
+        });
       });
-    });
 
     return defaultGoalEntry;
   };
 
   const getOfferingById = (campaignId: string): OfferingFormData => {
     axiosInstance
-    .get(`v2/offerings/${campaignId}`)
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching offering:", error);
-      toast({
-        title: "Error fetching offering",
-        description: error.message || "Failed to fetch offering.",
+      .get(`v2/offerings/${campaignId}`)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching offering:", error);
+        toast({
+          title: "Error fetching offering",
+          description: error.message || "Failed to fetch offering.",
+        });
       });
-    });
 
     return defaultOfferingEntry;
   };
@@ -390,7 +391,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   };
 
   React.useEffect(() => {
-    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c"
+    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c";
     axiosInstance
       .get<CampaignEntry[]>(`v2/campaigns/all/${testUserId}`)
       .then((response) => {

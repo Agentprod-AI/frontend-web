@@ -49,7 +49,7 @@ export default function Page() {
     toggleSidebar(true);
   };
 
-  console.log(dashboardData);
+  // console.log(dashboardData);
 
   return (
     <>
