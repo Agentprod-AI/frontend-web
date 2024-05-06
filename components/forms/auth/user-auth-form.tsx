@@ -55,88 +55,76 @@ export default function UserAuthForm({
     resolver: zodResolver(formSchema),
   });
 
+  // const onSubmit = async (data: UserFormValue) => {
+  //   if (formType === "signin") {
+  //     try {
+  //       const userData = await supabaseLogin({
+  //         email: data.email,
+  //         password: data.password,
+  //       });
+  //       const newState: UserInterface = {
+  //         id: userData.user.id,
+  //         email: userData.user.email,
+  //       };
+
+  //       console.log("userrrr", userData.user.id);
+  //       login(userData.user);
+  //       setUser(newState);
+  //     } catch (error: any) {
+  //       toast.error(error.message);
+  //     }
+  //   } else if (formType === "signup") {
+  //     try {
+  //       await supabaseSignup({
+  //         email: data.email,
+  //         password: data.password,
+  //       });
+  //       toast.success("Verification email sent!");
+  //       // redirect("/");
+  //     } catch (error: any) {
+  //       toast.error(error.message);
+  //     }
+  //   }
+
+  //   // signIn("credentials", {
+  //   //   email: data.email,
+  //   //   callbackUrl: callbackUrl ?? "/dashboard",
+  //   // });
+  // };
   const onSubmit = async (data: UserFormValue) => {
-    if (formType === "signin") {
-      try {
-        const userData = await supabaseLogin({
+    setLoading(true);
+    try {
+      let userData;
+      if (formType === "signin") {
+        userData = await supabaseLogin({
           email: data.email,
           password: data.password,
         });
-        const newState: UserInterface = {
-          id: userData.user.id,
-          email: userData.user.email,
-        };
-
-        console.log("userrrr", userData.user.id);
-        login(userData.user);
-        setUser(newState);
-      } catch (error: any) {
-        toast.error(error.message);
-      }
-    } else if (formType === "signup") {
-      try {
-        await supabaseSignup({
+        console.log("User details on signin:", userData.user);
+      } else if (formType === "signup") {
+        userData = await supabaseSignup({
           email: data.email,
           password: data.password,
         });
         toast.success("Verification email sent!");
-        // redirect("/");
-      } catch (error: any) {
-        toast.error(error.message);
+        console.log("User details on signup:", userData.user);
       }
+
+      if (userData.user) {
+        setUser({
+          id: userData.user.id,
+          email: userData?.user?.email,
+          username: userData?.user?.username,
+          firstName: userData?.user?.firstName,
+        });
+        login(userData.user);
+      }
+    } catch (error) {
+      toast.error(error.message || "An error occurred");
+    } finally {
+      setLoading(false);
     }
-
-    // signIn("credentials", {
-    //   email: data.email,
-    //   callbackUrl: callbackUrl ?? "/dashboard",
-    // });
   };
-
-  // const onSubmit = async (data: UserFormValue) => {
-  //   setLoading(true);
-  //   try {
-  //     if (formType === "signin") {
-  //       const response = await fetch(
-  //         "https://agentprod-backend-framework-zahq.onrender.com/v2/users/login",
-  //         {
-  //           method: "POST",
-  //           headers: {
-  //             "Content-Type": "application/json",
-  //           },
-  //           body: JSON.stringify({
-  //             email: data.email,
-  //             password: data.password,
-  //           }),
-  //         }
-  //       );
-
-  //       const userData = await response.json();
-  //       console.log("UserDetails", userData);
-  //       if (response.ok) {
-  //         const supabaseResponse = await supabaseLogin({
-  //           email: data.email,
-  //           password: data.password,
-  //         });
-  //         login(supabaseResponse.user);
-  //       } else {
-  //         throw new Error(userData.message || "Failed to log in");
-  //       }
-  //     } else if (formType === "signup") {
-  //       try {
-  //         await supabaseSignup({
-  //           email: data.email,
-  //           password: data.password,
-  //         });
-  //         toast.success("Verification email sent!");
-  //         // redirect("/");
-  //       } catch (error: any) {
-  //         toast.error(error.message);
-  //       }
-  //     }
-  //   } catch (error: any) {
-  //     toast.error(error.message);
-  //   }
-  // };
 
   return (
     <>
