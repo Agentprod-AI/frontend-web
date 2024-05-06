@@ -50,6 +50,7 @@
 // };
 
 import React, { useState, useEffect, useMemo } from "react";
+import { setCookie, getCookie } from "cookies-next";
 
 export interface UserInterface {
   id: string;
@@ -81,13 +82,13 @@ export const useUserContext = () => React.useContext(UserContext);
 // Helper functions for local storage management
 const userKey = "user";
 
-function getUserFromLocalStorage(): UserInterface {
-  const storedUser = localStorage.getItem(userKey);
-  return storedUser ? JSON.parse(storedUser) : DummyUser;
+function getUserFromCookies(): UserInterface {
+  const cookie = getCookie(userKey);
+  return cookie ? JSON.parse(cookie as string) : DummyUser;
 }
 
-function setUserInLocalStorage(user: UserInterface) {
-  localStorage.setItem(userKey, JSON.stringify(user));
+function setUserInCookies(user: UserInterface) {
+  setCookie(userKey, JSON.stringify(user), { maxAge: 3600 * 24 * 7 }); // Expires in one week
 }
 
 interface Props {
@@ -97,11 +98,10 @@ interface Props {
 export const UserContextProvider: React.FunctionComponent<Props> = ({
   children,
 }) => {
-  const [user, setUser] = useState<UserInterface>(getUserFromLocalStorage());
+  const [user, setUser] = useState<UserInterface>(getUserFromCookies());
 
   useEffect(() => {
-    // Update local storage when user changes
-    setUserInLocalStorage(user);
+    setUserInCookies(user);
   }, [user]);
 
   const contextValue = useMemo(
