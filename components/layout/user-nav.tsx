@@ -104,10 +104,12 @@ import {
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next";
+import { useAuth } from "@/context/auth-provider";
 
 export function UserNav() {
   const router = useRouter();
   const { user, setUser } = useUserContext();
+  const { logout } = useAuth();
 
   const logoutUser = async () => {
     try {
@@ -120,6 +122,7 @@ export function UserNav() {
         email: "",
       });
       // Ensure redirect happens after state and cookies are cleared
+      logout();
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);

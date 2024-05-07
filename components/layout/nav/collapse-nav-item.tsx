@@ -18,7 +18,7 @@ export default function CollapseNavItem({ nav }: { nav: NavItem }) {
     if (path.includes(nav.href!)) {
       setOpen(true);
     }
-  }, [path]);
+  }, [path, nav.href]);
 
   return (
     <div key={nav.label}>
@@ -51,8 +51,7 @@ export default function CollapseNavItem({ nav }: { nav: NavItem }) {
                 : "hover:text-primary-foreground"
             )}
             onClick={() => setOpen(!open)}
-          >
-          </Button>
+          ></Button>
         </span>
       </Link>
 

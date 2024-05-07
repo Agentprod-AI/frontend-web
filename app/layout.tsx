@@ -1,13 +1,15 @@
 import "./globals.css";
-// import { ClerkProvider } from "@clerk/nextjs";
+import { ClerkProvider } from "@clerk/nextjs";
 import "@uploadthing/react/styles.css";
 import type { Metadata } from "next";
 import Providers from "@/components/layout/providers";
+// import { Toaster } from "@/components/ui/toaster";
 import { Inter } from "next/font/google";
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { AuthStateInterface } from "@/context/auth-provider";
 import { Toaster } from "sonner";
+// import { getServerSession } from "next-auth";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -33,13 +35,15 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="en" suppressHydrationWarning>
-      <body className={`${inter.className} overflow-hidden`}>
-        <Providers userAuthData={authData}>
-          <Toaster />
-          {children}
-        </Providers>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" suppressHydrationWarning>
+        <body className={`${inter.className} overflow-hidden`}>
+          <Providers userAuthData={authData}>
+            <Toaster />
+            {children}
+          </Providers>
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

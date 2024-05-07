@@ -3,7 +3,6 @@
 import { revalidatePath } from "next/cache";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-
 import { createClient } from "@/lib/supabase/server";
 
 export async function login(formData: { email: string; password: string }) {
@@ -61,6 +60,7 @@ export async function logout() {
   } else {
     // Ideally, you might want to also revalidate or clear any cache that depends on the user session
     // This step depends on your application's structure and how it handles cache
-    // redirect("/"); // Redirect to the homepage or login page after successful logout
+    // redirect("/");
+    // Redirect to the homepage or login page after successful logout
   }
 }
