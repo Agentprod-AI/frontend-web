@@ -43,8 +43,10 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import { Progress } from "@/components/ui/progress";
 import { card_data, hot_leads, campaigns } from "@/constants/data";
 
+
 export default function Page() {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+
 
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
