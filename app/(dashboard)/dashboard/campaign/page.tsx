@@ -18,6 +18,7 @@ import "react-circular-progressbar/dist/styles.css";
 import { UKFlag, USAFlag } from "@/app/icons";
 import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
+import { useParams } from "next/navigation";
 
 interface CampaignEntry {
   user_id: string;
@@ -50,6 +51,9 @@ export default function Page() {
 
   const { user } = useUserContext();
   console.log("fromCampaignPage", user);
+
+  // const params = useParams();
+  // console.log("campaign from create", params);
 
   return (
     <div className="space-y-2 mb-5">

@@ -6,15 +6,17 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import EditorContent from "./editor-content";
 import PreviewContent from "./preview-content";
-import { getAutogenerateTrainingEmail } from "./training.api";
+import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
 import {
   allFieldsListType,
   allFieldsList,
 } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
+import { useUserContext } from "@/context/user-context";
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
   const [previewData, setPreviewData] = React.useState(allFieldsList);
+  const { user } = useUserContext();
 
   const handleGenerateWithAI = async () => {
     setActiveTab("preview"); // This sets the active tab to 'preview'
@@ -26,6 +28,18 @@ export default function Training() {
       setActiveTab("preview"); // Switch to the Preview tab after fetching
     } catch (error) {
       console.error("Failed to fetch data:", error);
+    }
+  };
+
+  const handleStartCampaign = async () => {
+    const userId = user.id as string;
+    const campaignId = localStorage.getItem("campaignId") as string;
+
+    try {
+      const response = await startCampaign(campaignId, userId);
+      console.log(response);
+    } catch (error: any) {
+      console.log(error);
     }
   };
 
@@ -50,7 +64,7 @@ export default function Training() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button>Start campaign</Button>
+          <Button onClick={handleStartCampaign}>Start campaign</Button>
         </div>
       </div>
       {activeTab === "editor" ? (
