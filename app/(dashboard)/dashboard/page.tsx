@@ -53,7 +53,7 @@ export default function Page() {
   //   if (!user?.id) {
   //     router.push("/");
   //   }
-  // }, []);
+  // }, [user,router]);
 
   // //--------------------- experiment ------------------------
 

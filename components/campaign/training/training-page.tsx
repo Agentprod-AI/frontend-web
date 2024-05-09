@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import EditorContent from "./editor-content";
 import PreviewContent from "./preview-content";
 import { getAutogenerateTrainingEmail } from "./training.api";
+
 import {
   allFieldsListType,
   allFieldsList,
@@ -17,15 +18,16 @@ export default function Training() {
   const [previewData, setPreviewData] = React.useState(allFieldsList);
 
   const handleGenerateWithAI = async () => {
-    setActiveTab("preview"); // This sets the active tab to 'preview'
+    setActiveTab("preview");
     try {
-      const campaignId = "9b0660ce-7333-4315-aa3f-e9b0ed6653c4";
-      const data = await getAutogenerateTrainingEmail(campaignId);
-      console.log("data commingg -> ", data);
-      setPreviewData(data); // Assuming the response has a 'result' field
-      setActiveTab("preview"); // Switch to the Preview tab after fetching
+      const data = await getAutogenerateTrainingEmail(
+        "a37d8526-316a-41eb-90e3-1a0c7a8e6e76",
+        user.id
+      );
+      console.log("Data coming from AI generation:", data);
+      setPreviewData(data);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error("Failed to fetch training data:", error);
     }
   };
 
@@ -35,8 +37,8 @@ export default function Training() {
         <div className="ml-4">Training</div>
         <div className="flex items-center flex-row">
           <Tabs
-            value={activeTab} // This binds the active tab state to the Tabs component
-            onValueChange={setActiveTab} // This changes the active tab state when a tab is manually clicked
+            value={activeTab}
+            onValueChange={setActiveTab}
             className="w-[200px]"
           >
             <TabsList>

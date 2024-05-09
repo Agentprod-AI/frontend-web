@@ -9,8 +9,6 @@ import React, {
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
-import { useAuth } from "./auth-provider";
-import axios from "axios";
 import { useUserContext } from "./user-context";
 
 interface CampaignFormData {
@@ -108,6 +106,7 @@ const defaultOfferingEntry: OfferingFormData = {
 };
 
 interface CampaignContextType {
+  camoaingId: string | null;
   campaigns: CampaignEntry[];
   createCampaign: (data: CampaignFormData) => void;
   editCampaign: (data: CampaignFormData) => void;
@@ -153,7 +152,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const router = useRouter();
   // const { user } = useAuth();
   const { user } = useUserContext();
-  console.log("campaign-providder", user?.id);
   const [campaignId, setCampaignId] = useState<string | null>(null);
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
@@ -194,8 +192,9 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         .post("v2/campaigns/", postData)
         .then((response) => {
           console.log("Campaign created successfully:", response);
-
           setCampaignId(response.data.id);
+          console.log(response.data.id, "response.data.id");
+          console.log(campaignId, "campaignId");
           localStorage.setItem("campaignId", response.data.id);
           let formsTracker = JSON.parse(
             localStorage.getItem("formsTracker") || "{}"
@@ -432,6 +431,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       getOfferingById,
       campaigns,
       isLoading,
+      campaignId,
     }),
     [userId, campaignId, campaigns]
   );
