@@ -86,10 +86,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const initials = (name: string) => {
     const names = name.split(" ");
-    return names
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+    if (names) {
+      return names
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
+    } else {
+      return "NA";
+    }
   };
 
   React.useEffect(() => {
@@ -234,8 +238,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const handleApproveEmail = () => {
       const payload = {
         conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
+        sender: "muskaan@agentprodai.com",
+        recipient: "info.agentprod@gmail.com",
         subject: title,
         body: body,
       };
@@ -256,8 +260,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const handleSendNow = () => {
       const payload = {
         conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
+        sender: "muskaan@agentprodai.com",
+        recipient: "info.agentprod@gmail.com",
         subject: title,
         body: body,
       };
