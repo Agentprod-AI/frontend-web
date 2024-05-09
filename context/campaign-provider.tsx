@@ -166,6 +166,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   }, [user]);
 
   const createCampaign = (data: CampaignFormData) => {
+    console.log("user from camapgin", user);
     const postData = {
       user_id: userId,
       campaign_name: data.campaignName,
@@ -399,18 +400,20 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   };
 
   React.useEffect(() => {
-    axiosInstance
-      .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
-      .then((response) => {
-        console.log("response from all campaigns api", response);
-        setCampaigns(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching campaign:", error);
-        setError(error.message || "Failed to load campaign.");
-        setIsLoading(false);
-      });
+    if (userId) {
+      axiosInstance
+        .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
+        .then((response) => {
+          console.log("response from all campaigns api", response);
+          setCampaigns(response.data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching campaign:", error);
+          setError(error.message || "Failed to load campaign.");
+          setIsLoading(false);
+        });
+    }
   }, [userId]);
 
   const contextValue = useMemo(

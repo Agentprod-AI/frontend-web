@@ -49,9 +49,7 @@ export const PeopleProfileSheet = (
   };
 
   useEffect(() => {
-    if ("organization" in data && data.organization.linkedin_url) {
-      getCompanyInfo(data.organization.linkedin_url);
-    } else if ("company_linkedin_url" in data && data.company_linkedin_url) {
+    if ("company_linkedin_url" in data && data.company_linkedin_url) {
       getCompanyInfo(data.company_linkedin_url);
     }
   }, [data]);

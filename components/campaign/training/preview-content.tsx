@@ -63,7 +63,9 @@ const allFieldsList: allFieldsListType = {
   ],
 };
 
-function PreviewContent({ previewData }: any) {
+
+function PreviewContent({ previewData }: { previewData: allFieldsListType }) {
+
   const [fieldsList, setFieldsList] = React.useState(allFieldsList);
   const { leads } = useLeads();
   const [data, setData] = React.useState<Lead | Contact>();

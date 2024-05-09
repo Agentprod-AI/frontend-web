@@ -66,9 +66,7 @@ export interface Lead {
   state: string;
   city: string;
   country: string;
-  organization: {
-    linkedin_url: string | null;
-  };
+  company_linkedin_url: string | null;
   is_likely_to_engage: boolean;
   departments: string[];
   subdepartments: string[];

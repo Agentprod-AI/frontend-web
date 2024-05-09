@@ -104,10 +104,12 @@ import {
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next";
+import { useAuth } from "@/context/auth-provider";
 
 export function UserNav() {
   const router = useRouter();
   const { user, setUser } = useUserContext();
+  const { logout } = useAuth();
 
   const logoutUser = async () => {
     try {
@@ -120,6 +122,7 @@ export function UserNav() {
         email: "",
       });
       // Ensure redirect happens after state and cookies are cleared
+      logout();
       router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
@@ -133,7 +136,7 @@ export function UserNav() {
           <Button variant="ghost" className="relative h-8 w-8 rounded-full">
             <Avatar className="h-8 w-8 bg-accent">
               <AvatarImage
-                src={user?.imageUrl || "./user.png"}
+                // src={user?.imageUrl || "./user.png"}
                 alt={user?.firstName ?? ""}
               />
               <AvatarFallback>{user.firstName?.[0]}</AvatarFallback>
@@ -144,7 +147,9 @@ export function UserNav() {
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {`${user.firstName ?? ""} ${user.lastName ?? ""}`}
+                {`${user.firstName ?? ""} 
+                `}
+                {/* ${user.lastName ?? ""} */}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email}
