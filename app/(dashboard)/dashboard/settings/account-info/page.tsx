@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { useClerk } from "@clerk/nextjs";
+import { useUserContext } from "@/context/user-context";
 
 type Info = {
   id: string;
@@ -14,7 +14,7 @@ type Info = {
 };
 
 export default function Page() {
-  const { user } = useClerk();
+  const { user } = useUserContext();
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
 
@@ -23,22 +23,22 @@ export default function Page() {
       const initialAccountInfo: Info[] = [
         { id: "ID", value: user.id, isEditable: false },
         { id: "Sender First Name", value: user.firstName, isEditable: true },
-        { id: "Sender Last Name", value: user.lastName, isEditable: true },
-        { id: "Sender Job", value: "CTO", isEditable: true },
+        // { id: "Sender Last Name", value: user?.lastName, isEditable: true },
+        { id: "Sender Job", value: "", isEditable: true },
         {
           id: "Email",
-          value: user.emailAddresses[0]?.emailAddress,
+          value: user.email,
           isEditable: true,
         },
-        { id: "Company", value: "100xengineers", isEditable: true },
-        { id: "Company ID", value: 126, isEditable: false },
+        { id: "Company", value: "", isEditable: true },
+        { id: "Company ID", value: "", isEditable: false },
         {
           id: "Notifications",
-          value: user.emailAddresses[0]?.emailAddress,
+          value: user.email,
           isEditable: true,
         },
-        { id: "Plan", value: "Starter", isEditable: false },
-        { id: "Leads used", value: "876/1000", isEditable: false },
+        { id: "Plan", value: "", isEditable: false },
+        { id: "Leads used", value: "", isEditable: false },
       ];
       setAccountInfo(initialAccountInfo);
     }

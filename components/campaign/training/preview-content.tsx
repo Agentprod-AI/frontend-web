@@ -60,7 +60,7 @@ const allFieldsList: allFieldsListType = {
   ],
 };
 
-function PreviewContent() {
+function PreviewContent({ previewData }: { previewData: allFieldsListType }) {
   const [fieldsList, setFieldsList] = React.useState(allFieldsList);
 
   return (
@@ -75,7 +75,7 @@ function PreviewContent() {
               <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border bg-white mr-2 mt-1">
                 <AvatarFallback>AV</AvatarFallback>
               </Avatar>
-              <FieldTextArea fieldsList={fieldsList} />
+              <FieldTextArea fieldsList={previewData} />
             </div>
           </div>
         </div>

@@ -44,12 +44,25 @@ export default function Page() {
   const { dashboardData, isLoading } = useDashboardContext();
   const { user } = useAuth();
 
+  // // ------------------  experiment --------------------- creating redirect loop
+
+  // const { user } = useUserContext();
+  // const router = useRouter();
+
+  // useEffect(() => {
+  //   if (!user?.id) {
+  //     router.push("/");
+  //   }
+  // }, []);
+
+  // //--------------------- experiment ------------------------
+
   const handleOpenSidebar = (id: string) => {
     setItemId(id);
     toggleSidebar(true);
   };
 
-  console.log(dashboardData);
+  // console.log(dashboardData);
 
   return (
     <>

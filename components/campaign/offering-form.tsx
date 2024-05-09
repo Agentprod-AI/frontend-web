@@ -1,7 +1,7 @@
 "use client"; // This directive must be at the very top
 
-import { useEffect, useState } from 'react';
-import { useRouter, useSearchParams, useParams } from 'next/navigation'; // Make sure this import is correct for client-only usage
+import { useEffect, useState } from "react";
+import { useRouter, useSearchParams, useParams } from "next/navigation"; // Make sure this import is correct for client-only usage
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -17,32 +17,32 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { useCampaignContext } from '@/context/campaign-provider';
-import axios from 'axios'; // Ensure axios is suitable for client-side
+import { useCampaignContext } from "@/context/campaign-provider";
+import axios from "axios"; // Ensure axios is suitable for client-side
 
 // Define the validation schema using Zod
 const profileFormSchema = z.object({
   product_offering: z.string().min(2).max(30),
-  offering_details: z.string().max(160).min(4),
+  offering_details: z.string(),
   pain_point: z.array(z.string()), // Handling pain points as an array of strings
-  values: z.array(z.string()) // Handling values as an array of strings
+  values: z.array(z.string()), // Handling values as an array of strings
 });
 
 type OfferingFormValues = z.infer<typeof profileFormSchema>;
 
 export function OfferingForm({ type }: { type: string }) {
   const router = useRouter();
-  const params = useParams<{ campaignId: string}>()
+  const params = useParams<{ campaignId: string }>();
 
   const [formData, setFormData] = useState<OfferingFormValues>({
-    product_offering: '',
-    offering_details: '',
+    product_offering: "",
+    offering_details: "",
     pain_point: [
       "People don't want to hire BDRs because they're too expense",
       "you need to use too many platforms to do cold email",
       "cold email requires specialized hires and skills",
       "lead research and personalized email is time consuming",
-      "setting up outbound sales takes too long"
+      "setting up outbound sales takes too long",
     ],
     values: [
       "Our first AI employee, SDR Sally, actively searches for leads within a database of 300 million contacts, analyzing over 60+ data points across the internet.",
@@ -52,8 +52,8 @@ export function OfferingForm({ type }: { type: string }) {
       "Reply to any Email in <10 min",
       "Grow your sales pipeline at 10% of cost",
       "Book meetings 10x faster",
-      "Put on autopilot"
-    ]
+      "Put on autopilot",
+    ],
   });
 
   const form = useForm<OfferingFormValues>({
@@ -62,7 +62,8 @@ export function OfferingForm({ type }: { type: string }) {
     mode: "onChange",
   });
 
-  const { createOffering, editOffering, getOfferingById } = useCampaignContext();
+  const { createOffering, editOffering, getOfferingById } =
+    useCampaignContext();
 
   async function onSubmit(data: OfferingFormValues) {
     if (type === "create") {
@@ -96,12 +97,12 @@ export function OfferingForm({ type }: { type: string }) {
       if (id) {
         const offering = getOfferingById(id);
         if (offering) {
-          form.setValue('product_offering', offering.product_offering);
-          form.setValue('offering_details', offering.offering_details);
+          form.setValue("product_offering", offering.product_offering);
+          form.setValue("offering_details", offering.offering_details);
         }
       }
-    } 
-  }, [])
+    }
+  }, []);
 
   return (
     <Form {...form}>
@@ -127,9 +128,14 @@ export function OfferingForm({ type }: { type: string }) {
             <FormItem>
               <FormLabel>Details of offers and details</FormLabel>
               <FormControl>
-                <Textarea placeholder="Describe the product and features." {...field} />
+                <Textarea
+                  placeholder="Describe the product and features."
+                  {...field}
+                />
               </FormControl>
-              <FormDescription>You can write details of your product here</FormDescription>
+              <FormDescription>
+                You can write details of your product here
+              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

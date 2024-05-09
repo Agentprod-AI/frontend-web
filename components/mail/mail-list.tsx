@@ -65,38 +65,39 @@ export function MailList({ items }: MailListProps) {
   return (
     <ScrollArea className="h-screen pb-40">
       <div className="flex flex-col gap-2 p-4 pt-0">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            className={cn(
-              "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
-              mail.selected === item.id && "bg-muted"
-            )}
-            onClick={() => {
-              setMail({ ...mail, selected: item.id });
-              console.log("change convo id");
-              setConversationId(item.id);
-              setRecipientEmail(item.recipient);
-            }}
-          >
-            <div className="flex w-full flex-col gap-1">
-              <div className="flex items-center">
-                <div className="flex items-center gap-2">
-                  <div className="font-semibold">{item.recipient}</div>
-                  {/* {item.read === false && (
+        {items.length > 0 ? (
+          items.map((item) => (
+            <button
+              key={item.id}
+              className={cn(
+                "flex flex-col items-start gap-2 rounded-lg border p-3 text-left text-sm transition-all hover:bg-accent",
+                mail.selected === item.id && "bg-muted"
+              )}
+              onClick={() => {
+                setMail({ ...mail, selected: item.id });
+                console.log("change convo id");
+                setConversationId(item.id);
+                setRecipientEmail(item.recipient);
+              }}
+            >
+              <div className="flex w-full flex-col gap-1">
+                <div className="flex items-center">
+                  <div className="flex items-center gap-2">
+                    <div className="font-semibold">{item.recipient}</div>
+                    {/* {item.read === false && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )} */}
-                </div>
-                <div
-                  className={cn(
-                    "ml-auto text-xs flex gap-2 items-center",
-                    mail.selected === item.id
-                      ? "text-foreground"
-                      : "text-muted-foreground"
-                  )}
-                >
-                  {/* If labels are part of your data */}
-                  {/* {item.labels && item.labels.length > 0 && (
+                  </div>
+                  <div
+                    className={cn(
+                      "ml-auto text-xs flex gap-2 items-center",
+                      mail.selected === item.id
+                        ? "text-foreground"
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    {/* If labels are part of your data */}
+                    {/* {item.labels && item.labels.length > 0 && (
                     <div className="flex items-center gap-2">
                       {item.labels.map((label, index) => (
                         <Badge key={index} variant="default">
@@ -105,23 +106,28 @@ export function MailList({ items }: MailListProps) {
                       ))}
                     </div>
                   )} */}
-                  {/* Displaying the date if available */}
-                  {/* {item.date && isValidDate(item.date)
+                    {/* Displaying the date if available */}
+                    {/* {item.date && isValidDate(item.date)
                     ? formatDistanceToNow(new Date(item.date), {
                         addSuffix: true,
                       })
                     : "No date available"} */}
+                  </div>
+                </div>
+                <div className="text-xs font-medium">{item.subject}</div>
+                {/* Using body_substr for the email body preview */}
+                <div className="line-clamp-2 text-xs text-muted-foreground">
+                  {(item.body_substr as string).substring(0, 100)}{" "}
+                  {/* Adjust substring as needed */}
                 </div>
               </div>
-              <div className="text-xs font-medium">{item.subject}</div>
-              {/* Using body_substr for the email body preview */}
-              <div className="line-clamp-2 text-xs text-muted-foreground">
-                {(item.body_substr as string).substring(0, 100)}{" "}
-                {/* Adjust substring as needed */}
-              </div>
-            </div>
-          </button>
-        ))}
+            </button>
+          ))
+        ) : (
+          <div className="text-muted-foreground text-center mt-10">
+            No mails found
+          </div>
+        )}
       </div>
     </ScrollArea>
   );

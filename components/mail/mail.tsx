@@ -82,6 +82,7 @@ export function Mail({
 
   React.useEffect(() => {
     // Define the function for fetching mails using axios
+    console.log("user from inbox", user);
     async function fetchConversations() {
       setLoading(true);
       await axiosInstance

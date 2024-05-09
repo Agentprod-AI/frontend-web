@@ -19,10 +19,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { useAuth } from "@/context/auth-provider";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
+import { useUserContext } from "@/context/user-context";
 // import { useSession } from "next-auth/react";
 
 // const examples = [
@@ -37,19 +37,17 @@ export default function Home() {
   // console.log("Session: ", session);
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { user } = useAuth();
+  const { user } = useUserContext();
   // console.log("User: ", user);
 
-  const BACKEND_URL = process.env.NEXT_PUBLIC_API_URL;
-
   const [userEmail, setUserEmail] = useState(user?.email);
-  const [userId, setUserId] = useState("9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c");
+  const [userId, setUserId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
   const [allMessages, setAllMessages] = useState<Message[]>([
     {
       id: Math.random().toString(),
       role: "assistant",
-      content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+      content: `Hello! I'm Sally, your Sales Rep. I accelerate outbound sales with access to 250 million contacts and manage bespoke email campaigns to thousands. I also reply to queries and schedule meetings. Can I help you start your sales outreach?`,
     },
   ]);
 

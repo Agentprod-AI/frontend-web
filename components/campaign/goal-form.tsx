@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useParams } from 'next/navigation';
+import { useRouter, useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useFieldArray, useForm, SubmitHandler } from "react-hook-form";
 import { z } from "zod";
@@ -16,44 +16,47 @@ import {
 } from "@/components/ui/form";
 import { cn } from "@/lib/utils";
 import {
-    DropdownMenu,
-    DropdownMenuContent,
-    DropdownMenuGroup,
-    DropdownMenuItem,
-    DropdownMenuSeparator,
-    DropdownMenuTrigger,
-  } from "@/components/ui/dropdown-menu";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { ChevronDown, Plus, Minus } from "lucide-react";
-import { Checkbox } from "@/components/ui/checkbox"
+import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "@/components/ui/use-toast"; 
-import { useCampaignContext } from '@/context/campaign-provider';
-import { useEffect } from 'react';
-
+import { toast } from "@/components/ui/use-toast";
+import { useCampaignContext } from "@/context/campaign-provider";
+import { useEffect } from "react";
 
 const dummyEmails = [
-    "john.doe@example.com",
-    "jane.smith@placeholder.com",
-    "alex.jones@dummyemail.com",
-    "samantha.brown@fakemail.com",
-    "michael.wilson@test.com",
-    "chris.johnson@norealmail.com",
-    "kimberly.martinez@tempmail.com",
-    "david.anderson@fakebox.com",
-    "emily.thompson@nowhere.com",
-    "jason.roberts@nomail.com",
-]
+  "john.doe@example.com",
+  "jane.smith@placeholder.com",
+  "alex.jones@dummyemail.com",
+  "samantha.brown@fakemail.com",
+  "michael.wilson@test.com",
+  "chris.johnson@norealmail.com",
+  "kimberly.martinez@tempmail.com",
+  "david.anderson@fakebox.com",
+  "emily.thompson@nowhere.com",
+  "jason.roberts@nomail.com",
+];
 
 const goalFormSchema = z.object({
   success_metric: z.string(),
-  scheduling_link: z.string().url(), 
-  emails: z.array(z.object({
-    value: z.string()
-  })).refine((value) => value.some((item) => item), {
-    message: "You have to select at least one item.",
-  }),
+  scheduling_link: z.string().url(),
+  emails: z
+    .array(
+      z.object({
+        value: z.string(),
+      })
+    )
+    .refine((value) => value.some((item) => item), {
+      message: "You have to select at least one item.",
+    }),
   follow_up_days: z.number(),
   follow_up_times: z.number(),
   mark_as_lost: z.number(),
@@ -63,34 +66,40 @@ type GoalFormValues = z.infer<typeof goalFormSchema>;
 
 const defaultValues: Partial<GoalFormValues> = {};
 
-export function GoalForm({type}: {type: string}) {
+export function GoalForm({ type }: { type: string }) {
   const router = useRouter();
-  const params = useParams<{ campaignId: string}>()
+  const params = useParams<{ campaignId: string }>();
 
   const { createGoal, editGoal, getGoalById } = useCampaignContext();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
     defaultValues,
-    mode: 'onChange',
+    mode: "onChange",
   });
 
   const { control, handleSubmit } = form;
-  const { fields: emailFields, append: appendEmail, remove: removeEmail } = useFieldArray({
+  const {
+    fields: emailFields,
+    append: appendEmail,
+    remove: removeEmail,
+  } = useFieldArray({
     control,
-    name: 'emails',
+    name: "emails",
   });
 
   const onEmailAppend = (email: string) => {
     // Check if the email is not already present to avoid duplicates
-    if (!emailFields.some(emailField => emailField.value === email)) {
+    if (!emailFields.some((emailField) => emailField.value === email)) {
       appendEmail({ value: email });
     }
   };
-  
+
   const onEmailRemove = (email: string) => {
     // Find the index of the email object to remove
-    const indexToRemove = emailFields.findIndex(emailField => emailField.value === email);
+    const indexToRemove = emailFields.findIndex(
+      (emailField) => emailField.value === email
+    );
     if (indexToRemove !== -1) {
       removeEmail(indexToRemove);
     }
@@ -122,7 +131,7 @@ export function GoalForm({type}: {type: string}) {
         editGoal(changes);
       }
     }
-  }
+  };
 
   useEffect(() => {
     if (type === "edit") {
@@ -131,11 +140,11 @@ export function GoalForm({type}: {type: string}) {
       if (id) {
         const goal = getGoalById(id);
         if (goal) {
-          form.setValue('success_metric', goal.success_metric);
-          form.setValue('scheduling_link', goal.scheduling_link);
-          form.setValue('follow_up_days', goal.follow_up_days);
-          form.setValue('follow_up_times', goal.follow_up_times);
-          form.setValue('mark_as_lost', goal.mark_as_lost);
+          form.setValue("success_metric", goal.success_metric);
+          form.setValue("scheduling_link", goal.scheduling_link);
+          form.setValue("follow_up_days", goal.follow_up_days);
+          form.setValue("follow_up_times", goal.follow_up_times);
+          form.setValue("mark_as_lost", goal.mark_as_lost);
         }
       }
     }
@@ -151,7 +160,9 @@ export function GoalForm({type}: {type: string}) {
             <FormItem className="space-y-3">
               <div>
                 <FormLabel>Goal</FormLabel>
-                <FormDescription>How success is measured for this campaign</FormDescription>
+                <FormDescription>
+                  How success is measured for this campaign
+                </FormDescription>
               </div>
               <FormControl>
                 <RadioGroup
@@ -163,7 +174,9 @@ export function GoalForm({type}: {type: string}) {
                     <FormControl>
                       <RadioGroupItem value="Meeting scheduled" />
                     </FormControl>
-                    <FormLabel className="font-normal">Meeting scheduled</FormLabel>
+                    <FormLabel className="font-normal">
+                      Meeting scheduled
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
@@ -175,7 +188,9 @@ export function GoalForm({type}: {type: string}) {
                     <FormControl>
                       <RadioGroupItem value="Reply received" />
                     </FormControl>
-                    <FormLabel className="font-normal">Reply received</FormLabel>
+                    <FormLabel className="font-normal">
+                      Reply received
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
@@ -197,7 +212,9 @@ export function GoalForm({type}: {type: string}) {
             <FormItem className="space-y-3">
               <div>
                 <FormLabel>Scheduling Link</FormLabel>
-                <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
+                <FormDescription>
+                  Where prospects can schedule a meeting with you
+                </FormDescription>
               </div>
               <FormControl>
                 <Input
@@ -206,7 +223,7 @@ export function GoalForm({type}: {type: string}) {
                   {...field}
                 />
               </FormControl>
-              <FormMessage/>
+              <FormMessage />
             </FormItem>
           )}
         />
@@ -214,16 +231,21 @@ export function GoalForm({type}: {type: string}) {
         <FormField
           control={form.control}
           name="emails"
-          render={({field}) => (
+          render={({ field }) => (
             <FormItem className="space-y-3">
               <div>
                 <FormLabel>Sender Email</FormLabel>
-                <FormDescription>Where prospects can schedule a meeting with you</FormDescription>
+                <FormDescription>
+                  Where prospects can schedule a meeting with you
+                </FormDescription>
               </div>
               <FormControl>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <Button variant="outline" className="flex items-center justify-center space-x-3">
+                    <Button
+                      variant="outline"
+                      className="flex items-center justify-center space-x-3"
+                    >
                       <span>Select Email</span>
                       <ChevronDown size={20} />
                     </Button>
@@ -231,27 +253,29 @@ export function GoalForm({type}: {type: string}) {
                   <DropdownMenuContent className="w-max">
                     <ScrollArea className="h-60">
                       <DropdownMenuGroup>
-                        {dummyEmails && dummyEmails.map((email, index) => {
-                          return (
-                            <DropdownMenuItem key={index}>
-                              <div className="flex items-center space-x-2" onClick={(event) => event.stopPropagation()}>
-                              <Checkbox
-                                checked={emailFields.some(emailField => emailField.value === email)}
-                                onCheckedChange={(checked) => {
-                                  if (checked) {
-                                    onEmailAppend(email);
-                                  } else {
-                                    onEmailRemove(email);
-                                  }
-                                }}
-                              />
-                                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                  {email}
-                                </label>
-                              </div>
-                            </DropdownMenuItem>
-                          );
-                        })}
+                        <DropdownMenuItem>
+                          <div
+                            className="flex items-center space-x-2"
+                            onClick={(event) => event.stopPropagation()}
+                          >
+                            <Checkbox
+                              checked={emailFields.some(
+                                (emailField) =>
+                                  emailField.value === "muskaan@agentprodai.com"
+                              )}
+                              onCheckedChange={(checked) => {
+                                if (checked) {
+                                  onEmailAppend("muskaan@agentprodai.com");
+                                } else {
+                                  onEmailRemove("muskaan@agentprodai.com");
+                                }
+                              }}
+                            />
+                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                              {"muskaan@agentprodai.com"}
+                            </label>
+                          </div>
+                        </DropdownMenuItem>
                       </DropdownMenuGroup>
                     </ScrollArea>
                   </DropdownMenuContent>
@@ -273,17 +297,18 @@ export function GoalForm({type}: {type: string}) {
                 <FormItem className="space-y-3">
                   <p className="text-sm mb-3">Days between follow-ups</p>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
+                    <Input
+                      type="number"
+                      {...field}
                       onChange={(e) => {
                         const value = e.target.value;
-                        const numberValue = value === "" ? undefined : Number(value);
+                        const numberValue =
+                          value === "" ? undefined : Number(value);
                         field.onChange(numberValue);
                       }}
                     />
                   </FormControl>
-                <FormMessage/>
+                  <FormMessage />
                 </FormItem>
               )}
             />
@@ -295,23 +320,23 @@ export function GoalForm({type}: {type: string}) {
                 <FormItem className="space-y-3">
                   <p className="text-sm mb-3">Number of follow-ups</p>
                   <FormControl>
-                    <Input 
-                      type="number" 
-                      {...field} 
+                    <Input
+                      type="number"
+                      {...field}
                       onChange={(e) => {
                         const value = e.target.value;
-                        const numberValue = value === "" ? undefined : Number(value);
+                        const numberValue =
+                          value === "" ? undefined : Number(value);
                         field.onChange(numberValue);
                       }}
                     />
                   </FormControl>
-                <FormMessage/>
+                  <FormMessage />
                 </FormItem>
               )}
             />
           </div>
         </div>
-
 
         <FormField
           control={form.control}
@@ -326,12 +351,13 @@ export function GoalForm({type}: {type: string}) {
                   {...field}
                   onChange={(e) => {
                     const value = e.target.value;
-                    const numberValue = value === "" ? undefined : Number(value);
+                    const numberValue =
+                      value === "" ? undefined : Number(value);
                     field.onChange(numberValue);
                   }}
                 />
               </FormControl>
-              <FormMessage/>
+              <FormMessage />
             </FormItem>
           )}
         />

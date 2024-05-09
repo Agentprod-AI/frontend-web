@@ -1,4 +1,4 @@
-import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/page";
+import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,

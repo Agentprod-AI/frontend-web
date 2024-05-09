@@ -580,7 +580,7 @@ export default function PeopleForm(): JSX.Element {
       show_intent: lead.show_intent,
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
-      company_linkedin_url: lead.organization.linkedin_url,
+      company_linkedin_url: lead.company_linkedin_url,
     }));
   }
 

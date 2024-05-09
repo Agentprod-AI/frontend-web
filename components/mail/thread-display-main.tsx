@@ -86,10 +86,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const initials = (name: string) => {
     const names = name.split(" ");
-    return names
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+    if (names) {
+      return names
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
+    } else {
+      return "NA";
+    }
   };
 
   React.useEffect(() => {
@@ -152,10 +156,10 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           }}
         >
           <AvatarImage
-            src={leads[0].photo_url ? leads[0].photo_url : ""}
+            src={leads[0]?.photo_url ? leads[0].photo_url : ""}
             alt="avatar"
           />
-          <AvatarFallback>{initials(leads[0].name)}</AvatarFallback>
+          <AvatarFallback>{initials(leads[0]?.name)}</AvatarFallback>
         </Avatar>
         <Card className="w-full mr-5">
           <CardHeader>
@@ -192,7 +196,16 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
     const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
-    const [emails, setEmails] = React.useState<EmailMessage[]>([]);
+    const [emails, setEmails] = React.useState<
+      {
+        body: string;
+        conversation_id: string;
+        created_at: string;
+        id: number;
+        subject: string;
+        updated_at: string;
+      }[]
+    >();
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState("");
 
@@ -204,7 +217,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
-            setEmails(response.data[0]);
+            setEmails(response.data);
           }
           setIsLoading(false);
         })
@@ -215,24 +228,46 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         });
     }, [conversationId]);
 
-    const handleNextEmail = () => {
-      const nextIndex = (currentEmailIndex + 1) % emails.length;
-      setCurrentEmailIndex(nextIndex);
-      setTitle(emails[nextIndex].subject);
-      setBody(emails[nextIndex].body);
-    };
+    // const handleNextEmail = () => {
+    //   const nextIndex = (currentEmailIndex + 1) % emails.length;
+    //   setCurrentEmailIndex(nextIndex);
+    //   setTitle(emails[nextIndex].subject);
+    //   setBody(emails[nextIndex].body);
+    // };
 
-    const handleSendNow = () => {
+    const handleApproveEmail = () => {
       const payload = {
         conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
+        sender: "muskaan@agentprodai.com",
+        recipient: "info.agentprod@gmail.com",
         subject: title,
         body: body,
       };
 
       axiosInstance
         .post("/v2/mailbox/draft/send", payload)
+        .then((response) => {
+          toast.success("Your email has been sent successfully!");
+          console.log(response.data); // Optional: handle response data
+          setEditable(false); // Disable editing after sending
+        })
+        .catch((error) => {
+          console.error("Failed to send email:", error);
+          toast.error("Failed to send the email. Please try again.");
+        });
+    };
+
+    const handleSendNow = () => {
+      const payload = {
+        conversation_id: conversationId,
+        sender: "muskaan@agentprodai.com",
+        recipient: "info.agentprod@gmail.com",
+        subject: title,
+        body: body,
+      };
+
+      axiosInstance
+        .post("/v2/mailbox/send/immediately", payload)
         .then((response) => {
           toast.success("Your email has been sent successfully!");
           console.log(response.data); // Optional: handle response data
@@ -301,12 +336,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </CardContent>
           <CardFooter className="flex justify-between text-xs items-center">
             <div>
-              <Button disabled={editable} onClick={handleSendNow}>
+              <Button disabled={editable} onClick={handleApproveEmail}>
                 Approve
               </Button>
               <Button
                 className="ml-2"
-                disabled={!editable}
+                // disabled={!editable}
                 onClick={handleSendNow}
               >
                 Send Now

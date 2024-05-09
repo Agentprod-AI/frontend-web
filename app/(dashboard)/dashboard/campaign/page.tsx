@@ -1,5 +1,5 @@
 "use client";
-import React from "react";
+import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -7,7 +7,7 @@ import {
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/components/ui/tooltip"
+} from "@/components/ui/tooltip";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
 import { Plus } from "lucide-react";
 import Link from "next/link";
@@ -17,7 +17,8 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { UKFlag, USAFlag } from "@/app/icons";
 import { LoadingCircle } from "@/app/icons";
-
+import { useUserContext } from "@/context/user-context";
+import { useParams } from "next/navigation";
 
 interface CampaignEntry {
   user_id: string;
@@ -44,37 +45,53 @@ interface CampaignEntry {
   id: string;
 }
 
-
 export default function Page() {
   const { campaigns, deleteCampaign, toggleCampaignIsActive, isLoading } =
     useCampaignContext();
+
+  const { user } = useUserContext();
+  console.log("fromCampaignPage", user);
+
+  // const params = useParams();
+  // console.log("campaign from create", params);
 
   return (
     <div className="space-y-2 mb-5">
       <Card className="bg-accent px-4 py-6">
         <CardTitle>Send your first outbound Email campaign</CardTitle>
         <Button className="mt-4">
-          <Link href={"/dashboard/campaign/create"} className="flex items-center gap-1">
+          <Link
+            href={"/dashboard/campaign/create"}
+            className="flex items-center gap-1"
+          >
             <Plus size={16} /> Create Campaign
           </Link>
         </Button>
       </Card>
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-        {!isLoading ?
+        {!isLoading ? (
           campaigns.map((campaignItem) => (
             // className="hover:bg-accent" for card
-            <Card key={campaignItem.id} >
+            <Card key={campaignItem.id}>
               <CardContent className="flex flex-col items-left p-4 gap-4">
                 <div className="flex justify-between items-center">
-                  <div className="relative h-12 w-24 pt-2"> {/* Adjust height and width as needed */}
+                  <div className="relative h-12 w-24 pt-2">
+                    {" "}
+                    {/* Adjust height and width as needed */}
                     <UKFlag className="absolute inset-0 z-10 h-9 w-9" />
-                    <USAFlag className="absolute left-4 top-0 z-10 h-9 w-9" /> {/* Adjust left value for overlap */}
+                    <USAFlag className="absolute left-4 top-0 z-10 h-9 w-9" />{" "}
+                    {/* Adjust left value for overlap */}
                   </div>
 
                   <div className="flex gap-4 items-center">
                     <p className="text-sm text-muted-foreground">50/400</p>
-                    <CircularProgressbar value={50} maxValue={400} text={`${12}%`} className="w-10 h-10"/>
+                    <CircularProgressbar
+                      value={50}
+                      maxValue={400}
+                      text={`${12}%`}
+                      className="w-10 h-10"
+                    />
                   </div>
                 </div>
 
@@ -86,14 +103,16 @@ export default function Page() {
                           {campaignItem?.campaign_name}
                         </p>
                       </TooltipTrigger>
-                      <TooltipContent >
+                      <TooltipContent>
                         <p className="text-sm font-medium leading-none">
                           {campaignItem?.campaign_name}
                         </p>
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <p className="text-sm text-muted-foreground">Campaign description coming from offering.</p>
+                  <p className="text-sm text-muted-foreground">
+                    Campaign description coming from offering.
+                  </p>
                 </div>
 
                 <div className="flex space-x-4 text-sm text-muted-foreground">
@@ -117,19 +136,25 @@ export default function Page() {
                     className="flex-none"
                   />
                   <div>
-                    <Button variant={"ghost"} onClick={() => deleteCampaign(campaignItem.id)}>
-                      <Icons.trash2 size={16}/>
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => deleteCampaign(campaignItem.id)}
+                    >
+                      <Icons.trash2 size={16} />
                     </Button>
                     <Button variant={"ghost"}>
                       <Link href={`/dashboard/campaign/${campaignItem.id}`}>
-                        <Icons.pen size={16}/>
+                        <Icons.pen size={16} />
                       </Link>
                     </Button>
                   </div>
                 </div>
               </CardContent>
             </Card>
-          )) : <LoadingCircle />}
+          ))
+        ) : (
+          <LoadingCircle />
+        )}
       </div>
     </div>
   );

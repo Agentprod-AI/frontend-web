@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter, useParams } from 'next/navigation';
-import axios from 'axios';
+import { useRouter, useParams } from "next/navigation";
+import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -19,9 +19,10 @@ import { Input } from "@/components/ui/input";
 import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React, { useState } from "react";
-import Link from 'next/link';
-import { useCampaignContext } from '@/context/campaign-provider';
-import axiosInstance from '@/utils/axiosInstance';
+import Link from "next/link";
+import { useCampaignContext } from "@/context/campaign-provider";
+import axiosInstance from "@/utils/axiosInstance";
+import { useUserContext } from "@/context/user-context";
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -68,9 +69,9 @@ const defaultValues: Partial<CampaignFormValues> = {
   // dob: new Date("2023-01-23"),
 };
 
-export function SchedulingForm({type}: {type: string}) {
+export function SchedulingForm({ type }: { type: string }) {
   const router = useRouter();
-  const params = useParams<{ campaignId: string}>()
+  const params = useParams<{ campaignId: string }>();
 
   // const [formData, setFormData] = useState<CampaignFormValues>({
   //   campaignName: '',
@@ -92,10 +93,13 @@ export function SchedulingForm({type}: {type: string}) {
 
   const form = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignFormSchema),
-    defaultValues
+    defaultValues,
   });
 
-  const { createCampaign, editCampaign, getCampaignById } = useCampaignContext();
+  const { createCampaign, editCampaign, getCampaignById } =
+    useCampaignContext();
+  const { user } = useUserContext();
+  console.log("SchedulingForm", user);
   const watchAllFields = form.watch();
 
   const onSubmit = async (data: CampaignFormValues) => {
@@ -120,7 +124,7 @@ export function SchedulingForm({type}: {type: string}) {
       if (Object.keys(changes).length > 0) {
         editCampaign(changes);
       } else {
-        console.log('No changes detected.');
+        console.log("No changes detected.");
         // Handle no changes scenario
       }
     }
@@ -140,23 +144,29 @@ export function SchedulingForm({type}: {type: string}) {
           //           values: response.data.values || []
           // });
 
-          form.setValue('campaignName', campaign.campaign_name);
-          form.setValue('campaignType', campaign.campaign_type as "Outbound" | "Inbound" | "Nurturing");
-          form.setValue('dailyOutreach', campaign?.daily_outreach_number || 0);
-          form.setValue('schedule.mondayStartTime', campaign.monday_start);
-          form.setValue('schedule.mondayEndTime', campaign.monday_end);
-          form.setValue('schedule.tuesdayStartTime', campaign.tuesday_start);
-          form.setValue('schedule.tuesdayEndTime', campaign.tuesday_end);
-          form.setValue('schedule.wednesdayStartTime', campaign.wednesday_start);
-          form.setValue('schedule.wednesdayEndTime', campaign.wednesday_end);
-          form.setValue('schedule.thursdayStartTime', campaign.thursday_start);
-          form.setValue('schedule.thursdayEndTime', campaign.thursday_end);
-          form.setValue('schedule.fridayStartTime', campaign.friday_start);
-          form.setValue('schedule.fridayEndTime', campaign.friday_end);
+          form.setValue("campaignName", campaign.campaign_name);
+          form.setValue(
+            "campaignType",
+            campaign.campaign_type as "Outbound" | "Inbound" | "Nurturing"
+          );
+          form.setValue("dailyOutreach", campaign?.daily_outreach_number || 0);
+          form.setValue("schedule.mondayStartTime", campaign.monday_start);
+          form.setValue("schedule.mondayEndTime", campaign.monday_end);
+          form.setValue("schedule.tuesdayStartTime", campaign.tuesday_start);
+          form.setValue("schedule.tuesdayEndTime", campaign.tuesday_end);
+          form.setValue(
+            "schedule.wednesdayStartTime",
+            campaign.wednesday_start
+          );
+          form.setValue("schedule.wednesdayEndTime", campaign.wednesday_end);
+          form.setValue("schedule.thursdayStartTime", campaign.thursday_start);
+          form.setValue("schedule.thursdayEndTime", campaign.thursday_end);
+          form.setValue("schedule.fridayStartTime", campaign.friday_start);
+          form.setValue("schedule.fridayEndTime", campaign.friday_end);
         }
       }
-    } 
-  }, [])
+    }
+  }, []);
 
   return (
     <Form {...form}>
@@ -283,7 +293,7 @@ export function SchedulingForm({type}: {type: string}) {
             "Update Campagin"
           } */}
           {type === "create" ? "Add" : "Update"} Campaign
-          </Button>
+        </Button>
       </form>
     </Form>
   );
