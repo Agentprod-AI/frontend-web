@@ -54,8 +54,8 @@ export function MailList({ items }: MailListProps) {
       .get(`/v2/mailbox/${user?.id}`)
       .then((response) => {
         setConversationId(response.data.mails[0].id); //defaults convo id to the first mail's id
-        setRecipientEmail(response.data.mails[0].recipient);
-        setSenderEmail(response.data.mails[0].sender);
+        setRecipientEmail("info.agentprod@gmail.com");
+        setSenderEmail("muskaan@agentprodai.com");
       })
       .catch((error) => {
         console.log(error);
