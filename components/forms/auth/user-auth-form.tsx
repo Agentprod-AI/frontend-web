@@ -108,23 +108,23 @@ export default function UserAuthForm({
           password: data.password,
         });
         toast.success("Verification email sent!");
-        console.log("User details on signup:", userData.user);
+        console.log("User details on signup:", userData);
       }
 
-      if (userData.user) {
+      if (userData?.user) {
         console.log("UserData just after logged in", userData);
         setUser({
           id: userData?.user?.id,
           email: userData?.user?.email,
-          username: userData?.user?.username,
-          firstName: userData?.user?.firstName,
+          // username: userData?.user?.username,
+          // firstName: userData?.user?.firstName,
         });
         login(userData.user);
         const userKey = "user";
 
         setCookie(userKey, JSON.stringify(user), { maxAge: 3600 * 24 * 7 }); // Expires in one week
       }
-    } catch (error) {
+    } catch (error: any) {
       toast.error(error.message || "An error occurred");
     } finally {
       setLoading(false);

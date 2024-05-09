@@ -60,7 +60,7 @@ const allFieldsList: allFieldsListType = {
   ],
 };
 
-function PreviewContent({ previewData }) {
+function PreviewContent({ previewData }: { previewData: allFieldsListType }) {
   const [fieldsList, setFieldsList] = React.useState(allFieldsList);
 
   return (

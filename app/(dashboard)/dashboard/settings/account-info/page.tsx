@@ -23,7 +23,7 @@ export default function Page() {
       const initialAccountInfo: Info[] = [
         { id: "ID", value: user.id, isEditable: false },
         { id: "Sender First Name", value: user.firstName, isEditable: true },
-        { id: "Sender Last Name", value: user?.lastName, isEditable: true },
+        // { id: "Sender Last Name", value: user?.lastName, isEditable: true },
         { id: "Sender Job", value: "", isEditable: true },
         {
           id: "Email",

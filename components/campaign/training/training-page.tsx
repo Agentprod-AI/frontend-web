@@ -7,10 +7,14 @@ import { Button } from "@/components/ui/button";
 import EditorContent from "./editor-content";
 import PreviewContent from "./preview-content";
 import { getAutogenerateTrainingEmail } from "./training.api";
+import {
+  allFieldsListType,
+  allFieldsList,
+} from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
-  const [previewData, setPreviewData] = React.useState("");
+  const [previewData, setPreviewData] = React.useState(allFieldsList);
 
   const handleGenerateWithAI = async () => {
     setActiveTab("preview"); // This sets the active tab to 'preview'
