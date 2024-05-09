@@ -7,7 +7,7 @@ interface TextFieldProps {
 
 const TextField: React.FC<TextFieldProps> = ({ text }) => {
   return (
-    <div className="p-2 border  rounded w-full">
+    <div className="p-2 border rounded w-full h-96">
       <textarea
         value={text}
         readOnly

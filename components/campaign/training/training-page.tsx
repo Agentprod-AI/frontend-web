@@ -76,13 +76,16 @@ export default function Training() {
   const [previewData, setPreviewData] = React.useState("");
   const { user } = useUserContext();
   const { campaignId } = useCampaignContext();
-  console.log("campaignIdFromTrainingPGEE", campaignId);
 
+  console.log("campaignIdFromTrainingPGEE", campaignId);
 
   const handleGenerateWithAI = async () => {
     setActiveTab("preview");
     try {
-      const data = await getAutogenerateTrainingEmail(campaignId, user.id);
+      const data = await getAutogenerateTrainingEmail(
+        "a37d8526-316a-41eb-90e3-1a0c7a8e6e76",
+        user.id
+      );
       console.log("Data coming from AI generation:", data);
       setPreviewData(data);
     } catch (error) {
