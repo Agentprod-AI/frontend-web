@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // /* eslint-disable import/no-unresolved */
 "use client";
 import React from "react";
@@ -6,28 +7,58 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import EditorContent from "./editor-content";
 import PreviewContent from "./preview-content";
-import { getAutogenerateTrainingEmail } from "./training.api";
+import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
 
-import {
-  allFieldsListType,
-  allFieldsList,
-} from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
+import { useUserContext } from "@/context/user-context";
+import { useRouter } from "next/navigation";
+
+export interface PreviewData {
+  subject: string;
+  body: string;
+}
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
-  const [previewData, setPreviewData] = React.useState(allFieldsList);
+  const [previewData, setPreviewData] = React.useState<PreviewData>();
+  const [campaignId, setCampaignId] = React.useState("");
+  const { user } = useUserContext();
+
+  const router = useRouter();
+
+  React.useEffect(() => {
+    const storedCampaignId = localStorage.getItem("campaignId");
+    if (storedCampaignId) {
+      setCampaignId(storedCampaignId);
+    }
+  }, []);
 
   const handleGenerateWithAI = async () => {
     setActiveTab("preview");
     try {
-      const data = await getAutogenerateTrainingEmail(
-        "a37d8526-316a-41eb-90e3-1a0c7a8e6e76",
-        user.id
-      );
-      console.log("Data coming from AI generation:", data);
-      setPreviewData(data);
+      const response = await getAutogenerateTrainingEmail(campaignId, user.id);
+      const data = JSON.parse(response);
+      const subject = data.subject;
+      const body = data.body;
+      setPreviewData({
+        subject,
+        body,
+      });
+      console.log(response);
     } catch (error) {
       console.error("Failed to fetch training data:", error);
+    }
+  };
+
+  const handleStartCampaign = async () => {
+    const userId = user.id as string;
+    const campaignId = localStorage.getItem("campaignId") as string;
+
+    try {
+      const response = await startCampaign(campaignId, userId);
+      console.log("saashjashj", response);
+      router.push("/dashboard/mail");
+    } catch (error: any) {
+      console.log(error);
     }
   };
 
@@ -52,13 +83,16 @@ export default function Training() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button>Start campaign</Button>
+          <Button onClick={handleStartCampaign}>Start campaign</Button>
         </div>
       </div>
       {activeTab === "editor" ? (
         <EditorContent onGenerateWithAI={handleGenerateWithAI} />
       ) : (
-        <PreviewContent previewData={previewData} />
+        <PreviewContent
+          subject={previewData?.subject}
+          body={previewData?.body}
+        />
       )}
     </>
   );

@@ -165,6 +165,15 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     }
   }, [user]);
 
+  // Experiment with the useEffect hook to see if it can be used to set the campaignId in localStorage
+
+  React.useEffect(() => {
+    if (campaignId) {
+      localStorage.setItem("campaignId", campaignId);
+    }
+  }, [campaignId]);
+  // --------------------------------------------
+
   const createCampaign = (data: CampaignFormData) => {
     console.log("user from camapgin", user);
     const postData = {

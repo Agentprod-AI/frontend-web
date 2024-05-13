@@ -1,66 +1,122 @@
 "use client";
 
 import React, { useState } from "react";
-
 import { Button } from "@/components/ui/button";
-
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
   Table,
   TableBody,
-  TableCaption,
-  TableCell,
-  TableFooter,
-  TableHead,
   TableHeader,
   TableRow,
+  TableCell,
+  TableHead,
 } from "@/components/ui/table";
 import {
   Dialog,
-  DialogClose,
+  DialogTrigger,
   DialogContent,
-  DialogDescription,
-  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
 } from "@/components/ui/dialog";
-import { Icons } from "@/components/icons";
-import { Switch } from "@/components/ui/switch";
-import { GmailIcon } from "@/app/icons";
-import { Modal } from "@/components/ui/modal";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Icons } from "@/components/icons";
+import { GmailIcon } from "@/app/icons";
+import { Switch } from "@/components/ui/switch";
 
-const mailbox = [
+interface MailData {
+  id: number;
+  Name: string;
+  Type: string;
+  Value: string;
+}
+
+const initialMailboxes = [
   {
-    name: "h66fgugabtde2xw3alnbdjcnkvkf2aic._domainkey.agentprod.com",
-    value: "h66fgugabtde2xw3alnbdjcnkvkf2aic.dkim.amazonses.com",
-  },
-  {
-    name: "t55xo37trffwlzb3u6htrj2lng7mx6h6._domainkey.agentprod.com",
-    value: "t55xo37trffwlzb3u6htrj2lng7mx6h6.dkim.amazonses.com",
-  },
-  {
-    name: "t4uiosaepu7vohinjqlagesy7lzh5rye._domainkey.agentprod.com",
-    value: "t4uiosaepu7vohinjqlagesy7lzh5rye.dkim.amazonses.com",
+    id: 1,
+    email: "siddhant@100xengineers.com",
+    name: "Siddhant Goswami",
+    warmUp: true,
+    dailyLimit: 5,
   },
 ];
 
 export default function Page() {
-  const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
-  const handleOpenModal = () => setIsModalOpen(true);
-  const handleCloseModal = () => setIsModalOpen(false);
+  const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
+  const [isVerifyEmailOpen, setIsVerifyEmailOpen] = useState(false);
+  const [emailInput, setEmailInput] = useState("");
+  const [nameInput, setNameInput] = useState("");
+  const [domainInput, setDomainInput] = useState("");
+  const [mailData, setMailData] = useState<MailData[]>([]);
+  const [mailboxes, setMailboxes] = useState(initialMailboxes);
+
+  const handleOpenAddMailbox = () => setIsAddMailboxOpen(true);
+  const handleCloseAddMailbox = () => setIsAddMailboxOpen(false);
+
+  const fetchDomainData = React.useCallback(async () => {
+    try {
+      const response = await fetch(
+        `https://agentprod-backend-framework-zahq.onrender.com/v2/aws/verify/domain/${domainInput}`
+      );
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const data: MailData[] = await response.json();
+      setMailData(data);
+    } catch (error) {
+      console.error("Failed to fetch domain data:", error);
+    }
+  }, [domainInput]);
+
+  function fetchDomain() {
+    fetchDomainData();
+  }
+
+  const handleEmailVerification = async () => {
+    try {
+      const response = await fetch(
+        `https://agentprod-backend-framework-zahq.onrender.com/v2/aws/verify/email/${emailInput}`
+      );
+      const data = await response.json();
+      handleCloseAddMailbox();
+      setIsVerifyEmailOpen(true);
+    } catch (error) {
+      console.error("Failed to verify email:", error);
+    }
+  };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).then(
-      () => {
-        // You might want to set a state to show a success message or tooltip
-      },
+      () => {},
       (err) => {
         console.error("Could not copy text: ", err);
       }
     );
+  };
+  // const handleCloseVerifyEmail = () => setIsVerifyEmailOpen(false);
+
+  const addMailbox = (mailbox: any) => {
+    setMailboxes([...mailboxes, mailbox]);
+  };
+
+  const removeMailbox = (id: number) => {
+    setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
+  };
+
+  const saveChanges = () => {
+    // Example mailbox data that might be added
+    const newMailbox = {
+      id: Math.max(...mailboxes.map((mb) => mb.id)) + 1,
+      email: emailInput,
+      name: nameInput,
+      warmUp: true,
+      dailyLimit: 5,
+    };
+    addMailbox(newMailbox);
+    setDomainInput("");
+    setIsVerifyEmailOpen(false);
   };
 
   return (
@@ -69,8 +125,8 @@ export default function Page() {
         <Icons.info />
         <AlertDescription className="ml-2">
           Connect a mailbox to use it for campaigns and increase your sending
-          volume. If you disconnect a mailbox, it won&apos;t be able to send and
-          receive emails, and it can&apos;t be added to new campaigns. You can
+          volume. If you disconnect a mailbox, it won't be able to send and
+          receive emails, and it &can't be added to new campaigns. You can
           connect as many mailboxes as needed.
         </AlertDescription>
       </Alert>
@@ -87,62 +143,106 @@ export default function Page() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            <TableRow>
-              <TableCell>
-                <div className="flex items-center gap-3">
-                  <GmailIcon />
-                  <span>siddhant@100xengineers.com</span>
-                </div>
-              </TableCell>
-              <TableCell>Siddhant Goswami</TableCell>
-              <TableCell>
-                <Switch />
-              </TableCell>
-              <TableCell>5</TableCell>
-              <TableCell>
-                {/* <Icons.info/> */}
-                <Dialog>
-                  <DialogTrigger asChild>
-                    <Button variant={"destructive"}>Disconnect</Button>
-                  </DialogTrigger>
-                  <DialogContent className="sm:max-w-[425px]">
-                    <DialogHeader className="text-left flex gap-1">
-                      <Icons.alertCircle
-                        size={"40"}
-                        color="red"
-                        className="mb-4"
-                      />
-                      <DialogTitle>Disconnect Account</DialogTitle>
-                      <DialogDescription>
-                        Are you sure you want to disconnect{" "}
-                        <span className="text-blue-500">
-                          siddhant@100xengineers.com
-                        </span>
-                        . This action cannot be undone.
-                      </DialogDescription>
-                    </DialogHeader>
-                    <DialogFooter>
-                      <DialogClose asChild>
-                        <Button type="button" variant={"outline"}>
-                          Cancel
+            {mailboxes.map((mailbox, index) => (
+              <TableRow key={index}>
+                <TableCell>
+                  <div className="flex items-center gap-3">
+                    <GmailIcon />
+                    <span>{mailbox.email}</span>
+                  </div>
+                </TableCell>
+                <TableCell>{mailbox.name}</TableCell>
+                <TableCell>
+                  <Switch checked={mailbox.warmUp} />
+                </TableCell>
+                <TableCell>{mailbox.dailyLimit}</TableCell>
+                <TableCell>
+                  <Dialog>
+                    <DialogTrigger asChild>
+                      <Button variant={"destructive"}>Disconnect</Button>
+                    </DialogTrigger>
+                    <DialogContent className="sm:max-w-[425px]">
+                      <DialogHeader className="text-left flex gap-1">
+                        <Icons.alertCircle
+                          size={"40"}
+                          color="red"
+                          className="mb-4"
+                        />
+                        <DialogTitle>Disconnect Account</DialogTitle>
+                        <DialogDescription>
+                          Are you sure you want to disconnect{" "}
+                          <span className="text-blue-500">
+                            siddhant@100xengineers.com
+                          </span>
+                          . This action cannot be undone.
+                        </DialogDescription>
+                      </DialogHeader>
+                      <DialogFooter>
+                        <DialogClose asChild>
+                          <Button type="button" variant={"outline"}>
+                            Cancel
+                          </Button>
+                        </DialogClose>
+                        <Button
+                          type="submit"
+                          variant={"destructive"}
+                          onClick={() => removeMailbox(mailbox.id)}
+                        >
+                          Delete
                         </Button>
-                      </DialogClose>
-                      <Button type="submit" variant={"destructive"}>
-                        Delete
-                      </Button>
-                    </DialogFooter>
-                  </DialogContent>
-                </Dialog>
-              </TableCell>
-            </TableRow>
+                      </DialogFooter>
+                    </DialogContent>
+                  </Dialog>
+                </TableCell>
+              </TableRow>
+            ))}
           </TableBody>
         </Table>
       </div>
 
-      <Dialog>
-        <DialogTrigger asChild>
-          <Button className="mt-5">Add Mailbox</Button>
-        </DialogTrigger>
+      <Button className="mt-5" onClick={handleOpenAddMailbox}>
+        Add Mailbox
+      </Button>
+      <Dialog open={isAddMailboxOpen} onOpenChange={setIsAddMailboxOpen}>
+        <DialogContent className="w-full">
+          <DialogHeader>
+            <DialogTitle>Add mailbox</DialogTitle>
+            <DialogDescription>
+              Enter the email you want to add to the mailbox.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4 py-4">
+            <div className="grid items-center gap-4">
+              <p className="text-sm">Name</p>
+              <Input
+                value={nameInput}
+                onChange={(e) => setNameInput(e.target.value)}
+                placeholder="Enter email address"
+              />
+            </div>
+          </div>
+          <div className="grid gap-4 py-4">
+            <div className="grid items-center gap-4">
+              <p className="text-sm">Email Address</p>
+              <Input
+                value={emailInput}
+                onChange={(e) => setEmailInput(e.target.value)}
+                placeholder="Enter email address"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              onClick={handleEmailVerification}
+              disabled={emailInput === ""}
+            >
+              Verify email
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={isVerifyEmailOpen} onOpenChange={setIsVerifyEmailOpen}>
         <DialogContent className="w-full">
           <DialogHeader>
             <DialogTitle>Add mailbox</DialogTitle>
@@ -151,13 +251,17 @@ export default function Page() {
             </DialogDescription>
           </DialogHeader>
           <div className="grid gap-4 py-4">
-            <div className="grid items-center gap-4">
+            <div className="flex items-center gap-4">
               <p className="text-sm">Domain</p>
               <Input
-                //   value={domainValue}
-                //   onChange={(e) => setDomainValue(e.target.value)}
+                value={domainInput}
+                onChange={(e) => setDomainInput(e.target.value)}
                 placeholder="Enter domain"
+                className="flex-grow"
               />
+              <Button type="submit" onClick={fetchDomain}>
+                Done
+              </Button>
             </div>
             <div className="grid items-center gap-4 w-full">
               <Table className="mt-4 w-full">
@@ -169,25 +273,25 @@ export default function Page() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {mailbox.map((mailbox, index) => (
+                  {mailData.map((mailbox, index) => (
                     <TableRow key={index}>
-                      <TableCell>CNAME</TableCell>
+                      <TableCell>{mailbox.Type}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Icons.copy
                             className="cursor-pointer"
-                            onClick={() => handleCopy(mailbox.name)}
+                            onClick={() => handleCopy(mailbox.Name)}
                           />
-                          <span>{mailbox.name}</span>
+                          <span>{mailbox.Name}</span>
                         </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <Icons.copy
                             className="cursor-pointer"
-                            onClick={() => handleCopy(mailbox.value)}
+                            onClick={() => handleCopy(mailbox.Value)}
                           />
-                          <span>{mailbox.value}</span>
+                          <span>{mailbox.Value}</span>
                         </div>
                       </TableCell>
                     </TableRow>
@@ -197,7 +301,9 @@ export default function Page() {
             </div>
           </div>
           <DialogFooter>
-            <Button type="submit">Save changes</Button>
+            <Button type="submit" onClick={saveChanges}>
+              Save changes
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

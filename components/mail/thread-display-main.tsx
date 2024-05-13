@@ -86,10 +86,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const initials = (name: string) => {
     const names = name.split(" ");
-    return names
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase();
+    if (names) {
+      return names
+        .map((n) => n[0])
+        .join("")
+        .toUpperCase();
+    } else {
+      return "NA";
+    }
   };
 
   React.useEffect(() => {
@@ -152,7 +156,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           }}
         >
           <AvatarImage
-            src={leads[0].photo_url ? leads[0].photo_url : ""}
+            src={leads[0]?.photo_url ? leads[0].photo_url : ""}
             alt="avatar"
           />
           <AvatarFallback>{initials(leads[0].name)}</AvatarFallback>
