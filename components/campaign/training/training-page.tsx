@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // /* eslint-disable import/no-unresolved */
 "use client";
 import React from "react";
@@ -12,22 +13,55 @@ import {
   allFieldsList,
 } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 import { useUserContext } from "@/context/user-context";
+import { useRouter } from "next/navigation";
+
+export interface PreviewData {
+  subject: string;
+  body: string;
+}
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
-  const [previewData, setPreviewData] = React.useState(allFieldsList);
+  const [previewData, setPreviewData] = React.useState<PreviewData>();
+  const [campaignId, setCampaignId] = React.useState("");
   const { user } = useUserContext();
 
+  const router = useRouter();
+
+  React.useEffect(() => {
+    const storedCampaignId = localStorage.getItem("campaignId");
+    if (storedCampaignId) {
+      setCampaignId(storedCampaignId);
+    }
+  }, []);
+
   const handleGenerateWithAI = async () => {
-    setActiveTab("preview"); // This sets the active tab to 'preview'
+    setActiveTab("preview");
     try {
-      const campaignId = "9b0660ce-7333-4315-aa3f-e9b0ed6653c4";
-      const data = await getAutogenerateTrainingEmail(campaignId);
-      console.log("data commingg -> ", data);
-      setPreviewData(data); // Assuming the response has a 'result' field
-      setActiveTab("preview"); // Switch to the Preview tab after fetching
+      const response = await getAutogenerateTrainingEmail(campaignId, user.id);
+      const data = JSON.parse(response);
+      const subject = data.subject;
+      const body = data.body;
+      setPreviewData({
+        subject,
+        body,
+      });
+      console.log(response);
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error("Failed to fetch training data:", error);
+    }
+  };
+
+  const handleStartCampaign = async () => {
+    const userId = user.id as string;
+    const campaignId = localStorage.getItem("campaignId") as string;
+
+    try {
+      const response = await startCampaign(campaignId, userId);
+      console.log("saashjashj", response);
+      router.push("/dashboard/mail");
+    } catch (error: any) {
+      console.log(error);
     }
   };
 
@@ -49,8 +83,8 @@ export default function Training() {
         <div className="ml-4">Training</div>
         <div className="flex items-center flex-row">
           <Tabs
-            value={activeTab} // This binds the active tab state to the Tabs component
-            onValueChange={setActiveTab} // This changes the active tab state when a tab is manually clicked
+            value={activeTab}
+            onValueChange={setActiveTab}
             className="w-[200px]"
           >
             <TabsList>
@@ -70,7 +104,10 @@ export default function Training() {
       {activeTab === "editor" ? (
         <EditorContent onGenerateWithAI={handleGenerateWithAI} />
       ) : (
-        <PreviewContent previewData={previewData} />
+        <PreviewContent
+          subject={previewData?.subject}
+          body={previewData?.body}
+        />
       )}
     </>
   );
