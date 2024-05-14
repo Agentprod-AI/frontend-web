@@ -65,18 +65,6 @@ export default function Training() {
     }
   };
 
-  const handleStartCampaign = async () => {
-    const userId = user.id as string;
-    const campaignId = localStorage.getItem("campaignId") as string;
-
-    try {
-      const response = await startCampaign(campaignId, userId);
-      console.log(response);
-    } catch (error: any) {
-      console.log(error);
-    }
-  };
-
   return (
     <>
       <div className="w-full h-14 px-4 flex flex-row justify-between items-center rounded-lg border">
