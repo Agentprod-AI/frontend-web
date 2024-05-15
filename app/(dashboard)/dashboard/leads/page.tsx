@@ -4,18 +4,17 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
   DropdownMenuGroup,
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
-import { Contact, useLeads } from "@/context/lead-user";
+import { useLeads } from "@/context/lead-user";
 import { useEffect, useState } from "react";
 import { LucideUsers2 } from "lucide-react";
-import { v4 as uuid } from "uuid";
-import axios from "axios";
-import { useCompanyInfo } from "@/context/company-linkedin";
+// import { v4 as uuid } from "uuid";
+// import axios from "axios";
+// import { useCompanyInfo } from "@/context/company-linkedin";
 import { ChevronDown } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCampaignContext } from "@/context/campaign-provider";
@@ -41,7 +40,7 @@ export default function Page() {
           setLeads(data);
         })
         .catch((error) => {
-          console.log(error);
+          // console.log(error);
           setError(error instanceof Error ? error.toString() : String(error));
           setLoading(false);
         });
@@ -49,10 +48,10 @@ export default function Page() {
     if (campaign?.campaignId) {
       fetchLeads(campaign.campaignId as string);
     }
-  }, [campaign]);
+  }, [campaign, setLeads]);
 
   useEffect(() => {
-    console.log("campaigns", campaigns);
+    // console.log("campaigns", campaigns);
   }, [campaigns]);
 
   const allCampaigns:
@@ -69,6 +68,9 @@ export default function Page() {
     };
   });
 
+  if (loading) {
+    return <div>Loading... {error}</div>; // doing this for deployment error.
+  }
   return (
     <>
       <div className="flex gap-8">

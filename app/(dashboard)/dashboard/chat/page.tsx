@@ -1,4 +1,3 @@
-/* eslint-disable react/no-unescaped-entities */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -6,20 +5,17 @@ import { useChat } from "ai/react";
 import va from "@vercel/analytics";
 import clsx from "clsx";
 import { LoadingCircle, SendIcon } from "../../../icons";
-import { User } from "lucide-react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import Image from "next/image";
-import { createClient } from "@supabase/supabase-js";
+// import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
 // import Textarea from "react-textarea-autosize";
 // import { Textarea } from "@/components/ui/textarea";
 
 // import EmailForm from "@/components/forms/emailForm";
 import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
@@ -40,8 +36,10 @@ export default function Home() {
   const { user } = useUserContext();
   // console.log("User: ", user);
 
-  const [userEmail, setUserEmail] = useState(user?.email);
-  const [userId, setUserId] = useState(user?.id);
+  const [userEmail] = useState(user?.email);
+  // const [userEmail, setUserEmail] = useState(user?.email);
+  // const [userId, setUserId] = useState(user?.id);
+  const [userId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
   const [allMessages, setAllMessages] = useState<Message[]>([
     {
@@ -54,71 +52,71 @@ export default function Home() {
   // console.log("Id: ", userId);
 
   // console.log(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const fetchUserIdFromEmail = async (email_id: string) => {
-    const supabase = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL || "",
-      process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
-    );
+  // const fetchUserIdFromEmail = async (email_id: string) => {
+  //   const supabase = createClient(
+  //     process.env.NEXT_PUBLIC_SUPABASE_URL || "",
+  //     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || ""
+  //   );
 
-    let { data: allUsers, error } = await supabase
-      .from("Users")
-      .select("id")
-      .eq("email", email_id);
-    // console.log(allUsers);
+  //   let { data: allUsers } = await supabase
+  //     .from("Users")
+  //     .select("id")
+  //     .eq("email", email_id);
+  //   // console.log(allUsers);
 
-    if (!allUsers?.length) {
-      let { data: createdUser, error } = await supabase
-        .from("Users")
-        .insert([
-          {
-            email: email_id,
-            user_info: {
-              email: email_id,
-              timezone: null,
-              real_name: null,
-              profession: null,
-              display_name: null,
-              profile_image: null,
-            },
-            source: "web",
-          },
-        ])
-        .select("id");
+  //   if (!allUsers?.length) {
+  //     let { data: createdUser, error } = await supabase
+  //       .from("Users")
+  //       .insert([
+  //         {
+  //           email: email_id,
+  //           user_info: {
+  //             email: email_id,
+  //             timezone: null,
+  //             real_name: null,
+  //             profession: null,
+  //             display_name: null,
+  //             profile_image: null,
+  //           },
+  //           source: "web",
+  //         },
+  //       ])
+  //       .select("id");
 
-      if (error) {
-        console.error(error);
-      } else if (createdUser && createdUser[0].id) {
-        setUserId(createdUser[0].id);
-        let { data: tokenUsers, error: tokenTableError } = await supabase
-          .from("UserTokens")
-          .insert([{ user_id: createdUser[0].id }]);
+  //     if (error) {
+  //       console.error(error);
+  //     } else if (createdUser && createdUser[0].id) {
+  //       setUserId(createdUser[0].id);
+  //       let { data: tokenUsers, error: tokenTableError } = await supabase
+  //         .from("UserTokens")
+  //         .insert([{ user_id: createdUser[0].id }]);
 
-        if (tokenTableError) {
-          console.error(tokenTableError);
-        }
-      }
-    }
+  //       if (tokenTableError) {
+  //         console.error(tokenTableError);
+  //       }
+  //     }
+  //   }
 
-    if (allUsers && allUsers[0].id) setUserId(allUsers[0].id);
-  };
+  //   if (allUsers && allUsers[0].id) setUserId(allUsers[0].id);
+  // };
 
   useEffect(() => {
     const fetchMessages = () => {
       axiosInstance
         .get(`v2/conversation/${userId}`)
         .then((response) => {
-          console.log(response);
+          // console.log(response);
           if (response.data.length > 0) {
             setAllMessages([...response.data]);
           }
         })
         .catch((error) => {
-          console.log(error);
+          // console.log(error);
         });
     };
 
     fetchMessages();
-  }, []);
+  });
 
   useEffect(() => {
     if (userId) {
@@ -128,40 +126,40 @@ export default function Home() {
 
   // useEffect(() => {
   //   try {
-  //     // fetchUserIdFromEmail(userEmail);
-  //     // setMessages([
-  //     //   {
-  //     //     id: Math.random().toString(),
-  //     //     type: "assistant",
-  //     //     content: JSON.stringify({
-  //     //       content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
-  //     //       buttons: [
-  //     //         {
-  //     //           buttonTitle: "Check out our website",
-  //     //           url: "https://agentprod.com",
-  //     //         },
-  //     //       ],
-  //     //     }),
-  //     //   },
-  //     //   {
-  //     //     id: Math.random().toString(),
-  //     //     type: "assistant",
-  //     //     content: JSON.stringify({
-  //     //       content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
-  //     //       buttons: [
-  //     //         {
-  //     //           buttonTitle: "Google Login",
-  //     //           url: `hello.com/test`,
-  //     //         },
-  //     //       ],
-  //     //     }),
-  //     //   },
-  //     //   // {
-  //     //   //   id: Math.random().toString(),
-  //     //   //   type: "user",
-  //     //   //   content: "How much revenue did we close this month?",
-  //     //   // },
-  //     // ]);
+  //     fetchUserIdFromEmail(userEmail);
+  //     setMessages([
+  //       {
+  //         id: Math.random().toString(),
+  //         type: "assistant",
+  //         content: JSON.stringify({
+  //           content: `👋 Hey, I'm Agentprod, your AI work assistant! First, allow me to showcase Agentprod's capabilities, designed to supercharge your workflow.`,
+  //           buttons: [
+  //             {
+  //               buttonTitle: "Check out our website",
+  //               url: "https://agentprod.com",
+  //             },
+  //           ],
+  //         }),
+  //       },
+  //       {
+  //         id: Math.random().toString(),
+  //         type: "assistant",
+  //         content: JSON.stringify({
+  //           content: `Let's connect to apps! Once you are authenticated you will be prompted to try some tasks`,
+  //           buttons: [
+  //             {
+  //               buttonTitle: "Google Login",
+  //               url: `hello.com/test`,
+  //             },
+  //           ],
+  //         }),
+  //       },
+  //       // {
+  //       //   id: Math.random().toString(),
+  //       //   type: "user",
+  //       //   content: "How much revenue did we close this month?",
+  //       // },
+  //     ]);
   //     setAllMessages(messagesFromBackend.data);
   //   } catch (err) {
   //     console.log("Something went wrong!", err);
@@ -174,9 +172,9 @@ export default function Home() {
         setMessages(allMessages);
       }
     } catch (err) {
-      console.log("Something went wrong!", err);
+      // console.log("Something went wrong!", err);
     }
-  }, [allMessages]);
+  }, [allMessages]); // include allMessages in the dependency array - removeed because deployment error
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
@@ -194,7 +192,7 @@ export default function Home() {
         } else {
           va.track("Chat initiated");
           const assistantResponse = await response.json();
-          console.log(assistantResponse);
+          // console.log(assistantResponse);
           setAllMessages((prevMessages: Message[]) => [
             ...prevMessages,
             {
@@ -212,7 +210,7 @@ export default function Home() {
         });
       },
       onFinish(message) {
-        console.log(message);
+        // console.log(message);
       },
     });
 
@@ -344,7 +342,7 @@ export default function Home() {
                   content: input,
                 },
               ]);
-              console.log(allMessages);
+              // console.log(allMessages);
               handleSubmit(e);
             }}
             className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex"

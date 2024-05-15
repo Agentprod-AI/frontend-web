@@ -1,5 +1,4 @@
 "use client";
-import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -17,39 +16,39 @@ import { CircularProgressbar } from "react-circular-progressbar";
 import "react-circular-progressbar/dist/styles.css";
 import { UKFlag, USAFlag } from "@/app/icons";
 import { LoadingCircle } from "@/app/icons";
-import { useUserContext } from "@/context/user-context";
+// import { useUserContext } from "@/context/user-context";
 
-interface CampaignEntry {
-  user_id: string;
-  campaignId?: string;
-  campaign_name: string;
-  is_active: boolean;
-  campaign_type: string;
-  daily_outreach_number?: number;
-  start_date?: string;
-  end_date?: string;
-  schedule_type: string;
-  description?: string;
-  additional_details?: string;
-  monday_start?: string;
-  monday_end?: string;
-  tuesday_start?: string;
-  tuesday_end?: string;
-  wednesday_start?: string;
-  wednesday_end?: string;
-  thursday_start?: string;
-  thursday_end?: string;
-  friday_start?: string;
-  friday_end?: string;
-  id: string;
-}
+// interface CampaignEntry {
+//   user_id: string;
+//   campaignId?: string;
+//   campaign_name: string;
+//   is_active: boolean;
+//   campaign_type: string;
+//   daily_outreach_number?: number;
+//   start_date?: string;
+//   end_date?: string;
+//   schedule_type: string;
+//   description?: string;
+//   additional_details?: string;
+//   monday_start?: string;
+//   monday_end?: string;
+//   tuesday_start?: string;
+//   tuesday_end?: string;
+//   wednesday_start?: string;
+//   wednesday_end?: string;
+//   thursday_start?: string;
+//   thursday_end?: string;
+//   friday_start?: string;
+//   friday_end?: string;
+//   id: string;
+// }
 
 export default function Page() {
   const { campaigns, deleteCampaign, toggleCampaignIsActive, isLoading } =
     useCampaignContext();
 
-  const { user } = useUserContext();
-  console.log("fromCampaignPage", user);
+  // const { user } = useUserContext();
+  // console.log("fromCampaignPage", user);
 
   return (
     <div className="space-y-2 mb-5">
