@@ -174,7 +174,7 @@ export default function Home() {
     } catch (err) {
       // console.log("Something went wrong!", err);
     }
-  }, [allMessages]); // include allMessages in the dependency array - removeed because deployment error
+  }, [allMessages]); 
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =

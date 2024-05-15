@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "./user-context";
+import { string } from "zod";
 
 interface CampaignFormData {
   [key: string]: any;
@@ -106,7 +107,7 @@ const defaultOfferingEntry: OfferingFormData = {
 };
 
 interface CampaignContextType {
-  camoaingId: string | null;
+  campaignId: string | null;
   campaigns: CampaignEntry[];
   createCampaign: (data: CampaignFormData) => void;
   editCampaign: (data: CampaignFormData) => void;
@@ -136,6 +137,7 @@ const defaultCampaignState: CampaignContextType = {
   getGoalById: (campaignId: string) => ({ ...defaultGoalEntry }),
   getOfferingById: (campaignId: string) => ({ ...defaultOfferingEntry }),
   isLoading: true,
+  campaignId: null, // May cause error, done this coz of deployment error
 };
 
 // Use the default state when creating the context
