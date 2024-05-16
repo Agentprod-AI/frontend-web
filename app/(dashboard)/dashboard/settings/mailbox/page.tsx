@@ -66,7 +66,7 @@ export default function Page() {
       const data: MailData[] = await response.json();
       setMailData(data);
     } catch (error) {
-      console.error("Failed to fetch domain data:", error);
+      // console.error("Failed to fetch domain data:", error);
     }
   }, [domainInput]);
 
@@ -79,11 +79,11 @@ export default function Page() {
       const response = await fetch(
         `https://agentprod-backend-framework-zahq.onrender.com/v2/aws/verify/email/${emailInput}`
       );
-      const data = await response.json();
+      await response.json();
       handleCloseAddMailbox();
       setIsVerifyEmailOpen(true);
     } catch (error) {
-      console.error("Failed to verify email:", error);
+      // console.error("Failed to verify email:", error);
     }
   };
 
@@ -91,7 +91,7 @@ export default function Page() {
     navigator.clipboard.writeText(text).then(
       () => {},
       (err) => {
-        console.error("Could not copy text: ", err);
+        // console.error("Could not copy text: ", err);
       }
     );
   };
@@ -125,8 +125,8 @@ export default function Page() {
         <Icons.info />
         <AlertDescription className="ml-2">
           Connect a mailbox to use it for campaigns and increase your sending
-          volume. If you disconnect a mailbox, it won't be able to send and
-          receive emails, and it &can't be added to new campaigns. You can
+          volume. If you disconnect a mailbox, it won&apos;t be able to send and
+          receive emails, and it & can&apos;t be added to new campaigns. You can
           connect as many mailboxes as needed.
         </AlertDescription>
       </Alert>

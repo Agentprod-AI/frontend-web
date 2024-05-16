@@ -25,7 +25,7 @@ export default function Page() {
       )
         .then((res) => res.json())
         .then((data) => {
-          console.log("data from settingsss", data);
+          // console.log("data from settingsss", data);
           const initialAccountInfo: Info[] = [
             { id: "ID", value: data.user_id, isEditable: false },
             {
@@ -49,7 +49,7 @@ export default function Page() {
           setAccountInfo(initialAccountInfo);
         })
         .catch((error) => {
-          console.error("Failed to fetch user details:", error);
+          // console.error("Failed to fetch user details:", error);
         });
     }
   }, [user]);

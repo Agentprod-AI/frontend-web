@@ -188,6 +188,22 @@ export const TrainingPeopleProfileSheet = ({
   console.log("New Data from SHeet", newData);
   console.log("New Previews from SHeet", newPreviews);
 
+  // const renderEmploymentHistory = (employmentHistory: any) => {
+  //   const validHistory = Array.isArray(employmentHistory)
+  //     ? employmentHistory
+  //     : [];
+
+  //   if (validHistory.length === 0) {
+  //     return <div>No employment history available.</div>;
+  //   }
+
+  //   return validHistory.map((job, index) => (
+  //     <div key={index} className="text-xs">
+  //       {job.start_date} - {job.end_date || "Present"}: {job.title} at{" "}
+  //       {job.organization_name}
+  //     </div>
+  //   ));
+  // };
   const renderEmploymentHistory = (employmentHistory: any) => {
     const validHistory = Array.isArray(employmentHistory)
       ? employmentHistory
@@ -199,10 +215,30 @@ export const TrainingPeopleProfileSheet = ({
 
     return validHistory.map((job, index) => (
       <div key={index} className="text-xs">
-        {job.start_date} - {job.end_date || "Present"}: {job.title} at{" "}
-        {job.organization_name}
+        {job.start_date.substring(0, 4)} -{" "}
+        {job.end_date ? job.end_date.substring(0, 4) : "Present"}: {job.title}{" "}
+        at {job.organization_name}
       </div>
     ));
+  };
+
+  const renderSingleEmploymentHistory = (employmentHistory: any) => {
+    if (!Array.isArray(employmentHistory) || employmentHistory.length === 0) {
+      return <span>No employment history available.</span>;
+    }
+
+    const firstJob = employmentHistory[0];
+    if (!firstJob) return <span>No job data available.</span>;
+
+    return (
+      <div className="flex gap-4 px-2 py-1 font-mono text-xs justify-between">
+        <span>
+          {firstJob.start_date?.substring(0, 4) || "Unknown"} -
+          {firstJob.end_date ? firstJob.end_date.substring(0, 4) : "Present"}
+        </span>
+        <span className="w-[200px]">{firstJob.title || "No title"}</span>
+      </div>
+    );
   };
 
   const renderPhoneNumbers = (phoneNumbers: any) => {
@@ -219,6 +255,18 @@ export const TrainingPeopleProfileSheet = ({
         </span>
       </div>
     );
+  };
+
+  const renderValue = (value: any) => {
+    if (typeof value === "string" || typeof value === "number") {
+      return value;
+    } else if (Array.isArray(value)) {
+      return value.join(", ");
+    } else if (typeof value === "object") {
+      return JSON.stringify(value);
+    } else {
+      return "";
+    }
   };
 
   if (!data) {
@@ -340,43 +388,99 @@ export const TrainingPeopleProfileSheet = ({
                   </Button>
                 </CollapsibleTrigger>
               </div>
-              {data?.contact?.employment_history && (
-                <>
-                  <div className="flex px-2 py-1 font-mono text-xs justify-between">
-                    <span>
-                      {data?.contact?.employment_history[0].start_date.substring(
-                        0,
-                        4
-                      )}{" "}
-                      - present
-                    </span>
-                    <span className="w-[200px]">
-                      {data?.contact?.employment_history[0].title}
-                    </span>
-                  </div>
-                  <CollapsibleContent className="space-y-2">
-                    {data?.contact?.employment_history.map((val, ind) => {
-                      if (ind === 0) return null;
-                      return (
-                        <div
-                          className="flex px-2 py-1 font-mono text-xs justify-between"
-                          key={`e_his${ind}`}
-                        >
-                          <span>
-                            {val.start_date.substring(0, 4)} -{" "}
-                            {val.end_date ? val.end_date.substring(0, 4) : ""}
-                          </span>
-                          <span className="w-[200px]">{val.title}</span>
-                        </div>
-                      );
-                    })}
-                    {/* <div className="flex px-2 py-1 font-mono text-sm justify-between">
+              {newPreviews
+                ? renderEmploymentHistory(newData?.contact?.employment_history)
+                : renderEmploymentHistory(
+                    data?.contact?.employment_history
+                  ) && (
+                    <>
+                      <div className="flex px-2 py-1 font-mono text-xs justify-between">
+                        <span>
+                          {
+                            newPreviews
+                              ? renderSingleEmploymentHistory(
+                                  newData?.contact?.employment_history
+                                )
+                              : // [0]
+                                // .start_date.substring(
+                                //     0,
+                                //     4
+                                //   )
+                                renderSingleEmploymentHistory(
+                                  data?.contact?.employment_history
+                                )
+                            // [0].start_date.substring(
+                            //     0,
+                            //     4
+                            //   )
+                          }
+                        </span>
+                        {/* <span className="w-[200px]">
+                          {newPreviews
+                            ? newData?.contact?.employment_history[0].title
+                            : data?.contact?.employment_history[0].title}
+                        </span> */}
+                      </div>
+                      <CollapsibleContent className="space-y-2">
+                        {
+                          newPreviews
+                            ? renderEmploymentHistory(
+                                newData?.contact?.employment_history
+                              )
+                            : // .map(
+                              //     (val: any, ind: any) => {
+                              //       if (ind === 0) return null;
+                              //       return (
+                              //         <div
+                              //           className="flex px-2 py-1 font-mono text-xs justify-between"
+                              //           key={`e_his${ind}`}
+                              //         >
+                              //           <span>
+                              //             {val.start_date.substring(0, 4)} -{" "}
+                              //             {val.end_date
+                              //               ? val.end_date.substring(0, 4)
+                              //               : ""}
+                              //           </span>
+                              //           <span className="w-[200px]">
+                              //             {val.title}
+                              //           </span>
+                              //         </div>
+                              //       );
+                              //     }
+                              //   )
+                              renderEmploymentHistory(
+                                data?.contact?.employment_history
+                              )
+                          // .map(
+                          //   (val, ind) => {
+                          //     if (ind === 0) return null;
+                          //     return (
+                          //       <div
+                          //         className="flex px-2 py-1 font-mono text-xs justify-between"
+                          //         key={`e_his${ind}`}
+                          //       >
+                          //         <span>
+                          //           {val.start_date.substring(0, 4)} -{" "}
+                          //           {val.end_date
+                          //             ? val.end_date.substring(0, 4)
+                          //             : ""}
+                          //         </span>
+                          //         <span className="w-[200px]">
+                          //           {val.title}
+                          //         </span>
+                          //       </div>
+                          //     );
+                          //   }
+                          // )
+                        }
+
+                        {/* <div className="flex px-2 py-1 font-mono text-sm justify-between">
                       <span></span>
                       <span>Software Developer</span>
                     </div> */}
-                  </CollapsibleContent>
-                </>
-              )}
+                      </CollapsibleContent>
+                    </>
+                  )}
             </Collapsible>
             <br />
             <br />
@@ -432,20 +536,25 @@ export const TrainingPeopleProfileSheet = ({
             )} */}
             <div>
               <p className="text-sm font-medium leading-none">
-                {data?.contact?.employment_history &&
-                  data?.contact?.employment_history[0].organization_name}
+                {newPreviews
+                  ? newData?.contact?.employment_history?.[0]
+                      ?.organization_name || null
+                  : data?.contact?.employment_history?.[0]?.organization_name ||
+                    null}
               </p>
             </div>
             <div className="space-y-3">
               <div className="flex space-x-2">
                 <span className="text-sm text-muted-foreground">
-                  {data?.linkedin_information?.about_us}
+                  {newPreviews
+                    ? newData?.linkedin_information?.about_us
+                    : data?.linkedin_information?.about_us}
                 </span>
               </div>
               <br />
               <br />
               <div className="flex flex-col gap-2">
-                {data?.linkedin_information?.company_info &&
+                {/* {data?.linkedin_information?.company_info &&
                   Object.entries(data?.linkedin_information?.company_info).map(
                     ([key, value]) => (
                       <div
@@ -458,7 +567,23 @@ export const TrainingPeopleProfileSheet = ({
                         </span>
                       </div>
                     )
-                  )}
+                  )} */}
+                {(newPreviews ? newData : data)?.linkedin_information
+                  ?.company_info &&
+                  Object.entries(
+                    (newPreviews ? newData : data)?.linkedin_information
+                      ?.company_info
+                  ).map(([key, value]) => (
+                    <div
+                      className="text-sm font-semibold text-muted-foreground"
+                      key={key}
+                    >
+                      {formatText(key)}:{" "}
+                      <span className="text-sm font-normal text-muted-foreground">
+                        {renderValue(value)}
+                      </span>
+                    </div>
+                  ))}
               </div>
               <br />
               <br />
@@ -485,7 +610,9 @@ export const TrainingPeopleProfileSheet = ({
                       "Get directions",
                       ""
                     )} */}
-                  {data?.linkedin_information?.company_info?.Headquarters}
+                  {newPreviews
+                    ? newData?.linkedin_information?.company_info?.Headquarters
+                    : data?.linkedin_information?.company_info?.Headquarters}
                 </div>
                 <CollapsibleContent className="space-y-2">
                   <div className="flex flex-col gap-2 px-2">
@@ -530,14 +657,29 @@ export const TrainingPeopleProfileSheet = ({
                     </CollapsibleTrigger>
                   </div>
                   <div className="px-2 py-1 text-xs">
-                    {data?.linkedin_information.affiliated_pages?.title && (
-                      <div className="text-muted-foreground">
-                        {data.linkedin_information.affiliated_pages?.title[0]}
-                        {data.linkedin_information.affiliated_pages
-                          ?.description[0] &&
-                          ` - ${data.linkedin_information.affiliated_pages?.description[0]}`}
-                      </div>
-                    )}
+                    {newPreviews
+                      ? newData?.linkedin_information.affiliated_pages?.title
+                      : data?.linkedin_information.affiliated_pages?.title && (
+                          <div className="text-muted-foreground">
+                            {newPreviews
+                              ? newData.linkedin_information.affiliated_pages
+                                  ?.title[0]
+                              : data.linkedin_information.affiliated_pages
+                                  ?.title[0]}
+                            {newPreviews
+                              ? newData.linkedin_information.affiliated_pages
+                                  ?.description[0]
+                              : data.linkedin_information.affiliated_pages
+                                  ?.description[0] &&
+                                ` - ${
+                                  newPreviews
+                                    ? newData.linkedin_information
+                                        .affiliated_pages?.description[0]
+                                    : data.linkedin_information.affiliated_pages
+                                        ?.description[0]
+                                }`}
+                          </div>
+                        )}
                   </div>
                   <CollapsibleContent className="space-y-2">
                     <div className="flex flex-col gap-2">
@@ -560,7 +702,9 @@ export const TrainingPeopleProfileSheet = ({
                             }
                           }
                         )} */}
-                      {data?.linkedin_information?.affiliated_pages?.title}
+                      {newPreviews
+                        ? newData?.linkedin_information?.affiliated_pages?.title
+                        : data?.linkedin_information?.affiliated_pages?.title}
                     </div>
                   </CollapsibleContent>
                 </Collapsible>
@@ -571,15 +715,49 @@ export const TrainingPeopleProfileSheet = ({
                 <div className="text-sm font-semibold text-muted-foreground">
                   Stock Info:
                 </div>
-                {data?.linkedin_information?.stock_info &&
-                  Object.entries(data?.linkedin_information?.stock_info).map(
-                    ([key, value]) => (
+                {/* {newPreviews
+                  ? newData?.linkedin_information?.stock_info
+                  : data?.linkedin_information?.stock_info &&
+                    Object.entries(
+                      newPreviews
+                        ? newData?.linkedin_information?.stock_info
+                        : data?.linkedin_information?.stock_info
+                    ).map(([key, value]) => (
                       <div className="text-muted-foreground text-sm" key={key}>
                         {formatText(key)}:{" "}
                         <span className="font-normal">{value as string}</span>
                       </div>
+                    ))}
+                    */}
+                {newPreviews
+                  ? newData?.linkedin_information?.stock_info &&
+                    Object.entries(newData.linkedin_information.stock_info).map(
+                      ([key, value]) => (
+                        <div
+                          className="text-muted-foreground text-sm"
+                          key={key}
+                        >
+                          {formatText(key)}:{" "}
+                          <span className="font-normal">
+                            {renderValue(value)}
+                          </span>
+                        </div>
+                      )
                     )
-                  )}
+                  : data?.linkedin_information?.stock_info &&
+                    Object.entries(data.linkedin_information.stock_info).map(
+                      ([key, value]) => (
+                        <div
+                          className="text-muted-foreground text-sm"
+                          key={key}
+                        >
+                          {formatText(key)}:{" "}
+                          <span className="font-normal">
+                            {renderValue(value)}
+                          </span>
+                        </div>
+                      )
+                    )}
               </div>
               <br />
               <br />
@@ -588,14 +766,43 @@ export const TrainingPeopleProfileSheet = ({
                   Funding Info:
                 </div>
                 <div>
-                  {data?.linkedin_information?.funding_info &&
+                  {/* {data?.linkedin_information?.funding_info &&
                     Object.entries(
                       data?.linkedin_information?.funding_info
                     ).map(([key, value]) => (
                       <div className="text-muted-foreground text-sm" key={key}>
                         {formatText(key)}: <span>{value as string}</span>
                       </div>
-                    ))}
+                    ))} */}
+                  {newPreviews
+                    ? newData?.linkedin_information?.funding_info &&
+                      Object.entries(
+                        newData.linkedin_information.funding_info
+                      ).map(([key, value]) => (
+                        <div
+                          className="text-muted-foreground text-sm"
+                          key={key}
+                        >
+                          {formatText(key)}:{" "}
+                          <span className="font-normal">
+                            {renderValue(value)}
+                          </span>
+                        </div>
+                      ))
+                    : data?.linkedin_information?.funding_info &&
+                      Object.entries(
+                        data.linkedin_information.funding_info
+                      ).map(([key, value]) => (
+                        <div
+                          className="text-muted-foreground text-sm"
+                          key={key}
+                        >
+                          {formatText(key)}:{" "}
+                          <span className="font-normal">
+                            {renderValue(value)}
+                          </span>
+                        </div>
+                      ))}
                 </div>
               </div>
             </div>
