@@ -1,6 +1,6 @@
 import React from 'react';
 
-import { Button } from '@/components/ui/button';
+// import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -8,16 +8,16 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { Icons } from '@/components/icons';
+// import { Icons } from '@/components/icons';
 import { HubSpotIcon, LinkedInIcon, SalesForceIcon, SlackIcon, ZapierIcon } from '@/app/icons';
 
-type Service = {
-  name: string;
-  description: string;
-  logo: string;
-  isConnected: boolean;
-  // onConnect: () => void; 
-};
+// type Service = {
+//   name: string;
+//   description: string;
+//   logo: string;
+//   isConnected: boolean;
+//   // onConnect: () => void; 
+// };
 
 const services = [
   { name: 'Slack', description: 'Used to interact with the Artisan and receive notifications.', logo: <SlackIcon/>, isConnected: false },

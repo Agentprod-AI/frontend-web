@@ -17,7 +17,7 @@ import {
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/page";
+import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 import { Button } from "@/components/ui/button";
 import { FieldFormModal } from "./field-form-modal";
 import { capitalizeFirstLetter } from "@/lib/utils";
@@ -30,7 +30,7 @@ export interface TrainingResponse {
   follow_up_template?: string | null;
   variables?: any | null;
   offering_variables?: Record<string, string> | null;
-  personalized_fields: Record<string, any> | undefined 
+  personalized_fields: Record<string, any> | undefined;
   enriched_fields?: string[] | null;
   id?: string;
   type?: string;

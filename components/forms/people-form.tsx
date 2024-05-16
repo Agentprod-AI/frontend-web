@@ -547,6 +547,8 @@ export default function PeopleForm(): JSX.Element {
   // const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
 
+  // console.log("leadsssssss", leads);
+
   function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
       id: lead.id,
@@ -557,7 +559,7 @@ export default function PeopleForm(): JSX.Element {
       last_name: lead.last_name,
       name: lead.name,
       title: lead.title,
-      linkedin_url: lead.linkedin_url,
+      linkedin_url: lead?.linkedin_url,
       email_status: lead.email_status,
       photo_url: lead.photo_url,
       twitter_url: lead.twitter_url,
@@ -580,7 +582,7 @@ export default function PeopleForm(): JSX.Element {
       show_intent: lead.show_intent,
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
-      company_linkedin_url: lead.organization.linkedin_url,
+      company_linkedin_url: lead.company_linkedin_url,
     }));
   }
 

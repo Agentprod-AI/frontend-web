@@ -1,150 +1,103 @@
+/* eslint-disable no-console */
+// /* eslint-disable import/no-unresolved */
 "use client";
-
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import {
-  ResizableHandle,
-  ResizablePanel,
-  ResizablePanelGroup,
-} from "@/components/ui/resizable";
-import { Input } from "@/components/ui/input";
-import { Settings } from "lucide-react";
 import React from "react";
+import { Pencil, Eye } from "lucide-react";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
+import EditorContent from "./editor-content";
+import PreviewContent from "./preview-content";
+import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
+
+import { useUserContext } from "@/context/user-context";
+import { useRouter } from "next/navigation";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import SubjectForm from "@/components/campaign/training/subject-form";
-import FieldList from "@/components/campaign/training/field-list";
-import FieldTextArea from "@/components/campaign/training/field-text-area";
-import { useClerk } from "@clerk/nextjs";
+  allFieldsListType,
+  allFieldsList,
+} from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 
-const allFieldsList: allFieldsListType = {
-  variable: [
-    {
-      id: "1",
-      val: "company name",
-      description: "The name of the company",
-      length: "short",
-    },
-    {
-      id: "2",
-      val: "first name",
-      description: "The first name of the customer",
-      length: "automatic",
-    },
-  ],
-  offering: [
-    {
-      id: "4",
-      val: "customer per industry",
-      description: "The industry of the customer",
-    },
-    {
-      id: "5",
-      val: "customer per region",
-      description: "The region of the customer",
-    },
-  ],
-  personalized: [
-    {
-      id: "7",
-      val: "customer name",
-      description: "The name of the customer",
-    },
-    {
-      id: "8",
-      val: "customer company",
-      description: "The company of the customer",
-    },
-  ],
-  enriched: [
-    {
-      id: "10",
-      val: "enriched",
-      description: "The enriched data",
-    },
-  ],
-};
+export interface PreviewData {
+  subject: string;
+  body: string;
+}
 
-// make a type for all variables
-export type allFieldsListType = {
-  variable: {
-    id?: string;
-    val: string;
-    description: string;
-    length: string;
-  }[];
-  offering: {
-    id?: string;
-    val: string;
-    description: string;
-  }[];
-  personalized: {
-    id?: string;
-    val: string;
-    description: string;
-  }[];
-  enriched: {
-    id?: string;
-    val: string;
-    description: string;
-  }[];
-};
 export default function Training() {
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [activeTab, setActiveTab] = React.useState("editor");
+  const [previewData, setPreviewData] = React.useState<PreviewData>();
+  const [campaignId, setCampaignId] = React.useState("");
+  const { user } = useUserContext();
 
-  const [fieldsList, setFieldsList] =
-    React.useState<allFieldsListType>(allFieldsList);
+  const router = useRouter();
 
-  // useEffect(() => {
-  //   setVariableList([
-  //     ...variableListMain,
-  //     {
-  //       id: 4,
-  //       val: "C-3PO",
-  //     },
-  //   ]);
-  // }, []);
+  React.useEffect(() => {
+    const storedCampaignId = localStorage.getItem("campaignId");
+    if (storedCampaignId) {
+      setCampaignId(storedCampaignId);
+    }
+  }, []);
+
+  const handleGenerateWithAI = async () => {
+    setActiveTab("preview");
+    try {
+      const response = await getAutogenerateTrainingEmail(campaignId, user.id);
+      const data = JSON.parse(response);
+      const subject = data.subject;
+      const body = data.body;
+      setPreviewData({
+        subject,
+        body,
+      });
+      console.log(response);
+    } catch (error) {
+      console.error("Failed to fetch training data:", error);
+    }
+  };
+
+  const handleStartCampaign = async () => {
+    const userId = user.id as string;
+    const campaignId = localStorage.getItem("campaignId") as string;
+
+    try {
+      const response = await startCampaign(campaignId, userId);
+      console.log("saashjashj", response);
+      router.push("/dashboard/mail");
+    } catch (error: any) {
+      console.log(error);
+    }
+  };
 
   return (
-    <ResizablePanelGroup direction="horizontal" className="rounded-lg border">
-      <ResizablePanel defaultSize={75}>
-        <div className="flex justify-center p-6">
-          <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-2">
-            {/* <AvatarImage src="/user.png" alt="user" /> */}
-            <AvatarFallback>NB</AvatarFallback>
-          </Avatar>
-          {/* <Textarea cols={10} /> */}
-          <div className="flex-col w-full">
-            <Collapsible
-              open={isOpen}
-              onOpenChange={setIsOpen}
-              className=" space-y-2"
-            >
-              <div className="flex items-center gap-2">
-                <Input placeholder="Subject" className="flex-1" />
-                <CollapsibleTrigger asChild>
-                  <Settings className="h-5 w-5" />
-                </CollapsibleTrigger>
-              </div>
-              <CollapsibleContent className="space-y-2">
-                <SubjectForm />
-              </CollapsibleContent>
-            </Collapsible>
-            <FieldTextArea fieldsList={fieldsList} />
-            <span className="text-xs text-gray-500">
-              *use variables like: &#123;variable_name&#125;
-            </span>
-          </div>
+    <>
+      <div className="w-full h-14 px-4 flex flex-row justify-between items-center rounded-lg border">
+        <div className="ml-4">Training</div>
+        <div className="flex items-center flex-row">
+          <Tabs
+            value={activeTab}
+            onValueChange={setActiveTab}
+            className="w-[200px]"
+          >
+            <TabsList>
+              <TabsTrigger value="editor" className="flex gap-1">
+                <Pencil className="h-3 w-3" />
+                Editor
+              </TabsTrigger>
+              <TabsTrigger value="preview" className="flex gap-1">
+                <Eye className="h-3 w-3" />
+                Preview
+              </TabsTrigger>
+            </TabsList>
+          </Tabs>
+          <Button onClick={handleStartCampaign}>Start campaign</Button>
         </div>
-      </ResizablePanel>
-      <ResizableHandle withHandle />
-      <ResizablePanel defaultSize={25}>
-        <div className="flex h-full items-center justify-center p-6">
-          <FieldList fieldsList={fieldsList} setFieldsList={setFieldsList} />
-        </div>
-      </ResizablePanel>
-    </ResizablePanelGroup>
+      </div>
+      {activeTab === "editor" ? (
+        <EditorContent onGenerateWithAI={handleGenerateWithAI} />
+      ) : (
+        <PreviewContent
+          subject={previewData?.subject}
+          body={previewData?.body}
+        />
+      )}
+    </>
   );
 }

@@ -1,28 +1,12 @@
 "use client";
-import React, { useEffect, useState } from "react";
-import { LocationCardDashboard } from "@/components/cards/location-card";
-import { SalesMetrics } from "@/components/cards/sales-matrics";
-import { BarChartComponent } from "@/components/charts/bar-chart";
+import React from "react";
 import { LineChartComponent } from "@/components/charts/line-chart";
-import { CalendarDateRangePicker } from "@/components/date-range-picker";
-import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
-import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+
+// import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
+
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+
 import {
   Table,
   TableBody,
@@ -31,25 +15,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { barChartData } from "@/constants/chart";
-import { useCampaignContext } from "@/context/campaign-provider";
-import { ChevronDown, Download } from "lucide-react";
-import Link from "next/link";
+
 import { Icons } from "@/components/icons";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CircularProgressbar } from "react-circular-progressbar";
 import { Progress } from "@/components/ui/progress";
 import { card_data, hot_leads, campaigns } from "@/constants/data";
 
 export default function Page() {
-  const { toggleSidebar, setItemId } = useLeadSheetSidebar();
+  // const { toggleSidebar, setItemId } = useLeadSheetSidebar();
 
-  const handleOpenSidebar = (id: string) => {
-    setItemId(id);
-    toggleSidebar(true);
-  };
+  // const handleOpenSidebar = (id: string) => {
+  //   setItemId(id);
+  //   toggleSidebar(true);
+  // };
 
   return (
     <ScrollArea className="h-full">

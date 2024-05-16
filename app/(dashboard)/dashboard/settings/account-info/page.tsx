@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
-import { useClerk } from "@clerk/nextjs";
+import { useUserContext } from "@/context/user-context";
 
 type Info = {
   id: string;
@@ -14,33 +14,43 @@ type Info = {
 };
 
 export default function Page() {
-  const { user } = useClerk();
+  const { user } = useUserContext();
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
 
   React.useEffect(() => {
-    if (user) {
-      const initialAccountInfo: Info[] = [
-        { id: "ID", value: user.id, isEditable: false },
-        { id: "Sender First Name", value: user.firstName, isEditable: true },
-        { id: "Sender Last Name", value: user.lastName, isEditable: true },
-        { id: "Sender Job", value: "CTO", isEditable: true },
-        {
-          id: "Email",
-          value: user.emailAddresses[0]?.emailAddress,
-          isEditable: true,
-        },
-        { id: "Company", value: "100xengineers", isEditable: true },
-        { id: "Company ID", value: 126, isEditable: false },
-        {
-          id: "Notifications",
-          value: user.emailAddresses[0]?.emailAddress,
-          isEditable: true,
-        },
-        { id: "Plan", value: "Starter", isEditable: false },
-        { id: "Leads used", value: "876/1000", isEditable: false },
-      ];
-      setAccountInfo(initialAccountInfo);
+    if (user?.id) {
+      fetch(
+        `https://agentprod-backend-framework-zahq.onrender.com/v2/settings/${user.id}`
+      )
+        .then((res) => res.json())
+        .then((data) => {
+          // console.log("data from settingsss", data);
+          const initialAccountInfo: Info[] = [
+            { id: "ID", value: data.user_id, isEditable: false },
+            {
+              id: "Sender First Name",
+              value: data.first_name,
+              isEditable: true,
+            },
+            { id: "Sender Last Name", value: data.last_name, isEditable: true },
+            { id: "Sender Job", value: data.job, isEditable: true },
+            { id: "Email", value: data.email, isEditable: true },
+            { id: "Company", value: data.company, isEditable: true },
+            { id: "Company ID", value: data.companyId, isEditable: false },
+            {
+              id: "Notifications",
+              value: data.notifications,
+              isEditable: true,
+            },
+            { id: "Plan", value: data.plan, isEditable: false },
+            { id: "Leads used", value: data.leads_used, isEditable: false },
+          ];
+          setAccountInfo(initialAccountInfo);
+        })
+        .catch((error) => {
+          // console.error("Failed to fetch user details:", error);
+        });
     }
   }, [user]);
 

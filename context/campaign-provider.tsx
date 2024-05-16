@@ -9,9 +9,8 @@ import React, {
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
-import { useAuth } from "./auth-provider";
-import axios from "axios";
 import { useUserContext } from "./user-context";
+import { string } from "zod";
 
 interface CampaignFormData {
   [key: string]: any;
@@ -99,15 +98,16 @@ const defaultGoalEntry: GoalFormData = {
   emails: [],
   follow_up_days: 0,
   follow_up_times: 0,
-  mark_as_lost: 0
-}
+  mark_as_lost: 0,
+};
 
 const defaultOfferingEntry: OfferingFormData = {
   product_offering: "",
-  offering_details: ""
-}
+  offering_details: "",
+};
 
 interface CampaignContextType {
+  campaignId: string | null;
   campaigns: CampaignEntry[];
   createCampaign: (data: CampaignFormData) => void;
   editCampaign: (data: CampaignFormData) => void;
@@ -119,7 +119,7 @@ interface CampaignContextType {
   toggleCampaignIsActive: (campaignId: string) => void;
   getCampaignById: (campaignId: string) => CampaignEntry;
   getGoalById: (campaignId: string) => GoalFormData;
-  getOfferingById: (campaignId: string) => OfferingFormData;  
+  getOfferingById: (campaignId: string) => OfferingFormData;
   isLoading: boolean;
 }
 
@@ -137,6 +137,7 @@ const defaultCampaignState: CampaignContextType = {
   getGoalById: (campaignId: string) => ({ ...defaultGoalEntry }),
   getOfferingById: (campaignId: string) => ({ ...defaultOfferingEntry }),
   isLoading: true,
+  campaignId: null, // May cause error, done this coz of deployment error
 };
 
 // Use the default state when creating the context
@@ -157,10 +158,28 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const [campaigns, setCampaigns] = useState<any[]>([]);
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
+  const [isUserLoaded, setIsUserLoaded] = React.useState(false);
+  const [userId, setUserId] = React.useState<string>();
+
+  React.useEffect(() => {
+    if (user && user.id) {
+      setUserId(user.id);
+    }
+  }, [user]);
+
+  // Experiment with the useEffect hook to see if it can be used to set the campaignId in localStorage
+
+  React.useEffect(() => {
+    if (campaignId) {
+      localStorage.setItem("campaignId", campaignId);
+    }
+  }, [campaignId]);
+  // --------------------------------------------
 
   const createCampaign = (data: CampaignFormData) => {
+    console.log("user from camapgin", user);
     const postData = {
-      user_id: user?.id,
+      user_id: userId,
       campaign_name: data.campaignName,
       campaign_type: data.campaignType,
       daily_outreach_number: data.dailyOutreach,
@@ -179,28 +198,30 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       schedule_type: "none",
     };
 
-    axiosInstance
-      .post("v2/campaigns/", postData)
-      .then((response) => {
-        console.log("Campaign created successfully:", response);
+    if (postData)
+      axiosInstance
+        .post("v2/campaigns/", postData)
+        .then((response) => {
+          console.log("Campaign created successfully:", response);
+          setCampaignId(response.data.id);
+          console.log(response.data.id, "response.data.id");
+          console.log(campaignId, "campaignId");
+          localStorage.setItem("campaignId", response.data.id);
+          let formsTracker = JSON.parse(
+            localStorage.getItem("formsTracker") || "{}"
+          );
+          formsTracker.schedulingBudget = true;
+          localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
-        setCampaignId(response.data.id);
-        localStorage.setItem("campaignId", response.data.id);
-        let formsTracker = JSON.parse(
-          localStorage.getItem("formsTracker") || "{}"
-        );
-        formsTracker.schedulingBudget = true;
-        localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
-
-        router.push("/dashboard/campaign/create");
-      })
-      .catch((error) => {
-        console.error("Error creating Campaign:", error);
-        toast({
-          title: "Error creating campaign",
-          description: error.message || "Failed to create campaign.",
+          router.push("/dashboard/campaign/create");
+        })
+        .catch((error) => {
+          console.error("Error creating Campaign:", error);
+          toast({
+            title: "Error creating campaign",
+            description: error.message || "Failed to create campaign.",
+          });
         });
-      });
   };
 
   const editCampaign = (data: CampaignFormData) => {
@@ -283,6 +304,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     const postData = {
       campaign_id: localStorage.getItem("campaignId"),
       emails: data.emails.map((email) => email.value),
+      current_email: "muskaan@agentprodai.com",
       success_metric: data.success_metric,
       scheduling_link: data.scheduling_link,
       follow_up_days: data.follow_up_days,
@@ -329,52 +351,52 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
 
   const getCampaignById = (campaignId: string): CampaignEntry => {
     axiosInstance
-    .get(`v2/campaigns/${campaignId}`)
-    .then((response) => {
-      console.log("Campaign fetched successfully:", response.data);
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching campaign:", error);
-      toast({
-        title: "Error fetching campaign",
-        description: error.message || "Failed to fetch campaign.",
+      .get(`v2/campaigns/${campaignId}`)
+      .then((response) => {
+        console.log("Campaign fetched successfully:", response.data);
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching campaign:", error);
+        toast({
+          title: "Error fetching campaign",
+          description: error.message || "Failed to fetch campaign.",
+        });
       });
-    });
 
     return defaultCampaignEntry;
   };
 
   const getGoalById = (campaignId: string): GoalFormData => {
     axiosInstance
-    .get(`v2/goals/${campaignId}`)
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching goal:", error);
-      toast({
-        title: "Error fetching goal",
-        description: error.message || "Failed to fetch goal.",
+      .get(`v2/goals/${campaignId}`)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching goal:", error);
+        toast({
+          title: "Error fetching goal",
+          description: error.message || "Failed to fetch goal.",
+        });
       });
-    });
 
     return defaultGoalEntry;
   };
 
   const getOfferingById = (campaignId: string): OfferingFormData => {
     axiosInstance
-    .get(`v2/offerings/${campaignId}`)
-    .then((response) => {
-      return response.data;
-    })
-    .catch((error) => {
-      console.error("Error fetching offering:", error);
-      toast({
-        title: "Error fetching offering",
-        description: error.message || "Failed to fetch offering.",
+      .get(`v2/offerings/${campaignId}`)
+      .then((response) => {
+        return response.data;
+      })
+      .catch((error) => {
+        console.error("Error fetching offering:", error);
+        toast({
+          title: "Error fetching offering",
+          description: error.message || "Failed to fetch offering.",
+        });
       });
-    });
 
     return defaultOfferingEntry;
   };
@@ -390,19 +412,21 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   };
 
   React.useEffect(() => {
-    const testUserId = "9cbe5057-59fe-4e6e-8399-b9cd85cc9c6c"
-    axiosInstance
-      .get<CampaignEntry[]>(`v2/campaigns/all/${testUserId}`)
-      .then((response) => {
-        setCampaigns(response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching campaign:", error);
-        setError(error.message || "Failed to load campaign.");
-        setIsLoading(false);
-      });
-  }, []);
+    if (userId) {
+      axiosInstance
+        .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
+        .then((response) => {
+          console.log("response from all campaigns api", response);
+          setCampaigns(response.data);
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching campaign:", error);
+          setError(error.message || "Failed to load campaign.");
+          setIsLoading(false);
+        });
+    }
+  }, [userId]);
 
   const contextValue = useMemo(
     () => ({
@@ -419,8 +443,9 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       getOfferingById,
       campaigns,
       isLoading,
+      campaignId,
     }),
-    [campaignId, campaigns]
+    [userId, campaignId, campaigns]
   );
 
   return (

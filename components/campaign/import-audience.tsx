@@ -179,7 +179,8 @@ export const ImportAudience = () => {
 
     console.log("enriched leads: ", enrichedLeads);
   };
-
+ 
+  
   function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
       id: lead.id,
@@ -190,7 +191,7 @@ export const ImportAudience = () => {
       last_name: lead.last_name,
       name: lead.name,
       title: lead.title,
-      linkedin_url: lead.linkedin_url,
+      linkedin_url: lead?.linkedin_url,
       email_status: lead.email_status,
       photo_url: lead.photo_url,
       twitter_url: lead.twitter_url,
@@ -213,7 +214,7 @@ export const ImportAudience = () => {
       show_intent: lead.show_intent,
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
-      company_linkedin_url: lead.organization.linkedin_url,
+      company_linkedin_url: lead.company_linkedin_url,
     }));
   }
 
