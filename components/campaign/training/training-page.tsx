@@ -20,21 +20,14 @@ export interface PreviewData {
   subject: string;
   body: string;
 }
+import { useParams } from "next/navigation";
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
   const [previewData, setPreviewData] = React.useState<PreviewData>();
   const [campaignId, setCampaignId] = React.useState("");
   const { user } = useUserContext();
-
-  const router = useRouter();
-
-  React.useEffect(() => {
-    const storedCampaignId = localStorage.getItem("campaignId");
-    if (storedCampaignId) {
-      setCampaignId(storedCampaignId);
-    }
-  }, []);
+  const params = useParams<{ campaignId: string }>();
 
   const handleGenerateWithAI = async () => {
     setActiveTab("preview");
@@ -55,7 +48,6 @@ export default function Training() {
 
   const handleStartCampaign = async () => {
     const userId = user.id as string;
-    const campaignId = localStorage.getItem("campaignId") as string;
 
     try {
       const response = await startCampaign(campaignId, userId);

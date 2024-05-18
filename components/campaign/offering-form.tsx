@@ -1,7 +1,7 @@
-"use client"; // This directive must be at the very top
+"use client";
 
 import { useEffect, useState } from "react";
-import { useRouter, useSearchParams, useParams } from "next/navigation"; // Make sure this import is correct for client-only usage
+import { useRouter, useParams } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -16,16 +16,26 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { useCampaignContext } from "@/context/campaign-provider";
-import axios from "axios"; // Ensure axios is suitable for client-side
+import { Textarea } from "@/components/ui/textarea"; // Adjust the import path as needed
+import {
+  useCampaignContext,
+  OfferingFormData,
+} from "@/context/campaign-provider";
+import {
+  getOfferingById,
+  getPersonaByUserId,
+  createPersona,
+} from "./camapign.api";
+import { useUserContext } from "@/context/user-context";
+import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjust the import path as needed
 
-// Define the validation schema using Zod
 const profileFormSchema = z.object({
   product_offering: z.string().min(2).max(30),
   offering_details: z.string(),
-  pain_point: z.array(z.string()), // Handling pain points as an array of strings
-  values: z.array(z.string()), // Handling values as an array of strings
+  pain_point: z.array(z.string()),
+  values: z.array(z.string()),
+  customer_success_stories: z.array(z.string()),
+  detailed_product_description: z.string(),
 });
 
 type OfferingFormValues = z.infer<typeof profileFormSchema>;
@@ -34,75 +44,115 @@ export function OfferingForm({ type }: { type: string }) {
   const router = useRouter();
   const params = useParams<{ campaignId: string }>();
 
-  const [formData, setFormData] = useState<OfferingFormValues>({
-    product_offering: "",
-    offering_details: "",
-    pain_point: [
-      "People don't want to hire BDRs because they're too expense",
-      "you need to use too many platforms to do cold email",
-      "cold email requires specialized hires and skills",
-      "lead research and personalized email is time consuming",
-      "setting up outbound sales takes too long",
-    ],
-    values: [
-      "Our first AI employee, SDR Sally, actively searches for leads within a database of 300 million contacts, analyzing over 60+ data points across the internet.",
-      "It crafts and sends personalized email sequences to thousands of prospects after researching their profiles.",
-      "Sally responds to inquiries, follows up, and schedules meetings directly into SDRs' calendars while auto updating CRM for all actions taken by AI.",
-      "Enabling fully automated and scalable sales.",
-      "Reply to any Email in <10 min",
-      "Grow your sales pipeline at 10% of cost",
-      "Book meetings 10x faster",
-      "Put on autopilot",
-    ],
-  });
+  const { user } = useUserContext();
 
   const form = useForm<OfferingFormValues>({
     resolver: zodResolver(profileFormSchema),
-    defaultValues: formData,
+    defaultValues: {
+      product_offering: "",
+      offering_details: "",
+      pain_point: [""],
+      values: [""],
+      customer_success_stories: [""],
+      detailed_product_description: "",
+    },
     mode: "onChange",
   });
 
-  const { createOffering, editOffering, getOfferingById } =
-    useCampaignContext();
-
-  async function onSubmit(data: OfferingFormValues) {
-    if (type === "create") {
-      createOffering(data);
-    } else if (type === "edit") {
-      editOffering(data);
-    }
-  }
-
-  // useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axios.get('https://agentprod-backend-framework-9e52.onrender.com/v2/personas/db02731a-cf14-4bb4-b56c-c1b5df9802bc');
-  //       setFormData({
-  //         product_offering: response.data.product_offering,
-  //         offering_details: response.data.offering_details,
-  //         pain_point: response.data.pain_point || [],
-  //         values: response.data.values || []
-  //       });
-  //     } catch (error) {
-  //       console.error('Failed to fetch data:', error);
-  //     }
-  //   };
-  //   fetchData();
-  // }, []);
-
-  useEffect(() => {
-    if (type === "edit") {
-      const id = params.campaignId;
-      console.log(id);
-      if (id) {
-        const offering = getOfferingById(id);
-        if (offering) {
-          form.setValue("product_offering", offering.product_offering);
-          form.setValue("offering_details", offering.offering_details);
-        }
+  const fetchPersona = async () => {
+    if (user?.id) {
+      const persona = await getPersonaByUserId(user.id);
+      if (persona) {
+        form.setValue("pain_point", persona.pain_point);
+        form.setValue("values", persona.values);
+        form.setValue(
+          "customer_success_stories",
+          persona.customer_success_stories || [""]
+        );
+        form.setValue(
+          "detailed_product_description",
+          persona.detailed_product_description
+        );
       }
     }
-  }, []);
+  };
+
+  useEffect(() => {
+    fetchPersona();
+  }, [user]);
+
+  const { createOffering, editOffering } = useCampaignContext();
+  const [offeringData, setOfferingData] = useState<OfferingFormData>();
+
+  const onSubmit = async (data: OfferingFormValues) => {
+    const postData = {
+      user_id: user?.id,
+      campaign_id: params.campaignId,
+      pain_point: data.pain_point,
+      values: data.values,
+      customer_success_stories: data.customer_success_stories,
+      detailed_product_description: data.detailed_product_description,
+    };
+
+    createPersona(postData)
+      .then(() => {
+        if (type === "create") {
+          createOffering(
+            { name: data.product_offering, details: data.offering_details },
+            params.campaignId
+          );
+        } else if (type === "edit") {
+          editOffering(
+            { name: data.product_offering, details: data.offering_details },
+            params.campaignId
+          );
+        }
+      })
+      .catch((error) => {
+        console.error("Error creating persona:", error);
+      });
+  };
+
+  useEffect(() => {
+    const fetchOffering = async () => {
+      if (type === "edit") {
+        const id = params.campaignId;
+        if (id) {
+          const offering = await getOfferingById(id);
+          setOfferingData(offering || undefined);
+        }
+      }
+    };
+
+    fetchOffering();
+  }, [params.campaignId]);
+
+  useEffect(() => {
+    if (offeringData) {
+      form.setValue("product_offering", offeringData?.name);
+      form.setValue("offering_details", offeringData?.details);
+    }
+  }, [offeringData]);
+
+  const transformToCompanyProfile = (
+    data: string[],
+    label: string,
+    actionLabel: string
+  ) => {
+    return {
+      label: label,
+      items: data,
+      actionLabel: actionLabel,
+    };
+  };
+
+  const handleCompanyProfileChange = (
+    newValue: any[],
+    fieldName: "pain_point" | "values" | "customer_success_stories"
+  ) => {
+    const updatedValue = newValue[0].items || [];
+    form.setValue(fieldName, updatedValue, { shouldValidate: false });
+  };
 
   return (
     <Form {...form}>
@@ -128,13 +178,36 @@ export function OfferingForm({ type }: { type: string }) {
             <FormItem>
               <FormLabel>Details of offers and details</FormLabel>
               <FormControl>
-                <Textarea
+                <Input
                   placeholder="Describe the product and features."
                   {...field}
                 />
               </FormControl>
               <FormDescription>
                 You can write details of your product here
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <h1 className="text-2xl font-bold tracking-tight mb-4">
+          Company Profile
+        </h1>
+        <FormField
+          control={form.control}
+          name="detailed_product_description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Detailed Product Description</FormLabel>
+              <FormControl>
+                <Textarea
+                  className="h-40"
+                  placeholder="Detailed description of the product"
+                  {...field}
+                />
+              </FormControl>
+              <FormDescription>
+                Provide a detailed description of your product here.
               </FormDescription>
               <FormMessage />
             </FormItem>
@@ -147,7 +220,18 @@ export function OfferingForm({ type }: { type: string }) {
             <FormItem>
               <FormLabel>Pain Points</FormLabel>
               <FormControl>
-                <Textarea placeholder="List pain points" {...field} />
+                <CompanyProfile
+                  value={[
+                    transformToCompanyProfile(
+                      field.value,
+                      "Pain Points",
+                      "Pain Point"
+                    ),
+                  ]}
+                  onChange={(newValue) =>
+                    handleCompanyProfileChange(newValue, "pain_point")
+                  }
+                />
               </FormControl>
             </FormItem>
           )}
@@ -159,7 +243,40 @@ export function OfferingForm({ type }: { type: string }) {
             <FormItem>
               <FormLabel>Values</FormLabel>
               <FormControl>
-                <Textarea placeholder="List values" {...field} />
+                <CompanyProfile
+                  value={[
+                    transformToCompanyProfile(field.value, "Values", "Value"),
+                  ]}
+                  onChange={(newValue) =>
+                    handleCompanyProfileChange(newValue, "values")
+                  }
+                />
+              </FormControl>
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="customer_success_stories"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Social Proof</FormLabel>
+              <FormControl>
+                <CompanyProfile
+                  value={[
+                    transformToCompanyProfile(
+                      field.value,
+                      "Social Proof",
+                      "Success Story"
+                    ),
+                  ]}
+                  onChange={(newValue) =>
+                    handleCompanyProfileChange(
+                      newValue,
+                      "customer_success_stories"
+                    )
+                  }
+                />
               </FormControl>
             </FormItem>
           )}

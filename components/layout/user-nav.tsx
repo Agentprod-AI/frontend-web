@@ -105,11 +105,18 @@ import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next";
 import { useAuth } from "@/context/auth-provider";
+import { useState, useEffect } from "react";
 
 export function UserNav() {
   const router = useRouter();
   const { user, setUser } = useUserContext();
   const { logout } = useAuth();
+
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const logoutUser = async () => {
     try {
@@ -121,9 +128,8 @@ export function UserNav() {
         firstName: "",
         email: "",
       });
-      // Ensure redirect happens after state and cookies are cleared
-      logout();
-      router.push("/");
+      logout(); // Ensure logout state is cleared before redirect
+      router.push("/login");
     } catch (error) {
       console.error("Logout failed:", error);
     }
@@ -133,23 +139,20 @@ export function UserNav() {
     return (
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
-            <Avatar className="h-8 w-8 bg-accent">
-              <AvatarImage
-                // src={user?.imageUrl || "./user.png"}
-                alt={user?.firstName ?? ""}
-              />
-              <AvatarFallback>{user.firstName?.[0]}</AvatarFallback>
-            </Avatar>
-          </Button>
+          {isClient && (
+            <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+              <Avatar className="h-8 w-8 bg-accent">
+                <AvatarImage src={"./user.png"} alt={user?.firstName ?? ""} />
+                <AvatarFallback>{user.firstName?.[0]}</AvatarFallback>
+              </Avatar>
+            </Button>
+          )}
         </DropdownMenuTrigger>
         <DropdownMenuContent className="w-56" align="end" forceMount>
           <DropdownMenuLabel className="font-normal">
             <div className="flex flex-col space-y-1">
               <p className="text-sm font-medium leading-none">
-                {`${user.firstName ?? ""} 
-                `}
-                {/* ${user.lastName ?? ""} */}
+                {`${user.firstName ?? ""}`}
               </p>
               <p className="text-xs leading-none text-muted-foreground">
                 {user?.email}
@@ -173,7 +176,7 @@ export function UserNav() {
             <DropdownMenuItem>New Team</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={() => logoutUser()}>
+          <DropdownMenuItem onClick={logoutUser}>
             Log out
             <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
           </DropdownMenuItem>

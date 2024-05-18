@@ -29,8 +29,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
-import { useCampaignContext } from "@/context/campaign-provider";
-import { useEffect } from "react";
+import { useCampaignContext, GoalFormData } from "@/context/campaign-provider";
+import { getGoalById } from "./camapign.api";
+import { useEffect, useState } from "react";
 
 const dummyEmails = [
   "john.doe@example.com",
@@ -47,19 +48,25 @@ const dummyEmails = [
 
 const goalFormSchema = z.object({
   success_metric: z.string(),
-  scheduling_link: z.string().url(),
+  scheduling_link: z.string().url({ message: "Invalid URL" }),
   emails: z
     .array(
       z.object({
-        value: z.string(),
+        value: z.string().email({ message: "Invalid email address" }),
       })
     )
-    .refine((value) => value.some((item) => item), {
-      message: "You have to select at least one item.",
+    .refine((value) => value.length > 0, {
+      message: "You have to select at least one email.",
     }),
-  follow_up_days: z.number(),
-  follow_up_times: z.number(),
-  mark_as_lost: z.number(),
+  follow_up_days: z
+    .number()
+    .positive({ message: "Follow-up days must be a positive number" }),
+  follow_up_times: z
+    .number()
+    .positive({ message: "Follow-up times must be a positive number" }),
+  mark_as_lost: z
+    .number()
+    .positive({ message: "Mark as lost must be a positive number" }),
 });
 
 type GoalFormValues = z.infer<typeof goalFormSchema>;
@@ -70,7 +77,8 @@ export function GoalForm({ type }: { type: string }) {
   const router = useRouter();
   const params = useParams<{ campaignId: string }>();
 
-  const { createGoal, editGoal, getGoalById } = useCampaignContext();
+  const { createGoal, editGoal } = useCampaignContext();
+  const [goalData, setGoalData] = useState<GoalFormData>();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -109,7 +117,7 @@ export function GoalForm({ type }: { type: string }) {
 
   const onSubmit: SubmitHandler<GoalFormValues> = (data) => {
     if (type === "create") {
-      createGoal(data);
+      createGoal(data, params.campaignId);
     }
     if (type === "edit") {
       const changes = Object.keys(data).reduce((acc, key) => {
@@ -128,27 +136,35 @@ export function GoalForm({ type }: { type: string }) {
       }, {} as GoalFormValues);
 
       if (Object.keys(changes).length > 0) {
-        editGoal(changes);
+        editGoal(changes, params.campaignId);
       }
     }
   };
 
   useEffect(() => {
-    if (type === "edit") {
-      const id = params.campaignId;
-      console.log(id);
-      if (id) {
-        const goal = getGoalById(id);
-        if (goal) {
-          form.setValue("success_metric", goal.success_metric);
-          form.setValue("scheduling_link", goal.scheduling_link);
-          form.setValue("follow_up_days", goal.follow_up_days);
-          form.setValue("follow_up_times", goal.follow_up_times);
-          form.setValue("mark_as_lost", goal.mark_as_lost);
+    const fetchGoal = async () => {
+      if (type === "edit") {
+        const id = params.campaignId;
+        if (id) {
+          const goal = await getGoalById(id);
+          setGoalData(goal || null);
         }
       }
+    };
+
+    fetchGoal();
+  }, [params.campaignId, getGoalById]);
+
+  useEffect(() => {
+    if (goalData) {
+      form.setValue("success_metric", goalData.success_metric);
+      form.setValue("scheduling_link", goalData.scheduling_link);
+      form.setValue("follow_up_days", goalData.follow_up_days);
+      form.setValue("follow_up_times", goalData.follow_up_times);
+      form.setValue("mark_as_lost", goalData.mark_as_lost);
+      form.setValue("emails", goalData.emails);
     }
-  }, []);
+  }, [goalData]);
 
   return (
     <Form {...form}>
@@ -167,7 +183,7 @@ export function GoalForm({ type }: { type: string }) {
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value || goalData?.success_metric}
                   className="flex flex-col space-y-1"
                 >
                   <FormItem className="flex items-center space-x-3 space-y-0">
