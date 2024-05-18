@@ -22,7 +22,8 @@ import { Button } from "@/components/ui/button";
 import { FieldFormModal } from "./field-form-modal";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { getTraining } from "./training.api";
+import { getTrainingByCampaignId } from "./training.api";
+import { useParams } from "next/navigation";
 
 export interface TrainingResponse {
   campaign_id?: string;
@@ -42,15 +43,18 @@ export default function FieldList({
   fieldsList: allFieldsListType;
   setFieldsList: (val: allFieldsListType) => void;
 }) {
+  const params = useParams<{ campaignId: string }>();
+
   useEffect(() => {
     const fetchFields = async () => {
       try {
-        const fields: TrainingResponse[] = await Promise.all([
-          getTraining("variable"),
-          getTraining("personalized"),
-          getTraining("offering"),
-          getTraining("enriched"),
-        ]);
+        const responseFromGetTraining = await getTrainingByCampaignId(
+          params.campaignId
+        );
+
+        console.log("response from get training", responseFromGetTraining);
+
+        const fields: TrainingResponse[] = responseFromGetTraining;
 
         const updatedFieldsList: allFieldsListType = {
           variable: fields

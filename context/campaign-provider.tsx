@@ -98,7 +98,6 @@ export const defaultOfferingEntry: OfferingFormData = {
 };
 
 interface CampaignContextType {
-  campaignId: string | null;
   campaigns: CampaignEntry[];
   createCampaign: (data: CampaignFormData) => void;
   editCampaign: (data: CampaignFormData, campaignId: string) => void;
@@ -108,9 +107,6 @@ interface CampaignContextType {
   createGoal: (data: GoalFormData, campaignId: string) => void;
   editGoal: (data: GoalFormData, campaignId: string) => void;
   toggleCampaignIsActive: (campaignId: string) => void;
-  // getCampaignById: (campaignId: string) => Promise<any>;
-  // getGoalById: (campaignId: string) => GoalFormData;
-  // getOfferingById: (campaignId: string) => OfferingFormData;
   isLoading: boolean;
 }
 
@@ -124,11 +120,7 @@ const defaultCampaignState: CampaignContextType = {
   createGoal: () => {},
   editGoal: () => {},
   toggleCampaignIsActive: () => {},
-  // getCampaignById: (campaignId: string) => ({ ...defaultCampaignEntry }),
-  // getGoalById: (campaignId: string) => ({ ...defaultGoalEntry }),
-  // getOfferingById: (campaignId: string) => ({ ...defaultOfferingEntry }),
-  isLoading: true,
-  campaignId: null, // May cause error, done this coz of deployment error
+  isLoading: false,
 };
 
 // Use the default state when creating the context
@@ -158,15 +150,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     }
   }, [user]);
 
-  // Experiment with the useEffect hook to see if it can be used to set the campaignId in localStorage
-
-  React.useEffect(() => {
-    if (campaignId) {
-      localStorage.setItem("campaignId", campaignId);
-    }
-  }, [campaignId]);
-  // --------------------------------------------
-
   const createCampaign = (data: CampaignFormData) => {
     console.log("user from camapgin", user);
     const postData = {
@@ -193,9 +176,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         .post("v2/campaigns/", postData)
         .then((response) => {
           console.log("Campaign created successfully:", response);
-
-          // setCampaignId(response.data.id);
-          // localStorage.setItem("campaignId", response.data.id);
           let formsTracker = JSON.parse(
             localStorage.getItem("formsTracker") || "{}"
           );
@@ -393,7 +373,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       toggleCampaignIsActive,
       campaigns,
       isLoading,
-      campaignId,
     }),
     [userId, campaigns]
   );

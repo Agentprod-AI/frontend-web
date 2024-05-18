@@ -10,38 +10,50 @@ import {
 import { Button } from "@/components/ui/button";
 
 import TextField from "./preview-text-field";
-import { Data, TrainingPeopleProfileSheet } from "./training_profile_sheet";
+import { Data } from "./training_profile_sheet";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
+import { useParams } from "next/navigation";
+import { PeopleProfileSheet } from "@/components/people-profile-sheet";
+import { Lead } from "@/context/lead-user";
 
-function PreviewContent({ subject, body }: any) {
+interface PreviewContentProps {
+  email: {
+    subject: string;
+    body: string;
+  };
+  contact: Lead;
+  linkedin_information: any; // Replace `any` with appropriate type if available
+}
+
+function PreviewContent({
+  email: initialEmail,
+  contact: initialContact,
+  linkedin_information: initialLinkedinInformation,
+}: PreviewContentProps) {
   const [newPreviews, setNewPreviews] = React.useState(false);
-  const [newData, setNewData] = React.useState<Data | null>(null);
-  const [newSubject, setNewSubject] = React.useState("");
-  const [newBody, setNewBody] = React.useState("");
-  const [campaignId, setCampaignId] = React.useState("");
+  const [newContact, setNewContact] = React.useState<Lead>(initialContact);
+  const [newSubject, setNewSubject] = React.useState(initialEmail.subject);
+  const [newBody, setNewBody] = React.useState(initialEmail.body);
+  const [newLinkedinInformation, setNewLinkedinInformation] = React.useState(
+    initialLinkedinInformation
+  );
   const { user } = useUserContext();
-
-  React.useEffect(() => {
-    const storedCampaignId = localStorage.getItem("campaignId");
-    if (storedCampaignId) {
-      setCampaignId(storedCampaignId);
-    }
-  }, []);
+  const params = useParams<{ campaignId: string }>();
 
   const newPreview = async () => {
     try {
       const response = await axiosInstance.post("v2/training/preview", {
-        campaign_id: campaignId,
+        campaign_id: params.campaignId,
         user_id: user.id,
       });
-
-      const { email, ...restData } = response.data;
+      console.log("response", response);
+      const { email, contact } = response.data;
       setNewPreviews(true);
       setNewSubject(email.subject);
       setNewBody(email.body);
-      setNewData({ ...restData });
+      setNewContact(contact);
     } catch (error) {
       console.error("Failed to fetch data:", error);
       setNewPreviews(false);
@@ -63,17 +75,13 @@ function PreviewContent({ subject, body }: any) {
               <Input
                 placeholder="Subject"
                 className="flex-1 h-12"
-                value={
-                  newPreviews ? newSubject : subject || "Loading subject..."
-                }
+                value={newSubject}
                 readOnly
               />
             </div>
 
             <div className="flex flex-row gap-2 mt-3">
-              <TextField
-                text={newPreviews ? newBody : body || "Loading mail..."}
-              />
+              <TextField text={newBody} />
             </div>
           </div>
         </div>
@@ -81,9 +89,9 @@ function PreviewContent({ subject, body }: any) {
       <ResizableHandle withHandle />
       <ResizablePanel defaultSize={30}>
         <div className="flex h-full items-center">
-          <TrainingPeopleProfileSheet
-            newData={newData}
-            newPreviews={newPreviews}
+          <PeopleProfileSheet
+            data={newContact}
+            companyInfoProp={newLinkedinInformation}
           />
         </div>
       </ResizablePanel>
