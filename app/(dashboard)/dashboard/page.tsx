@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 "use client";
 import React from "react";
 // import { LocationCardDashboard } from "@/components/cards/location-card";
@@ -46,8 +48,25 @@ type DashboardData = {
   engaged: number;
   meetings_booked: number;
   response_rate: number;
-  top_performing_campaigns: [];
-  hot_leads: [];
+  top_performing_campaigns: TopPerformingCampaign[];
+  hot_leads: HotLead[];
+};
+
+type HotLead = {
+  id: string;
+  src: string;
+  fallback: string;
+  name: string;
+  company: string;
+};
+
+type TopPerformingCampaign = {
+  name: string;
+  persona: string;
+  engaged: number;
+  response_rate: number;
+  bounce_rate: number;
+  open_rate: number;
 };
 
 export default function Page() {
@@ -342,7 +361,7 @@ export default function Page() {
                       {dashboardData?.top_performing_campaigns.map(
                         (campaign, index) => (
                           <TableRow key={index}>
-                            <TableCell>{campaign.name}</TableCell>
+                            <TableCell>{campaign?.name}</TableCell>
                             <TableCell className="hidden sm:table-cell">
                               {campaign.persona}
                             </TableCell>
