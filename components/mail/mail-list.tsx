@@ -257,7 +257,7 @@ export function MailList({ items }: MailListProps) {
           ))
         ) : (
           <div className="text-muted-foreground text-center mt-10">
-            No mails found
+            Loading mails
           </div>
         )}
       </div>
