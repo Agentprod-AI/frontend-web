@@ -313,6 +313,13 @@ export function Mail({
               <h1 className="text-xl font-bold">Inbox</h1>
               <TabsList className="ml-auto flex space-x-4 relative">
                 <TabsTrigger
+                  value="all"
+                  onClick={() => setFilter("all")}
+                  className="text-zinc-800 dark:text-zinc-200"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger
                   value="to-approve"
                   onClick={() => setFilter("to-approve")}
                   className="text-zinc-800 dark:text-zinc-200"
