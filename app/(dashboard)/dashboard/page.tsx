@@ -36,7 +36,7 @@ import { Progress } from "@/components/ui/progress";
 // import axiosInstance from "@/utils/axiosInstance";
 // import { useAuth } from "@/context/auth-provider";
 // import { useDashboardContext } from "@/context/dashboard-analytics-provider";
-import { card_data, hot_leads, campaigns } from "@/constants/data";
+// import { card_data, hot_leads, campaigns } from "@/constants/data";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
@@ -309,7 +309,7 @@ export default function Page() {
                 <CardTitle>Sending Volume Per Day</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <LineChartComponent mailGraph={mailGraph} />
+                <LineChartComponent />
               </CardContent>
             </Card>
 

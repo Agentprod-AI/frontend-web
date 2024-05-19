@@ -88,8 +88,8 @@ const data = [
   },
 ];
 
-export function LineChartComponent({ mailGraph }) {
-  console.log("from Mails", mailGraph);
+export function LineChartComponent() {
+  // console.log("from Mails", mailGraph);
   return (
     <ResponsiveContainer width="100%" height={350}>
       <LineChart
