@@ -194,7 +194,6 @@ export function MailList({ items }: MailListProps) {
       });
   }, []);
 
-
   return (
     <ScrollArea className="h-screen pb-40">
       <div className="flex flex-col gap-2 p-4 pt-0">
@@ -250,7 +249,7 @@ export function MailList({ items }: MailListProps) {
                 <div className="text-xs font-medium">{item.subject}</div>
                 {/* Using body_substr for the email body preview */}
                 <div className="line-clamp-2 text-xs text-muted-foreground">
-                  {(item.body_substr as string).substring(0, 100)}{" "}
+                  {(item.body_substr as string)?.substring(0, 100)}{" "}
                   {/* Adjust substring as needed */}
                 </div>
               </div>
