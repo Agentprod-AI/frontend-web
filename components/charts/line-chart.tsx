@@ -5,7 +5,6 @@ import {
   Line,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   Legend,
   ResponsiveContainer,
@@ -89,7 +88,8 @@ const data = [
   },
 ];
 
-export function LineChartComponent() {
+export function LineChartComponent({ mailGraph }) {
+  console.log("from Mails", mailGraph);
   return (
     <ResponsiveContainer width="100%" height={350}>
       <LineChart

@@ -11,10 +11,10 @@ import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
 
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
-import {
-  allFieldsListType,
-  allFieldsList,
-} from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
+// import {
+//   allFieldsListType,
+//   allFieldsList,
+// } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 
 export interface PreviewData {
   subject: string;
@@ -59,7 +59,7 @@ export default function Training() {
 
     try {
       const response = await startCampaign(campaignId, userId);
-      console.log("saashjashj", response);
+      console.log("trainingResponse", response);
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log(error);

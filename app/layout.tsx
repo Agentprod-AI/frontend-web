@@ -14,7 +14,7 @@ import { Toaster } from "sonner";
 const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
-  title: "Next Shadcn",
+  title: "Agent Prod",
   description: "Basic dashboard with Next.js and Shadcn",
 };
 
