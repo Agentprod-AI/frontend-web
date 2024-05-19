@@ -103,3 +103,17 @@ export async function startCampaign(
       throw err;
     });
 }
+
+export async function getTraining(
+  trainingId: string
+): Promise<TrainingResponse> {
+  try {
+    const response = await axiosInstance.get<TrainingResponse>(
+      "v2/training/9f06d007-a3f2-47c9-80e5-1dd2b13d6618"
+    );
+    return response.data;
+  } catch (error) {
+    console.error("Error getting training:", error);
+    throw error;
+  }
+}

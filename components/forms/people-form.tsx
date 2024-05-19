@@ -952,43 +952,38 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                                     checked={checkedCompanyHeadcount?.includes(
                                       headcountOption.value
                                     )}
-                                    onCheckedChange={React.useCallback(
-                                      (e: any) => {
-                                        const isChecked = e.valueOf();
-                                        const value = headcountOption.value;
+                                    onCheckedChange={(checked) => {
+                                      const isChecked = checked.valueOf();
+                                      const value = headcountOption.value;
 
-                                        setCheckedCompanyHeadcount(
-                                          (currentChecked) => {
-                                            // If the value is already present and the checkbox is checked, return the current array
-                                            if (
-                                              currentChecked?.includes(value) &&
-                                              isChecked
-                                            ) {
-                                              return currentChecked;
-                                            }
-
-                                            // If the value is not present and the checkbox is checked, add the value to the array
-                                            if (
-                                              !currentChecked?.includes(
-                                                value
-                                              ) &&
-                                              isChecked
-                                            ) {
-                                              return [
-                                                ...(currentChecked || []),
-                                                value,
-                                              ];
-                                            }
-
-                                            // If the checkbox is unchecked, remove the value from the array
-                                            return (
-                                              currentChecked || []
-                                            ).filter((item) => item !== value);
+                                      setCheckedCompanyHeadcount(
+                                        (currentChecked) => {
+                                          // If the value is already present and the checkbox is checked, return the current array
+                                          if (
+                                            currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return currentChecked;
                                           }
-                                        );
-                                      },
-                                      [headcountOption.value]
-                                    )}
+
+                                          // If the value is not present and the checkbox is checked, add the value to the array
+                                          if (
+                                            !currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return [
+                                              ...(currentChecked || []),
+                                              value,
+                                            ];
+                                          }
+
+                                          // If the checkbox is unchecked, remove the value from the array
+                                          return (currentChecked || []).filter(
+                                            (item) => item !== value
+                                          );
+                                        }
+                                      );
+                                    }}
                                     value={headcountOption.name}
                                   />
                                   {headcountOption.name}
