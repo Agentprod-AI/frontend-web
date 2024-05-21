@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 
 import React, { useState } from "react";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
+import axiosInstance from "@/utils/axiosInstance";
 
 type Info = {
   id: string;
@@ -20,13 +22,11 @@ export default function Page() {
 
   React.useEffect(() => {
     if (user?.id) {
-      fetch(
-        `https://agentprod-backend-framework-zahq.onrender.com/v2/settings/${user.id}`
-      )
-        .then((res) => res.json())
-        .then((data) => {
-          // console.log("data from settingsss", data);
-          const initialAccountInfo: Info[] = [
+      axiosInstance
+        .get(`/v2/settings/${user.id}`)
+        .then((response) => {
+          const data = response.data;
+          const initialAccountInfo = [
             { id: "ID", value: data.user_id, isEditable: false },
             {
               id: "Sender First Name",
@@ -49,7 +49,7 @@ export default function Page() {
           setAccountInfo(initialAccountInfo);
         })
         .catch((error) => {
-          // console.error("Failed to fetch user details:", error);
+          console.error("Failed to fetch user details:", error);
         });
     }
   }, [user]);

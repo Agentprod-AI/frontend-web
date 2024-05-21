@@ -27,6 +27,7 @@ import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/icons";
 import { GmailIcon } from "@/app/icons";
 import { Switch } from "@/components/ui/switch";
+import axiosInstance from "@/utils/axiosInstance";
 
 interface MailData {
   id: number;
@@ -56,20 +57,17 @@ export default function Page() {
   const [mailboxes, setMailboxes] = useState(initialMailboxes);
   const [otpInput, setOtpInput] = useState("");
   const [senderID, setSenderID] = useState("");
+  // const [duplicateMailError, setDuplicateMailError] = useState(false);
 
   const handleOpenAddMailbox = () => setIsAddMailboxOpen(true);
   const handleCloseAddMailbox = () => setIsAddMailboxOpen(false);
 
   const fetchDomainData = React.useCallback(async () => {
     try {
-      const response = await fetch(
-        `https://agentprod-backend-framework-zahq.onrender.com/v2/aws/verify/domain/${domainInput}`
+      const response = await axiosInstance.get(
+        `/v2/aws/verify/domain/${domainInput}`
       );
-      if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-      const data: MailData[] = await response.json();
-      setMailData(data);
+      setMailData(response.data);
     } catch (error) {
       console.error("Failed to fetch domain data:", error);
     }
@@ -79,6 +77,36 @@ export default function Page() {
     fetchDomainData();
   };
 
+  // const handleEmailVerification = async () => {
+  //   const postData = {
+  //     name: nameInput,
+  //     email: emailInput,
+  //     domain: domainInput,
+  //   };
+
+  //   try {
+  //     const response = await fetch(
+  //       "https://agentprod-backend-framework-zahq.onrender.com/v2/brevo/sender",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(postData),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+  //     console.log("DataMailboxing for verification: ", data);
+  //     setOtpInput(data.otp);
+  //     setSenderID(data._id);
+  //     handleCloseAddMailbox();
+  //     setIsVerifyEmailOpen(true);
+  //   } catch (error) {
+  //     console.error("Failed to verify email:", error);
+  //   }
+  // };
+
   const handleEmailVerification = async () => {
     const postData = {
       name: nameInput,
@@ -87,22 +115,10 @@ export default function Page() {
     };
 
     try {
-      const response = await fetch(
-        "https://agentprod-backend-framework-zahq.onrender.com/v2/brevo/sender",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(postData),
-        }
-      );
-
-      const data = await response.json();
-      console.log("DataMailboxing for verification: ", data);
-      setOtpInput(data.otp);
-      setSenderID(data._id);
-
+      const response = await axiosInstance.post("/v2/brevo/sender", postData);
+      console.log("DataMailboxing for verification: ", response.data);
+      setOtpInput(response.data.otp);
+      setSenderID(response.data._id);
       handleCloseAddMailbox();
       setIsVerifyEmailOpen(true);
     } catch (error) {
@@ -127,45 +143,69 @@ export default function Page() {
     setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
   };
 
+  // const saveChanges = async () => {
+  //   const payload = {
+  //     sender_id: senderID,
+  //     body: otpInput,
+  //   };
+
+  //   console.log(typeof otpInput);
+
+  //   try {
+  //     const response = await fetch(
+  //       "https://agentprod-backend-framework-zahq.onrender.com/v2/brevo/sender/validate",
+  //       {
+  //         method: "POST",
+  //         headers: {
+  //           "Content-Type": "application/json",
+  //         },
+  //         body: JSON.stringify(payload),
+  //       }
+  //     );
+
+  //     const data = await response.json();
+  //     console.log("Verification...", data);
+
+  //     if (response.ok) {
+  //       // OTP is valid, proceed to add the mailbox
+  //       const newMailbox = {
+  //         id: Math.max(...mailboxes.map((mb) => mb.id)) + 1,
+  //         email: emailInput,
+  //         name: nameInput,
+  //         warmUp: true,
+  //         dailyLimit: 5,
+  //       };
+  //       addMailbox(newMailbox);
+  //       setDomainInput("");
+  //       setIsVerifyEmailOpen(false);
+  //      setIsTableDialogOpen(true);
+  //     } else {
+  //       // OTP validation failed, handle error
+  //       console.error("OTP validation failed:", data.message);
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to validate OTP:", error);
+  //     alert(
+  //       "Error validating OTP. Please check your connection and try again."
+  //     );
+  //   }
+  // };
+
   const saveChanges = async () => {
-    const payload = {
-      sender_id: senderID,
-      body: otpInput,
-    };
-
-    console.log(typeof otpInput);
-
     try {
-      const response = await fetch(
-        "https://agentprod-backend-framework-zahq.onrender.com/v2/brevo/sender/validate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const data = await response.json();
-      console.log("Verification...", data);
-
-      if (response.ok) {
-        // OTP is valid, proceed to add the mailbox
-        const newMailbox = {
-          id: Math.max(...mailboxes.map((mb) => mb.id)) + 1,
-          email: emailInput,
-          name: nameInput,
-          warmUp: true,
-          dailyLimit: 5,
-        };
-        addMailbox(newMailbox);
-        setDomainInput("");
-        setIsVerifyEmailOpen(false);
-      } else {
-        // OTP validation failed, handle error
-        console.error("OTP validation failed:", data.message);
-      }
+      const newMailbox = {
+        id: Math.max(...mailboxes.map((mb) => mb.id)) + 1,
+        email: emailInput,
+        name: nameInput,
+        warmUp: true,
+        dailyLimit: 5,
+      };
+      addMailbox(newMailbox);
+      setDomainInput("");
+      setNameInput("");
+      setEmailInput("");
+      setIsVerifyEmailOpen(false);
+      setIsTableDialogOpen(true);
     } catch (error) {
       console.error("Failed to validate OTP:", error);
       alert(
@@ -292,7 +332,12 @@ export default function Page() {
               placeholder="Enter domain"
               className="flex-grow"
             />
-            <Button type="submit" onClick={fetchDomain} className="w-48">
+            <Button
+              variant="secondary"
+              type="submit"
+              onClick={fetchDomain}
+              className="w-48"
+            >
               Get Domain
             </Button>
           </div>

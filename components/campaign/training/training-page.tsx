@@ -11,10 +11,6 @@ import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
 
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
-// import {
-//   allFieldsListType,
-//   allFieldsList,
-// } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
 
 export interface PreviewData {
   subject: string;
@@ -62,7 +58,7 @@ export default function Training() {
       console.log("trainingResponse", response);
       router.push("/dashboard/mail");
     } catch (error: any) {
-      console.log(error);
+      console.log("TrainingResponse", error);
     }
   };
 

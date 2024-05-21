@@ -17,6 +17,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserContext } from "@/context/user-context";
 import { Loading } from "./Loader";
+import axiosInstance from "@/utils/axiosInstance";
 
 interface PhoneNumber {
   type?: string;
@@ -161,22 +162,12 @@ export const TrainingPeopleProfileSheet = ({
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const response = await fetch(
-          "https://agentprod-backend-framework-zahq.onrender.com/v2/training/preview",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ campaign_id: campaignId, user_id: user.id }),
-          }
-        );
+        const response = await axiosInstance.post("/v2/training/preview", {
+          campaign_id: campaignId,
+          user_id: user.id,
+        });
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const result: Data = await response.json();
-        setData(result);
+        setData(response.data);
       } catch (error) {
         console.error("Failed to fetch data:", error);
       }
@@ -250,6 +241,7 @@ export const TrainingPeopleProfileSheet = ({
 
     return (
       <div className="flex space-x-2">
+        <Phone className="h-5 w-5 text-muted-foreground" />
         <span className="text-sm text-muted-foreground">
           {validPhoneNumbers[0].sanitized_number}
         </span>
@@ -348,7 +340,7 @@ export const TrainingPeopleProfileSheet = ({
                 ? renderPhoneNumbers(newData?.contact?.phone_numbers)
                 : renderPhoneNumbers(data?.contact?.phone_numbers) && (
                     <div className="flex space-x-2">
-                      <Phone className="h-5 w-5 text-muted-foreground" />
+                      {/* <Phone className="h-5 w-5 text-muted-foreground" /> */}
                       <span className="text-sm text-muted-foreground">
                         {newPreviews
                           ? renderPhoneNumbers(

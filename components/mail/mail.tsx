@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 import * as React from "react";
 import { ChevronDown, Search } from "lucide-react";
@@ -25,6 +26,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { Button } from "../ui/button";
 import { useCampaignContext } from "@/context/campaign-provider";
+import { useMailbox } from "@/context/mailbox-provider";
 
 interface MailProps {
   accounts: {
@@ -66,6 +68,15 @@ export function Mail({
   }>();
 
   const { user } = useUserContext();
+
+  const {
+    conversationId,
+    setConversationId,
+    setRecipientEmail,
+    recipientEmail,
+    setSenderEmail,
+    senderEmail,
+  } = useMailbox();
 
   const allCampaigns:
     | {
@@ -117,6 +128,12 @@ export function Mail({
     });
   }, [mails, filter, campaign]);
 
+  if (filteredMails) {
+    setConversationId(filteredMails[0]?.id);
+    setRecipientEmail(filteredMails[0]?.recipient);
+    setSenderEmail(filteredMails[0]?.sender);
+  }
+
   return (
     <TooltipProvider delayDuration={0}>
       <ResizablePanelGroup
@@ -155,52 +172,47 @@ export function Mail({
                 >
                   Scheduled
                 </TabsTrigger>
-                <TabsTrigger
-                  value=""
-                  onClick={() => setFilter("")}
-                  className="text-zinc-800 dark:text-zinc-200"
-                >
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        className="flex items-center justify-center space-x-2"
-                      >
-                        <span>
-                          {campaign ? campaign.campaignName : "Select Campaign"}
-                        </span>
-                        <ChevronDown size={20} />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-80">
-                      <DropdownMenuGroup>
-                        <DropdownMenuSeparator />
-                        <ScrollArea className="h-[400px] w-full rounded-md">
-                          {allCampaigns &&
-                            allCampaigns?.map((campaignItem, index) => (
-                              <div key={campaignItem.campaignId}>
-                                <DropdownMenuItem
-                                  key={campaignItem.campaignId}
-                                  onClick={() =>
-                                    setCampaign({
-                                      campaignName: campaignItem.campaignName,
-                                      campaignId: campaignItem.campaignId,
-                                    })
-                                  }
-                                >
-                                  <p>
-                                    {campaignItem.campaignName}{" "}
-                                    {campaignItem.additionalInfo &&
-                                      `- ${campaignItem.additionalInfo}`}
-                                  </p>
-                                </DropdownMenuItem>
-                              </div>
-                            ))}
-                        </ScrollArea>
-                      </DropdownMenuGroup>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </TabsTrigger>
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <span>
+                        {campaign ? campaign.campaignName : "Select Campaign"}
+                      </span>
+                      <ChevronDown size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-80">
+                    <DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <ScrollArea className="h-[400px] w-full rounded-md">
+                        {allCampaigns &&
+                          allCampaigns?.map((campaignItem, index) => (
+                            <div key={campaignItem.campaignId}>
+                              <DropdownMenuItem
+                                key={campaignItem.campaignId}
+                                onClick={() =>
+                                  setCampaign({
+                                    campaignName: campaignItem.campaignName,
+                                    campaignId: campaignItem.campaignId,
+                                  })
+                                }
+                              >
+                                <p>
+                                  {campaignItem.campaignName}{" "}
+                                  {campaignItem.additionalInfo &&
+                                    `- ${campaignItem.additionalInfo}`}
+                                </p>
+                              </DropdownMenuItem>
+                            </div>
+                          ))}
+                      </ScrollArea>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TabsList>
             </div>
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">

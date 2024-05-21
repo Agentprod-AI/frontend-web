@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // hooks/useCreateCampaign.tsx
 import React, {
   useState,
@@ -10,7 +11,6 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "./user-context";
-import { string } from "zod";
 
 interface CampaignFormData {
   [key: string]: any;
@@ -245,7 +245,10 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       .delete(`v2/campaigns/${campaignId}`)
       .then((response) => {
         console.log("Campaign deleted successfully:", response.data);
-        router.push("/dashboard/campaigns");
+        setCampaigns((currentCampaigns) =>
+          currentCampaigns.filter((campaign) => campaign.id !== campaignId)
+        );
+        router.push("/dashboard/campaign");
       })
       .catch((error) => {
         console.error("Error deleting campaign:", error);
