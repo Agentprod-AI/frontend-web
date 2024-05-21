@@ -1,5 +1,4 @@
 "use client";
-import React, { use } from "react";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import {
@@ -19,6 +18,7 @@ import { UKFlag, USAFlag } from "@/app/icons";
 import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
 import { useParams } from "next/navigation";
+import { v4 as uuid } from "uuid";
 
 interface CampaignEntry {
   user_id: string;
@@ -61,7 +61,7 @@ export default function Page() {
         <CardTitle>Send your first outbound Email campaign</CardTitle>
         <Button className="mt-4">
           <Link
-            href={"/dashboard/campaign/create"}
+            href={`/dashboard/campaign/create/${uuid()}`}
             className="flex items-center gap-1"
           >
             <Plus size={16} /> Create Campaign

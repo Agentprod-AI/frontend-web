@@ -24,7 +24,7 @@ import { useForm } from "react-hook-form";
 import { useState, useEffect, ReactNode } from "react";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { createTraining, updateTraining, getTraining } from "./training.api";
+import { createTraining, updateTraining } from "./training.api";
 
 const FormSchema = z.object({
   fieldName: z.string(),

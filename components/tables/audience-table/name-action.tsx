@@ -10,8 +10,11 @@ interface NameActionProps {
 export const NameAction: React.FC<NameActionProps> = ({ data }) => {
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
 
+  // console.log(data);
+
   function handleSidebar() {
     setItemId(data.id);
+    console.log(data.id);
     toggleSidebar(true);
   }
 

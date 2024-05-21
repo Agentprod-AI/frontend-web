@@ -1,30 +1,9 @@
+/* eslint-disable no-console */
 "use client";
 import * as React from "react";
-import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
-import axios from "axios";
-import {
-  AlertCircle,
-  Archive,
-  ArchiveX,
-  File,
-  Inbox,
-  MessagesSquare,
-  PenBox,
-  Search,
-  Send,
-  ShoppingCart,
-  Trash2,
-  Users2,
-} from "lucide-react";
-import { useSession } from "next-auth/react";
-import { AccountSwitcher } from "../layout/account-switcher";
-import { MailDisplay } from "./mail-display";
+import { ChevronDown, Search } from "lucide-react";
 import { MailList } from "./mail-list";
-// import { Nav } from "../layout/nav";
 import type { Mail } from "@/constants/data";
-import { useMail } from "@/hooks/useMail";
-import { cn } from "@/lib/utils";
-import { Separator } from "@/components/ui/separator";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -33,12 +12,21 @@ import {
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
-// import ThreadDisplay from "./thread-display";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenuGroup,
+} from "@/components/ui/dropdown-menu";
 import ThreadDisplayMain from "./thread-display-main";
 import { ScrollArea } from "../ui/scroll-area";
 import axiosInstance from "@/utils/axiosInstance";
-import { useMailbox } from "@/context/mailbox-provider";
 import { useUserContext } from "@/context/user-context";
+import { Button } from "../ui/button";
+import { useCampaignContext } from "@/context/campaign-provider";
+import { useMailbox } from "@/context/mailbox-provider";
 
 interface MailProps {
   accounts: {
@@ -69,28 +57,52 @@ export function Mail({
   defaultCollapsed = false,
   navCollapsedSize,
 }: MailProps) {
-  const [isCollapsed, setIsCollapsed] = React.useState(defaultCollapsed);
   const [mails, setMails] = React.useState<Conversations[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [error, setError] = React.useState<string | null>(null);
+  const [filter, setFilter] = React.useState("all");
+  const { campaigns } = useCampaignContext();
+  const [campaign, setCampaign] = React.useState<{
+    campaignName: string;
+    campaignId: string;
+  }>();
 
   const { user } = useUserContext();
 
-  const { conversationId, setConversationId } = useMailbox();
+  const {
+    conversationId,
+    setConversationId,
+    setRecipientEmail,
+    recipientEmail,
+    setSenderEmail,
+    senderEmail,
+  } = useMailbox();
 
-  //make sure envs are set up correctly on vercel
+  const allCampaigns:
+    | {
+        campaignName: string;
+        campaignId: string;
+        additionalInfo: string | undefined;
+      }[]
+    | null = campaigns.map((campaign) => {
+    return {
+      campaignName: campaign.campaign_name,
+      campaignId: campaign.id,
+      additionalInfo: campaign.additional_details,
+    };
+  });
 
   React.useEffect(() => {
-    // Define the function for fetching mails using axios
     console.log("user from inbox", user);
     async function fetchConversations() {
       setLoading(true);
       await axiosInstance
         .get<{ mails: Conversations[] }>(`v2/mailbox/${user?.id}`)
         .then((response) => {
-          // console.log(response);
+          console.log("Mail Responsesss", response.data.mails[0].campaign_id);
           setMails(response.data.mails as Conversations[]);
           setLoading(false);
+          return response;
         })
 
         .catch((err: any) => {
@@ -101,6 +113,26 @@ export function Mail({
 
     fetchConversations();
   }, []); // Dependency array remains empty to run once on mount
+
+  // const filteredMails =
+  //   filter === "all"
+  //     ? mails
+  //     : mails.filter((mail) => mail.status.toLowerCase() === filter);
+
+  const filteredMails = React.useMemo(() => {
+    return mails.filter((mail) => {
+      return (
+        (filter === "all" || mail.status.toLowerCase() === filter) &&
+        (!campaign || mail.campaign_id === campaign.campaignId)
+      );
+    });
+  }, [mails, filter, campaign]);
+
+  if (filteredMails) {
+    setConversationId(filteredMails[0]?.id);
+    setRecipientEmail(filteredMails[0]?.recipient);
+    setSenderEmail(filteredMails[0]?.sender);
+  }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -121,56 +153,66 @@ export function Mail({
               <TabsList className="ml-auto flex space-x-4 relative">
                 <TabsTrigger
                   value="all"
+                  onClick={() => setFilter("all")}
+                  className="text-zinc-800 dark:text-zinc-200"
+                >
+                  All
+                </TabsTrigger>
+                <TabsTrigger
+                  value="to-approve"
+                  onClick={() => setFilter("to-approve")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   To approve
                 </TabsTrigger>
                 <TabsTrigger
-                  value="unread"
+                  value="scheduled"
+                  onClick={() => setFilter("scheduled")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   Scheduled
                 </TabsTrigger>
-                <DropdownMenu.Root>
-                  <DropdownMenu.Trigger asChild>
-                    <TabsTrigger
-                      value="more"
-                      className="text-zinc-800 dark:text-zinc-200 flex items-center space-x-2"
+
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center justify-center space-x-2"
                     >
-                      More
-                      <svg
-                        className="h-4 w-4"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        xmlns="http://www.w3.org/2000/svg"
-                      >
-                        <path
-                          d="M19 9l-7 7-7-7"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                        />
-                      </svg>
-                    </TabsTrigger>
-                  </DropdownMenu.Trigger>
-                  <DropdownMenu.Portal>
-                    <DropdownMenu.Content
-                      className="absolute right-0 z-10 mt-2 w-38 origin-top-right rounded-md bg-zinc-200 shadow-lg dark:bg-zinc-800 "
-                      align="center"
-                    >
-                      <DropdownMenu.Item className="block cursor-pointer px-4 py-2 align-middle text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:rounded-md transition-colors duration-200 ease-in-out">
-                        <p className=" text-center">All</p>
-                      </DropdownMenu.Item>
-                      <DropdownMenu.Item className="block cursor-pointer px-4 py-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:rounded-md transition-colors duration-200 ease-in-out">
-                        <p className=" text-center">Starred</p>
-                      </DropdownMenu.Item>
-                      <DropdownMenu.Item className="block cursor-pointer px-4 py-2 text-zinc-800 dark:text-zinc-200 hover:bg-zinc-300 dark:hover:bg-zinc-700 hover:rounded-md transition-colors duration-200 ease-in-out">
-                        <p className=" text-center">Engaged</p>
-                      </DropdownMenu.Item>
-                    </DropdownMenu.Content>
-                  </DropdownMenu.Portal>
-                </DropdownMenu.Root>
+                      <span>
+                        {campaign ? campaign.campaignName : "Select Campaign"}
+                      </span>
+                      <ChevronDown size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent className="w-80">
+                    <DropdownMenuGroup>
+                      <DropdownMenuSeparator />
+                      <ScrollArea className="h-[400px] w-full rounded-md">
+                        {allCampaigns &&
+                          allCampaigns?.map((campaignItem, index) => (
+                            <div key={campaignItem.campaignId}>
+                              <DropdownMenuItem
+                                key={campaignItem.campaignId}
+                                onClick={() =>
+                                  setCampaign({
+                                    campaignName: campaignItem.campaignName,
+                                    campaignId: campaignItem.campaignId,
+                                  })
+                                }
+                              >
+                                <p>
+                                  {campaignItem.campaignName}{" "}
+                                  {campaignItem.additionalInfo &&
+                                    `- ${campaignItem.additionalInfo}`}
+                                </p>
+                              </DropdownMenuItem>
+                            </div>
+                          ))}
+                      </ScrollArea>
+                    </DropdownMenuGroup>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </TabsList>
             </div>
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -181,8 +223,8 @@ export function Mail({
                 </div>
               </form>
             </div>
-            <TabsContent value="all" className="m-0">
-              <MailList items={mails as Conversations[]} />
+            <TabsContent value={filter} className="m-0">
+              <MailList items={filteredMails} />
             </TabsContent>
             {/* <TabsContent value="unread" className="m-0">
               <MailList

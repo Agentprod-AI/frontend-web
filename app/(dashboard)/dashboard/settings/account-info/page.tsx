@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 
 import React, { useState } from "react";
@@ -5,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
+import axiosInstance from "@/utils/axiosInstance";
 
 type Info = {
   id: string;
@@ -19,28 +21,36 @@ export default function Page() {
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
 
   React.useEffect(() => {
-    if (user) {
-      const initialAccountInfo: Info[] = [
-        { id: "ID", value: user.id, isEditable: false },
-        { id: "Sender First Name", value: user.firstName, isEditable: true },
-        // { id: "Sender Last Name", value: user?.lastName, isEditable: true },
-        { id: "Sender Job", value: "", isEditable: true },
-        {
-          id: "Email",
-          value: user.email,
-          isEditable: true,
-        },
-        { id: "Company", value: "", isEditable: true },
-        { id: "Company ID", value: "", isEditable: false },
-        {
-          id: "Notifications",
-          value: user.email,
-          isEditable: true,
-        },
-        { id: "Plan", value: "", isEditable: false },
-        { id: "Leads used", value: "", isEditable: false },
-      ];
-      setAccountInfo(initialAccountInfo);
+    if (user?.id) {
+      axiosInstance
+        .get(`/v2/settings/${user.id}`)
+        .then((response) => {
+          const data = response.data;
+          const initialAccountInfo = [
+            { id: "ID", value: data.user_id, isEditable: false },
+            {
+              id: "Sender First Name",
+              value: data.first_name,
+              isEditable: true,
+            },
+            { id: "Sender Last Name", value: data.last_name, isEditable: true },
+            { id: "Sender Job", value: data.job, isEditable: true },
+            { id: "Email", value: data.email, isEditable: true },
+            { id: "Company", value: data.company, isEditable: true },
+            { id: "Company ID", value: data.companyId, isEditable: false },
+            {
+              id: "Notifications",
+              value: data.notifications,
+              isEditable: true,
+            },
+            { id: "Plan", value: data.plan, isEditable: false },
+            { id: "Leads used", value: data.leads_used, isEditable: false },
+          ];
+          setAccountInfo(initialAccountInfo);
+        })
+        .catch((error) => {
+          console.error("Failed to fetch user details:", error);
+        });
     }
   }, [user]);
 

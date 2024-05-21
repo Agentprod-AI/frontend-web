@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useState } from "react";
 import { set } from "date-fns";
 import { ImportAudience } from "@/components/campaign/import-audience";
+import { useRouter } from "next/router";
 
 export default function Page() {
   // const [isPeopleFormActive, setIsPeopleFormActive] = useState<boolean>(true);
@@ -79,7 +80,7 @@ export default function Page() {
             </div>
           </RadioGroup> */}
           {/* {isPeopleFormActive ?  */}
-          <PeopleFormComponent />
+          <PeopleFormComponent type="create" />
           {/* : <OrgFormComponenet />} */}
         </div>
       ) : isImportActive ? (

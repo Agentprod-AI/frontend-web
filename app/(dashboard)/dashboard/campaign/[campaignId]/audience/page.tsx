@@ -4,10 +4,8 @@ import PeopleFormComponent from "@/components/forms/people-form";
 
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Input } from "@/components/ui/input";
 
 import { useState } from "react";
-import { set } from "date-fns";
 import { ImportAudience } from "@/components/campaign/import-audience";
 import { SelectFromExisting } from "@/components/campaign/select-from-existing";
 
@@ -80,7 +78,7 @@ export default function Page() {
             </div>
           </RadioGroup> */}
           {/* {isPeopleFormActive ?  */}
-          <PeopleFormComponent />
+          <PeopleFormComponent type="edit" />
           {/* : <OrgFormComponenet />} */}
         </div>
       ) : isImportActive ? (

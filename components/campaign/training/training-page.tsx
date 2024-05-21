@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 // /* eslint-disable import/no-unresolved */
 "use client";
 import React from "react";
@@ -7,40 +8,72 @@ import { Button } from "@/components/ui/button";
 import EditorContent from "./editor-content";
 import PreviewContent from "./preview-content";
 import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
-import {
-  allFieldsListType,
-  allFieldsList,
-} from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
+
 import { useUserContext } from "@/context/user-context";
+import { useRouter } from "next/navigation";
+
+import { useParams } from "next/navigation";
+
+
+export interface PreviewData {
+  email: {
+    subject: string;
+    body: string;
+  };
+  contact: any;
+  linkedin_information: string;
+}
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
-  const [previewData, setPreviewData] = React.useState(allFieldsList);
+  const [previewData, setPreviewData] = React.useState<PreviewData | null>(
+    null
+  );
   const { user } = useUserContext();
+  const params = useParams<{ campaignId: string }>();
+
+  const router = useRouter();
 
   const handleGenerateWithAI = async () => {
-    setActiveTab("preview"); // This sets the active tab to 'preview'
     try {
-      const campaignId = "9b0660ce-7333-4315-aa3f-e9b0ed6653c4";
-      const data = await getAutogenerateTrainingEmail(campaignId);
-      console.log("data commingg -> ", data);
-      setPreviewData(data); // Assuming the response has a 'result' field
-      setActiveTab("preview"); // Switch to the Preview tab after fetching
+      const response = await getAutogenerateTrainingEmail(
+        params.campaignId,
+        user.id
+      );
+      // const data = JSON.parse(response);
+      console.log(response);
+      const { email, contact, linkedin_information } = response; // Destructure the additional data
+      setPreviewData({
+        email,
+        contact,
+        linkedin_information, // Assign the additional data
+      });
+      setActiveTab("preview");
     } catch (error) {
-      console.error("Failed to fetch data:", error);
+      console.error("Failed to fetch training data:", error);
     }
   };
 
   const handleStartCampaign = async () => {
     const userId = user.id as string;
-    const campaignId = localStorage.getItem("campaignId") as string;
 
     try {
-      const response = await startCampaign(campaignId, userId);
-      console.log(response);
+
+      const response = await startCampaign(params.campaignId, userId);
+      console.log("trainingResponse", response);
+      // await startCampaign(params.campaignId, userId);
+
+      router.push("/dashboard/mail");
     } catch (error: any) {
-      console.log(error);
+      console.log("TrainingResponse", error);
     }
+  };
+
+  const onTabChange = async (tab: string) => {
+    if (tab === "preview") {
+      await handleGenerateWithAI();
+    }
+    setActiveTab(tab);
   };
 
   return (
@@ -49,8 +82,8 @@ export default function Training() {
         <div className="ml-4">Training</div>
         <div className="flex items-center flex-row">
           <Tabs
-            value={activeTab} // This binds the active tab state to the Tabs component
-            onValueChange={setActiveTab} // This changes the active tab state when a tab is manually clicked
+            value={activeTab}
+            onValueChange={onTabChange}
             className="w-[200px]"
           >
             <TabsList>
@@ -70,7 +103,16 @@ export default function Training() {
       {activeTab === "editor" ? (
         <EditorContent onGenerateWithAI={handleGenerateWithAI} />
       ) : (
-        <PreviewContent previewData={previewData} />
+        <PreviewContent
+          email={
+            previewData?.email || {
+              subject: "",
+              body: "",
+            }
+          }
+          contact={previewData?.contact}
+          linkedin_information={previewData?.linkedin_information}
+        />
       )}
     </>
   );
