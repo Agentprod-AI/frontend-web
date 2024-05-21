@@ -21,7 +21,7 @@ export interface CompanyInfo {
 // Define the state structure for company context
 interface CompanyContextState {
   companyInfo: CompanyInfo;
-  setCompanyInfo: (companyInfo: CompanyInfo) => void;
+  setCompanyLinkedin: (companyInfo: CompanyInfo) => void;
   getCompanyInfo: (companyLinkedin: string) => void;
 }
 
@@ -36,7 +36,7 @@ const defaultState: CompanyContextState = {
     stock_info: [],
     funding_info: [],
   },
-  setCompanyInfo: () => {},
+  setCompanyLinkedin: (companyInfo: CompanyInfo) => {},
   getCompanyInfo: (companyLinkedin: string) => {},
 };
 
@@ -62,7 +62,7 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
         company_linkedin_url: companyLinkedin,
       })
       .then((res) => {
-        setCompanyInfo(res.data);
+        setCompanyLinkedin(res.data);
         console.log("company info", res.data);
         Object.values(res.data).map((item) => {
           console.log(item);
@@ -73,10 +73,14 @@ export const CompanyProvider: React.FC<CompanyProviderProps> = ({
       });
   };
 
+  const setCompanyLinkedin = (companyInfo: CompanyInfo) => {
+    setCompanyInfo(companyInfo);
+  };
+
   const contextValue = useMemo(
     () => ({
       companyInfo,
-      setCompanyInfo,
+      setCompanyLinkedin,
       getCompanyInfo,
     }),
     [companyInfo]

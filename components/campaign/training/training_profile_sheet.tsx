@@ -17,7 +17,8 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserContext } from "@/context/user-context";
 import { Loading } from "./Loader";
-
+import axiosInstance from "@/utils/axiosInstance";
+import { useParams } from "next/navigation";
 interface PhoneNumber {
   type?: string;
   status?: string;
@@ -130,13 +131,13 @@ export const TrainingPeopleProfileSheet = ({
   newData: any;
   newPreviews: any;
 }) => {
-  const [campaignId, setCampaignId] = useState("");
   const { user } = useUserContext();
   const [data, setData] = useState<Data | null>(null);
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
   const [affiliatedPagesCollapsibleOpen, setAffiliatedPagesCollapsibleOpen] =
     useState(false);
+  const params = useParams<{ campaignId: string }>();
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -151,39 +152,27 @@ export const TrainingPeopleProfileSheet = ({
     return spacedText[0].toUpperCase() + spacedText.slice(1).toLowerCase();
   };
 
-  useEffect(() => {
-    const storedCampaignId = localStorage.getItem("campaignId");
-    if (storedCampaignId) {
-      setCampaignId(storedCampaignId);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     axiosInstance
+  //       .post("/v2/training/preview", {
+  //         campaign_id: params.campaignId,
+  //         user_id: user.id,
+  //       })
+  //       .then((response) => {
+  //         console.log("Response from Preview", response);
+  //         // if (response.status === 200) {
+  //         const result: Data = response.data;
+  //         setData(result);
+  //         // }
+  //       })
+  //       .catch((error) => {
+  //         console.error("Failed to fetch data:", error);
+  //       });
+  //   };
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(
-          "https://agentprod-backend-framework-zahq.onrender.com/v2/training/preview",
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({ campaign_id: campaignId, user_id: user.id }),
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status}`);
-        }
-        const result: Data = await response.json();
-        setData(result);
-      } catch (error) {
-        console.error("Failed to fetch data:", error);
-      }
-    };
-
-    fetchData();
-  }, [campaignId, user.id]);
+  //   fetchData();
+  // }, [params.campaignId]);
 
   console.log("New Data from SHeet", newData);
   console.log("New Previews from SHeet", newPreviews);
