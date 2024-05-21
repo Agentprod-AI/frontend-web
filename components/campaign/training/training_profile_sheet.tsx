@@ -155,18 +155,18 @@ export const TrainingPeopleProfileSheet = ({
     return spacedText[0].toUpperCase() + spacedText.slice(1).toLowerCase();
   };
 
-  useEffect(() => {
-    const storedCampaignId = localStorage.getItem("campaignId");
-    if (storedCampaignId) {
-      setCampaignId(storedCampaignId);
-    }
-  }, []);
+  // useEffect(() => {
+  //   const storedCampaignId = localStorage.getItem("campaignId");
+  //   if (storedCampaignId) {
+  //     setCampaignId(storedCampaignId);
+  //   }
+  // }, []);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await axiosInstance.post("/v2/training/preview", {
-          campaign_id: campaignId,
+          campaign_id: params.campaignId,
           user_id: user.id,
         });
 
@@ -177,7 +177,7 @@ export const TrainingPeopleProfileSheet = ({
     };
 
     fetchData();
-  }, [campaignId, user.id]);
+  }, [params.campaignId, user.id]);
 
   // useEffect(() => {
   //   const fetchData = async () => {
