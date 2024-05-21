@@ -119,7 +119,7 @@ function EditorContent({ onGenerateWithAI }: EditorContentProps) {
     <ResizablePanelGroup direction="horizontal" className="">
       <ResizablePanel defaultSize={75}>
         <div
-          className="px-16 mt-3  hover:underline cursor-pointer"
+          className="mx-16 mt-3  hover:underline cursor-pointer"
           onClick={onGenerateWithAI}
         >
           Let AI write email on its own <AutoAwesomeIcon />

@@ -19,6 +19,9 @@ import { useUserContext } from "@/context/user-context";
 import { Loading } from "./Loader";
 import axiosInstance from "@/utils/axiosInstance";
 
+
+import { useParams } from "next/navigation";
+
 interface PhoneNumber {
   type?: string;
   status?: string;
@@ -131,13 +134,13 @@ export const TrainingPeopleProfileSheet = ({
   newData: any;
   newPreviews: any;
 }) => {
-  const [campaignId, setCampaignId] = useState("");
   const { user } = useUserContext();
   const [data, setData] = useState<Data | null>(null);
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
   const [affiliatedPagesCollapsibleOpen, setAffiliatedPagesCollapsibleOpen] =
     useState(false);
+  const params = useParams<{ campaignId: string }>();
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -175,6 +178,29 @@ export const TrainingPeopleProfileSheet = ({
 
     fetchData();
   }, [campaignId, user.id]);
+
+  // useEffect(() => {
+  //   const fetchData = async () => {
+  //     axiosInstance
+  //       .post("/v2/training/preview", {
+  //         campaign_id: params.campaignId,
+  //         user_id: user.id,
+  //       })
+  //       .then((response) => {
+  //         console.log("Response from Preview", response);
+  //         // if (response.status === 200) {
+  //         const result: Data = response.data;
+  //         setData(result);
+  //         // }
+  //       })
+  //       .catch((error) => {
+  //         console.error("Failed to fetch data:", error);
+  //       });
+  //   };
+
+  //   fetchData();
+  // }, [params.campaignId]);
+
 
   console.log("New Data from SHeet", newData);
   console.log("New Previews from SHeet", newPreviews);

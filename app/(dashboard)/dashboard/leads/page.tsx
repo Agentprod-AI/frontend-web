@@ -38,6 +38,7 @@ export default function Page() {
         .then((response) => {
           const data = response.data;
           setLeads(data);
+          setLoading(false);
         })
         .catch((error) => {
           // console.log(error);
@@ -52,6 +53,7 @@ export default function Page() {
 
   useEffect(() => {
     // console.log("campaigns", campaigns);
+    setLoading(false);
   }, [campaigns]);
 
   const allCampaigns:

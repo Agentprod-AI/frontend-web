@@ -20,9 +20,14 @@ import { toast } from "@/components/ui/use-toast";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React, { useState } from "react";
 import Link from "next/link";
-import { useCampaignContext } from "@/context/campaign-provider";
+import {
+  CampaignFormData,
+  useCampaignContext,
+} from "@/context/campaign-provider";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { getCampaignById } from "./camapign.api";
+import { CampaignEntry } from "@/context/campaign-provider";
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -34,30 +39,22 @@ const campaignFormSchema = z.object({
   campaignType: z.enum(["Outbound", "Inbound", "Nurturing"], {
     required_error: "Please select a campaign type.",
   }),
-  dailyOutreach: z.preprocess(
-    (value) => {
-      // Convert the input value to a number if it's a string
-      if (typeof value === "string") {
-        return parseInt(value, 10);
-      }
-      return value;
-    },
-    z
-      .number()
-      .min(1, "You must outreach to at least 1 prospect per day.")
-      .max(500, "You cannot outreach to more than 500 prospects per day.")
-  ),
+  // dailyOutreach: z.preprocess(
+  //   (value) => {
+  //     // Convert the input value to a number if it's a string
+  //     if (typeof value === "string") {
+  //       return parseInt(value, 10);
+  //     }
+  //     return value;
+  //   },
+  //   z
+  //     .number()
+  //     .min(1, "You must outreach to at least 1 prospect per day.")
+  //     .max(500, "You cannot outreach to more than 500 prospects per day.")
+  // ),
   schedule: z.object({
-    mondayStartTime: z.string().optional(),
-    mondayEndTime: z.string().optional(),
-    tuesdayStartTime: z.string().optional(),
-    tuesdayEndTime: z.string().optional(),
-    wednesdayStartTime: z.string().optional(),
-    wednesdayEndTime: z.string().optional(),
-    thursdayStartTime: z.string().optional(),
-    thursdayEndTime: z.string().optional(),
-    fridayStartTime: z.string().optional(),
-    fridayEndTime: z.string().optional(),
+    weekdayStartTime: z.string().optional(),
+    weekdayEndTime: z.string().optional(),
   }),
 });
 
@@ -73,34 +70,17 @@ export function SchedulingForm({ type }: { type: string }) {
   const router = useRouter();
   const params = useParams<{ campaignId: string }>();
 
-  // const [formData, setFormData] = useState<CampaignFormValues>({
-  //   campaignName: '',
-  //   campaignType: '',
-  //   dailyOutreach: 0,
-  //   schedule: {
-  //     mondayStartTime: '',
-  //     mondayEndTime: '',
-  //     tuesdayStartTime: '',
-  //     tuesdayEndTime: '',
-  //     wednesdayStartTime: '',
-  //     wednesdayEndTime: '',
-  //     thursdayStartTime: '',
-  //     thursdayEndTime: '',
-  //     fridayStartTime: '',
-  //     fridayEndTime: '',
-  //   },
-  // });
-
   const form = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignFormSchema),
     defaultValues,
   });
 
-  const { createCampaign, editCampaign, getCampaignById } =
-    useCampaignContext();
+  const { createCampaign, editCampaign } = useCampaignContext();
   const { user } = useUserContext();
-  console.log("SchedulingForm", user);
+  // console.log("SchedulingForm", user);
   const watchAllFields = form.watch();
+
+  const [campaignData, setCampaignData] = useState<CampaignEntry>();
 
   const onSubmit = async (data: CampaignFormValues) => {
     if (type === "create") {
@@ -122,7 +102,7 @@ export function SchedulingForm({ type }: { type: string }) {
       }, {} as CampaignFormValues);
 
       if (Object.keys(changes).length > 0) {
-        editCampaign(changes);
+        editCampaign(changes, params.campaignId);
       } else {
         console.log("No changes detected.");
         // Handle no changes scenario
@@ -131,42 +111,52 @@ export function SchedulingForm({ type }: { type: string }) {
   };
 
   React.useEffect(() => {
-    if (type === "edit") {
-      const id = params.campaignId;
-      console.log(id);
-      if (id) {
-        const campaign = getCampaignById(id);
-        if (campaign) {
-          // setFormData({
-          //           product_offering: response.data.product_offering,
-          //           offering_details: response.data.offering_details,
-          //           pain_point: response.data.pain_point || [],
-          //           values: response.data.values || []
-          // });
-
-          form.setValue("campaignName", campaign.campaign_name);
-          form.setValue(
-            "campaignType",
-            campaign.campaign_type as "Outbound" | "Inbound" | "Nurturing"
-          );
-          form.setValue("dailyOutreach", campaign?.daily_outreach_number || 0);
-          form.setValue("schedule.mondayStartTime", campaign.monday_start);
-          form.setValue("schedule.mondayEndTime", campaign.monday_end);
-          form.setValue("schedule.tuesdayStartTime", campaign.tuesday_start);
-          form.setValue("schedule.tuesdayEndTime", campaign.tuesday_end);
-          form.setValue(
-            "schedule.wednesdayStartTime",
-            campaign.wednesday_start
-          );
-          form.setValue("schedule.wednesdayEndTime", campaign.wednesday_end);
-          form.setValue("schedule.thursdayStartTime", campaign.thursday_start);
-          form.setValue("schedule.thursdayEndTime", campaign.thursday_end);
-          form.setValue("schedule.fridayStartTime", campaign.friday_start);
-          form.setValue("schedule.fridayEndTime", campaign.friday_end);
+    const fetchCampaign = async () => {
+      if (type === "edit") {
+        const id = params.campaignId;
+        console.log("id in scheduling form", id);
+        if (id) {
+          const campaign = await getCampaignById(id);
+          console.log("campaign in scheduling form", campaign);
+          if (campaign) {
+            setCampaignData(campaign as CampaignEntry);
+          }
         }
       }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId, getCampaignById]);
+
+  React.useEffect(() => {
+    if (campaignData) {
+      form.setValue("campaignName", campaignData.campaign_name);
+      form.setValue(
+        "campaignType",
+        campaignData.campaign_type as "Outbound" | "Inbound" | "Nurturing"
+      );
+
+      const processTime = (timeString: string) => {
+        const [hours, minutes, seconds] = timeString.split(":").map(Number);
+
+        const paddedHours = String(hours).padStart(2, "0");
+        const paddedMinutes = String(minutes).padStart(2, "0");
+
+        return `${paddedHours}:${paddedMinutes}`;
+      };
+
+      if (campaignData.monday_start && campaignData.monday_end) {
+        form.setValue(
+          "schedule.weekdayStartTime",
+          processTime(campaignData.monday_start)
+        );
+        form.setValue(
+          "schedule.weekdayEndTime",
+          processTime(campaignData.monday_end)
+        );
+      }
     }
-  }, []);
+  }, [campaignData]);
 
   return (
     <Form {...form}>
@@ -194,7 +184,7 @@ export function SchedulingForm({ type }: { type: string }) {
               <FormControl>
                 <RadioGroup
                   onValueChange={field.onChange}
-                  defaultValue={field.value}
+                  value={field.value || campaignData?.campaign_type}
                   className="flex flex-col space-y-1"
                 >
                   <FormItem className="flex items-center space-x-3 space-y-0">
@@ -222,7 +212,7 @@ export function SchedulingForm({ type }: { type: string }) {
           )}
         />
 
-        <FormField
+        {/* <FormField
           control={form.control}
           name="dailyOutreach"
           render={({ field, fieldState: { error } }) => (
@@ -238,51 +228,49 @@ export function SchedulingForm({ type }: { type: string }) {
               <FormMessage>{error?.message}</FormMessage>
             </FormItem>
           )}
-        />
+        /> */}
 
         {/* Dynamically create a time input for each day */}
         <h1>Schedule</h1>
-        {["monday", "tuesday", "wednesday", "thursday", "friday"].map((day) => (
-          <div key={day} className="flex w-[400px] justify-between">
-            <h1>{day.charAt(0).toUpperCase() + day.slice(1)}:</h1>
-            <div className="flex gap-2">
-              <FormField
-                control={form.control}
-                //@ts-ignore
-                name={`schedule.${day}StartTime`}
-                render={({ field, fieldState: { error } }) => (
-                  <FormItem>
-                    {/* <FormLabel>{`${
+        <div className="flex w-[400px] justify-between">
+          <h1>Weekdays</h1>
+          <div className="flex gap-2">
+            <FormField
+              control={form.control}
+              //@ts-ignore
+              name={`schedule.weekdayStartTime`}
+              render={({ field, fieldState: { error } }) => (
+                <FormItem>
+                  {/* <FormLabel>{`${
                     day.charAt(0).toUpperCase() + day.slice(1)
                   } Start Time`}</FormLabel> */}
-                    <FormControl>
-                      {/* @ts-ignore */}
-                      <Input type="time" {...field} />
-                    </FormControl>
-                    <FormMessage>{error?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                //@ts-ignore
-                name={`schedule.${day}EndTime`}
-                render={({ field, fieldState: { error } }) => (
-                  <FormItem>
-                    {/* <FormLabel>{`${
+                  <FormControl>
+                    {/* @ts-ignore */}
+                    <Input type="time" {...field} />
+                  </FormControl>
+                  <FormMessage>{error?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              //@ts-ignore
+              name={`schedule.weekdayEndTime`}
+              render={({ field, fieldState: { error } }) => (
+                <FormItem>
+                  {/* <FormLabel>{`${
                     day.charAt(0).toUpperCase() + day.slice(1)
                   } End Time`}</FormLabel> */}
-                    <FormControl>
-                      {/* @ts-ignore */}
-                      <Input type="time" placeholder="End Time" {...field} />
-                    </FormControl>
-                    <FormMessage>{error?.message}</FormMessage>
-                  </FormItem>
-                )}
-              />
-            </div>
+                  <FormControl>
+                    {/* @ts-ignore */}
+                    <Input type="time" placeholder="End Time" {...field} />
+                  </FormControl>
+                  <FormMessage>{error?.message}</FormMessage>
+                </FormItem>
+              )}
+            />
           </div>
-        ))}
+        </div>
 
         <Button type="submit">
           {/* {

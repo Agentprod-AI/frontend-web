@@ -78,7 +78,7 @@ export default function Page() {
             </div>
           </RadioGroup> */}
           {/* {isPeopleFormActive ?  */}
-          <PeopleFormComponent />
+          <PeopleFormComponent type="edit" />
           {/* : <OrgFormComponenet />} */}
         </div>
       ) : isImportActive ? (

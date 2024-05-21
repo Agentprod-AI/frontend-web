@@ -18,7 +18,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
 
   useEffect(() => {
     if (isOpen && itemId) {
-      // console.log(itemId);
+      console.log(leads);
       const item = leads.find((lead) => lead.id === itemId);
       console.log("item", item);
       setData(item);
@@ -37,7 +37,7 @@ export function LeadProfileSheet({ className }: SidebarProps) {
           <MenuIcon />
         </SheetTrigger>
         <SheetContent side="right" className="!px-0">
-          <PeopleProfileSheet {...(data as Lead | Contact)} />
+          <PeopleProfileSheet data={data as Lead | Contact} />
         </SheetContent>
       </Sheet>
     </>

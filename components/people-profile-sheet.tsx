@@ -19,19 +19,25 @@ import {
 import { Button } from "./ui/button";
 import { Lead, Contact } from "@/context/lead-user";
 import { ScrollArea } from "./ui/scroll-area";
-import { useCompanyInfo } from "@/context/company-linkedin";
+import { useCompanyInfo, CompanyInfo } from "@/context/company-linkedin";
 
-export const PeopleProfileSheet = (
-  data: Lead | Contact
-  // companyInfo: CompanyInfoDataItem[]
-) => {
+interface PeopleProfileSheetProps {
+  data: Lead | Contact;
+  companyInfoProp?: CompanyInfo;
+}
+
+export const PeopleProfileSheet = ({
+  data,
+  companyInfoProp,
+}: PeopleProfileSheetProps) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
   const [affiliatedPagesCollapsibleOpen, setAffiliatedPagesCollapsibleOpen] =
     useState(false);
-  console.log(data);
+  const [loading, setLoading] = useState(true);
+  const { getCompanyInfo, companyInfo, setCompanyLinkedin } = useCompanyInfo();
 
-  const { getCompanyInfo, companyInfo } = useCompanyInfo();
+  console.log(data);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -41,18 +47,36 @@ export const PeopleProfileSheet = (
       .toUpperCase();
   };
 
-  // console.log(companyInfo);
-
   const formatText = (text: string) => {
     let spacedText = text.replace(/_+/g, " ");
     return spacedText[0].toUpperCase() + spacedText.slice(1).toLowerCase();
   };
 
   useEffect(() => {
-    if ("company_linkedin_url" in data && data.company_linkedin_url) {
-      getCompanyInfo(data.company_linkedin_url);
-    }
+    console.log(data);
+    const fetchCompanyInfo = async () => {
+      if (data) {
+        if (!companyInfoProp) {
+          if ("company_linkedin_url" in data && data.company_linkedin_url) {
+            getCompanyInfo(data.company_linkedin_url);
+          }
+        } else {
+          setCompanyLinkedin(companyInfoProp);
+        }
+      }
+    };
+
+    fetchCompanyInfo();
+    setLoading(false);
   }, [data]);
+
+  useEffect(() => {
+    console.log("Company Info: ", companyInfo);
+  }, [companyInfo]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <ScrollArea className="h-full">
@@ -151,228 +175,187 @@ export const PeopleProfileSheet = (
                         </div>
                       );
                     })}
-                    {/* <div className="flex px-2 py-1 font-mono text-sm justify-between">
-                      <span></span>
-                      <span>Software Developer</span>
-                    </div> */}
                   </CollapsibleContent>
                 </>
               )}
             </Collapsible>
             <br />
             <br />
-            {/* {data.organization && (
-              <>
-                <div className="flex">
-                  <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
-                    <AvatarImage src={data.organization.logo_url} />
-                    <AvatarFallback>CN</AvatarFallback>
-                  </Avatar>
-                  <div className="ml-4 space-y-1">
-                    <p className="text-sm font-medium leading-none">
-                      {data.organization.name}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {data.organization.primary_domain || "N/A"}
-                    </p>
-                  </div>
-                </div>
-                <div className="pt-4 space-y-3">
-                  <div className="flex space-x-2">
-                    <Phone className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {data.organization.sanitized_phone || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Linkedin className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {data.organization.linkedin_url || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Link className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {data.organization.website_url || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Twitter className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {data.organization.twitter_url || "N/A"}
-                    </span>
-                  </div>
-                  <div className="flex space-x-2">
-                    <Facebook className="h-5 w-5 text-muted-foreground" />
-                    <span className="text-sm text-muted-foreground">
-                      {data.organization.facebook_url || "N/A"}
-                    </span>
-                  </div>
-                </div>
-              </>
-            )} */}
             <div>
               <p className="text-sm font-medium leading-none">
                 {data.employment_history &&
                   data.employment_history[0].organization_name}
               </p>
             </div>
-            <div className="space-y-3">
-              <div className="flex space-x-2">
-                <span className="text-sm text-muted-foreground">
-                  {companyInfo.about_us}
-                </span>
-              </div>
-              <br />
-              <br />
-              <div className="flex flex-col gap-2">
-                {companyInfo.company_info &&
-                  Object.entries(companyInfo.company_info).map(
-                    ([key, value]) => (
-                      <div
-                        className="text-sm font-semibold text-muted-foreground"
-                        key={key}
-                      >
-                        {formatText(key)}:{" "}
-                        <span className="text-sm font-normal text-muted-foreground">
-                          {value as string}
-                        </span>
-                      </div>
-                    )
-                  )}
-              </div>
-              <br />
-              <br />
+            <br />
+            {companyInfo && (
+              <div className="space-y-3">
+                <div className="flex space-x-2">
+                  <span className="text-sm text-muted-foreground">
+                    {companyInfo.about_us}
+                  </span>
+                </div>
+                <br />
 
-              <Collapsible
-                open={addressCollapsibleOpen}
-                onOpenChange={setAddressCollapsibleOpen}
-                className="w-[350px] pt-4 space-y-2 text-muted-foreground"
-              >
-                <div className="flex items-center justify-between space-x-4">
-                  <h4 className="text-sm font-semibold">Addresses</h4>
-                  <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="sm" className="w-9 p-0">
-                      <ChevronsUpDown className="h-4 w-4" />
-                      <span className="sr-only">Toggle</span>
-                    </Button>
-                  </CollapsibleTrigger>
-                </div>
-                <div className="px-2 py-1 text-xs">
-                  {companyInfo.addresses &&
-                    companyInfo.addresses.length > 0 &&
-                    companyInfo.addresses[0].replace("Get directions", "")}
-                </div>
-                <CollapsibleContent className="space-y-2">
-                  <div className="flex flex-col gap-2 px-2">
-                    {companyInfo.addresses &&
-                      companyInfo.addresses.length > 0 &&
-                      companyInfo.addresses.map((address, index) => {
-                        if (index === 0) return null;
-                        else {
-                          return (
-                            <div
-                              className="text-xs text-muted-foreground"
-                              key={index}
-                            >
-                              {address.replace("Get directions", "")}
-                            </div>
-                          );
-                        }
-                      })}
-                  </div>
-                </CollapsibleContent>
-              </Collapsible>
-
-              <br />
-              <br />
-              <div>
-                <Collapsible
-                  open={affiliatedPagesCollapsibleOpen}
-                  onOpenChange={setAffiliatedPagesCollapsibleOpen}
-                  className="w-[350px] pt-4 space-y-2 text-muted-foreground"
-                >
-                  <div className="flex items-center justify-between space-x-4">
-                    <div className="text-sm font-medium text-muted-foreground">
-                      Affiliated Pages:
-                    </div>
-                    <CollapsibleTrigger asChild>
-                      <Button variant="ghost" size="sm" className="w-9 p-0">
-                        <ChevronsUpDown className="h-4 w-4" />
-                        <span className="sr-only">Toggle</span>
-                      </Button>
-                    </CollapsibleTrigger>
-                  </div>
-                  <div className="px-2 py-1 text-xs">
-                    {companyInfo.affiliated_pages.title && (
-                      <div className="text-muted-foreground">
-                        {companyInfo.affiliated_pages.title[0]}
-                        {companyInfo.affiliated_pages.description[0] &&
-                          ` - ${companyInfo.affiliated_pages.description[0]}`}
-                      </div>
-                    )}
-                  </div>
-                  <CollapsibleContent className="space-y-2">
-                    <div className="flex flex-col gap-2">
-                      {companyInfo.affiliated_pages.title &&
-                        companyInfo.affiliated_pages.title.map(
-                          (title: string, index: number) => {
-                            if (index === 0) return null;
-                            else {
-                              return (
-                                <div
-                                  key={index}
-                                  className="px-2 py-1 text-xs text-muted-foreground"
-                                >
-                                  {title}
-                                  {companyInfo.affiliated_pages.description[
-                                    index
-                                  ] &&
-                                    ` - ${companyInfo.affiliated_pages.description[index]}`}
-                                </div>
-                              );
-                            }
-                          }
-                        )}
-                    </div>
-                  </CollapsibleContent>
-                </Collapsible>
-              </div>
-              <br />
-              <br />
-              <div>
-                <div className="text-sm font-semibold text-muted-foreground">
-                  Stock Info:
-                </div>
-                {companyInfo.stock_info &&
-                  Object.entries(companyInfo.stock_info).map(([key, value]) => (
-                    <div className="text-muted-foreground text-sm" key={key}>
-                      {formatText(key)}:{" "}
-                      <span className="font-normal">{value as string}</span>
-                    </div>
-                  ))}
-              </div>
-              <br />
-              <br />
-              <div>
-                <div className="text-sm font-semibold text-muted-foreground">
-                  Funding Info:
-                </div>
-                <div>
-                  {companyInfo.funding_info &&
-                    Object.entries(companyInfo.funding_info).map(
+                <div className="flex flex-col gap-2">
+                  {companyInfo.company_info &&
+                    Object.entries(companyInfo.company_info).map(
                       ([key, value]) => (
                         <div
-                          className="text-muted-foreground text-sm"
+                          className="text-sm font-semibold text-muted-foreground"
                           key={key}
                         >
-                          {formatText(key)}: <span>{value as string}</span>
+                          {formatText(key)}:{" "}
+                          <span className="text-sm font-normal text-muted-foreground">
+                            {value as string}
+                          </span>
                         </div>
                       )
                     )}
                 </div>
+                {companyInfo.addresses && companyInfo.addresses.length > 0 && (
+                  <Collapsible
+                    open={addressCollapsibleOpen}
+                    onOpenChange={setAddressCollapsibleOpen}
+                    className="w-[350px] pt-4 space-y-2 text-muted-foreground"
+                  >
+                    <div className="flex items-center justify-between space-x-4">
+                      <h4 className="text-sm font-semibold">Addresses</h4>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-9 p-0">
+                          <ChevronsUpDown className="h-4 w-4" />
+                          <span className="sr-only">Toggle</span>
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <div className="px-2 py-1 text-xs">
+                      {companyInfo.addresses[0].replace("Get directions", "")}
+                    </div>
+                    <CollapsibleContent className="space-y-2">
+                      <div className="flex flex-col gap-2 px-2">
+                        {companyInfo.addresses.map((address, index) => {
+                          if (index === 0) return null;
+                          else {
+                            return (
+                              <div
+                                className="text-xs text-muted-foreground"
+                                key={index}
+                              >
+                                {address.replace("Get directions", "")}
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+
+                <div>
+                  {companyInfo.affiliated_pages.title && (
+                    <Collapsible
+                      open={affiliatedPagesCollapsibleOpen}
+                      onOpenChange={setAffiliatedPagesCollapsibleOpen}
+                      className="w-[350px] pt-4 space-y-2 text-muted-foreground"
+                    >
+                      <div className="flex items-center justify-between space-x-4">
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Affiliated Pages:
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="w-9 p-0">
+                            <ChevronsUpDown className="h-4 w-4" />
+                            <span className="sr-only">Toggle</span>
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <div className="px-2 py-1 text-xs">
+                        <div className="text-muted-foreground">
+                          {companyInfo.affiliated_pages.title[0]}
+                          {companyInfo.affiliated_pages.description[0] &&
+                            ` - ${companyInfo.affiliated_pages.description[0]}`}
+                        </div>
+                      </div>
+                      <CollapsibleContent className="space-y-2">
+                        <div className="flex flex-col gap-2">
+                          {companyInfo.affiliated_pages.title &&
+                            companyInfo.affiliated_pages.title.map(
+                              (title: string, index: number) => {
+                                if (index === 0) return null;
+                                else {
+                                  return (
+                                    <div
+                                      key={index}
+                                      className="px-2 py-1 text-xs text-muted-foreground"
+                                    >
+                                      {title}
+                                      {companyInfo.affiliated_pages.description[
+                                        index
+                                      ] &&
+                                        ` - ${companyInfo.affiliated_pages.description[index]}`}
+                                    </div>
+                                  );
+                                }
+                              }
+                            )}
+                        </div>
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+                </div>
+
+                {companyInfo.stock_info &&
+                  Object.entries(companyInfo.stock_info).length > 0 && (
+                    <>
+                      <br />
+                      <br />
+                      <div>
+                        <div className="text-sm font-semibold text-muted-foreground">
+                          Stock Info:
+                        </div>
+                        {Object.entries(companyInfo.stock_info).map(
+                          ([key, value]) => (
+                            <div
+                              className="text-muted-foreground text-sm"
+                              key={key}
+                            >
+                              {formatText(key)}:{" "}
+                              <span className="font-normal">
+                                {value as string}
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </div>
+                    </>
+                  )}
+                {companyInfo.funding_info &&
+                  Object.entries(companyInfo.funding_info).length > 0 && (
+                    <>
+                      <br />
+                      <br />
+                      <div>
+                        <div className="text-sm font-semibold text-muted-foreground">
+                          Funding Info:
+                        </div>
+                        <div>
+                          {Object.entries(companyInfo.funding_info).map(
+                            ([key, value]) => (
+                              <div
+                                className="text-muted-foreground text-sm"
+                                key={key}
+                              >
+                                {formatText(key)}:{" "}
+                                <span>{value as string}</span>
+                              </div>
+                            )
+                          )}
+                        </div>
+                      </div>
+                    </>
+                  )}
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
