@@ -106,6 +106,7 @@ import { useRouter } from "next/navigation";
 import { deleteCookie } from "cookies-next";
 import { useAuth } from "@/context/auth-provider";
 import { useState, useEffect } from "react";
+import Link from "next/link";
 
 export function UserNav() {
   const router = useRouter();
@@ -162,24 +163,17 @@ export function UserNav() {
           <DropdownMenuSeparator />
           <DropdownMenuGroup>
             <DropdownMenuItem>
-              Profile
-              <DropdownMenuShortcut>⇧⌘P</DropdownMenuShortcut>
+              <Link href="/dashboard/settings/account-info">Profile</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              Billing
-              <DropdownMenuShortcut>⌘B</DropdownMenuShortcut>
+              <Link href="/dashboard/settings/account-info">Billing</Link>
             </DropdownMenuItem>
             <DropdownMenuItem>
-              Settings
-              <DropdownMenuShortcut>⌘S</DropdownMenuShortcut>
+              <Link href="/dashboard/settings/mailbox">Settings</Link>
             </DropdownMenuItem>
-            <DropdownMenuItem>New Team</DropdownMenuItem>
           </DropdownMenuGroup>
           <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={logoutUser}>
-            Log out
-            <DropdownMenuShortcut>⇧⌘Q</DropdownMenuShortcut>
-          </DropdownMenuItem>
+          <DropdownMenuItem onClick={logoutUser}>Log out</DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
     );
