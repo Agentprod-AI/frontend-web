@@ -11,7 +11,9 @@ import { getAutogenerateTrainingEmail, startCampaign } from "./training.api";
 
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
+
 import { useParams } from "next/navigation";
+
 
 export interface PreviewData {
   email: {
@@ -56,10 +58,14 @@ export default function Training() {
     const userId = user.id as string;
 
     try {
-      await startCampaign(params.campaignId, userId);
+
+      const response = await startCampaign(params.campaignId, userId);
+      console.log("trainingResponse", response);
+      // await startCampaign(params.campaignId, userId);
+
       router.push("/dashboard/mail");
     } catch (error: any) {
-      console.log(error);
+      console.log("TrainingResponse", error);
     }
   };
 

@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 "use client";
 import React from "react";
 // import { LocationCardDashboard } from "@/components/cards/location-card";
@@ -36,8 +38,36 @@ import { Progress } from "@/components/ui/progress";
 // import axiosInstance from "@/utils/axiosInstance";
 // import { useAuth } from "@/context/auth-provider";
 // import { useDashboardContext } from "@/context/dashboard-analytics-provider";
-import { card_data, hot_leads, campaigns } from "@/constants/data";
+// import { card_data, hot_leads, campaigns } from "@/constants/data";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
+import { useUserContext } from "@/context/user-context";
+import axiosInstance from "@/utils/axiosInstance";
+
+type DashboardData = {
+  emails_sent: number;
+  engaged: number;
+  meetings_booked: number;
+  response_rate: number;
+  top_performing_campaigns: TopPerformingCampaign[];
+  hot_leads: HotLead[];
+};
+
+type HotLead = {
+  id: string;
+  src: string;
+  fallback: string;
+  name: string;
+  company: string;
+};
+
+type TopPerformingCampaign = {
+  name: string;
+  persona: string;
+  engaged: number;
+  response_rate: number;
+  bounce_rate: number;
+  open_rate: number;
+};
 
 export default function Page() {
   // const { toggleSidebar, setItemId } = useLeadSheetSidebar();
@@ -63,6 +93,39 @@ export default function Page() {
   // };
 
   // console.log(dashboardData);
+  const [dashboardData, setDashboardData] =
+    React.useState<DashboardData | null>(null);
+  const [mailGraph, setMailGraph] = React.useState();
+
+  const { user } = useUserContext();
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosInstance.get(`/v2/dashboard/${user.id}`);
+        console.log("Dashboard Data comingggg:", response.data);
+        setDashboardData(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchData();
+  }, [user.id]);
+
+  React.useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await axiosInstance.get(`/v2/mailgraph/${user.id}`);
+        console.log("Mailgraph Data comingggg:", response.data);
+        setMailGraph(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
+      }
+    };
+
+    fetchData();
+  }, [user.id]);
 
   return (
     <>
@@ -87,37 +150,87 @@ export default function Page() {
                     <p className="font-medium">Emails Pending Approval</p>
                   </div>
                   <Badge variant={"secondary"}>12</Badge>
+                  {/* actual data is not here , this is hardcoded */}
                 </CardContent>
               </Card>
 
               {/* <p className="font-semibold">Performance Overview</p> */}
 
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mt-4">
-                {card_data.map((card, index) => (
+                {/* {card_data.map((card, index) => (
                   <Card key={index}>
                     <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
                       <CardTitle className="text-sm font-medium">
                         {card.title}
                       </CardTitle>
 
-                      {/* <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth="2"
-                      className="h-4 w-4 text-muted-foreground"
-                    >
-                      <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                    </svg> */}
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
+                        className="h-4 w-4 text-muted-foreground"
+                      >
+                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+                      </svg>
                     </CardHeader>
                     <CardContent className="h-1/2 md:mt-2">
                       <div className="text-2xl font-bold">{card.value}</div>
                     </CardContent>
                   </Card>
-                ))}
+                ))} */}
+
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Emails Sent
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-1/2 md:mt-2">
+                    <div className="text-2xl font-bold">
+                      {dashboardData?.emails_sent || "0"}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
+                    <CardTitle className="text-sm font-medium">
+                      Engaged Leads
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-1/2 md:mt-2">
+                    <div className="text-2xl font-bold">
+                      {dashboardData?.engaged || "0"}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
+                    <CardTitle className="text-sm font-medium">
+                      Total Meetings Booked (Via Calendly)
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-1/2 md:mt-2">
+                    <div className="text-2xl font-bold">
+                      {dashboardData?.meetings_booked || "0"}
+                    </div>
+                  </CardContent>
+                </Card>
+                <Card>
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
+                    <CardTitle className="text-sm font-medium">
+                      Response Rate
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="h-1/2 md:mt-2">
+                    <div className="text-2xl font-bold">
+                      {dashboardData?.response_rate || "0"}
+                    </div>
+                  </CardContent>
+                </Card>
               </div>
             </div>
 
@@ -245,26 +358,28 @@ export default function Page() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {campaigns.map((campaign, index) => (
-                        <TableRow key={index}>
-                          <TableCell>{campaign.name}</TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {campaign.persona}
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {campaign.engaged}
-                          </TableCell>
-                          <TableCell className="hidden sm:table-cell">
-                            {campaign.response_rate}
-                          </TableCell>
-                          <TableCell className="hidden md:table-cell">
-                            {campaign.bounce_rate}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            {campaign.open_rate}
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                      {dashboardData?.top_performing_campaigns.map(
+                        (campaign, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{campaign?.name}</TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              {campaign.persona}
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              {campaign.engaged}
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell">
+                              {campaign.response_rate}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell">
+                              {campaign.bounce_rate}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              {campaign.open_rate}
+                            </TableCell>
+                          </TableRow>
+                        )
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -278,15 +393,17 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {hot_leads.map((lead) => (
-                      <div key={lead.id} className="flex items-center">
-                        <Avatar className="h-9 w-9">
-                          <AvatarImage src={lead.src} alt="Avatar" />
-                          <AvatarFallback>{lead.fallback}</AvatarFallback>
-                        </Avatar>
-                        <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company}`}</p>
-                      </div>
-                    ))}
+                    {dashboardData?.hot_leads.length === 0
+                      ? "data not available"
+                      : dashboardData?.hot_leads.map((lead) => (
+                          <div key={lead.id} className="flex items-center">
+                            <Avatar className="h-9 w-9">
+                              <AvatarImage src={lead.src} alt="Avatar" />
+                              <AvatarFallback>{lead.fallback}</AvatarFallback>
+                            </Avatar>
+                            <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company}`}</p>
+                          </div>
+                        ))}
                   </div>
                 </CardContent>
               </ScrollArea>

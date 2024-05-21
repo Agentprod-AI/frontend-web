@@ -431,7 +431,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
       <>
-        {thread.length > 0 && (
+        {thread?.length > 0 && (
           <div>
             {thread.map((email, index) => (
               <EmailComponent key={index} email={email} />
@@ -445,3 +445,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 };
 
 export default ThreadDisplayMain;
+
+
+// 
