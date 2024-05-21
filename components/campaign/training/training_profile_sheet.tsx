@@ -358,7 +358,7 @@ export const TrainingPeopleProfileSheet = ({
                           .organization_name
                       )
                     : renderEmploymentHistory(
-                        data?.contact?.employment_history[0].organization_name
+                        data?.contact?.employment_history[0]?.organization_name
                       )}
                 </span>
               </div>

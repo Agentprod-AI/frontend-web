@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable import/no-unresolved */
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
 import { useState, useEffect } from "react";
 import {
@@ -85,51 +87,51 @@ export const PeopleProfileSheet = ({
           <div className={"p-4 h-full"}>
             <div className="flex">
               <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
-                <AvatarImage src={data.photo_url} alt="avatar" />
-                <AvatarFallback>{initials(data.name || "AP")}</AvatarFallback>
+                <AvatarImage src={data?.photo_url} alt="avatar" />
+                <AvatarFallback>{initials(data?.name || "AP")}</AvatarFallback>
               </Avatar>
               <div className="ml-4 space-y-1">
                 {/* <p>Id: {itemId}</p> */}
-                <p className="text-sm font-medium leading-none">{data.name}</p>
-                <p className="text-sm text-muted-foreground">{data.email}</p>
+                <p className="text-sm font-medium leading-none">{data?.name}</p>
+                <p className="text-sm text-muted-foreground">{data?.email}</p>
               </div>
             </div>
             <p className="text-sm text-muted-foreground pt-4">
-              {data.headline}
+              {data?.headline}
             </p>
             <br />
             <div className="pt-4 space-y-3">
               <div className="flex space-x-2">
                 <Briefcase className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.title}
+                  {data?.title}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <MapPinIcon className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.state}, {data.country}
+                  {data?.state}, {data?.country}
                 </span>
               </div>
               <div className="flex space-x-2">
                 <Briefcase className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.employment_history &&
-                    data.employment_history[0].organization_name}
+                  {data?.employment_history &&
+                    data?.employment_history[0]?.organization_name}
                 </span>
               </div>
-              {data.phone_numbers && (
+              {data?.phone_numbers && (
                 <div className="flex space-x-2">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground">
-                    {data.phone_numbers[0].sanitized_number || "N/A"}
+                    {data?.phone_numbers[0]?.sanitized_number || "N/A"}
                   </span>
                 </div>
               )}
               <div className="flex space-x-2">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground">
-                  {data.linkedin_url || "N/A"}
+                  {data?.linkedin_url || "N/A"}
                 </span>
               </div>
             </div>
@@ -148,19 +150,21 @@ export const PeopleProfileSheet = ({
                   </Button>
                 </CollapsibleTrigger>
               </div>
-              {data.employment_history && (
+              {data?.employment_history && (
                 <>
                   <div className="flex px-2 py-1 font-mono text-xs justify-between">
                     <span>
-                      {data.employment_history[0].start_date.substring(0, 4)} -
-                      present
+                      {data?.employment_history[0]?.start_date
+                        ? data.employment_history[0].start_date.substring(0, 4)
+                        : ""}{" "}
+                      - present
                     </span>
                     <span className="w-[200px]">
-                      {data.employment_history[0].title}
+                      {data?.employment_history[0].title}
                     </span>
                   </div>
                   <CollapsibleContent className="space-y-2">
-                    {data.employment_history.map((val, ind) => {
+                    {data?.employment_history.map((val, ind) => {
                       if (ind === 0) return null;
                       return (
                         <div
@@ -183,8 +187,8 @@ export const PeopleProfileSheet = ({
             <br />
             <div>
               <p className="text-sm font-medium leading-none">
-                {data.employment_history &&
-                  data.employment_history[0].organization_name}
+                {data?.employment_history &&
+                  data?.employment_history[0].organization_name}
               </p>
             </div>
             <br />
@@ -192,7 +196,7 @@ export const PeopleProfileSheet = ({
               <div className="space-y-3">
                 <div className="flex space-x-2">
                   <span className="text-sm text-muted-foreground">
-                    {companyInfo.about_us}
+                    {companyInfo?.about_us}
                   </span>
                 </div>
                 <br />
@@ -252,7 +256,7 @@ export const PeopleProfileSheet = ({
                 )}
 
                 <div>
-                  {companyInfo.affiliated_pages.title && (
+                  {companyInfo.affiliated_pages?.title && (
                     <Collapsible
                       open={affiliatedPagesCollapsibleOpen}
                       onOpenChange={setAffiliatedPagesCollapsibleOpen}

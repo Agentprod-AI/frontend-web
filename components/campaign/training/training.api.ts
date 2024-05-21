@@ -1,5 +1,6 @@
 import { TrainingRequest, TrainingResponse } from "./field-form-modal";
 import axiosInstance from "@/utils/axiosInstance";
+
 export async function createTraining(
   trainingInfo: TrainingRequest
 ): Promise<TrainingResponse> {

@@ -1,13 +1,8 @@
+/* eslint-disable import/no-unresolved */
 "use client";
 
 import React, { useEffect } from "react";
-import {
-  BadgePercent,
-  CurlyBraces,
-  ShieldCheck,
-  TextQuote,
-  UserCog2,
-} from "lucide-react";
+import { CurlyBraces, TextQuote } from "lucide-react";
 import {
   Command,
   CommandEmpty,
@@ -40,6 +35,7 @@ export default function FieldList({
   setFieldsList,
 }: {
   fieldsList: allFieldsListType;
+
   setFieldsList: (val: allFieldsListType) => void;
 }) {
   useEffect(() => {
@@ -117,13 +113,13 @@ export default function FieldList({
                           <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
                         ),
                         personalized: (
-                          <UserCog2 className="mr-2 h-4 w-4 min-w-3" />
+                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
                         ),
                         offering: (
-                          <BadgePercent className="mr-2 h-4 w-4 min-w-3" />
+                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
                         ),
                         enriched: (
-                          <ShieldCheck className="mr-2 h-4 w-4 min-w-3" />
+                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
                         ),
                       }[field]
                     }
@@ -136,11 +132,11 @@ export default function FieldList({
                     >
                       <span className="w-full">{val.val}</span>
                     </FieldFormModal>
-                    {field === "variable" && (
+                    {/* {field === "variable" && (
                       <Badge variant="outline">
                         <TextQuote className="h-3 w-3 mr-1" /> {val.val.length}
                       </Badge>
-                    )}
+                    )} */}
                   </CommandItem>
                 )
               )}
