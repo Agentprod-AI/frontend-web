@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
@@ -11,7 +12,6 @@ import axiosInstance from "@/utils/axiosInstance";
 
 type Info = {
   id: string;
-  // value: string | undefined | null;
   value: string | undefined | null | number;
   isEditable: boolean;
 };
@@ -63,10 +63,10 @@ export default function Page() {
         })
         .catch((error) => {
           console.error("Failed to fetch user details:", error);
-          setAccountInfo(dummyAccountInfo); // Use dummy data on error
+          setAccountInfo(dummyAccountInfo);
         });
     } else {
-      setAccountInfo(dummyAccountInfo); // Use dummy data if no user ID
+      setAccountInfo(dummyAccountInfo);
     }
   }, [user]);
 

@@ -93,7 +93,6 @@ export function Mail({
     };
   });
 
-
   React.useEffect(() => {
     console.log("user from inbox", user);
     async function fetchConversations() {
@@ -141,7 +140,7 @@ export function Mail({
           )}`;
         }}
         className="h-full items-stretch"
-        style={{ height: "calc(100vh - 56px)" }}
+        style={{ height: "calc(100vh - 80px)" }} // 56px is the height of the top bar
       >
         <ResizablePanel defaultSize={50}>
           <Tabs defaultValue="all">
