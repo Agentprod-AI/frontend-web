@@ -76,8 +76,6 @@ export default function Training() {
     try {
       const response = await startCampaign(params.campaignId, userId);
       console.log("trainingResponse", response);
-      // await startCampaign(params.campaignId, userId);
-
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);

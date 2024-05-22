@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
 import * as React from "react";
@@ -92,6 +93,7 @@ export function Mail({
     };
   });
 
+
   React.useEffect(() => {
     console.log("user from inbox", user);
     async function fetchConversations() {
@@ -114,11 +116,6 @@ export function Mail({
     fetchConversations();
   }, []); // Dependency array remains empty to run once on mount
 
-  // const filteredMails =
-  //   filter === "all"
-  //     ? mails
-  //     : mails.filter((mail) => mail.status.toLowerCase() === filter);
-
   const filteredMails = React.useMemo(() => {
     return mails.filter((mail) => {
       return (
@@ -128,11 +125,11 @@ export function Mail({
     });
   }, [mails, filter, campaign]);
 
-  if (filteredMails) {
-    setConversationId(filteredMails[0]?.id);
-    setRecipientEmail(filteredMails[0]?.recipient);
-    setSenderEmail(filteredMails[0]?.sender);
-  }
+  // if (filteredMails) {
+  //   setConversationId(filteredMails[0]?.id);
+  //   setRecipientEmail(filteredMails[0]?.recipient);
+  //   setSenderEmail(filteredMails[0]?.sender);
+  // }
 
   return (
     <TooltipProvider delayDuration={0}>
