@@ -41,6 +41,7 @@ export default function Home() {
   // const [userId, setUserId] = useState(user?.id);
   const [userId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
+
   const [allMessages, setAllMessages] = useState<Message[]>([
     {
       id: Math.random().toString(),
@@ -99,15 +100,34 @@ export default function Home() {
 
   //   if (allUsers && allUsers[0].id) setUserId(allUsers[0].id);
   // };
+  const convertToIST = (createdAt: any) => {
+    const date = new Date(createdAt); // Convert ISO UTC timestamp to a Date object
+    const offsetInHours = 5.5; // India is UTC +5:30
+    const localDate = new Date(date.getTime() + offsetInHours * 60 * 60 * 1000); // Convert to IST
+
+    let hours = localDate.getHours();
+    const minutes = localDate.getMinutes();
+    const ampm = hours >= 12 ? "PM" : "AM";
+    hours = hours % 12;
+    hours = hours ? hours : 12; // the hour '0' should be '12'
+    const minutesStr = minutes < 10 ? "0" + minutes : minutes; // Ensuring two digits for minutes
+
+    return `${hours}:${minutesStr} ${ampm}`;
+  };
 
   useEffect(() => {
     const fetchMessages = () => {
       axiosInstance
         .get(`v2/conversation/${userId}`)
         .then((response) => {
-          // console.log(response);
+          console.log("Shally responde", response);
           if (response.data.length > 0) {
-            setAllMessages([...response.data]);
+            const messagesWithISTTime = response.data.map((message: any) => ({
+              ...message,
+              time: convertToIST(message.created_at), // Use the conversion function here
+            }));
+            // setAllMessages([...response.data]);
+            setAllMessages([...messagesWithISTTime]);
           }
         })
         .catch((error) => {
@@ -174,7 +194,7 @@ export default function Home() {
     } catch (err) {
       // console.log("Something went wrong!", err);
     }
-  }, [allMessages]); 
+  }, [allMessages]);
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
@@ -275,8 +295,8 @@ export default function Home() {
                       )}
                     >
                       <span className="text-xs">
-                        {message.role === "assistant" ? "Sally" : "User"} 05:07
-                        PM
+                        {message.role === "assistant" ? "Sally" : "User"}{" "}
+                        {message?.time}
                       </span>
                       <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
                         <ReactMarkdown
