@@ -9,6 +9,8 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
+// import { first, last } from "slate";
+// import { da, pl } from "date-fns/locale";
 
 type Info = {
   id: string;
@@ -17,7 +19,7 @@ type Info = {
 };
 
 export default function Page() {
-  const { user } = useUserContext();
+  const { user, updateUser } = useUserContext();
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
   const [dummyAccountInfo, setDummyAccountInfo] = useState<Info[]>([
@@ -33,6 +35,7 @@ export default function Page() {
     { id: "Leads used", value: "", isEditable: false },
   ]);
 
+  console.log("usering user", user);
   React.useEffect(() => {
     if (user?.id) {
       axiosInstance
@@ -60,6 +63,16 @@ export default function Page() {
             { id: "Leads used", value: data.leads_used, isEditable: false },
           ];
           setAccountInfo(initialAccountInfo);
+          updateUser({
+            id: data.user_id,
+            firstName: data.first_name,
+            lastName: data.last_name,
+            company: data.company,
+            companyID: data.companyId,
+            notification: data.notifications,
+            plan: data.plan,
+            leadUsed: data.leads_used,
+          });
         })
         .catch((error) => {
           console.error("Failed to fetch user details:", error);

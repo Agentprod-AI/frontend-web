@@ -103,7 +103,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
         setThread(response.data);
-
+        console.log("Thread Display->>>>", response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -148,46 +148,57 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     const isEmailFromOwner = email.sender === ownerEmail;
 
+    console.log("hehe email", email);
+
     return (
-      <div className="flex m-4 w-full">
-        <Avatar
-          className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-          onClick={() => {
-            toggleSidebar(true);
-          }}
-        >
-          <AvatarImage
-            src={leads[0]?.photo_url ? leads[0].photo_url : ""}
-            alt="avatar"
-          />
-          <AvatarFallback>{initials(leads[0]?.name)}</AvatarFallback>
-        </Avatar>
-        <Card className="w-full mr-5">
-          <CardHeader>
-            <CardTitle className="text-sm">
-              {email.subject}{" "}
-              {!isEmailFromOwner && email.sentiment && (
-                <Badge className="ml-2" key={"label"}>
-                  {email.sentiment}
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription className="text-xs">{email.body}</CardDescription>
-          </CardHeader>
-          <CardContent className="text-xs">
-            <span className="text-muted-foreground">
-              {email.sender === ownerEmail ? "you" : email.sender} sent to{" "}
-              {email.recipient === ownerEmail ? "you" : email.recipient} -{" "}
-              {email.received_datetime &&
-                formatDistanceToNow(
-                  new Date(email.received_datetime.toString()),
-                  {
-                    addSuffix: true,
-                  }
+      <div className="flex flex-col gap-3 m-4">
+        <div className="flex  w-full">
+          <Avatar
+            className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+            onClick={() => {
+              toggleSidebar(true);
+            }}
+          >
+            <AvatarImage
+              src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+              alt="avatar"
+            />
+            <AvatarFallback className="bg-yellow-400 text-black text-xs">
+              {leads[0]?.first_name && leads[0]?.last_name
+                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
+                : ""}
+            </AvatarFallback>
+          </Avatar>
+          <Card className="w-full mr-5">
+            <CardHeader>
+              <CardTitle className="text-sm">
+                {email.subject}{" "}
+                {!isEmailFromOwner && email.sentiment && (
+                  <Badge className="ml-2" key={"label"}>
+                    {email.sentiment}
+                  </Badge>
                 )}
-            </span>
-          </CardContent>
-        </Card>
+              </CardTitle>
+              <CardDescription className="text-xs">
+                {email.body}
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="text-xs">
+              <span className="text-muted-foreground">
+                {email.sender === ownerEmail ? "you" : email.sender} sent to{" "}
+                {email.recipient === ownerEmail ? "you" : email.recipient} -{" "}
+                {email.received_datetime &&
+                  formatDistanceToNow(
+                    new Date(email.received_datetime.toString()),
+                    {
+                      addSuffix: true,
+                    }
+                  )}
+              </span>
+            </CardContent>
+          </Card>
+        </div>
+        <Notification email={email} />
       </div>
     );
   };
@@ -196,7 +207,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
-    const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
+    // const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
     const [emails, setEmails] = React.useState<
       {
         body: string;
@@ -216,16 +227,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          console.log("ThreadDisplayyyy->", response);
+          // console.log("ThreadDisplayyyy->", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
             setEmails(response.data);
-
-            // draftEmailRef.current?.scrollIntoView({
-            //   behavior: "smooth",
-            //   inline: "center",
-            // });
           }
 
           setIsLoading(false);
@@ -236,6 +242,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           console.error(err);
         });
     }, [conversationId]);
+
+    // const handleNextEmail = () => {
+    //   const nextIndex = (currentEmailIndex + 1) % emails.length;
+    //   setCurrentEmailIndex(nextIndex);
+    //   setTitle(emails[nextIndex].subject);
+    //   setBody(emails[nextIndex].body);
+    // };
 
     React.useEffect(() => {
       if (internalScrollRef.current) {
@@ -314,7 +327,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     return (
       <div className="flex gap-2 flex-col m-4 h-full">
-        <Notification />
         <div className="flex w-full">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -328,7 +340,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             />
 
             <AvatarFallback className="bg-yellow-400 text-black text-xs">
-              SG
+              {leads[0]?.first_name && leads[0]?.last_name
+                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
+                : ""}
             </AvatarFallback>
           </Avatar>
           <Card className="w-full mr-5 ">

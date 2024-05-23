@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { use, useEffect, useRef, useState } from "react";
 import { useChat } from "ai/react";
 import va from "@vercel/analytics";
 import clsx from "clsx";
@@ -19,6 +19,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+
 // import { useSession } from "next-auth/react";
 
 // const examples = [
@@ -100,20 +101,33 @@ export default function Home() {
 
   //   if (allUsers && allUsers[0].id) setUserId(allUsers[0].id);
   // };
-  const convertToIST = (createdAt: any) => {
-    const date = new Date(createdAt); // Convert ISO UTC timestamp to a Date object
-    const offsetInHours = 5.5; // India is UTC +5:30
-    const localDate = new Date(date.getTime() + offsetInHours * 60 * 60 * 1000); // Convert to IST
 
-    let hours = localDate.getHours();
-    const minutes = localDate.getMinutes();
-    const ampm = hours >= 12 ? "PM" : "AM";
-    hours = hours % 12;
-    hours = hours ? hours : 12; // the hour '0' should be '12'
-    const minutesStr = minutes < 10 ? "0" + minutes : minutes; // Ensuring two digits for minutes
+  function formatDate(createdAt: any) {
+    const IST_OFFSET = 330;
+    const now = new Date();
+    const past = new Date(createdAt);
 
-    return `${hours}:${minutesStr} ${ampm}`;
-  };
+    past.setMinutes(past.getMinutes() + IST_OFFSET);
+
+    // const dateOptions = { day: "numeric", month: "short" }; // Date formatting options
+
+    if (now.toDateString() === past.toDateString()) {
+      return past.toLocaleTimeString("en-IN", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
+    // Formatting yesterday's date
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (yesterday.toDateString() === past.toDateString()) {
+      return "Yesterday";
+    }
+
+    return past.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  }
 
   useEffect(() => {
     const fetchMessages = () => {
@@ -124,7 +138,7 @@ export default function Home() {
           if (response.data.length > 0) {
             const messagesWithISTTime = response.data.map((message: any) => ({
               ...message,
-              time: convertToIST(message.created_at), // Use the conversion function here
+              time: formatDate(message.created_at), // Use the conversion function here
             }));
             // setAllMessages([...response.data]);
             setAllMessages([...messagesWithISTTime]);
@@ -295,7 +309,9 @@ export default function Home() {
                       )}
                     >
                       <span className="text-xs">
-                        {message.role === "assistant" ? "Sally" : "User"}{" "}
+                        {message.role === "assistant"
+                          ? "Sally"
+                          : user?.firstName}{" "}
                         {message?.time}
                       </span>
                       <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
