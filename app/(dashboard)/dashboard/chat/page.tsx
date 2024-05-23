@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -27,7 +29,6 @@ import { useUserContext } from "@/context/user-context";
 //   `Send an email wishing happy new year to me`,
 //   `Schedule my meeting with info@agentprod.com tomorrow`,
 // ];
-
 
 export default function Home() {
   // const { data: session } = useSession();
@@ -313,7 +314,8 @@ export default function Home() {
                         {message.role === "assistant"
                           ? "Sally"
                           : user?.firstName}{" "}
-                        {message?.time}
+                        - 8 hours ago
+                        {/* {message?.time} */}
                       </span>
                       <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
                         <ReactMarkdown

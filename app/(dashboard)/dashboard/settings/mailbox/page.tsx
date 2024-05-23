@@ -168,10 +168,9 @@ export default function Page() {
       );
 
       const data = await response.json();
-      console.log("Response from OTP validation:", data.success);
+      console.log("Response from OTP validation:", data.status);
 
-      if (data.status === 200 || 204) {
-        // Assuming `data.success` is a boolean indicating the operation's success
+      if (response.ok) {
         const newMailbox = {
           id:
             mailboxes.length > 0
