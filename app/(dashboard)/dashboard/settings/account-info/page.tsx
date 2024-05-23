@@ -67,11 +67,11 @@ export default function Page() {
             id: data.user_id,
             firstName: data.first_name,
             lastName: data.last_name,
-            company: data.company,
-            companyID: data.companyId,
-            notification: data.notifications,
-            plan: data.plan,
-            leadUsed: data.leads_used,
+            // company: data.company,
+            // companyID: data.companyId,
+            // notification: data.notifications,
+            // plan: data.plan,
+            // leadUsed: data.leads_used,
           });
         })
         .catch((error) => {

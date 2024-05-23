@@ -246,23 +246,23 @@ import { Textarea } from "../ui/textarea";
 import { Badge } from "../ui/badge";
 
 interface EmailMessage {
-  id: string;
-  conversation_id: string;
-  received_datetime: string;
-  sender: string;
-  recipient: string;
-  subject: string;
-  body: string;
-  is_reply: boolean;
-  send_datetime: string | null;
-  open_datetime: string | null;
-  click_datetime: string | null;
-  response_datetime: string | null;
-  status: string | null;
-  sentiment: string | null;
-  category: string;
-  action_draft: string;
-  message_id: string;
+  id: any;
+  conversation_id: any;
+  received_datetime: any;
+  sender: any;
+  recipient: any;
+  subject: any;
+  body: any;
+  is_reply: any;
+  send_datetime: any;
+  open_datetime: any;
+  click_datetime: any;
+  response_datetime: any;
+  status: any;
+  sentiment: any;
+  category: any;
+  action_draft: any;
+  message_id: any;
 }
 
 interface NotificationProps {

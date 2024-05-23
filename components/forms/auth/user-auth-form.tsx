@@ -120,6 +120,7 @@ export default function UserAuthForm({
         setUser({
           id: userData?.user?.id,
           email: userData?.user?.email,
+
           // username: userData?.user?.username,
           // firstName: userData?.user?.firstName,
         });

@@ -60,11 +60,11 @@ export interface UserInterface {
   firstName?: string;
   email?: string;
   lastName?: string;
-  company?: string;
-  companyID: string;
-  notification: string;
-  plan: string;
-  leadUsed: string;
+  // company?: string;
+  // companyID: string;
+  // notification: string;
+  // plan: string;
+  // leadUsed: string;
 }
 
 export const DummyUser: UserInterface = {
@@ -73,11 +73,11 @@ export const DummyUser: UserInterface = {
   firstName: "Agent",
   email: "agentprod@agentprod.com",
   lastName: "",
-  company: "",
-  companyID: "",
-  notification: "",
-  plan: "",
-  leadUsed: "",
+  // company: "",
+  // companyID: "",
+  // notification: "",
+  // plan: "",
+  // leadUsed: "",
 };
 
 export interface AppState {
