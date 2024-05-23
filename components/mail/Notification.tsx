@@ -244,6 +244,7 @@ import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 
 import { Badge } from "../ui/badge";
+import { useLeads } from "@/context/lead-user";
 
 interface EmailMessage {
   id: any;
@@ -276,6 +277,9 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       minute: "2-digit",
     });
   };
+
+  const { leads } = useLeads();
+
   const parseActionDraft = (actionDraft: any) => {
     if (!actionDraft)
       return { subject: "No subject", body: "No details provided" };
@@ -320,7 +324,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <Card className="w-full mr-7 opacity-60">
               <div className="flex gap-4 p-4">
                 <span className="text-sm font-semibold text-gray-500">
-                  Kevin to you
+                  {leads[0].first_name} to you
                 </span>
                 <span className="text-gray-600 text-sm ">
                   {formatDate(email.received_datetime)}
@@ -373,7 +377,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           </span>
         </div>
       )}
-      {(!email.is_reply || email.status === "CLICK") && (
+      {!email.is_reply && email.status === "CLICK" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Clock3 className="h-4 w-4 text-gray-400" />
@@ -392,7 +396,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {(!email.is_reply || email.status === "DELIVERED") && (
+      {!email.is_reply && email.status === "DELIVERED" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Mail className="h-4 w-4 text-gray-400" />
@@ -413,7 +417,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {(!email.is_reply || email.status === "BOUNCE") && (
+      {!email.is_reply && email.status === "BOUNCE" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Archive className="h-4 w-4 text-gray-400" />
@@ -434,7 +438,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {(!email.is_reply || email.status === "COMPLAIN") && (
+      {!email.is_reply && email.status === "COMPLAIN" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Clock3 className="h-4 w-4 text-gray-400" />

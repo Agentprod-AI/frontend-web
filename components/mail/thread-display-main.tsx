@@ -347,7 +347,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </Avatar>
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
-              <span className="text-sm font-semibold">You to Kevin</span>
+              <span className="text-sm font-semibold">
+                You to {leads[0].first_name}
+              </span>
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">8 hours ago</span>
                 <span className="text-green-500 text-sm ">Draft</span>
