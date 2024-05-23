@@ -243,8 +243,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
 
-import { Badge } from "../ui/badge";
+// import { Badge } from "../ui/badge";
 import { useLeads } from "@/context/lead-user";
+import { useUserContext } from "@/context/user-context";
 
 interface EmailMessage {
   id: any;
@@ -279,7 +280,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
   };
 
   const { leads } = useLeads();
-
+  const { user } = useUserContext();
   const parseActionDraft = (actionDraft: any) => {
     if (!actionDraft)
       return { subject: "No subject", body: "No details provided" };
@@ -317,14 +318,16 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
 
           <div className="flex w-full">
             <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
-              <AvatarFallback className="bg-purple-400 text-black text-xs">
-                KN
+              <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                {user?.firstName && user.lastName
+                  ? user.firstName.charAt(0) + user.lastName.charAt(0)
+                  : ""}
               </AvatarFallback>
             </Avatar>
             <Card className="w-full mr-7 opacity-60">
               <div className="flex gap-4 p-4">
                 <span className="text-sm font-semibold text-gray-500">
-                  {leads[0].first_name} to you
+                  You to {leads[0].first_name}
                 </span>
                 <span className="text-gray-600 text-sm ">
                   {formatDate(email.received_datetime)}
