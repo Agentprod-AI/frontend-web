@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
 
@@ -7,19 +9,33 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
+// import { first, last } from "slate";
+// import { da, pl } from "date-fns/locale";
 
 type Info = {
   id: string;
-  // value: string | undefined | null;
   value: string | undefined | null | number;
   isEditable: boolean;
 };
 
 export default function Page() {
-  const { user } = useUserContext();
+  const { user, updateUser } = useUserContext();
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
+  const [dummyAccountInfo, setDummyAccountInfo] = useState<Info[]>([
+    { id: "ID", value: "", isEditable: false },
+    { id: "Sender First Name", value: "", isEditable: true },
+    { id: "Sender Last Name", value: "", isEditable: true },
+    { id: "Sender Job", value: "", isEditable: true },
+    { id: "Email", value: "", isEditable: true },
+    { id: "Company", value: "", isEditable: true },
+    { id: "Company ID", value: "", isEditable: false },
+    { id: "Notifications", value: "", isEditable: true },
+    { id: "Plan", value: "", isEditable: false },
+    { id: "Leads used", value: "", isEditable: false },
+  ]);
 
+  console.log("usering user", user);
   React.useEffect(() => {
     if (user?.id) {
       axiosInstance
@@ -47,10 +63,23 @@ export default function Page() {
             { id: "Leads used", value: data.leads_used, isEditable: false },
           ];
           setAccountInfo(initialAccountInfo);
+          updateUser({
+            id: data.user_id,
+            firstName: data.first_name,
+            lastName: data.last_name,
+            // company: data.company,
+            // companyID: data.companyId,
+            // notification: data.notifications,
+            // plan: data.plan,
+            // leadUsed: data.leads_used,
+          });
         })
         .catch((error) => {
           console.error("Failed to fetch user details:", error);
+          setAccountInfo(dummyAccountInfo);
         });
+    } else {
+      setAccountInfo(dummyAccountInfo);
     }
   }, [user]);
 
@@ -64,12 +93,14 @@ export default function Page() {
     setIsEditing(!isEditing);
   };
 
+  const infoToShow = accountInfo.length > 0 ? accountInfo : dummyAccountInfo;
+
   return (
     <div>
       <div className="rounded-md border border-collapse mb-8">
         <Table className="w-full text-left">
           <TableBody>
-            {accountInfo.map((info) => (
+            {infoToShow.map((info) => (
               <TableRow key={info.id} className="hover:bg-transparent">
                 <TableCell className="font-medium px-4 py-2 border-r bg-muted/50 w-1/3">
                   {info.id}

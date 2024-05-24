@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -16,9 +18,10 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Message } from "ai/react";
+// import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+
 // import { useSession } from "next-auth/react";
 
 // const examples = [
@@ -26,6 +29,13 @@ import { useUserContext } from "@/context/user-context";
 //   `Send an email wishing happy new year to me`,
 //   `Schedule my meeting with info@agentprod.com tomorrow`,
 // ];
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt?: any;
+}
 
 export default function Home() {
   // const { data: session } = useSession();
@@ -41,6 +51,7 @@ export default function Home() {
   // const [userId, setUserId] = useState(user?.id);
   const [userId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
+
   const [allMessages, setAllMessages] = useState<Message[]>([
     {
       id: Math.random().toString(),
@@ -100,15 +111,57 @@ export default function Home() {
   //   if (allUsers && allUsers[0].id) setUserId(allUsers[0].id);
   // };
 
+  function formatDate(created_at: any) {
+    // Ensure createdAt is a valid date
+    if (!created_at) return "No date provided";
+
+    const date = new Date(created_at);
+    if (isNaN(date.getTime())) return "Invalid date"; // Check if the date is valid
+
+    const IST_OFFSET = 330; // Indian Standard Time offset in minutes
+    const now = new Date();
+    const past = new Date(date.valueOf() + IST_OFFSET * 60000); // Apply IST offset
+
+    // Check if the date is today
+    if (now.toDateString() === past.toDateString()) {
+      return past.toLocaleTimeString("en-IN", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+
+    // Check if the date is yesterday
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (yesterday.toDateString() === past.toDateString()) {
+      return "Yesterday";
+    }
+
+    // Default to a simple date format
+    return past.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  }
+
   useEffect(() => {
     const fetchMessages = () => {
       axiosInstance
         .get(`v2/conversation/${userId}`)
         .then((response) => {
-          // console.log(response);
-          if (response.data.length > 0) {
-            setAllMessages([...response.data]);
-          }
+          const adaptedMessages = response.data.map((msg: any) => ({
+            ...msg,
+            createdAt: msg.created_at, // Adapt backend data to fit the interface
+          }));
+          setMessages(adaptedMessages);
+          // console.log("Shally responde", response);
+          // if (response.data.length > 0) {
+          //   // const messagesWithISTTime = response.data.map((message: any) => ({
+          //   //   ...message,
+          //   //   time: formatDate(message.created_at), // Use the conversion function here
+          //   // }));
+          //   console.log("Shally responde", response.data.created_at);
+          //   setAllMessages([...response.data]);
+          //   // setAllMessages([...messagesWithISTTime]);
+          // }
         })
         .catch((error) => {
           // console.log(error);
@@ -174,7 +227,7 @@ export default function Home() {
     } catch (err) {
       // console.log("Something went wrong!", err);
     }
-  }, [allMessages]); 
+  }, [allMessages]);
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =
@@ -275,8 +328,10 @@ export default function Home() {
                       )}
                     >
                       <span className="text-xs">
-                        {message.role === "assistant" ? "Sally" : "User"} 05:07
-                        PM
+                        {message.role === "assistant"
+                          ? "Sally"
+                          : user?.firstName}{" "}
+                        {formatDate(message?.createdAt)}
                       </span>
                       <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
                         <ReactMarkdown

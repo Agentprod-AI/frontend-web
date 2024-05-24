@@ -130,7 +130,7 @@ export default function Page() {
   return (
     <>
       <DashboardPageHeader />
-      <ScrollArea className="h-full">
+      <ScrollArea className="h-full scroll-my-36">
         <div className="flex-1 space-y-4">
           {/* <Tabs defaultValue="overview" className="space-y-4">
         <TabsList>

@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,8 +15,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { AppState, UserInterface } from "@/context/user-context";
-import { setCookie, getCookie } from "cookies-next";
+// import { AppState, UserInterface } from "@/context/user-context";
+import { setCookie } from "cookies-next";
 
 import {
   login as supabaseLogin,
@@ -120,6 +121,7 @@ export default function UserAuthForm({
         setUser({
           id: userData?.user?.id,
           email: userData?.user?.email,
+
           // username: userData?.user?.username,
           // firstName: userData?.user?.firstName,
         });

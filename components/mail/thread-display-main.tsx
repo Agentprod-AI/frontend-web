@@ -1,3 +1,8 @@
+/* eslint-disable no-console */
+/* eslint-disable react-hooks/exhaustive-deps */
+
+"use client";
+
 import React from "react";
 import { formatDistanceToNow } from "date-fns";
 import axiosInstance from "../../utils/axiosInstance";
@@ -30,11 +35,13 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { draftEmail } from "@/constants/data";
-import axios from "axios";
+
 import { useMailbox, Mailbox, EmailMessage } from "@/context/mailbox-provider";
 import { Lead, useLeads, Contact } from "@/context/lead-user";
 import { toast } from "sonner";
+import Notification from "./Notification";
+import { useCampaignContext } from "@/context/campaign-provider";
+import { User } from "lucide-react";
 
 interface ConversationEntry {
   id: string;
@@ -74,15 +81,15 @@ const frameworks = [
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   ownerEmail,
 }) => {
-  // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
-  //   []
-  // );
   const { conversationId, thread, setThread, recipientEmail, senderEmail } =
     useMailbox();
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
   const { leads, setLeads } = useLeads();
+  const { campaigns } = useCampaignContext();
+
+  console.log("Thread Capmy", campaigns);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -96,11 +103,17 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
   };
 
+  console.log("Thread Dlead", leads);
+
+  const leadId = leads[0]?.campaign_id;
+  console.log("Thread Display->>>>", leadId);
+
   React.useEffect(() => {
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
         setThread(response.data);
+        console.log("Thread Display->>>>", response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -122,7 +135,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .catch((error) => {
           console.error("Error fetching data:", error);
           setError(error.message || "Failed to load data.");
-          // setIsLoading(false);
         });
     }
   }, [recipientEmail]);
@@ -143,50 +155,147 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     );
   }
 
+  // const EmailComponent = ({ email }: { email: EmailMessage }) => {
+  //   const isEmailFromOwner = email.sender === ownerEmail;
+
+  //   console.log("hehe email", email);
+
+  //   return (
+  //     <div className="flex flex-col gap-3 m-4">
+  //       <div className="flex  w-full">
+  //         <Avatar
+  //           className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+  //           onClick={() => {
+  //             toggleSidebar(true);
+  //           }}
+  //         >
+  //           <AvatarImage
+  //             src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+  //             alt="avatar"
+  //           />
+  //           <AvatarFallback className="bg-yellow-400 text-black text-xs">
+  //             {leads[0]?.first_name && leads[0]?.last_name
+  //               ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
+  //               : ""}
+  //           </AvatarFallback>
+  //         </Avatar>
+  //         <Card className="w-full mr-5">
+  //           <CardHeader>
+  //             <CardTitle className="text-sm">
+  //               {email.subject}{" "}
+  //               {!isEmailFromOwner && email.sentiment && (
+  //                 <Badge className="ml-2" key={"label"}>
+  //                   {email.sentiment}
+  //                 </Badge>
+  //               )}
+  //             </CardTitle>
+  //             <CardDescription className="text-xs">
+  //               {email.body}
+  //             </CardDescription>
+  //           </CardHeader>
+  //           <CardContent className="text-xs">
+  //             <span className="text-muted-foreground">
+  //               {email.sender === ownerEmail ? "you" : email.sender} sent to{" "}
+  //               {email.recipient === ownerEmail ? "you" : email.recipient} -{" "}
+  //               {email.received_datetime &&
+  //                 formatDistanceToNow(
+  //                   new Date(email.received_datetime.toString()),
+  //                   {
+  //                     addSuffix: true,
+  //                   }
+  //                 )}
+  //             </span>
+  //           </CardContent>
+  //         </Card>
+  //       </div>
+  //       <Notification email={email} />
+  //     </div>
+  //   );
+  // };
+
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
-    const isEmailFromOwner = email.sender === ownerEmail;
+    // const isEmailFromOwner = email.sender === ownerEmail;
+
+    const formatDate = (dateString: string) => {
+      return new Date(dateString).toLocaleTimeString("en-US", {
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+    };
+
+    console.log("sender emails", email);
+
+    const matchingCampaign = campaigns.find(
+      (campaign) => campaign.id === leadId
+    );
 
     return (
-      <div className="flex m-4 w-full">
-        <Avatar
-          className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-          onClick={() => {
-            // handleLeadFromEmail();
-            toggleSidebar(true);
-          }}
-        >
-          <AvatarImage
-            src={leads[0]?.photo_url ? leads[0].photo_url : ""}
-            alt="avatar"
-          />
-          <AvatarFallback>{initials(leads[0]?.name)}</AvatarFallback>
-        </Avatar>
-        <Card className="w-full mr-5">
-          <CardHeader>
-            <CardTitle className="text-sm">
-              {email.subject}{" "}
-              {!isEmailFromOwner && email.sentiment && (
-                <Badge className="ml-2" key={"label"}>
-                  {email.sentiment}
-                </Badge>
-              )}
-            </CardTitle>
-            <CardDescription className="text-xs">{email.body}</CardDescription>
-          </CardHeader>
-          <CardContent className="text-xs">
-            <span className="text-muted-foreground">
-              {email.sender === ownerEmail ? "you" : email.sender} sent to{" "}
-              {email.recipient === ownerEmail ? "you" : email.recipient} -{" "}
-              {email.received_datetime &&
-                formatDistanceToNow(
-                  new Date(email.received_datetime.toString()),
-                  {
-                    addSuffix: true,
-                  }
-                )}
-            </span>
-          </CardContent>
-        </Card>
+      <div className="flex gap-4 flex-col m-4 h-full ">
+        {matchingCampaign && (
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <User className="h-4 w-4 text-gray-400" />
+            </div>
+            <div className="text-xs ml-1">
+              {leads[0].first_name} was added in{" "}
+              {matchingCampaign.campaign_type} campaign {leads[0].headline} in{" "}
+              {leads[0].country}
+            </div>
+          </div>
+        )}
+        <div className="flex w-full ">
+          <Avatar
+            className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+            onClick={() => {
+              toggleSidebar(true);
+            }}
+          >
+            <AvatarImage
+              src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+              alt="avatar"
+            />
+
+            <AvatarFallback className="bg-yellow-400 text-black text-xs">
+              {leads[0]?.first_name && leads[0]?.last_name
+                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
+                : ""}
+            </AvatarFallback>
+          </Avatar>
+          <Card className="w-full mr-5 ">
+            <div className="flex gap-5 p-4 items-center">
+              <span className="text-sm font-semibold">
+                {email.sender !== leads[0].email
+                  ? "You to " + leads[0].first_name
+                  : leads[0].first_name + " to you"}
+              </span>
+              <div className="flex gap-3">
+                <span className="text-gray-500 text-sm  ">
+                  {email?.received_datetime &&
+                    formatDate(email.received_datetime.toString())}
+                </span>
+              </div>
+            </div>
+            <CardHeader>
+              <CardTitle className="text-sm flex -mt-8 -ml-3">
+                <Input
+                  value={email.subject}
+                  className="text-xs"
+                  placeholder="Subject"
+                  readOnly
+                />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs -ml-3 -mt-4">
+              <Textarea
+                value={email.body}
+                readOnly
+                className="text-xs h-64"
+                placeholder="Enter email body"
+              />
+            </CardContent>
+          </Card>
+        </div>
+        <Notification email={email} />
       </div>
     );
   };
@@ -195,7 +304,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
-    const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
+    // const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
     const [emails, setEmails] = React.useState<
       {
         body: string;
@@ -209,16 +318,19 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState("");
 
+    const internalScrollRef = React.useRef<HTMLDivElement>(null);
+
     React.useEffect(() => {
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          console.log(response);
+          // console.log("ThreadDisplayyyy->", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
             setEmails(response.data);
           }
+
           setIsLoading(false);
         })
         .catch((err) => {
@@ -235,6 +347,15 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     //   setBody(emails[nextIndex].body);
     // };
 
+    React.useEffect(() => {
+      if (internalScrollRef.current) {
+        internalScrollRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "nearest",
+        });
+      }
+    }, [emails]);
+
     const handleApproveEmail = () => {
       const payload = {
         conversation_id: conversationId,
@@ -248,8 +369,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .post("/v2/mailbox/draft/send", payload)
         .then((response) => {
           toast.success("Your email has been sent successfully!");
-          console.log(response.data); // Optional: handle response data
-          setEditable(false); // Disable editing after sending
+          console.log(response.data);
+          setEditable(false);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
@@ -270,8 +391,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .post("/v2/mailbox/send/immediately", payload)
         .then((response) => {
           toast.success("Your email has been sent successfully!");
-          console.log(response.data); // Optional: handle response data
-          setEditable(false); // Disable editing after sending
+          console.log(response.data);
+          setEditable(false);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
@@ -284,8 +405,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .delete(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
           toast.success("Your draft has been deleted successfully!");
-          console.log(response.data); // Optional: handle response data
-          setEditable(false); // Disable editing after sending
+          console.log(response.data);
+          setEditable(false);
         })
         .catch((error) => {
           console.error("Failed to delete draft:", error);
@@ -302,80 +423,93 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
 
     return (
-      <div className="flex m-4 w-full">
-        <Avatar
-          className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-          onClick={() => {
-            // handleLeadFromEmail();
-            toggleSidebar(true);
-          }}
-        >
-          {/* avatar fallback -> email initials */}
-          <AvatarFallback>SG</AvatarFallback>
-        </Avatar>
-        <Card className="w-full mr-5">
-          <CardHeader>
-            <CardTitle className="text-sm flex">
-              <Input
-                value={title}
-                disabled={!editable}
-                className="text-xs"
-                placeholder="Subject"
-                onChange={(e) => setTitle(e.target.value)}
-              />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="text-xs">
-            <Textarea
-              value={body}
-              disabled={!editable}
-              className="text-xs h-64"
-              placeholder="Enter email body"
-              onChange={(e) => setBody(e.target.value)}
+      <div className="flex gap-2 flex-col m-4 h-full">
+        {/* Want a notification here */}
+
+        <div className="flex w-full">
+          <Avatar
+            className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+            onClick={() => {
+              toggleSidebar(true);
+            }}
+          >
+            <AvatarImage
+              src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+              alt="avatar"
             />
-          </CardContent>
-          <CardFooter className="flex justify-between text-xs items-center">
-            <div>
-              <Button disabled={editable} onClick={handleApproveEmail}>
-                Approve
-              </Button>
-              <Button
-                className="ml-2"
-                // disabled={!editable}
-                onClick={handleSendNow}
-              >
-                Send Now
-              </Button>
-              {editable && (
-                <Button variant={"ghost"} onClick={() => setEditable(false)}>
-                  <Check className="h-4 w-4" />
+
+            <AvatarFallback className="bg-yellow-400 text-black text-xs">
+              {leads[0]?.first_name && leads[0]?.last_name
+                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
+                : ""}
+            </AvatarFallback>
+          </Avatar>
+          <Card className="w-full mr-5 ">
+            <div className="flex gap-5 p-4 items-center">
+              <span className="text-sm font-semibold">
+                You to {leads[0].first_name}
+              </span>
+              <div className="flex gap-3">
+                <span className="text-gray-500 text-sm  ">8 hours ago</span>
+                <span className="text-green-500 text-sm ">Draft</span>
+              </div>
+            </div>
+            <CardHeader>
+              <CardTitle className="text-sm flex -mt-8 -ml-3">
+                <Input
+                  value={title}
+                  disabled={!editable}
+                  className="text-xs"
+                  placeholder="Subject"
+                  onChange={(e) => setTitle(e.target.value)}
+                />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="text-xs -ml-3 -mt-4">
+              <Textarea
+                value={body}
+                disabled={!editable}
+                className="text-xs h-64"
+                placeholder="Enter email body"
+                onChange={(e) => setBody(e.target.value)}
+              />
+            </CardContent>
+            <CardFooter className="flex justify-between text-xs items-center">
+              <div>
+                <Button disabled={editable} onClick={handleApproveEmail}>
+                  Approve
                 </Button>
-              )}
-            </div>
-            <div>
-              <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                <Edit3 className="h-4 w-4" />
-              </Button>
-              <Button variant={"ghost"}>
-                <RefreshCw className="h-4 w-4" />
-              </Button>
-              <Button variant={"ghost"} onClick={handleDeleteDraft}>
-                <Trash2 className="h-4 w-4" />
-              </Button>
-            </div>
-          </CardFooter>
-        </Card>
+                <Button
+                  variant={"secondary"}
+                  className="ml-2"
+                  onClick={handleSendNow}
+                >
+                  Send Now
+                </Button>
+                {editable && (
+                  <Button variant={"ghost"} onClick={() => setEditable(false)}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                )}
+              </div>
+              <div>
+                <Button variant={"ghost"} onClick={() => setEditable(true)}>
+                  <Edit3 className="h-4 w-4" />
+                </Button>
+                <Button variant={"ghost"}>
+                  <RefreshCw className="h-4 w-4" />
+                </Button>
+                <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardFooter>
+            <div ref={internalScrollRef} />
+          </Card>
+        </div>
       </div>
     );
   };
-
-  // if (!thread || (thread.length === 0 && !draft) || draft.length === 0) {
-  //   return (
-  //     <div className="flex justify-center items-center h-screen">
-  //       <div className="text-lg font-medium">No conversation data found.</div>
-  //     </div>
-  //   );
-  // }
 
   const DropdownComponent = () => {
     const [open, setOpen] = React.useState(false);
@@ -399,7 +533,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         </PopoverTrigger>
         <PopoverContent className="w-[200px] p-0">
           <Command>
-            <CommandInput placeholder=" Search framework..." />
+            <CommandInput placeholder="Search framework..." />
             <CommandEmpty>No framework found.</CommandEmpty>
             <CommandGroup>
               {frameworks.map((framework) => (
@@ -430,7 +564,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
-      <>
+      <div className="h-full ">
         {thread?.length > 0 && (
           <div>
             {thread.map((email, index) => (
@@ -439,12 +573,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </div>
         )}
         <DraftEmailComponent />
-      </>
+      </div>
     </div>
   );
 };
 
 export default ThreadDisplayMain;
-
-
-// 

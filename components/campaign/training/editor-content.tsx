@@ -32,18 +32,18 @@ interface EditorContentProps {
 
 const allFieldsList: allFieldsListType = {
   variable: [
-    // {
-    //   id: "1",
-    //   val: "company name",
-    //   description: "The name of the company",
-    //   length: "short",
-    // },
-    // {
-    //   id: "2",
-    //   val: "first name",
-    //   description: "The first name of the customer",
-    //   length: "automatic",
-    // },
+    {
+      id: "1",
+      val: "company name",
+      description: "The name of the company",
+      length: "short",
+    },
+    {
+      id: "2",
+      val: "first name",
+      description: "The first name of the customer",
+      length: "automatic",
+    },
   ],
   offering: [
     {
