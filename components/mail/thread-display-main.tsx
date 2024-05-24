@@ -214,7 +214,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   // };
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
-    const isEmailFromOwner = email.sender === ownerEmail;
+    // const isEmailFromOwner = email.sender === ownerEmail;
 
     const formatDate = (dateString: string) => {
       return new Date(dateString).toLocaleTimeString("en-US", {
@@ -225,8 +225,24 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     console.log("sender emails", email);
 
+    const matchingCampaign = campaigns.find(
+      (campaign) => campaign.id === leadId
+    );
+
     return (
-      <div className="flex gap-2 flex-col m-4 h-full ">
+      <div className="flex gap-4 flex-col m-4 h-full ">
+        {matchingCampaign && (
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <User className="h-4 w-4 text-gray-400" />
+            </div>
+            <div className="text-xs ml-1">
+              {leads[0].first_name} was added in{" "}
+              {matchingCampaign.campaign_type} campaign {leads[0].headline} in{" "}
+              {leads[0].country}
+            </div>
+          </div>
+        )}
         <div className="flex w-full ">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -248,13 +264,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                {email.sender === leads[0].email
+                {email.sender !== leads[0].email
                   ? "You to " + leads[0].first_name
                   : leads[0].first_name + " to you"}
               </span>
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">
-                  {email?.received_datetime && formatDate(email.received_datetime.toString())}
+                  {email?.received_datetime &&
+                    formatDate(email.received_datetime.toString())}
                 </span>
               </div>
             </div>
@@ -404,25 +421,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     if (error) {
       return <div>Error: {error}</div>;
     }
-    const matchingCampaign = campaigns.find(
-      (campaign) => campaign.id === leadId
-    );
 
     return (
       <div className="flex gap-2 flex-col m-4 h-full">
         {/* Want a notification here */}
-        {matchingCampaign && (
-          <div className="flex items-center gap-3">
-            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <User className="h-4 w-4 text-gray-400" />
-            </div>
-            <div className="text-xs ml-1">
-              {leads[0].first_name} was added in{" "}
-              {matchingCampaign.campaign_type} campaign {leads[0].headline} in{" "}
-              {leads[0].country}
-            </div>
-          </div>
-        )}
+
         <div className="flex w-full">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"

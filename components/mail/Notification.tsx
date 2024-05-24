@@ -324,9 +324,9 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   : ""}
               </AvatarFallback>
             </Avatar>
-            <Card className="w-full mr-7 opacity-60">
+            <Card className="w-full mr-7 ">
               <div className="flex gap-4 p-4">
-                <span className="text-sm font-semibold text-gray-500">
+                <span className="text-sm font-semibold">
                   You to {leads[0].first_name}
                 </span>
                 <span className="text-gray-600 text-sm ">
@@ -336,7 +336,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               <CardHeader className="-mt-8 -ml-3">
                 <CardTitle className="text-sm flex flex-col ">
                   <Input
-                    className="text-xs text-gray-400 "
+                    className="text-xs"
                     placeholder="Subject"
                     value={
                       email.action_draft &&
@@ -348,7 +348,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
                 <Textarea
-                  className="text-xs text-gray-400  h-40"
+                  className="text-xs h-40"
                   placeholder="Enter email body"
                   value={
                     email.action_draft &&
