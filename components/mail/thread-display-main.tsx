@@ -4,18 +4,18 @@
 "use client";
 
 import React from "react";
-import { formatDistanceToNow } from "date-fns";
+// import { formatDistanceToNow } from "date-fns";
 import axiosInstance from "../../utils/axiosInstance";
 import {
   Card,
   CardContent,
-  CardDescription,
+  // CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { Badge } from "../ui/badge";
+// import { Badge } from "../ui/badge";
 
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
 import {
@@ -418,14 +418,16 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       return <div>Loading...</div>;
     }
 
+    if (!emails) {
+      return <div>Empty Draft Email</div>;
+    }
+
     if (error) {
       return <div>Error: {error}</div>;
     }
 
     return (
       <div className="flex gap-2 flex-col m-4 h-full">
-        {/* Want a notification here */}
-
         <div className="flex w-full">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -447,7 +449,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                You to {leads[0].first_name}
+                {leads.length > 0 ? "" : "You to " + leads[0]?.first_name}
               </span>
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">8 hours ago</span>

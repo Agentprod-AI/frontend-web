@@ -70,7 +70,7 @@ export function Mail({
 
   const { user } = useUserContext();
 
-
+  console.log("User from mail", user);
 
   const {
     conversationId,
@@ -222,7 +222,11 @@ export function Mail({
               </form>
             </div>
             <TabsContent value={filter} className="m-0">
-              <MailList items={filteredMails} />
+              {mails.length > 0 ? (
+                <MailList items={filteredMails} />
+              ) : (
+                "No Mails Found"
+              )}
             </TabsContent>
             {/* <TabsContent value="unread" className="m-0">
               <MailList
