@@ -79,6 +79,24 @@ export default function Page() {
     fetchDomainData();
   };
 
+  const fetchMailboxes = async () => {
+    try {
+      const response = await axiosInstance.get(
+        `/v2/settings/mailboxes/${user.id}`
+      );
+      // setMailboxes(response.data.mailboxes);
+      console.log("Mailboxes fetched successfully:", response.data);
+    } catch (error) {
+      console.error("Failed to fetch mailboxes:", error);
+      // Optionally set some state to show an error message or alert
+    }
+  };
+  React.useEffect(() => {
+    if (user?.id) {
+      fetchMailboxes();
+    }
+  });
+
   // const handleEmailVerification = async () => {
   //   const postData = {
   //     name: nameInput,
@@ -230,14 +248,14 @@ export default function Page() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <GmailIcon />
-                    <span>{mailbox.email}</span>
+                    <span>{mailbox?.email}</span>
                   </div>
                 </TableCell>
-                <TableCell>{mailbox.name}</TableCell>
+                <TableCell>{mailbox?.name || "Muskaan "}</TableCell>
                 <TableCell>
-                  <Switch checked={mailbox.warmUp} />
+                  <Switch checked={mailbox?.warmUp || true} />
                 </TableCell>
-                <TableCell>{mailbox.dailyLimit}</TableCell>
+                <TableCell>{mailbox?.dailyLimit || 5}</TableCell>
                 <TableCell>
                   <Dialog>
                     <DialogTrigger asChild>

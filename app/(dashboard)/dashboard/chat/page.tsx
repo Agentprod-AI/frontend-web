@@ -274,116 +274,72 @@ export default function Home() {
   return (
     <div>
       <main className="flex flex-col items-center justify-between pb-20">
-        {messages.length > 0 ? (
-          messages.map(
-            (message, i) =>
-              message && (
+        {messages.map(
+          (message, i) =>
+            message && (
+              <div
+                key={i}
+                className={clsx("flex w-full items-center justify-center py-4")}
+              >
                 <div
-                  key={i}
                   className={clsx(
-                    "flex w-full items-center justify-center py-4"
-                    // message.type === "user" ? "bg-black" : "bg-black/5",
+                    "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
+                    message.role === "user" ? "flex-row-reverse" : "flex-row"
                   )}
                 >
                   <div
                     className={clsx(
-                      "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                      message.role === "user" ? "flex-row-reverse" : "flex-row"
+                      "p-1.5 text-white",
+                      message.role === "assistant" ? "" : ""
                     )}
                   >
-                    <div
-                      className={clsx(
-                        "p-1.5 text-white",
-                        message.role === "assistant" ? "" : ""
-                      )}
-                    >
-                      {message.role === "user" ? (
-                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
-                          <AvatarImage src="/user.png" alt="user" />
-                          {/* <AvatarFallback>NB</AvatarFallback> */}
-                        </Avatar>
-                      ) : (
-                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
-                          {/* <AvatarFallback>JL</AvatarFallback> */}
-                          <AvatarImage
-                            src="/ai-sales-rep.png"
-                            alt="agentprod logo"
-                          />
-                          {/* <Image
-                        // className="mx-auto"
-                        width={100}
-                        height={100}
-                        src={"/bw-logo.png"}
-                        alt="AgentProd"
-                      /> */}
-                        </Avatar>
-                      )}
-                    </div>
-                    <div
-                      className={clsx(
-                        "flex flex-col !mr-3 space-y-1",
-                        message.role === "assistant"
-                          ? "items-start"
-                          : "items-end"
-                      )}
-                    >
-                      <span className="text-xs">
-                        {message.role === "assistant"
-                          ? "Sally"
-                          : user?.firstName}{" "}
-                        {formatDate(message?.createdAt)}
-                      </span>
-                      <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
-                        <ReactMarkdown
-                          className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
-                          remarkPlugins={[remarkGfm]}
-                          components={{
-                            // open links in new tab
-                            a: (props) => (
-                              <a
-                                {...props}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                              />
-                            ),
-                          }}
-                        >
-                          {message.content &&
-                            message.content.replace("Assistant: ", "")}
-                        </ReactMarkdown>
-
-                        {/* <div
-                      className={clsx(
-                        "button-container mt-4",
-                        message.type === "assistant" ? "pb-4" : "pb-0"
-                      )}
-                    >
-                      {message.type === "assistant" &&
-                      JSON.parse(message.message).buttons
-                        ? JSON.parse(message.message).buttons.map(
-                            (button: any, index: number) => (
-                              <a
-                                key={index}
-                                href={button.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="rounded-md border border-gray-200 bg-white px-3 sm:px-5 py-2 sm:py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50 ml-1 sm:ml-2"
-                              >
-                                {button.buttonTitle}
-                              </a>
-                            )
-                          )
-                        : null}
-                    </div> */}
-                      </div>
+                    {message.role === "user" ? (
+                      <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
+                        <AvatarImage src="/user.png" alt="user" />
+                      </Avatar>
+                    ) : (
+                      <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
+                        <AvatarImage
+                          src="/ai-sales-rep.png"
+                          alt="agentprod logo"
+                        />
+                      </Avatar>
+                    )}
+                  </div>
+                  <div
+                    className={clsx(
+                      "flex flex-col !mr-3 space-y-1",
+                      message.role === "assistant" ? "items-start" : "items-end"
+                    )}
+                  >
+                    <span className="text-xs">
+                      {message.role === "assistant" ? "Sally" : user?.firstName}{" "}
+                      {formatDate(message?.createdAt)}
+                    </span>
+                    <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                      <ReactMarkdown
+                        className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          a: (props) => (
+                            <a
+                              {...props}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            />
+                          ),
+                        }}
+                      >
+                        {message.content &&
+                          message.content.replace("Assistant: ", "")}
+                      </ReactMarkdown>
                     </div>
                   </div>
                 </div>
-              )
-          )
-        ) : (
-          <LoadingCircle />
+              </div>
+            )
         )}
+
         <div className="fixed bottom-0 flex w-full flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
             ref={formRef}

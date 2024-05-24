@@ -43,7 +43,7 @@ import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 // import axiosInstance from "@/utils/axiosInstance";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { useMailGraphContext } from "@/context/chart-data-provider";
-import { format, parseISO } from "date-fns";
+import { format, parseISO, differenceInCalendarDays } from "date-fns";
 
 // type DashboardData = {
 //   emails_sent: number;
@@ -102,6 +102,25 @@ export default function Page() {
 
   const { mailGraphData } = useMailGraphContext();
 
+  const calculateStreak = (data: any) => {
+    if (data.length === 0) return 0;
+
+    let streak = 1;
+    let lastDate = parseISO(data[0].date);
+
+    for (let i = 1; i < data.length; i++) {
+      const currentDate = parseISO(data[i].date);
+      if (differenceInCalendarDays(currentDate, lastDate) === 1) {
+        streak++;
+      } else if (differenceInCalendarDays(currentDate, lastDate) > 1) {
+        break; // Stops counting if there's a gap in the dates
+      }
+      lastDate = currentDate;
+    }
+
+    return streak;
+  };
+  const daysStreak = calculateStreak(mailGraphData);
   // const { user } = useUserContext();
 
   // React.useEffect(() => {
@@ -441,7 +460,9 @@ export default function Page() {
             <Card className="col-span-2 p-4 space-y-16">
               <div className="flex justify-between items-center gap-5 mb-4">
                 <div>
-                  <div className="text-lg font-semibold">3 Day Streak</div>
+                  <div className="text-lg font-semibold">
+                    {daysStreak} {daysStreak > 1 ? "Days" : "Day"} Streak
+                  </div>
                   <div className="text-sm text-gray-600">
                     Approve emails today to start a new streak
                   </div>
