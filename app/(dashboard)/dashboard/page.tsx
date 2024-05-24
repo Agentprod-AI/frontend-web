@@ -42,32 +42,33 @@ import { Progress } from "@/components/ui/progress";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
+import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 
-type DashboardData = {
-  emails_sent: number;
-  engaged: number;
-  meetings_booked: number;
-  response_rate: number;
-  top_performing_campaigns: TopPerformingCampaign[];
-  hot_leads: HotLead[];
-};
+// type DashboardData = {
+//   emails_sent: number;
+//   engaged: number;
+//   meetings_booked: number;
+//   response_rate: number;
+//   top_performing_campaigns: TopPerformingCampaign[];
+//   hot_leads: HotLead[];
+// };
 
-type HotLead = {
-  id: string;
-  src: string;
-  fallback: string;
-  name: string;
-  company: string;
-};
+// type HotLead = {
+//   id: string;
+//   src: string;
+//   fallback: string;
+//   name: string;
+//   company: string;
+// };
 
-type TopPerformingCampaign = {
-  name: string;
-  persona: string;
-  engaged: number;
-  response_rate: number;
-  bounce_rate: number;
-  open_rate: number;
-};
+// type TopPerformingCampaign = {
+//   name: string;
+//   persona: string;
+//   engaged: number;
+//   response_rate: number;
+//   bounce_rate: number;
+//   open_rate: number;
+// };
 
 export default function Page() {
   // const { toggleSidebar, setItemId } = useLeadSheetSidebar();
@@ -93,25 +94,27 @@ export default function Page() {
   // };
 
   // console.log(dashboardData);
-  const [dashboardData, setDashboardData] =
-    React.useState<DashboardData | null>(null);
+  // const [dashboardData, setDashboardData] =
+  //   React.useState<DashboardData | null>(null);
+
+  const { dashboardData, setDashboardData } = useDashboardContext();
   const [mailGraph, setMailGraph] = React.useState();
 
   const { user } = useUserContext();
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axiosInstance.get(`/v2/dashboard/${user.id}`);
-        console.log("Dashboard Data comingggg:", response.data);
-        setDashboardData(response.data);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      }
-    };
+  // React.useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axiosInstance.get(`/v2/dashboard/${user.id}`);
+  //       console.log("Dashboard Data comingggg:", response.data);
+  //       setDashboardData(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching dashboard data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [user.id]);
+  //   fetchData();
+  // }, [user.id]);
 
   React.useEffect(() => {
     const fetchData = async () => {
@@ -149,7 +152,9 @@ export default function Page() {
                     <Icons.mail />
                     <p className="font-medium">Emails Pending Approval</p>
                   </div>
-                  <Badge variant={"secondary"}>12</Badge>
+                  <Badge variant={"secondary"}>
+                    {dashboardData?.pending_approvals}
+                  </Badge>
                   {/* actual data is not here , this is hardcoded */}
                 </CardContent>
               </Card>
@@ -342,9 +347,9 @@ export default function Page() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>NAME</TableHead>
-                        <TableHead className="hidden sm:table-cell">
+                        {/* <TableHead className="hidden sm:table-cell">
                           PERSONA
-                        </TableHead>
+                        </TableHead> */}
                         <TableHead className="hidden sm:table-cell">
                           ENGAGED LEADS
                         </TableHead>
@@ -358,28 +363,32 @@ export default function Page() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dashboardData?.top_performing_campaigns.map(
-                        (campaign, index) => (
-                          <TableRow key={index}>
-                            <TableCell>{campaign?.name}</TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              {campaign.persona}
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              {campaign.engaged}
-                            </TableCell>
-                            <TableCell className="hidden sm:table-cell">
-                              {campaign.response_rate}
-                            </TableCell>
-                            <TableCell className="hidden md:table-cell">
-                              {campaign.bounce_rate}
-                            </TableCell>
-                            <TableCell className="text-right">
-                              {campaign.open_rate}
-                            </TableCell>
-                          </TableRow>
-                        )
-                      )}
+                      {dashboardData?.top_performing_campaigns.length > 0
+                        ? dashboardData.top_performing_campaigns.map(
+                            (campaign, index) => (
+                              <TableRow key={index}>
+                                <TableCell>{campaign.campaign_name}</TableCell>
+
+                                <TableCell className="hidden sm:table-cell text-center">
+                                  {campaign.engaged_leads}
+                                </TableCell>
+                                <TableCell className="hidden sm:table-cell text-center">
+                                  {campaign.response_rate}
+                                </TableCell>
+                                <TableCell className="hidden md:table-cell text-center">
+                                  {campaign.bounce_rate === null
+                                    ? 0
+                                    : campaign.bounce_rate}
+                                </TableCell>
+                                <TableCell className=" text-center">
+                                  {campaign.open_rate === null
+                                    ? 0
+                                    : campaign.open_rate}
+                                </TableCell>
+                              </TableRow>
+                            )
+                          )
+                        : "Loading...."}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -392,7 +401,7 @@ export default function Page() {
                   <CardTitle>Hot Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <div className="space-y-4">
+                  {/* <div className="space-y-4">
                     {dashboardData?.hot_leads.length === 0
                       ? "data not available"
                       : dashboardData?.hot_leads.map((lead) => (
@@ -404,7 +413,7 @@ export default function Page() {
                             <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company}`}</p>
                           </div>
                         ))}
-                  </div>
+                  </div> */}
                 </CardContent>
               </ScrollArea>
             </Card>
@@ -414,18 +423,16 @@ export default function Page() {
                 <CardTitle>Mailbox Health</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div>
-                  <p className="text-sm">muskaan@agentprod.com - 80%</p>
-                  <Progress value={80} className="h-5 mt-2" />
-                </div>
-                <div>
-                  <p className="text-sm">muskaan.m@agentprod.com - 30%</p>
-                  <Progress value={30} className="h-5 mt-2" />
-                </div>
-                <div>
-                  <p className="text-sm">muskaan.ms@agentprod.com - 65%</p>
-                  <Progress value={65} className="h-5 mt-2" />
-                </div>
+                {Object.entries(dashboardData.mailbox_health).map(
+                  ([email, health], index) => (
+                    <div key={index}>
+                      <p className="text-sm">
+                        {email} - {health}%
+                      </p>
+                      <Progress value={health} className="h-5 mt-2" />
+                    </div>
+                  )
+                )}
               </CardContent>
             </Card>
 
