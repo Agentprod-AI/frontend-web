@@ -25,6 +25,7 @@ import {
 import { toast } from "sonner";
 import { useAuth } from "@/context/auth-provider";
 import { useUserContext } from "@/context/user-context";
+import axiosInstance from "@/utils/axiosInstance";
 // import GoogleSignInButton from "@/components/github-auth-button";
 
 const formSchema = z.object({
@@ -125,7 +126,20 @@ export default function UserAuthForm({
           // username: userData?.user?.username,
           // firstName: userData?.user?.firstName,
         });
+        try {
+          const response = await axiosInstance.post(
+            `/v2/users/initiate/${userData.user.id}`,
+            {
+              userId: userData.user.id,
+            }
+          );
+          console.log("API call response after new api:", response.data);
+        } catch (apiError) {
+          console.error("API call failed:", apiError);
+          toast.error("Failed to complete user setup.");
+        }
         login(userData.user);
+
         const userKey = "user";
 
         setCookie(userKey, JSON.stringify(user), { maxAge: 3600 * 24 * 7 }); // Expires in one week

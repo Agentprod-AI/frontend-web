@@ -23,7 +23,7 @@ export default function Page() {
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
   const [dummyAccountInfo, setDummyAccountInfo] = useState<Info[]>([
-    { id: "ID", value: "", isEditable: false },
+    { id: "ID", value: user.id, isEditable: false },
     { id: "Sender First Name", value: "", isEditable: true },
     { id: "Sender Last Name", value: "", isEditable: true },
     { id: "Sender Job", value: "", isEditable: true },
@@ -35,15 +35,21 @@ export default function Page() {
     { id: "Leads used", value: "", isEditable: false },
   ]);
 
-  console.log("usering user", user);
+  console.log("Account ", user);
+
   React.useEffect(() => {
     if (user?.id) {
       axiosInstance
         .get(`/v2/settings/${user.id}`)
         .then((response) => {
           const data = response.data;
+          console.log("Data Accoubt ", data);
           const initialAccountInfo = [
-            { id: "ID", value: data.user_id, isEditable: false },
+            {
+              id: "ID",
+              value: data.user_id || user.id,
+              isEditable: false,
+            },
             {
               id: "Sender First Name",
               value: data.first_name,
