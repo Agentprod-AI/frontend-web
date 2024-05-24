@@ -1,4 +1,3 @@
-import { set } from "date-fns";
 import React, {
   createContext,
   useContext,
@@ -36,6 +35,8 @@ export interface Mailbox {
   setRecipientEmail: (email: string) => void;
   senderEmail: string;
   setSenderEmail: (email: string) => void;
+  isContextBarOpen: boolean;
+  setIsContextBarOpen: (isOpen: boolean) => void;
 }
 
 const defaultState: Mailbox = {
@@ -47,6 +48,8 @@ const defaultState: Mailbox = {
   setRecipientEmail: () => {},
   senderEmail: "",
   setSenderEmail: () => {},
+  isContextBarOpen: false,
+  setIsContextBarOpen: () => {},
 };
 
 // Creating the context
@@ -71,6 +74,10 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({
     defaultState.senderEmail
   );
 
+  const [isContextBarOpen, setIsContextBarOpen] = useState<boolean>(
+    defaultState.isContextBarOpen
+  );
+
   const contextValue = useMemo(
     () => ({
       conversationId,
@@ -81,8 +88,10 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({
       setRecipientEmail,
       senderEmail,
       setSenderEmail,
+      isContextBarOpen,
+      setIsContextBarOpen,
     }),
-    [conversationId, thread]
+    [conversationId, thread, recipientEmail, senderEmail, isContextBarOpen]
   );
 
   return (
@@ -92,5 +101,5 @@ export const MailboxProvider: React.FC<MailboxProviderProps> = ({
   );
 };
 
-// Custom hook to use the leads context
+// Custom hook to use the mailbox context
 export const useMailbox = () => useContext(MailboxContext);

@@ -116,7 +116,7 @@ export default function Home() {
     };
 
     fetchMessages();
-  });
+  }, []);
 
   useEffect(() => {
     if (userId) {
@@ -174,7 +174,7 @@ export default function Home() {
     } catch (err) {
       // console.log("Something went wrong!", err);
     }
-  }, [allMessages]); 
+  }, [allMessages]);
 
   // TODO: add chat history for a user
   const { messages, input, setInput, handleSubmit, isLoading, setMessages } =

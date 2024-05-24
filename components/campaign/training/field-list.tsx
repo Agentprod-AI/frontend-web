@@ -1,159 +1,148 @@
 /* eslint-disable import/no-unresolved */
 "use client";
 
-import React, { useEffect } from "react";
-import { CurlyBraces, TextQuote } from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { Sparkles } from "lucide-react";
 import {
   Command,
-  CommandEmpty,
   CommandGroup,
   CommandInput,
   CommandItem,
   CommandList,
   CommandSeparator,
 } from "@/components/ui/command";
-import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
+import {
+  FieldType,
+  allFieldsListType,
+} from "@/components/campaign/training/types";
 import { Button } from "@/components/ui/button";
-import { FieldFormModal } from "./field-form-modal";
+import FieldFormModal from "./field-form-modal";
 import { capitalizeFirstLetter } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
-import { getTraining } from "./training.api";
+import { useFieldsList } from "@/context/training-fields-provider";
 
 export interface TrainingResponse {
   campaign_id?: string;
   template?: string;
-  follow_up_template?: string | null;
-  variables?: any | null;
-  offering_variables?: Record<string, string> | null;
-  personalized_fields: Record<string, any> | undefined;
-  enriched_fields?: string[] | null;
+  follow_up_template?: string;
+  variables?: any;
+  offering_variables?: Record<string, string> | undefined;
+  personalized_fields?: Record<string, any> | undefined;
+  enriched_fields?: string[];
   id?: string;
   type?: string;
 }
-export default function FieldList({
-  fieldsList,
-  setFieldsList,
-}: {
-  fieldsList: allFieldsListType;
 
-  setFieldsList: (val: allFieldsListType) => void;
-}) {
+export default function FieldList() {
+  const [isFieldsList, setIsFieldsList] = useState(false);
+  const { fieldsList, addField, removeField, editField } = useFieldsList();
+
   useEffect(() => {
-    const fetchFields = async () => {
-      try {
-        const fields: TrainingResponse[] = await Promise.all([
-          getTraining("variable"),
-          getTraining("personalized"),
-          getTraining("offering"),
-          getTraining("enriched"),
-        ]);
-
-        const updatedFieldsList: allFieldsListType = {
-          variable: fields
-            .filter((field) => field.variables !== null)
-            .map((field) => ({
-              id: field.id,
-              val: field.template || "",
-              description: field.follow_up_template || "",
-              length: "",
-            })),
-          personalized: fields[0].personalized_fields
-            ? Object.entries(fields[0].personalized_fields).map(
-                ([key, value]) => ({
-                  id: fields[0].id,
-                  val: value,
-                  description: "",
-                  length: "",
-                })
-              )
-            : [],
-          offering: fields[0].offering_variables
-            ? Object.entries(fields[0].offering_variables).map(
-                ([key, value]) => ({
-                  id: fields[0].id,
-                  val: value,
-                  description: "",
-                  length: "",
-                })
-              )
-            : [],
-          enriched: fields[0].enriched_fields
-            ? fields[0].enriched_fields.map((field) => ({
-                id: fields[0].id,
-                val: field,
-                description: "",
-                length: "",
-              }))
-            : [],
-        };
-
-        setFieldsList(updatedFieldsList);
-      } catch (error) {
-        console.error("Error fetching fields:", error);
-      }
-    };
-
-    fetchFields();
-  }, [setFieldsList]);
+    if (fieldsList) {
+      console.log("fields list in editor content", fieldsList);
+      setIsFieldsList(true);
+      console.log(Object.keys(fieldsList));
+    }
+  }, [fieldsList]);
 
   return (
     <Command className="rounded-lg border shadow-md">
       <CommandInput placeholder="Search..." />
       <CommandList className="max-h-full">
-        <CommandEmpty>No results found.</CommandEmpty>
-        {Object.keys(fieldsList).map((field, ind) => (
-          <div key={ind}>
-            <CommandGroup heading={capitalizeFirstLetter(field + " Fields")}>
-              {fieldsList[field as keyof allFieldsListType].map(
-                (val: any, ind: any) => (
-                  <CommandItem key={ind}>
-                    {
-                      {
-                        variable: (
-                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
-                        ),
-                        personalized: (
-                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
-                        ),
-                        offering: (
-                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
-                        ),
-                        enriched: (
-                          <CurlyBraces className="mr-2 h-4 w-4 min-w-3" />
-                        ),
-                      }[field]
-                    }
-                    <FieldFormModal
-                      modalType="edit"
-                      type={field}
-                      setFieldsList={setFieldsList}
-                      fieldsList={fieldsList}
-                      fieldId={val.id}
+        {fieldsList && (
+          <CommandGroup>
+            <CommandGroup heading={capitalizeFirstLetter("variables")}>
+              {fieldsList.variables.length > 0 ? (
+                fieldsList.variables.map((variable, index) => (
+                  <CommandItem key={index}>
+                    <span>{variable.value}</span>
+                    <Badge
+                      variant="outline"
+                      className="text-xs ml-2 rounded-full border-sky-500 text-sky-500 font-normal"
                     >
-                      <span className="w-full">{val.val}</span>
-                    </FieldFormModal>
-                    {/* {field === "variable" && (
-                      <Badge variant="outline">
-                        <TextQuote className="h-3 w-3 mr-1" /> {val.val.length}
+                      <Sparkles size={15} />
+                      <span className="ml-1">
+                        {variable.length.toUpperCase()}
+                      </span>
+                    </Badge>
+                    {variable.isCustom && (
+                      <Badge
+                        variant="outline"
+                        className="text-xs ml-2 rounded-full border-green-500 text-green-500 font-normal"
+                      >
+                        CUSTOM
                       </Badge>
-                    )} */}
+                    )}
                   </CommandItem>
-                )
+                ))
+              ) : (
+                <div className="ml-2 mb-2 text-xs text-gray-500">
+                  Variables will show up here as you add them to your message.
+                </div>
               )}
+              <CommandSeparator />
             </CommandGroup>
-            <FieldFormModal
-              type={field}
-              modalType="add"
-              setFieldsList={setFieldsList}
-              fieldsList={fieldsList}
+            <CommandGroup heading={capitalizeFirstLetter("offering fields")}>
+              {fieldsList.offering_variables.map((field, index) => (
+                <CommandItem key={index}>
+                  <FieldFormModal
+                    type="offering_variables"
+                    modalType="edit"
+                    fieldId={field.id}
+                  >
+                    <div>{field.fieldName}</div>
+                  </FieldFormModal>
+                </CommandItem>
+              ))}
+              <FieldFormModal type="offering_variables" modalType="add">
+                <Button variant="outline" size="sm" className="m-2">
+                  Add Field
+                </Button>
+              </FieldFormModal>
+              <CommandSeparator />
+            </CommandGroup>
+            <CommandGroup
+              heading={capitalizeFirstLetter("personalized fields")}
             >
-              <Button variant="outline" size="sm" className="m-2">
-                Add Field
-              </Button>
-            </FieldFormModal>
-            <CommandSeparator />
-          </div>
-        ))}
+              {fieldsList.personalized_fields.map((field, index) => (
+                <CommandItem key={index}>
+                  <FieldFormModal
+                    type="personalized_fields"
+                    modalType="edit"
+                    fieldId={field.id}
+                  >
+                    <div>{field.fieldName}</div>
+                  </FieldFormModal>
+                </CommandItem>
+              ))}
+              <FieldFormModal type="personalized_fields" modalType="add">
+                <Button variant="outline" size="sm" className="m-2">
+                  Add Field
+                </Button>
+              </FieldFormModal>
+              <CommandSeparator />
+            </CommandGroup>
+            <CommandGroup heading={capitalizeFirstLetter("enriched fields")}>
+              {fieldsList.enriched_fields.map((field, index) => (
+                <CommandItem key={index}>
+                  <FieldFormModal
+                    type="enriched_fields"
+                    modalType="edit"
+                    fieldId={field.id}
+                  >
+                    <div>{field.fieldName}</div>
+                  </FieldFormModal>
+                </CommandItem>
+              ))}
+              <FieldFormModal type="enriched_fields" modalType="add">
+                <Button variant="outline" size="sm" className="m-2">
+                  Add Field
+                </Button>
+              </FieldFormModal>
+              <CommandSeparator />
+            </CommandGroup>
+          </CommandGroup>
+        )}
       </CommandList>
     </Command>
   );

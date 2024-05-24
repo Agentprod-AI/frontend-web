@@ -11,6 +11,7 @@ import { DashboardProvider } from "@/context/dashboard-analytics-provider";
 import { CompanyProvider } from "@/context/company-linkedin";
 import { MailboxProvider } from "@/context/mailbox-provider";
 import { AutoGenerateProvider } from "@/context/auto-generate-mail";
+import { FieldsListProvider } from "@/context/training-fields-provider";
 
 export default function Providers({
   // session,
@@ -29,17 +30,19 @@ export default function Providers({
             <UserContextProvider>
               <LeadSheetSidebarProvider>
                 <LeadsProvider>
-                  <CampaignProvider>
-                    <DashboardProvider>
-                      <CompanyProvider>
-                        <MailboxProvider>
-                          {/* <SessionProvider session={session}> */}
-                          {children}
-                          {/* </SessionProvider> */}
-                        </MailboxProvider>
-                      </CompanyProvider>
-                    </DashboardProvider>
-                  </CampaignProvider>
+                  <FieldsListProvider>
+                    <CampaignProvider>
+                      <DashboardProvider>
+                        <CompanyProvider>
+                          <MailboxProvider>
+                            {/* <SessionProvider session={session}> */}
+                            {children}
+                            {/* </SessionProvider> */}
+                          </MailboxProvider>
+                        </CompanyProvider>
+                      </DashboardProvider>
+                    </CampaignProvider>
+                  </FieldsListProvider>
                 </LeadsProvider>
               </LeadSheetSidebarProvider>
             </UserContextProvider>

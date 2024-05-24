@@ -35,6 +35,7 @@ import axios from "axios";
 import { useMailbox, Mailbox, EmailMessage } from "@/context/mailbox-provider";
 import { Lead, useLeads, Contact } from "@/context/lead-user";
 import { toast } from "sonner";
+import { PeopleProfileSheet } from "../people-profile-sheet";
 
 interface ConversationEntry {
   id: string;
@@ -77,8 +78,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
   //   []
   // );
-  const { conversationId, thread, setThread, recipientEmail, senderEmail } =
-    useMailbox();
+  const {
+    conversationId,
+    thread,
+    setThread,
+    recipientEmail,
+    setIsContextBarOpen,
+  } = useMailbox();
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
@@ -213,7 +219,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          console.log(response);
+          console.log("response for drafts", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -307,7 +313,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
           onClick={() => {
             // handleLeadFromEmail();
-            toggleSidebar(true);
+            // toggleSidebar(true);
+            setIsContextBarOpen(true);
           }}
         >
           {/* avatar fallback -> email initials */}
@@ -446,5 +453,4 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
 export default ThreadDisplayMain;
 
-
-// 
+//

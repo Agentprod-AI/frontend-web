@@ -27,6 +27,8 @@ import { useUserContext } from "@/context/user-context";
 import { Button } from "../ui/button";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { useMailbox } from "@/context/mailbox-provider";
+import { Contact, useLeads } from "@/context/lead-user";
+import { PeopleProfileSheet } from "../people-profile-sheet";
 
 interface MailProps {
   accounts: {
@@ -69,55 +71,44 @@ export function Mail({
 
   const { user } = useUserContext();
 
-  const {
-    conversationId,
-    setConversationId,
-    setRecipientEmail,
-    recipientEmail,
-    setSenderEmail,
-    senderEmail,
-  } = useMailbox();
+  const { setSenderEmail, isContextBarOpen } = useMailbox();
 
-  const allCampaigns:
-    | {
-        campaignName: string;
-        campaignId: string;
-        additionalInfo: string | undefined;
-      }[]
-    | null = campaigns.map((campaign) => {
-    return {
+  const { leads } = useLeads();
+
+  const [localIsContextBarOpen, setLocalIsContextBarOpen] =
+    React.useState(false);
+
+  React.useEffect(() => {
+    setLocalIsContextBarOpen(isContextBarOpen);
+  }, [isContextBarOpen]);
+
+  const allCampaigns =
+    campaigns.map((campaign) => ({
       campaignName: campaign.campaign_name,
       campaignId: campaign.id,
       additionalInfo: campaign.additional_details,
-    };
-  });
+    })) || null;
 
   React.useEffect(() => {
     console.log("user from inbox", user);
     async function fetchConversations() {
       setLoading(true);
-      await axiosInstance
-        .get<{ mails: Conversations[] }>(`v2/mailbox/${user?.id}`)
-        .then((response) => {
-          console.log("Mail Responsesss", response.data.mails[0].campaign_id);
-          setMails(response.data.mails as Conversations[]);
-          setLoading(false);
-          return response;
-        })
-
-        .catch((err: any) => {
-          console.error("Error fetching mails:", error);
-          setError(err.message || "Failed to load mails.");
-        });
+      try {
+        const response = await axiosInstance.get<{ mails: Conversations[] }>(
+          `v2/mailbox/${user?.id}`
+        );
+        console.log("Mail Responses", response.data.mails[0].campaign_id);
+        setMails(response.data.mails as Conversations[]);
+        setLoading(false);
+      } catch (err: any) {
+        console.error("Error fetching mails:", err);
+        setError(err.message || "Failed to load mails.");
+        setLoading(false);
+      }
     }
 
     fetchConversations();
-  }, []); // Dependency array remains empty to run once on mount
-
-  // const filteredMails =
-  //   filter === "all"
-  //     ? mails
-  //     : mails.filter((mail) => mail.status.toLowerCase() === filter);
+  }, [user]);
 
   const filteredMails = React.useMemo(() => {
     return mails.filter((mail) => {
@@ -128,11 +119,11 @@ export function Mail({
     });
   }, [mails, filter, campaign]);
 
-  if (filteredMails) {
-    setConversationId(filteredMails[0]?.id);
-    setRecipientEmail(filteredMails[0]?.recipient);
-    setSenderEmail(filteredMails[0]?.sender);
-  }
+  React.useEffect(() => {
+    if (filteredMails.length > 0) {
+      setSenderEmail(filteredMails[0]?.sender);
+    }
+  }, [filteredMails, setSenderEmail]);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -146,7 +137,7 @@ export function Mail({
         className="h-full items-stretch"
         style={{ height: "calc(100vh - 56px)" }}
       >
-        <ResizablePanel defaultSize={50}>
+        <ResizablePanel defaultSize={localIsContextBarOpen ? 40 : 20}>
           <Tabs defaultValue="all">
             <div className="flex items-center px-4 pt-2 pb-0">
               <h1 className="text-xl font-bold">Inbox</h1>
@@ -190,7 +181,7 @@ export function Mail({
                       <DropdownMenuSeparator />
                       <ScrollArea className="h-[400px] w-full rounded-md">
                         {allCampaigns &&
-                          allCampaigns?.map((campaignItem, index) => (
+                          allCampaigns.map((campaignItem) => (
                             <div key={campaignItem.campaignId}>
                               <DropdownMenuItem
                                 key={campaignItem.campaignId}
@@ -226,25 +217,26 @@ export function Mail({
             <TabsContent value={filter} className="m-0">
               <MailList items={filteredMails} />
             </TabsContent>
-            {/* <TabsContent value="unread" className="m-0">
-              <MailList
-                items={mails.filter((item) => !item.read) as Conversations[]}
-              />
-            </TabsContent> */}
           </Tabs>
         </ResizablePanel>
         <ResizableHandle withHandle />
-        <ResizablePanel defaultSize={50} minSize={20}>
-          {/* <MailDisplay
-            mail={mails.find((item) => item.id === mail.selected) || null}
-          /> */}
+        <ResizablePanel
+          defaultSize={localIsContextBarOpen ? 40 : 20}
+          minSize={20}
+        >
           <ScrollArea className="h-full">
             <ThreadDisplayMain ownerEmail={""} />
           </ScrollArea>
         </ResizablePanel>
+        {localIsContextBarOpen && leads.length > 0 && (
+          <>
+            <ResizableHandle withHandle />
+            <ResizablePanel defaultSize={20}>
+              <PeopleProfileSheet data={leads[0] as Contact} />
+            </ResizablePanel>
+          </>
+        )}
       </ResizablePanelGroup>
-      {/* </ResizablePanel>
-      </ResizablePanelGroup> */}
     </TooltipProvider>
   );
 }
