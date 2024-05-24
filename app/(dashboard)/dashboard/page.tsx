@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
 import React from "react";
@@ -40,9 +39,11 @@ import { Progress } from "@/components/ui/progress";
 // import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 // import { card_data, hot_leads, campaigns } from "@/constants/data";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
-import { useUserContext } from "@/context/user-context";
-import axiosInstance from "@/utils/axiosInstance";
+// import { useUserContext } from "@/context/user-context";
+// import axiosInstance from "@/utils/axiosInstance";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
+import { useMailGraphContext } from "@/context/chart-data-provider";
+import { format, parseISO } from "date-fns";
 
 // type DashboardData = {
 //   emails_sent: number;
@@ -97,10 +98,11 @@ export default function Page() {
   // const [dashboardData, setDashboardData] =
   //   React.useState<DashboardData | null>(null);
 
-  const { dashboardData, setDashboardData } = useDashboardContext();
-  const [mailGraph, setMailGraph] = React.useState();
+  const { dashboardData } = useDashboardContext();
 
-  const { user } = useUserContext();
+  const { mailGraphData } = useMailGraphContext();
+
+  // const { user } = useUserContext();
 
   // React.useEffect(() => {
   //   const fetchData = async () => {
@@ -116,19 +118,19 @@ export default function Page() {
   //   fetchData();
   // }, [user.id]);
 
-  React.useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await axiosInstance.get(`/v2/mailgraph/${user.id}`);
-        console.log("Mailgraph Data comingggg:", response.data);
-        setMailGraph(response.data);
-      } catch (error) {
-        console.error("Error fetching dashboard data:", error);
-      }
-    };
+  // React.useEffect(() => {
+  //   const fetchData = async () => {
+  //     try {
+  //       const response = await axiosInstance.get(`/v2/mailgraph/${user.id}`);
+  //       console.log("Mailgraph Data comingggg:", response.data);
+  //       setMailGraph(response.data);
+  //     } catch (error) {
+  //       console.error("Error fetching dashboard data:", error);
+  //     }
+  //   };
 
-    fetchData();
-  }, [user.id]);
+  //   fetchData();
+  // }, [user.id]);
 
   return (
     <>
@@ -333,7 +335,7 @@ export default function Page() {
                 <CardTitle>Sending Volume Per Day</CardTitle>
               </CardHeader>
               <CardContent className="pl-2">
-                <LineChartComponent />
+                <LineChartComponent mailGraphData={mailGraphData} />
               </CardContent>
             </Card>
 
@@ -401,7 +403,7 @@ export default function Page() {
                   <CardTitle>Hot Leads</CardTitle>
                 </CardHeader>
                 <CardContent>
-                  {/* <div className="space-y-4">
+                  <div className="space-y-4">
                     {dashboardData?.hot_leads.length === 0
                       ? "data not available"
                       : dashboardData?.hot_leads.map((lead) => (
@@ -413,7 +415,7 @@ export default function Page() {
                             <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company}`}</p>
                           </div>
                         ))}
-                  </div> */}
+                  </div>
                 </CardContent>
               </ScrollArea>
             </Card>
@@ -451,9 +453,8 @@ export default function Page() {
                 />
               </div>
 
-              <div className="flex items-end justify-between">
+              {/* <div className="flex items-end justify-between">
                 {" "}
-                {/* Container for the days and circles */}
                 {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
                   <div
                     key={index}
@@ -462,18 +463,41 @@ export default function Page() {
                     }`}
                   >
                     <span className="text-sm mb-1">{day}</span>{" "}
-                    {/* Label above the circle */}
                     <div
                       className={`w-8 h-8 rounded-full flex items-center justify-center ${
                         index < 3
                           ? "bg-gradient-to-r from-purple-700 to-purple-400"
                           : "bg-muted-foreground opacity-20"
                       }`}
-                    >
-                      {/* Circle */}
-                    </div>
+                    ></div>
                   </div>
                 ))}
+              </div> */}
+              <div className="flex items-end justify-between">
+                {mailGraphData.map((data, index) => {
+                  const dayOfWeek = format(parseISO(data.date), "EEE"); // Formats date to day abbreviation like "Mon", "Tue", etc.
+                  const isActive = index < 3; // You might want to change this condition based on your actual data/logic
+
+                  return (
+                    <div
+                      key={index}
+                      className={`flex flex-col items-center justify-center ${
+                        isActive && "text-purple-400"
+                      }`}
+                    >
+                      <span className="text-sm mb-1">{dayOfWeek}</span>
+                      <div
+                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          isActive
+                            ? "bg-gradient-to-r from-purple-700 to-purple-400"
+                            : "bg-muted-foreground opacity-20"
+                        }`}
+                      >
+                        {/* Circle */}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
             </Card>
 
