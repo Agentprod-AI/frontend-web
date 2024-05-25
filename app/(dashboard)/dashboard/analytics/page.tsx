@@ -23,6 +23,23 @@ export default function Page() {
   const { mailGraphData } = useMailGraphContext();
   const { dashboardData } = useDashboardContext();
 
+  const getPercentage = (current: any, previous: any) => {
+    return previous > 0 ? ((current / previous) * 100).toFixed(2) + "%" : "0%";
+  };
+
+  const outreachToOpenRate = getPercentage(
+    dashboardData.conversion_funnel?.opened,
+    dashboardData.conversion_funnel?.sent
+  );
+  const openToCTAClickRate = getPercentage(
+    dashboardData.conversion_funnel?.cta_clicked,
+    dashboardData.conversion_funnel?.opened
+  );
+  const ctaClickToGoalRate = getPercentage(
+    dashboardData.conversion_funnel?.goal,
+    dashboardData.conversion_funnel?.cta_clicked
+  );
+
   return (
     <ScrollArea className="h-full">
       <div className="flex-1 space-y-4">
@@ -208,7 +225,7 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col items-center">
-                <p>52%</p>
+                <p>{outreachToOpenRate}</p>
                 <Icons.arrowRight size={20} />
               </div>
 
@@ -228,7 +245,7 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col items-center">
-                <p>8.7%</p>
+                <p>{openToCTAClickRate}</p>
                 <Icons.arrowRight size={20} />
               </div>
 
@@ -248,7 +265,7 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col items-center">
-                <p>5.56%</p>
+                <p>{ctaClickToGoalRate}</p>
                 <Icons.arrowRight size={20} />
               </div>
 
