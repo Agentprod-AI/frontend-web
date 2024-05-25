@@ -30,8 +30,7 @@ import { useUserContext } from "@/context/user-context";
 import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjust the import path as needed
 
 const profileFormSchema = z.object({
-  product_offering: z.string().min(2).max(30),
-  offering_details: z.string(),
+  product_offering: z.string(),
   pain_point: z.array(z.string()),
   values: z.array(z.string()),
   customer_success_stories: z.array(z.string()),
@@ -50,7 +49,6 @@ export function OfferingForm({ type }: { type: string }) {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       product_offering: "",
-      offering_details: "",
       pain_point: [""],
       values: [""],
       customer_success_stories: [""],
@@ -97,15 +95,9 @@ export function OfferingForm({ type }: { type: string }) {
     createPersona(postData)
       .then(() => {
         if (type === "create") {
-          createOffering(
-            { name: data.product_offering, details: data.offering_details },
-            params.campaignId
-          );
+          createOffering({ name: data.product_offering }, params.campaignId);
         } else if (type === "edit") {
-          editOffering(
-            { name: data.product_offering, details: data.offering_details },
-            params.campaignId
-          );
+          editOffering({ name: data.product_offering }, params.campaignId);
         }
       })
       .catch((error) => {
@@ -130,7 +122,6 @@ export function OfferingForm({ type }: { type: string }) {
   useEffect(() => {
     if (offeringData) {
       form.setValue("product_offering", offeringData?.name);
-      form.setValue("offering_details", offeringData?.details);
     }
   }, [offeringData]);
 
@@ -167,25 +158,6 @@ export function OfferingForm({ type }: { type: string }) {
                 <Input placeholder="Product" {...field} />
               </FormControl>
               <FormDescription>This is your product name</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="offering_details"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Details of offers and details</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Describe the product and features."
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                You can write details of your product here
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}

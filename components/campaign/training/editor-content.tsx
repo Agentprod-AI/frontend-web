@@ -12,7 +12,6 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
-import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import SubjectForm from "@/components/campaign/training/subject-form";
 import FieldList from "@/components/campaign/training/field-list";
 import FieldTextArea from "@/components/campaign/training/field-text-area";
@@ -97,9 +96,6 @@ export default function EditorContent() {
   return (
     <ResizablePanelGroup direction="horizontal" className="">
       <ResizablePanel defaultSize={75}>
-        <div className="mx-16 mt-3 hover:underline cursor-pointer">
-          Let AI write email on its own <AutoAwesomeIcon />
-        </div>
         <div className="flex justify-center px-6 py-4">
           <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border bg-white mr-2">
             <AvatarFallback>AV</AvatarFallback>

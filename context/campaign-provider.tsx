@@ -23,7 +23,6 @@ export interface CampaignFormData {
 }
 export interface OfferingFormData {
   name: string;
-  details: string;
 }
 
 export interface GoalFormData {
@@ -94,7 +93,6 @@ export const defaultGoalEntry: GoalFormData = {
 
 export const defaultOfferingEntry: OfferingFormData = {
   name: "",
-  details: "",
 };
 
 interface CampaignContextType {
@@ -180,6 +178,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
             localStorage.getItem("formsTracker") || "{}"
           );
           formsTracker.schedulingBudget = true;
+          formsTracker.campaignId = response.data.id;
           localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
           router.push(`/dashboard/campaign/create/${response.data.id}`);
@@ -231,8 +230,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const createOffering = (data: OfferingFormData, campaignId: string) => {
     const postData = {
       campaign_id: campaignId,
-      name: data.name,
-      details: data.details,
+      name: data.name
     };
 
     axiosInstance
