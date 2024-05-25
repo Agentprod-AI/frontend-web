@@ -23,6 +23,7 @@ export interface CampaignFormData {
 }
 export interface OfferingFormData {
   name: string;
+  details: string;
 }
 
 export interface GoalFormData {
@@ -93,6 +94,7 @@ export const defaultGoalEntry: GoalFormData = {
 
 export const defaultOfferingEntry: OfferingFormData = {
   name: "",
+  details: "",
 };
 
 interface CampaignContextType {
@@ -164,7 +166,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       thursday_end: data.schedule.weekdayEndTime,
       friday_start: data.schedule.weekdayStartTime,
       friday_end: data.schedule.weekdayEndTime,
-
       is_active: true,
       schedule_type: "none",
     };
@@ -230,7 +231,8 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   const createOffering = (data: OfferingFormData, campaignId: string) => {
     const postData = {
       campaign_id: campaignId,
-      name: data.name
+      name: data.name,
+      details: data.details,
     };
 
     axiosInstance

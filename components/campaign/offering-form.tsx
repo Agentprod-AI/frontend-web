@@ -95,9 +95,21 @@ export function OfferingForm({ type }: { type: string }) {
     createPersona(postData)
       .then(() => {
         if (type === "create") {
-          createOffering({ name: data.product_offering }, params.campaignId);
+          createOffering(
+            {
+              name: data.product_offering,
+              details: data.detailed_product_description,
+            },
+            params.campaignId
+          );
         } else if (type === "edit") {
-          editOffering({ name: data.product_offering }, params.campaignId);
+          editOffering(
+            {
+              name: data.product_offering,
+              details: data.detailed_product_description,
+            },
+            params.campaignId
+          );
         }
       })
       .catch((error) => {
