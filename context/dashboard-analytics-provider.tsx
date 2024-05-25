@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 // hooks/useCreateCampaign.tsx
 import React, {
   useState,
@@ -6,16 +8,12 @@ import React, {
   useMemo,
   ReactNode,
 } from "react";
-import { useRouter } from "next/navigation";
-import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
-import { useAuth } from "./auth-provider";
 import { useUserContext } from "./user-context";
-
 
 type HotLead = {
   id: string;
-  src: string;
+  photo_url: string;
   fallback: string;
   name: string;
   company: string;
@@ -29,6 +27,10 @@ type TopPerformingCampaign = {
   open_rate: number;
 };
 
+type ConversionFunnel = {
+  [key: string]: number;
+};
+
 interface DashboardEntry {
   id: number;
   pending_approvals: number;
@@ -37,6 +39,7 @@ interface DashboardEntry {
   engaged: number | null;
   meetings_booked: number | null;
   response_rate: number;
+  conversion_funnel: ConversionFunnel;
   hot_leads: HotLead[];
   mailbox_health: { [email: string]: number };
   top_performing_campaigns: TopPerformingCampaign[];
@@ -59,6 +62,7 @@ const defaultDashboardState: DashboardContextType = {
     response_rate: 0,
     hot_leads: [],
     mailbox_health: {},
+    conversion_funnel: {},
     top_performing_campaigns: [],
   },
   isLoading: true,
@@ -116,8 +120,7 @@ export const DashboardProvider: React.FunctionComponent<Props> = ({
     //   setError(error.message || "Failed to load data.");
     //   setIsLoading(false);
     // });
-  }, []);
-
+  }, [user]);
 
   const contextValue = useMemo(
     () => ({
@@ -125,7 +128,7 @@ export const DashboardProvider: React.FunctionComponent<Props> = ({
       isLoading,
       setDashboardData,
     }),
-    [dashboardData]
+    [dashboardData, isLoading]
   );
 
   return (

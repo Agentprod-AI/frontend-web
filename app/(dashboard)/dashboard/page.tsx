@@ -1,13 +1,6 @@
-/* eslint-disable no-console */
 "use client";
 import React from "react";
-// import { LocationCardDashboard } from "@/components/cards/location-card";
-// import { SalesMetrics } from "@/components/cards/sales-matrics";
-// import { BarChartComponent } from "@/components/charts/bar-chart";
 import { LineChartComponent } from "@/components/charts/line-chart";
-// import { CalendarDateRangePicker } from "@/components/date-range-picker";
-// import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
-// import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
@@ -24,82 +17,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-// import { barChartData } from "@/constants/chart";
-// import { useCampaignContext } from "@/context/campaign-provider";
-// import { ChevronDown, Download } from "lucide-react";
-// import Link from "next/link";
 import { Icons } from "@/components/icons";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-// import { CircularProgressbar } from "react-circular-progressbar";
 import { Progress } from "@/components/ui/progress";
-// import axiosInstance from "@/utils/axiosInstance";
-// import { useAuth } from "@/context/auth-provider";
-// import { useDashboardContext } from "@/context/dashboard-analytics-provider";
-// import { card_data, hot_leads, campaigns } from "@/constants/data";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
-// import { useUserContext } from "@/context/user-context";
-// import axiosInstance from "@/utils/axiosInstance";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { useMailGraphContext } from "@/context/chart-data-provider";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
 
-// type DashboardData = {
-//   emails_sent: number;
-//   engaged: number;
-//   meetings_booked: number;
-//   response_rate: number;
-//   top_performing_campaigns: TopPerformingCampaign[];
-//   hot_leads: HotLead[];
-// };
-
-// type HotLead = {
-//   id: string;
-//   src: string;
-//   fallback: string;
-//   name: string;
-//   company: string;
-// };
-
-// type TopPerformingCampaign = {
-//   name: string;
-//   persona: string;
-//   engaged: number;
-//   response_rate: number;
-//   bounce_rate: number;
-//   open_rate: number;
-// };
-
 export default function Page() {
-  // const { toggleSidebar, setItemId } = useLeadSheetSidebar();
-  // const { dashboardData, isLoading } = useDashboardContext();
-  // const { user } = useAuth();
-
-  // // ------------------  experiment --------------------- creating redirect loop
-
-  // const { user } = useUserContext();
-  // const router = useRouter();
-
-  // useEffect(() => {
-  //   if (!user?.id) {
-  //     router.push("/");
-  //   }
-  // }, [user,router]);
-
-  // //--------------------- experiment ------------------------
-
-  // const handleOpenSidebar = (id: string) => {
-  //   setItemId(id);
-  //   toggleSidebar(true);
-  // };
-
-  // console.log(dashboardData);
-  // const [dashboardData, setDashboardData] =
-  //   React.useState<DashboardData | null>(null);
-
   const { dashboardData } = useDashboardContext();
-
   const { mailGraphData } = useMailGraphContext();
 
   const calculateStreak = (data: any) => {
@@ -113,7 +41,7 @@ export default function Page() {
       if (differenceInCalendarDays(currentDate, lastDate) === 1) {
         streak++;
       } else if (differenceInCalendarDays(currentDate, lastDate) > 1) {
-        break; // Stops counting if there's a gap in the dates
+        break;
       }
       lastDate = currentDate;
     }
@@ -121,50 +49,12 @@ export default function Page() {
     return streak;
   };
   const daysStreak = calculateStreak(mailGraphData);
-  // const { user } = useUserContext();
-
-  // React.useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axiosInstance.get(`/v2/dashboard/${user.id}`);
-  //       console.log("Dashboard Data comingggg:", response.data);
-  //       setDashboardData(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching dashboard data:", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [user.id]);
-
-  // React.useEffect(() => {
-  //   const fetchData = async () => {
-  //     try {
-  //       const response = await axiosInstance.get(`/v2/mailgraph/${user.id}`);
-  //       console.log("Mailgraph Data comingggg:", response.data);
-  //       setMailGraph(response.data);
-  //     } catch (error) {
-  //       console.error("Error fetching dashboard data:", error);
-  //     }
-  //   };
-
-  //   fetchData();
-  // }, [user.id]);
 
   return (
     <>
       <DashboardPageHeader />
       <ScrollArea className="h-full scroll-my-36">
         <div className="flex-1 space-y-4">
-          {/* <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList>
-            <TabsTrigger value="overview">Overview</TabsTrigger>
-            <TabsTrigger value="analytics" disabled>
-              Analytics
-            </TabsTrigger>
-          </TabsList>
-        <TabsContent value="overview" className="space-y-4"> */}
-
           <div className="grid gap-4 grid-cols-1 md:grid-cols-2 lg:grid-cols-6">
             <div className="flex flex-col col-span-4">
               <Card>
@@ -176,39 +66,10 @@ export default function Page() {
                   <Badge variant={"secondary"}>
                     {dashboardData?.pending_approvals}
                   </Badge>
-                  {/* actual data is not here , this is hardcoded */}
                 </CardContent>
               </Card>
 
-              {/* <p className="font-semibold">Performance Overview</p> */}
-
               <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-4 mt-4">
-                {/* {card_data.map((card, index) => (
-                  <Card key={index}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
-                      <CardTitle className="text-sm font-medium">
-                        {card.title}
-                      </CardTitle>
-
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        className="h-4 w-4 text-muted-foreground"
-                      >
-                        <path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
-                      </svg>
-                    </CardHeader>
-                    <CardContent className="h-1/2 md:mt-2">
-                      <div className="text-2xl font-bold">{card.value}</div>
-                    </CardContent>
-                  </Card>
-                ))} */}
-
                 <Card>
                   <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
                     <CardTitle className="text-sm font-medium">
@@ -368,9 +229,6 @@ export default function Page() {
                     <TableHeader>
                       <TableRow>
                         <TableHead>NAME</TableHead>
-                        {/* <TableHead className="hidden sm:table-cell">
-                          PERSONA
-                        </TableHead> */}
                         <TableHead className="hidden sm:table-cell">
                           ENGAGED LEADS
                         </TableHead>
@@ -428,10 +286,12 @@ export default function Page() {
                       : dashboardData?.hot_leads.map((lead) => (
                           <div key={lead.id} className="flex items-center">
                             <Avatar className="h-9 w-9">
-                              <AvatarImage src={lead.src} alt="Avatar" />
-                              <AvatarFallback>{lead.fallback}</AvatarFallback>
+                              <AvatarImage src={lead.photo_url} alt="Avatar" />
+                              <AvatarFallback>
+                                {lead.fallback || lead.name.charAt(0)}
+                              </AvatarFallback>
                             </Avatar>
-                            <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company}`}</p>
+                            <p className="text-sm font-medium leading-none ml-4">{`${lead.name} `}</p>
                           </div>
                         ))}
                   </div>
@@ -467,33 +327,12 @@ export default function Page() {
                     Approve emails today to start a new streak
                   </div>
                 </div>
-                {/* Replace with an actual icon component */}
                 <Icons.zap
                   size={35}
                   className="fill-purple-500 text-purple-500"
                 />
               </div>
 
-              {/* <div className="flex items-end justify-between">
-                {" "}
-                {["M", "T", "W", "T", "F", "S", "S"].map((day, index) => (
-                  <div
-                    key={index}
-                    className={`flex flex-col items-center justify-center ${
-                      index < 3 && "text-purple-400"
-                    }`}
-                  >
-                    <span className="text-sm mb-1">{day}</span>{" "}
-                    <div
-                      className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        index < 3
-                          ? "bg-gradient-to-r from-purple-700 to-purple-400"
-                          : "bg-muted-foreground opacity-20"
-                      }`}
-                    ></div>
-                  </div>
-                ))}
-              </div> */}
               <div className="flex items-end justify-between">
                 {mailGraphData.map((data, index) => {
                   const dayOfWeek = format(parseISO(data.date), "EEE"); // Formats date to day abbreviation like "Mon", "Tue", etc.
@@ -513,24 +352,12 @@ export default function Page() {
                             ? "bg-gradient-to-r from-purple-700 to-purple-400"
                             : "bg-muted-foreground opacity-20"
                         }`}
-                      >
-                        {/* Circle */}
-                      </div>
+                      ></div>
                     </div>
                   );
                 })}
               </div>
             </Card>
-
-            {/* <Card className="col-span-4 md:col-span-3">
-            <CardHeader>
-              <CardTitle>Recent Sales</CardTitle>
-              <CardDescription>You made 265 sales this month.</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <RecentSales />
-            </CardContent>
-          </Card> */}
           </div>
         </div>
       </ScrollArea>

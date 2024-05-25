@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-console */
 "use client";
 
@@ -22,10 +23,10 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-
+import { Check } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/icons";
-import { GmailIcon } from "@/app/icons";
+import { GmailIcon, LoadingCircle } from "@/app/icons";
 import { Switch } from "@/components/ui/switch";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
@@ -48,6 +49,8 @@ const initialMailboxes = [
 ];
 
 export default function Page() {
+  const [loading, setLoading] = useState(false);
+  const [fetchSuccess, setFetchSuccess] = useState(false);
   const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
   const [isVerifyEmailOpen, setIsVerifyEmailOpen] = useState(false);
   const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
@@ -59,19 +62,24 @@ export default function Page() {
   const [otpInput, setOtpInput] = useState("");
   const [senderID, setSenderID] = useState("");
   const { user } = useUserContext();
-  // const [duplicateMailError, setDuplicateMailError] = useState(false);
 
   const handleOpenAddMailbox = () => setIsAddMailboxOpen(true);
   const handleCloseAddMailbox = () => setIsAddMailboxOpen(false);
 
   const fetchDomainData = React.useCallback(async () => {
+    setLoading(true);
+    setFetchSuccess(false);
     try {
       const response = await axiosInstance.get(
         `/v2/aws/verify/domain/${domainInput}`
       );
       setMailData(response.data);
+      setFetchSuccess(true);
+      setLoading(false);
     } catch (error) {
       console.error("Failed to fetch domain data:", error);
+      setLoading(false);
+      setFetchSuccess(false);
     }
   }, [domainInput]);
 
@@ -95,37 +103,7 @@ export default function Page() {
     if (user?.id) {
       fetchMailboxes();
     }
-  });
-
-  // const handleEmailVerification = async () => {
-  //   const postData = {
-  //     name: nameInput,
-  //     email: emailInput,
-  //     domain: domainInput,
-  //   };
-
-  //   try {
-  //     const response = await fetch(
-  //       "https://agentprod-backend-framework-zahq.onrender.com/v2/brevo/sender",
-  //       {
-  //         method: "POST",
-  //         headers: {
-  //           "Content-Type": "application/json",
-  //         },
-  //         body: JSON.stringify(postData),
-  //       }
-  //     );
-
-  //     const data = await response.json();
-  //     console.log("DataMailboxing for verification: ", data);
-  //     setOtpInput(data.otp);
-  //     setSenderID(data._id);
-  //     handleCloseAddMailbox();
-  //     setIsVerifyEmailOpen(true);
-  //   } catch (error) {
-  //     console.error("Failed to verify email:", error);
-  //   }
-  // };
+  }, []);
 
   const handleEmailVerification = async () => {
     const postData = {
@@ -133,7 +111,6 @@ export default function Page() {
       email: emailInput,
       domain: domainInput,
     };
-
     try {
       const response = await axiosInstance.post("/v2/brevo/sender", postData);
       console.log("DataMailboxing for verification: ", response.data);
@@ -170,25 +147,14 @@ export default function Page() {
       mailbox: String(emailInput),
       user_id: String(user.id),
     };
-
     console.log("Payload for OTP validation:", JSON.stringify(payload));
-
     try {
-      const response = await fetch(
-        "https://agentprod-backend-framework-zahq.onrender.com/v2/brevo/sender/validate",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
+      const response = await axiosInstance.post(
+        "/v2/brevo/sender/validate",
+        payload
       );
-
-      const data = await response.json();
-      console.log("Response from OTP validation:", data.status);
-
-      if (response.ok) {
+      console.log("Response from OTP validation:", response.data.status);
+      if (response.data.status === 204) {
         const newMailbox = {
           id:
             mailboxes.length > 0
@@ -206,10 +172,7 @@ export default function Page() {
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
       } else {
-        // OTP validation failed, handle error
-        alert(
-          "OTP validation failed: " + (data.message || "Invalid OTP entered.")
-        );
+        alert("OTP validation failed: " + "Invalid OTP entered.");
       }
     } catch (error) {
       console.error("Failed to validate OTP:", error);
@@ -343,7 +306,13 @@ export default function Page() {
               onClick={fetchDomain}
               className="w-48"
             >
-              Get Domain
+              {loading ? (
+                <LoadingCircle />
+              ) : fetchSuccess ? (
+                <Check />
+              ) : (
+                "Get Domain"
+              )}
             </Button>
           </div>
           <DialogFooter>
@@ -401,12 +370,15 @@ export default function Page() {
                   <TableRow key={index}>
                     <TableCell>{mailbox.Type}</TableCell>
                     <TableCell>
-                      <div className="flex items-center gap-2">
+                      <div className="flex gap-2">
                         <Icons.copy
-                          className="cursor-pointer"
+                          className="cursor-pointer "
                           onClick={() => handleCopy(mailbox.Name)}
                         />
-                        <span>{mailbox.Name}</span>
+
+                        <span className="w-48 overflow-x-scroll">
+                          {mailbox.Name}
+                        </span>
                       </div>
                     </TableCell>
                     <TableCell>
