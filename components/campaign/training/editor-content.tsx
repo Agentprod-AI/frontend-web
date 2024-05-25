@@ -33,7 +33,6 @@ export default function EditorContent() {
   const [localBody, setLocalBody] = useState("");
   const [localSubject, setLocalSubject] = useState("");
 
-  const { handleGenerate } = useAutoGenerate();
   const { fieldsList, setBody, setSubject } = useFieldsList();
 
   const toggleFollowUp = () => {
