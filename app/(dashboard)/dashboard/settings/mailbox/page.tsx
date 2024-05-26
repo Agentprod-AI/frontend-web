@@ -41,10 +41,10 @@ interface MailData {
 const initialMailboxes = [
   {
     id: 1,
-    email: "siddhant@100xengineers.com",
-    name: "Siddhant Goswami",
-    warmUp: true,
-    dailyLimit: 5,
+    mailbox: "",
+    sender_name: "",
+    warmup: true,
+    daily_limit: 30,
   },
 ];
 
@@ -92,7 +92,7 @@ export default function Page() {
       const response = await axiosInstance.get(
         `/v2/settings/mailboxes/${user.id}`
       );
-      // setMailboxes(response.data.mailboxes);
+      setMailboxes(response.data);
       console.log("Mailboxes fetched successfully:", response.data);
     } catch (error) {
       console.error("Failed to fetch mailboxes:", error);
@@ -132,20 +132,28 @@ export default function Page() {
     );
   };
 
-  const addMailbox = (mailbox: any) => {
-    setMailboxes([...mailboxes, mailbox]);
+  // const addMailbox = (mailbox: any) => {
+  //   setMailboxes([...mailboxes, mailbox]);
+  // };
+  const addMailbox = (newMailbox: any) => {
+    setMailboxes((prevState) => [...prevState, newMailbox]);
   };
 
-  const removeMailbox = (id: number) => {
-    setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
+  // const removeMailbox = (id: number) => {
+  //   setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
+  // };
+  const removeMailbox = (idToRemove: number) => {
+    setMailboxes((prevState) =>
+      prevState.filter((mailbox) => mailbox.id !== idToRemove)
+    );
   };
-
   const saveChanges = async () => {
     const payload = {
       sender_id: String(senderID),
       otp: String(otpInput),
       mailbox: String(emailInput),
       user_id: String(user.id),
+      sender_name: String(nameInput),
     };
     console.log("Payload for OTP validation:", JSON.stringify(payload));
     try {
@@ -171,6 +179,8 @@ export default function Page() {
         setNameInput("");
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
+
+        console.log("Mailbox added successfully:", mailboxes);
       } else {
         alert("OTP validation failed: " + "Invalid OTP entered.");
       }
@@ -211,14 +221,16 @@ export default function Page() {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <GmailIcon />
-                    <span>{mailbox?.email}</span>
+                    <span>{mailbox.mailbox}</span>
                   </div>
                 </TableCell>
-                <TableCell>{mailbox?.name || "Muskaan "}</TableCell>
                 <TableCell>
-                  <Switch checked={mailbox?.warmUp || true} />
+                  {mailbox?.sender_name || "No Name Provided"}
                 </TableCell>
-                <TableCell>{mailbox?.dailyLimit || 5}</TableCell>
+                <TableCell>
+                  <Switch checked={mailbox.warmup} />
+                </TableCell>
+                <TableCell>{mailbox.daily_limit}</TableCell>
                 <TableCell>
                   <Dialog>
                     <DialogTrigger asChild>
@@ -234,7 +246,9 @@ export default function Page() {
                         <DialogTitle>Disconnect Account</DialogTitle>
                         <DialogDescription>
                           Are you sure you want to disconnect{" "}
-                          <span className="text-blue-500">{mailbox.email}</span>
+                          <span className="text-blue-500">
+                            {mailbox.mailbox}
+                          </span>
                           ? This action cannot be undone.
                         </DialogDescription>
                       </DialogHeader>

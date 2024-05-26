@@ -89,7 +89,7 @@ export default function Page() {
               </CardHeader>
               <CardContent className="h-1/2 md:mt-2">
                 <div className="text-2xl font-bold">
-                  {dashboardData?.response_rate || "0"}
+                  {Math.round(dashboardData?.response_rate) || "0"}
                 </div>
               </CardContent>
             </Card>
@@ -112,7 +112,8 @@ export default function Page() {
                               {lead.fallback || lead.name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company} `}</p>
+                          <p className="text-sm font-medium leading-none ml-4">{`${lead.name} `}</p>
+                          {/* - ${lead.company} */}
                         </div>
                       ))}
                 </div>

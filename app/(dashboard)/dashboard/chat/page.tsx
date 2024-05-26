@@ -1,5 +1,4 @@
 /* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable no-console */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -9,27 +8,12 @@ import clsx from "clsx";
 import { LoadingCircle, SendIcon } from "../../../icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-// import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
-// import Textarea from "react-textarea-autosize";
-// import { Textarea } from "@/components/ui/textarea";
-
-// import EmailForm from "@/components/forms/emailForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-// import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
-import { is } from "date-fns/locale";
-
-// import { useSession } from "next-auth/react";
-
-// const examples = [
-//   `How much revenue did we close this month?`,
-//   `Send an email wishing happy new year to me`,
-//   `Schedule my meeting with info@agentprod.com tomorrow`,
-// ];
 
 interface Message {
   id: string;
@@ -37,28 +21,21 @@ interface Message {
   content: string;
   createdAt?: any;
 }
-
 export default function Home() {
-  // const { data: session } = useSession();
-
-  // console.log("Session: ", session);
+  // const internalScrollRef = useRef<HTMLDivElement>(null);  // for auto scrolling to bottom
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useUserContext();
-  // console.log("User: ", user);
 
   const [userEmail] = useState(user?.email);
-  // const [userEmail, setUserEmail] = useState(user?.email);
-  // const [userId, setUserId] = useState(user?.id);
   const [userId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
-
   const [allMessages, setAllMessages] = useState<Message[]>([
-    // {
-    //   id: Math.random().toString(),
-    //   role: "assistant",
-    //   content: `Hello! I'm Sally, your Sales Rep. I accelerate outbound sales with access to 250 million contacts and manage bespoke email campaigns to thousands. I also reply to queries and schedule meetings. Can I help you start your sales outreach?`,
-    // },
+    {
+      id: Math.random().toString(),
+      role: "assistant",
+      content: `Hello! I'm Sally, your Sales Rep. I accelerate outbound sales with access to 250 million contacts and manage bespoke email campaigns to thousands. I also reply to queries and schedule meetings. Can I help you start your sales outreach?`,
+    },
   ]);
 
   // console.log("Id: ", userId);
@@ -121,9 +98,7 @@ export default function Home() {
 
     const IST_OFFSET = 330; // Indian Standard Time offset in minutes
     const now = new Date();
-    const past = new Date(date.valueOf() + IST_OFFSET * 60000); // Apply IST offset
-
-    // Check if the date is today
+    const past = new Date(date.valueOf() + IST_OFFSET * 60000);
     if (now.toDateString() === past.toDateString()) {
       return past.toLocaleTimeString("en-IN", {
         hour: "numeric",
@@ -131,42 +106,35 @@ export default function Home() {
         hour12: true,
       });
     }
-
-    // Check if the date is yesterday
     const yesterday = new Date(now);
     yesterday.setDate(yesterday.getDate() - 1);
     if (yesterday.toDateString() === past.toDateString()) {
       return "Yesterday";
     }
-
-    // Default to a simple date format
     return past.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
   }
+  const now = new Date(); // Get the current date and time
+  const recentDate = now.toLocaleTimeString("en-US", {
+    timeZone: "Asia/Kolkata", // Set the timezone to IST
+    hour: "2-digit", // Specify the hour format
+    minute: "2-digit", // Specify the minute format
+    hour12: true, // Use 12-hour format
+  });
 
   useEffect(() => {
+    if (!userId) return;
     const fetchMessages = () => {
       axiosInstance
         .get(`v2/conversation/${userId}`)
         .then((response) => {
           const adaptedMessages = response.data.map((msg: any) => ({
             ...msg,
-            createdAt: msg.created_at, // Adapt backend data to fit the interface
+            createdAt: msg.created_at,
           }));
-          setMessages(adaptedMessages);
-          // console.log("Shally responde", response);
-          // if (response.data.length > 0) {
-          //   // const messagesWithISTTime = response.data.map((message: any) => ({
-          //   //   ...message,
-          //   //   time: formatDate(message.created_at), // Use the conversion function here
-          //   // }));
-          //   console.log("Shally responde", response.data.created_at);
-          //   setAllMessages([...response.data]);
-          //   // setAllMessages([...messagesWithISTTime]);
-          // }
+
+          setAllMessages(adaptedMessages);
         })
-        .catch((error) => {
-          // console.log(error);
-        });
+        .catch((error) => {});
     };
 
     fetchMessages();
@@ -272,85 +240,130 @@ export default function Home() {
 
   const disabled = isLoading || input.length === 0;
 
-  const internalScrollRef = useRef<HTMLDivElement>(null);
-  useEffect(() => {
-    if (internalScrollRef.current) {
-      internalScrollRef.current.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-      });
-    }
-  }, []);
+  // useEffect(() => { // for auto scrolling to bottom
+  //   if (internalScrollRef.current) {
+  //     internalScrollRef.current.scrollIntoView({
+  //       behavior: "smooth",
+  //       block: "end",
+  //     });
+  //   }
+  // });
 
   return (
-    <div>
+    <div className="flex flex-col-reverse overflow-y-scroll h-screen chat">
       <main className="flex flex-col items-center justify-between pb-20">
-        {messages.map(
-          (message, i) =>
-            message && (
-              <div
-                key={i}
-                className={clsx("flex w-full items-center justify-center py-4")}
-              >
+        {messages.length > 0 ? (
+          messages.map(
+            (message, i) =>
+              message && (
                 <div
+                  key={i}
                   className={clsx(
-                    "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                    message.role === "user" ? "flex-row-reverse" : "flex-row"
+                    "flex w-full items-center justify-center py-4"
+                    // message.type === "user" ? "bg-black" : "bg-black/5",
                   )}
                 >
                   <div
                     className={clsx(
-                      "p-1.5 text-white",
-                      message.role === "assistant" ? "" : ""
+                      "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
                     )}
                   >
-                    {message.role === "user" ? (
-                      <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
-                        <AvatarImage src="/user.png" alt="user" />
-                      </Avatar>
-                    ) : (
-                      <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
-                        <AvatarImage
-                          src="/ai-sales-rep.png"
-                          alt="agentprod logo"
-                        />
-                      </Avatar>
-                    )}
-                  </div>
-                  <div
-                    className={clsx(
-                      "flex flex-col !mr-3 space-y-1",
-                      message.role === "assistant" ? "items-start" : "items-end"
-                    )}
-                  >
-                    <span className="text-xs">
-                      {message.role === "assistant" ? "Sally" : user?.firstName}{" "}
-                      {formatDate(message?.createdAt)}
-                    </span>
-                    <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
-                      <ReactMarkdown
-                        className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          a: (props) => (
-                            <a
-                              {...props}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                            />
-                          ),
-                        }}
-                      >
-                        {message.content &&
-                          message.content.replace("Assistant: ", "")}
-                      </ReactMarkdown>
+                    <div
+                      className={clsx(
+                        "p-1.5 text-white",
+                        message.role === "assistant" ? "" : ""
+                      )}
+                    >
+                      {message.role === "user" ? (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
+                          <AvatarImage src="/user.png" alt="user" />
+                          {/* <AvatarFallback>NB</AvatarFallback> */}
+                        </Avatar>
+                      ) : (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
+                          {/* <AvatarFallback>JL</AvatarFallback> */}
+                          <AvatarImage
+                            src="/ai-sales-rep.png"
+                            alt="agentprod logo"
+                          />
+                          {/* <Image
+                        // className="mx-auto"
+                        width={100}
+                        height={100}
+                        src={"/bw-logo.png"}
+                        alt="AgentProd"
+                      /> */}
+                        </Avatar>
+                      )}
+                    </div>
+                    <div
+                      className={clsx(
+                        "flex flex-col !mr-3 space-y-1",
+                        message.role === "assistant"
+                          ? "items-start"
+                          : "items-end"
+                      )}
+                    >
+                      <span className="text-xs">
+                        {message.role === "assistant"
+                          ? "Sally"
+                          : user?.firstName}{" "}
+                        {formatDate(message?.createdAt) === "No date provided"
+                          ? recentDate
+                          : formatDate(message?.createdAt)}
+                      </span>
+                      <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                        <ReactMarkdown
+                          className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // open links in new tab
+                            a: (props) => (
+                              <a
+                                {...props}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              />
+                            ),
+                          }}
+                        >
+                          {message.content &&
+                            message.content.replace("Assistant: ", "")}
+                        </ReactMarkdown>
+
+                        {/* <div
+                      className={clsx(
+                        "button-container mt-4",
+                        message.type === "assistant" ? "pb-4" : "pb-0"
+                      )}
+                    >
+                      {message.type === "assistant" &&
+                      JSON.parse(message.message).buttons
+                        ? JSON.parse(message.message).buttons.map(
+                            (button: any, index: number) => (
+                              <a
+                                key={index}
+                                href={button.url}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="rounded-md border border-gray-200 bg-white px-3 sm:px-5 py-2 sm:py-3 text-left text-sm text-gray-500 transition-all duration-75 hover:border-black hover:text-gray-700 active:bg-gray-50 ml-1 sm:ml-2"
+                              >
+                                {button.buttonTitle}
+                              </a>
+                            )
+                          )
+                        : null}
+                    </div> */}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            )
+              )
+          )
+        ) : (
+          <LoadingCircle />
         )}
-
         <div className="fixed bottom-0 flex w-full flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
             ref={formRef}
@@ -453,7 +466,6 @@ export default function Home() {
           LOG
         </button> */}
       </main>
-      <div ref={internalScrollRef} />
     </div>
   );
 }
