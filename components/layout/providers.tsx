@@ -33,21 +33,19 @@ export default function Providers({
                 <LeadsProvider>
                   <FieldsListProvider>
                     <CampaignProvider>
-                  <CampaignProvider>
-                    <MailGraphProvider>
-                      <DashboardProvider>
-                        <CompanyProvider>
-                          <MailboxProvider>
-                            {/* <SessionProvider session={session}> */}
-                            {children}
-                            {/* </SessionProvider> */}
-                          </MailboxProvider>
-                        </CompanyProvider>
-                      </DashboardProvider>
+                      <MailGraphProvider>
+                        <DashboardProvider>
+                          <CompanyProvider>
+                            <MailboxProvider>
+                              {/* <SessionProvider session={session}> */}
+                              {children}
+                              {/* </SessionProvider> */}
+                            </MailboxProvider>
+                          </CompanyProvider>
+                        </DashboardProvider>
+                      </MailGraphProvider>
                     </CampaignProvider>
                   </FieldsListProvider>
-                    </MailGraphProvider>
-                  </CampaignProvider>
                 </LeadsProvider>
               </LeadSheetSidebarProvider>
             </UserContextProvider>

@@ -75,15 +75,6 @@ export function Mail({
   const { setSenderEmail, isContextBarOpen } = useMailbox();
   console.log("User from mail", user);
 
-  const {
-    conversationId,
-    setConversationId,
-    setRecipientEmail,
-    recipientEmail,
-    setSenderEmail,
-    senderEmail,
-  } = useMailbox();
-
   const { leads } = useLeads();
 
   const [localIsContextBarOpen, setLocalIsContextBarOpen] =
