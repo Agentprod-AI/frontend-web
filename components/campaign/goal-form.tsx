@@ -172,13 +172,22 @@ export function GoalForm({ type }: { type: string }) {
   }, [goalData]);
 
   useEffect(() => {
-    const fetchMailboxes = () => {
+    const fetchMailboxes = async () => {
       if (user.id) {
-        axiosInstance
-          .get(`v2/user/mailbox/${user.id}`)
+        await axiosInstance
+          .get(`v2/settings/mailboxes/${user.id}`)
           .then((response) => {
-            setMailboxes(response.data.mailboxes);
-            console.log("mailboxes", response.data);
+            const userMailboxes = response.data.map(
+              (mailbox: { mailbox: string; sender_name: string }) => {
+                return {
+                  mailbox: mailbox.mailbox,
+                  sender_name: mailbox.sender_name,
+                };
+              }
+            );
+            console.log("mailboxes", userMailboxes);
+            setMailboxes(userMailboxes);
+            console.log("mailboxes", response);
           })
           .catch((error) => {
             console.log("Error occured while fetching mailboxes", error);

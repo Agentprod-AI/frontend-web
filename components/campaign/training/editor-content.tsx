@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useParams } from "next/navigation";
 import { useFieldsList } from "@/context/training-fields-provider";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Variable {
   id: string;
@@ -32,6 +33,7 @@ export default function EditorContent() {
   const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(false);
   const [localBody, setLocalBody] = useState("");
   const [localSubject, setLocalSubject] = useState("");
+  const [localFollowUp, setLocalFollowUp] = useState("");
 
   const { fieldsList, setBody, setSubject } = useFieldsList();
 
@@ -92,6 +94,12 @@ export default function EditorContent() {
     handleTextChange(text, setBody);
   };
 
+  const handleFollowUpChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
+    const text = e.target.value;
+    // setLocalFollowUp(text);
+    handleTextChange(text, setLocalFollowUp);
+  };
+
   return (
     <ResizablePanelGroup direction="horizontal" className="">
       <ResizablePanel defaultSize={75}>
@@ -120,19 +128,22 @@ export default function EditorContent() {
                 <SubjectForm />
               </CollapsibleContent>
             </Collapsible>
-            <div className="p-2 border rounded w-full h-72 mt-2">
-              <textarea
-                placeholder="Hi {first name}..."
-                value={localBody}
-                onChange={handleBodyChange}
-                className="w-full h-full text-base bg-transparent resize-none focus:outline-none"
-              />
-            </div>
+            <Textarea
+              placeholder="Hi {first name}..."
+              value={localBody}
+              onChange={handleBodyChange}
+              className="mt-2 w-full h-[200px]"
+            />
             <span className="text-xs text-gray-500">
               *use variables like: &#123;variable_name&#125;
             </span>
             {showAdditionalTextArea && (
-              <FieldTextArea fieldsList={fieldsList} emailContent={localBody} />
+              <Textarea
+                placeholder="Write a follow-up"
+                value={localFollowUp}
+                onChange={handleFollowUpChange}
+                className="mt-2 w-full h-[200px]"
+              />
             )}
             <div className="mt-4 flex flex-row gap-4">
               <Button
