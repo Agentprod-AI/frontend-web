@@ -261,7 +261,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       .put(`v2/offerings/${campaignId}`, data)
       .then((response) => {
         console.log("Offering edited successfully:", response.data);
-        router.push(`/dashboard/campaign/create/${campaignId}`);
+        router.push(`/dashboard/campaign/${campaignId}`);
       })
       .catch((error) => {
         console.error("Error editing offering:", error);

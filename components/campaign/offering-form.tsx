@@ -25,6 +25,8 @@ import {
   getOfferingById,
   getPersonaByUserId,
   createPersona,
+  getPersonaByCampaignId,
+  editPersona,
 } from "./camapign.api";
 import { useUserContext } from "@/context/user-context";
 import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjust the import path as needed
@@ -59,25 +61,41 @@ export function OfferingForm({ type }: { type: string }) {
 
   const fetchPersona = async () => {
     if (user?.id) {
-      const persona = await getPersonaByUserId(user.id);
-      if (persona) {
-        form.setValue("pain_point", persona.pain_point);
-        form.setValue("values", persona.values);
-        form.setValue(
-          "customer_success_stories",
-          persona.customer_success_stories || [""]
-        );
-        form.setValue(
-          "detailed_product_description",
-          persona.detailed_product_description
-        );
+      if (type === "edit") {
+        const persona = await getPersonaByCampaignId(params.campaignId);
+        if (persona) {
+          form.setValue("pain_point", persona.pain_point);
+          form.setValue("values", persona.values);
+          form.setValue(
+            "customer_success_stories",
+            persona.customer_success_stories || [""]
+          );
+          form.setValue(
+            "detailed_product_description",
+            persona.detailed_product_description
+          );
+        }
+      } else {
+        const persona = await getPersonaByUserId(user.id);
+        if (persona) {
+          form.setValue("pain_point", persona.pain_point);
+          form.setValue("values", persona.values);
+          form.setValue(
+            "customer_success_stories",
+            persona.customer_success_stories || [""]
+          );
+          form.setValue(
+            "detailed_product_description",
+            persona.detailed_product_description
+          );
+        }
       }
     }
   };
 
   useEffect(() => {
     fetchPersona();
-  }, [user]);
+  }, [user, params.campaignId]);
 
   const { createOffering, editOffering } = useCampaignContext();
   const [offeringData, setOfferingData] = useState<OfferingFormData>();
@@ -92,9 +110,9 @@ export function OfferingForm({ type }: { type: string }) {
       detailed_product_description: data.detailed_product_description,
     };
 
-    createPersona(postData)
-      .then(() => {
-        if (type === "create") {
+    if (type === "create") {
+      createPersona(postData)
+        .then(() => {
           createOffering(
             {
               name: data.product_offering,
@@ -102,7 +120,13 @@ export function OfferingForm({ type }: { type: string }) {
             },
             params.campaignId
           );
-        } else if (type === "edit") {
+        })
+        .catch((error: any) => {
+          console.error("Error creating persona:", error);
+        });
+    } else {
+      editPersona(postData)
+        .then(() => {
           editOffering(
             {
               name: data.product_offering,
@@ -110,11 +134,11 @@ export function OfferingForm({ type }: { type: string }) {
             },
             params.campaignId
           );
-        }
-      })
-      .catch((error) => {
-        console.error("Error creating persona:", error);
-      });
+        })
+        .catch((error: any) => {
+          console.error("Error creating persona:", error);
+        });
+    }
   };
 
   useEffect(() => {
@@ -265,7 +289,8 @@ export function OfferingForm({ type }: { type: string }) {
             </FormItem>
           )}
         />
-        <Button type="submit">Create Offer</Button>
+        {type === "create" && <Button type="submit">Create Offer</Button>}
+        {type === "edit" && <Button type="submit">Update Offer</Button>}
       </form>
     </Form>
   );
