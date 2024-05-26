@@ -117,10 +117,10 @@ export const navItems: NavInterface[] = [
     category: "Main",
     items: [
       {
-        title: "Chat with Prod",
+        title: "Chat with Sally",
         href: "/dashboard/chat",
         icon: "chat",
-        label: "chat with prod",
+        label: "chat with sally",
         isCollapsible: false,
       },
     ],
@@ -196,7 +196,7 @@ export type Mail = (typeof mails)[number];
 
 export const accounts = [
   {
-    label: "Sally - Sales Rep",
+    label: "AgentProd - Sales Rep",
     email: "alicia@example.com",
     icon: <Image src={"/bw-logo.png"} width={24} height={24} alt="Sally" />,
   },

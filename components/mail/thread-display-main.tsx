@@ -39,6 +39,7 @@ import {
 import { useMailbox, Mailbox, EmailMessage } from "@/context/mailbox-provider";
 import { Lead, useLeads, Contact } from "@/context/lead-user";
 import { toast } from "sonner";
+import { PeopleProfileSheet } from "../people-profile-sheet";
 import Notification from "./Notification";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { User } from "lucide-react";
@@ -81,8 +82,18 @@ const frameworks = [
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   ownerEmail,
 }) => {
-  const { conversationId, thread, setThread, recipientEmail, senderEmail } =
-    useMailbox();
+
+  // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
+  //   []
+  // );
+  const {
+    conversationId,
+    thread,
+    setThread,
+    recipientEmail,
+    setIsContextBarOpen,
+  } = useMailbox();
+
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
@@ -324,7 +335,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          // console.log("ThreadDisplayyyy->", response);
+          console.log("response for drafts", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -432,7 +443,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
             onClick={() => {
-              toggleSidebar(true);
+              setIsContextBarOpen(true);
             }}
           >
             <AvatarImage
