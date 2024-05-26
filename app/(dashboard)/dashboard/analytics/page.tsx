@@ -112,7 +112,8 @@ export default function Page() {
                               {lead.fallback || lead.name.charAt(0)}
                             </AvatarFallback>
                           </Avatar>
-                          <p className="text-sm font-medium leading-none ml-4">{`${lead.name} - ${lead.company} `}</p>
+                          <p className="text-sm font-medium leading-none ml-4">{`${lead.name} `}</p>
+                          {/* - ${lead.company} */}
                         </div>
                       ))}
                 </div>
