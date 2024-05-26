@@ -9,8 +9,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
-// import { first, last } from "slate";
-// import { da, pl } from "date-fns/locale";
+
 
 type Info = {
   id: string;
@@ -35,20 +34,18 @@ export default function Page() {
     { id: "Leads used", value: "", isEditable: false },
   ]);
 
-  console.log("Account ", user);
-
-  React.useEffect(() => {
+  const fetchDataInfo = () => {
     if (user?.id) {
       axiosInstance
         .get(`/v2/settings/${user.id}`)
         .then((response) => {
           const data = response.data;
-          console.log("Data Accoubt ", data);
+
           const initialAccountInfo = [
             {
               id: "ID",
               value: data.user_id || user.id,
-              isEditable: false,
+              isEditable: true,
             },
             {
               id: "Sender First Name",
@@ -56,14 +53,14 @@ export default function Page() {
               isEditable: true,
             },
             { id: "Sender Last Name", value: data.last_name, isEditable: true },
-            { id: "Sender Job", value: data.job, isEditable: true },
+            { id: "Sender Job", value: data.job, isEditable: false },
             { id: "Email", value: data.email, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
-            { id: "Company ID", value: data.companyId, isEditable: false },
+            { id: "Company ID", value: data.companyId, isEditable: true },
             {
               id: "Notifications",
               value: data.notifications,
-              isEditable: true,
+              isEditable: false,
             },
             { id: "Plan", value: data.plan, isEditable: false },
             { id: "Leads used", value: data.leads_used, isEditable: false },
@@ -73,11 +70,6 @@ export default function Page() {
             id: data.user_id,
             firstName: data.first_name,
             lastName: data.last_name,
-            // company: data.company,
-            // companyID: data.companyId,
-            // notification: data.notifications,
-            // plan: data.plan,
-            // leadUsed: data.leads_used,
           });
         })
         .catch((error) => {
@@ -87,12 +79,58 @@ export default function Page() {
     } else {
       setAccountInfo(dummyAccountInfo);
     }
-  }, [user]);
+  };
+
+  React.useEffect(() => {
+    fetchDataInfo();
+  }, []);
 
   const handleInputChange = (id: string, value: string) => {
-    setAccountInfo(
-      accountInfo.map((info) => (info.id === id ? { ...info, value } : info))
-    );
+    const newAccountInfo = accountInfo.map((item) => {
+      if (item.id === id) {
+        return { ...item, value: value }; // explicitly spread previous item and update value
+      }
+      return item;
+    });
+    setAccountInfo(newAccountInfo);
+    console.log("Updated Info:", newAccountInfo); // Check what the new state looks like
+  };
+
+  const handleUpdateClick = async () => {
+    const updatePayload = accountInfo.reduce((acc: any, { id, value }) => {
+      // Convert the ID for API compatibility: 'First Name' becomes 'first_name'
+      const key = id.replace(/ /g, "_").toLowerCase();
+
+      return acc;
+    }, {});
+
+    const payload = {
+      user_id: accountInfo[0].value,
+      first_name: accountInfo[1].value,
+      last_name: accountInfo[2].value,
+      job_title: accountInfo[3].value,
+      email: accountInfo[4].value,
+      company: accountInfo[5].value,
+      company_id: accountInfo[6].value,
+      notifications: accountInfo[7].value,
+      plan: accountInfo[8].value,
+      leads_used: accountInfo[9].value,
+    };
+    try {
+      const response = await axiosInstance.put(`/v2/settings`, payload);
+      console.log("Update Successful", response.data);
+      setAccountInfo(
+        accountInfo.map((info) => {
+          const newInfo =
+            response.data[info.id.replace(/ /g, "_").toLowerCase()];
+          return newInfo !== undefined ? { ...info, value: newInfo } : info;
+        })
+      );
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update user details:", error);
+    }
   };
 
   const handleEditClick = () => {
@@ -115,7 +153,7 @@ export default function Page() {
                   {isEditing && info.isEditable ? (
                     <Input
                       type="text"
-                      value={info?.value?.toString()}
+                      value={info?.value?.toString() ?? ""}
                       onChange={(e) =>
                         handleInputChange(info.id, e.target.value)
                       }
@@ -130,7 +168,7 @@ export default function Page() {
         </Table>
       </div>
       <div className="flex gap-4">
-        <Button onClick={handleEditClick}>
+        <Button onClick={isEditing ? handleUpdateClick : handleEditClick}>
           {isEditing ? "Update" : "Edit"}
         </Button>
         {isEditing && (

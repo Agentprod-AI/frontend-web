@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 "use client";
 import React from "react";
 import { LineChartComponent } from "@/components/charts/line-chart";
@@ -25,10 +26,23 @@ import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { useMailGraphContext } from "@/context/chart-data-provider";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
+// import { useUserContext } from "@/context/user-context";
+import useWebSocket from "@/hooks/useWebhook";
 
 export default function Page() {
   const { dashboardData } = useDashboardContext();
   const { mailGraphData } = useMailGraphContext();
+  // const { user } = useUserContext();
+
+  const ws =
+    "ws://agentprod-backend-framework-zahq.onrender.com/v2/ws/receive/emails/8c7e9baf-e299-4532-9ada-8f338a6ad9b6";
+
+  const { socket, recentActivities } = useWebSocket(ws);
+  React.useEffect(() => {
+    if (socket) {
+      console.log("Socket is connected");
+    }
+  }, []);
 
   const calculateStreak = (data: any) => {
     if (data.length === 0) return 0;
@@ -114,7 +128,7 @@ export default function Page() {
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
                     <div className="text-2xl font-bold">
-                      {dashboardData?.response_rate || "0"}
+                      {Math.round(dashboardData.response_rate) || "0"}
                     </div>
                   </CardContent>
                 </Card>
@@ -126,10 +140,41 @@ export default function Page() {
                 <CardHeader>
                   <CardTitle>Recent Sales</CardTitle>
                   <CardDescription>
-                    You made 34 sales this month.
+                    You made {recentActivities.length} sales this month.
                   </CardDescription>
                 </CardHeader>
                 <CardContent>
+                  {recentActivities.length > 0 ? (
+                    recentActivities.map((activity, index) => (
+                      <div key={index} className="flex items-center">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage
+                            src="/path/to/default/avatar.png"
+                            alt="Avatar"
+                          />
+                          <AvatarFallback>
+                            {activity.client.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="ml-4 space-y-1">
+                          <p className="text-sm font-medium leading-none">
+                            {activity.client}
+                            <span className="text-muted-foreground">
+                              {" "}
+                              {activity.body}
+                            </span>
+                          </p>
+                          <p className="text-sm text-muted-foreground">
+                            {format(new Date(), "PPpp")}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                  ) : (
+                    <p>No recent activities</p>
+                  )}
+                </CardContent>
+                {/* <CardContent>
                   <div className="space-y-8">
                     <div className="flex items-center">
                       <Avatar className="h-9 w-9">
@@ -204,7 +249,7 @@ export default function Page() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </CardContent> */}
               </ScrollArea>
             </Card>
           </div>
@@ -284,7 +329,7 @@ export default function Page() {
                     {dashboardData?.hot_leads.length === 0
                       ? "data not available"
                       : dashboardData?.hot_leads.map((lead) => (
-                          <div key={lead.id} className="flex items-center">
+                          <div key={lead.name} className="flex items-center">
                             <Avatar className="h-9 w-9">
                               <AvatarImage src={lead.photo_url} alt="Avatar" />
                               <AvatarFallback>
