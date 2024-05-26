@@ -365,32 +365,34 @@ export default function Page() {
             </Card>
 
             <Card className="col-span-2">
-              <CardHeader>
-                <CardTitle>Mailbox Health</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                {isLoading ? (
-                  <div className="flex justify-center items-center">
-                    <LoadingCircle />
-                  </div>
-                ) : dashboardData &&
-                  Object.keys(dashboardData.mailbox_health).length > 0 ? (
-                  Object.entries(dashboardData.mailbox_health).map(
-                    ([email, health], index) => (
-                      <div key={index}>
-                        <p className="text-sm">
-                          {email} - {health}%
-                        </p>
-                        <Progress value={health} className="h-5 mt-2" />
-                      </div>
+              <ScrollArea className="lg:h-56 md:h-[26rem]">
+                <CardHeader>
+                  <CardTitle>Mailbox Health</CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                  {isLoading ? (
+                    <div className="flex justify-center items-center">
+                      <LoadingCircle />
+                    </div>
+                  ) : dashboardData &&
+                    Object.keys(dashboardData.mailbox_health).length > 0 ? (
+                    Object.entries(dashboardData.mailbox_health).map(
+                      ([email, health], index) => (
+                        <div key={index}>
+                          <p className="text-sm">
+                            {email} - {health}%
+                          </p>
+                          <Progress value={health} className="h-5 mt-2" />
+                        </div>
+                      )
                     )
-                  )
-                ) : (
-                  <div className="text-center">
-                    No mailbox health data available.
-                  </div>
-                )}
-              </CardContent>
+                  ) : (
+                    <div className="text-center">
+                      No mailbox health data available.
+                    </div>
+                  )}
+                </CardContent>
+              </ScrollArea>
             </Card>
 
             <Card className="col-span-2 p-4 space-y-16">
