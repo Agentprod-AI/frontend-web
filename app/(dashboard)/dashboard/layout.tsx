@@ -1,30 +1,21 @@
 "use client";
-import React from "react";
+import React, { useEffect } from "react";
 import Header from "@/components/layout/header";
-// import Sidebar from "@/components/layout/sidebar";
 import {
   ResizableHandle,
   ResizablePanel,
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { cn } from "@/lib/utils";
-// import type { Metadata } from "next";
 import { Nav } from "@/components/layout/nav/nav";
 import { navItems } from "@/constants/data";
-// import { DummyCampaign } from "@/constants/campaign";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import useWindowSize from "@/hooks/useWindowSize";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
 import { PageHeaderProvider } from "@/context/page-header";
-// import { useCampaignContext } from "@/context/campaign-provider";
-// import DashboardPageHeader from "@/components/layout/dashboard-page-header";
-
-// export const metadata: Metadata = {
-//   title: "Next Shadcn Dashboard Starter",
-//   description: "Basic dashboard with Next.js and Shadcn",
-// };
+import { useMailbox } from "@/context/mailbox-provider";
 
 export default function DashboardLayout({
   children,
@@ -32,7 +23,6 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const [isCollapsed, setIsCollapsed] = React.useState(false);
-
   const { width } = useWindowSize();
   const { user } = useAuth();
 
@@ -40,10 +30,16 @@ export default function DashboardLayout({
     redirect("/");
   }
 
+  const { isContextBarOpen } = useMailbox();
+
+  useEffect(() => {
+    setIsCollapsed(isContextBarOpen);
+  }, [isContextBarOpen]);
+
   return (
     <>
       <Header />
-      <div className="flex h-screen overflow-hidden md:pt-16">
+      <div className="flex h-screen overflow-hidden md:pt-16 ">
         <TooltipProvider delayDuration={0}>
           <ResizablePanelGroup
             direction="horizontal"
@@ -53,15 +49,14 @@ export default function DashboardLayout({
               )}`;
             }}
             className="h-full items-stretch"
-            // style={{ height: "calc(100vh - 3.5rem)" }}
           >
             {width > 768 ? (
               <ResizablePanel
-                defaultSize={15}
-                collapsedSize={4}
+                defaultSize={!isCollapsed ? 15 : 5} // Default size when expanded
+                collapsedSize={5} // Size when collapsed
                 collapsible={true}
-                minSize={15}
-                maxSize={15}
+                minSize={5}
+                maxSize={20}
                 onCollapse={() => {
                   setIsCollapsed(true);
                   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(
@@ -75,22 +70,18 @@ export default function DashboardLayout({
                   )}`;
                 }}
                 className={cn(
-                  isCollapsed &&
-                    "min-w-[50px] transition-all duration-300 ease-in-out"
+                  isCollapsed ? "w-[20px]" : "w-[50px]",
+                  "transition-all duration-300 ease-in-out"
                 )}
               >
-                {/* <Sidebar isCollapsed={isCollapsed} /> */}
                 <Nav isCollapsed={isCollapsed} links={navItems} />
               </ResizablePanel>
             ) : null}
             {width > 768 ? <ResizableHandle withHandle /> : null}
-            <ResizablePanel minSize={30} defaultSize={85}>
+            <ResizablePanel minSize={70} defaultSize={85}>
               <ScrollArea className="h-screen">
                 <PageHeaderProvider>
-                  <main className="px-4 pb-20">
-                    {/* <DashboardPageHeader /> */}
-                    {children}
-                  </main>
+                  <main className="px-4 pb-20">{children}</main>
                 </PageHeaderProvider>
               </ScrollArea>
             </ResizablePanel>

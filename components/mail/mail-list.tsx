@@ -192,8 +192,7 @@ export function MailList({ items }: MailListProps) {
       .catch((error) => {
         console.log(error);
       });
-  }, []);
-
+  }, [user?.id]);
 
   return (
     <ScrollArea className="h-screen pb-40">

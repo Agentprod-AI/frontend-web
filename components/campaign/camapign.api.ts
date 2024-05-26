@@ -98,7 +98,7 @@ export const getAudienceFiltersById = async (
 };
 
 export const getPersonaByUserId = async (userId: string): Promise<any> => {
-  return axiosInstance
+  const response = await axiosInstance
     .get(`v2/personas/${userId}`)
     .then((response) => {
       const data = response.data;
@@ -112,10 +112,12 @@ export const getPersonaByUserId = async (userId: string): Promise<any> => {
         description: error.message || "Failed to fetch persona.",
       });
     });
+
+  return response;
 };
 
-export const createPersona = (postData: {
-  campaign_id?: string;
+export const createPersona = async (postData: {
+  campaign_id: string;
   pain_point?: string[];
   values?: string[];
   customer_success_stories?: string[];
@@ -134,6 +136,52 @@ export const createPersona = (postData: {
       toast({
         title: "Error creating persona",
         description: error.message || "Failed to create persona.",
+      });
+      throw error; // re-throw the error to be handled elsewhere if needed
+    });
+};
+
+export const getPersonaByCampaignId = async (
+  campaignId: string
+): Promise<any> => {
+  const response = await axiosInstance
+    .get(`v2/personas/campaign/${campaignId}`)
+    .then((response) => {
+      const data = response.data;
+      console.log("persona fetched successfully:", data);
+      return data;
+    })
+    .catch((error) => {
+      console.error("Error fetching persona:", error);
+      toast({
+        title: "Error fetching persona",
+        description: error.message || "Failed to fetch persona.",
+      });
+    });
+
+  return response;
+};
+
+export const editPersona = async (postData: {
+  campaign_id: string;
+  pain_point?: string[];
+  values?: string[];
+  customer_success_stories?: string[];
+  detailed_product_description?: string;
+  created_at?: string;
+}): Promise<any> => {
+  return axiosInstance
+    .put(`/v2/personas/campaign`, postData)
+    .then((response) => {
+      const data = response.data;
+      console.log("Persona updated successfully:", data);
+      return data;
+    })
+    .catch((error) => {
+      console.error("Error updating persona:", error);
+      toast({
+        title: "Error updating persona",
+        description: error.message || "Failed to updat persona.",
       });
       throw error; // re-throw the error to be handled elsewhere if needed
     });

@@ -92,7 +92,8 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
                 />
                 <Button
                   variant={"ghost"}
-                  onClick={() => {
+                  onClick={(event) => {
+                    event.preventDefault();
                     const updatedFields = value.map((f, i) => {
                       if (i === index) {
                         const updatedItems = f.items.filter(
@@ -140,7 +141,9 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
                     <DialogClose asChild>
                       <Button
                         type="submit"
-                        onClick={() => handleAddItem(field.label)}
+                        onClick={(event) => {
+                          handleAddItem(field.label);
+                        }}
                       >
                         Add
                       </Button>

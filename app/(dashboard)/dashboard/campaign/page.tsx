@@ -56,7 +56,7 @@ export default function Page() {
   // console.log("campaign from create", params);
 
   return (
-    <div className="space-y-2 mb-5">
+    <div className="space-y-2 mb-5 ">
       <Card className="bg-accent px-4 py-6">
         <CardTitle>Send your first outbound Email campaign</CardTitle>
         <Button className="mt-4">

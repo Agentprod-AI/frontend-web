@@ -32,6 +32,8 @@ import { toast } from "@/components/ui/use-toast";
 import { useCampaignContext, GoalFormData } from "@/context/campaign-provider";
 import { getGoalById } from "./camapign.api";
 import { useEffect, useState } from "react";
+import axiosInstance from "@/utils/axiosInstance";
+import { useUserContext } from "@/context/user-context";
 
 const dummyEmails = [
   "john.doe@example.com",
@@ -79,6 +81,9 @@ export function GoalForm({ type }: { type: string }) {
 
   const { createGoal, editGoal } = useCampaignContext();
   const [goalData, setGoalData] = useState<GoalFormData>();
+  const { user } = useUserContext();
+  const [mailboxes, setMailboxes] =
+    useState<{ mailbox: string; sender_name: string }[]>();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -165,6 +170,33 @@ export function GoalForm({ type }: { type: string }) {
       form.setValue("emails", goalData.emails);
     }
   }, [goalData]);
+
+  useEffect(() => {
+    const fetchMailboxes = async () => {
+      if (user.id) {
+        await axiosInstance
+          .get(`v2/settings/mailboxes/${user.id}`)
+          .then((response) => {
+            const userMailboxes = response.data.map(
+              (mailbox: { mailbox: string; sender_name: string }) => {
+                return {
+                  mailbox: mailbox.mailbox,
+                  sender_name: mailbox.sender_name,
+                };
+              }
+            );
+            console.log("mailboxes", userMailboxes);
+            setMailboxes(userMailboxes);
+            console.log("mailboxes", response);
+          })
+          .catch((error) => {
+            console.log("Error occured while fetching mailboxes", error);
+          });
+      }
+    };
+
+    fetchMailboxes();
+  }, []);
 
   return (
     <Form {...form}>
@@ -269,29 +301,34 @@ export function GoalForm({ type }: { type: string }) {
                   <DropdownMenuContent className="w-max">
                     <ScrollArea className="h-60">
                       <DropdownMenuGroup>
-                        <DropdownMenuItem>
-                          <div
-                            className="flex items-center space-x-2"
-                            onClick={(event) => event.stopPropagation()}
-                          >
-                            <Checkbox
-                              checked={emailFields.some(
-                                (emailField) =>
-                                  emailField.value === "muskaan@agentprodai.com"
-                              )}
-                              onCheckedChange={(checked) => {
-                                if (checked) {
-                                  onEmailAppend("muskaan@agentprodai.com");
-                                } else {
-                                  onEmailRemove("muskaan@agentprodai.com");
-                                }
-                              }}
-                            />
-                            <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                              {"muskaan@agentprodai.com"}
-                            </label>
-                          </div>
-                        </DropdownMenuItem>
+                        {mailboxes &&
+                          mailboxes.map((mailbox, index) => {
+                            return (
+                              <DropdownMenuItem key={index}>
+                                <div
+                                  className="flex items-center space-x-2"
+                                  onClick={(event) => event.stopPropagation()}
+                                >
+                                  <Checkbox
+                                    checked={emailFields.some(
+                                      (emailField) =>
+                                        emailField.value === mailbox.mailbox
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      if (checked) {
+                                        onEmailAppend(mailbox.mailbox);
+                                      } else {
+                                        onEmailRemove(mailbox.mailbox);
+                                      }
+                                    }}
+                                  />
+                                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                    {mailbox.sender_name} - {mailbox.mailbox}
+                                  </label>
+                                </div>
+                              </DropdownMenuItem>
+                            );
+                          })}
                       </DropdownMenuGroup>
                     </ScrollArea>
                   </DropdownMenuContent>
