@@ -116,7 +116,7 @@ export const getPersonaByUserId = async (userId: string): Promise<any> => {
   return response;
 };
 
-export const createPersona = (postData: {
+export const createPersona = async (postData: {
   campaign_id: string;
   pain_point?: string[];
   values?: string[];
@@ -162,7 +162,7 @@ export const getPersonaByCampaignId = async (
   return response;
 };
 
-export const editPersona = (postData: {
+export const editPersona = async (postData: {
   campaign_id: string;
   pain_point?: string[];
   values?: string[];

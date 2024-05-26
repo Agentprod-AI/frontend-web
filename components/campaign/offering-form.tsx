@@ -121,7 +121,7 @@ export function OfferingForm({ type }: { type: string }) {
             params.campaignId
           );
         })
-        .catch((error: any) => {
+        .catch((error) => {
           console.error("Error creating persona:", error);
         });
     } else {
@@ -135,7 +135,7 @@ export function OfferingForm({ type }: { type: string }) {
             params.campaignId
           );
         })
-        .catch((error: any) => {
+        .catch((error) => {
           console.error("Error creating persona:", error);
         });
     }
