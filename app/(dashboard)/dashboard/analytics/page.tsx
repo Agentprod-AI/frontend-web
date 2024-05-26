@@ -18,10 +18,11 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Progress } from "@/components/ui/progress";
 import { useMailGraphContext } from "@/context/chart-data-provider";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
+import { LoadingCircle } from "@/app/icons";
 
 export default function Page() {
   const { mailGraphData } = useMailGraphContext();
-  const { dashboardData } = useDashboardContext();
+  const { dashboardData, isLoading } = useDashboardContext();
 
   const getPercentage = (current: any, previous: any) => {
     return previous > 0 ? ((current / previous) * 100).toFixed(2) + "%" : "0%";
@@ -102,20 +103,25 @@ export default function Page() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {dashboardData?.hot_leads.length === 0
-                    ? "data not available"
-                    : dashboardData?.hot_leads.map((lead) => (
-                        <div key={lead.id} className="flex items-center">
-                          <Avatar className="h-9 w-9">
-                            <AvatarImage src={lead.photo_url} alt="Avatar" />
-                            <AvatarFallback>
-                              {lead.fallback || lead.name.charAt(0)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <p className="text-sm font-medium leading-none ml-4">{`${lead.name} `}</p>
-                          {/* - ${lead.company} */}
-                        </div>
-                      ))}
+                  {isLoading ? (
+                    <div className="flex justify-center items-center">
+                      <LoadingCircle />
+                    </div>
+                  ) : dashboardData?.hot_leads.length > 0 ? (
+                    dashboardData.hot_leads.map((lead) => (
+                      <div key={lead.name} className="flex items-center">
+                        <Avatar className="h-9 w-9">
+                          <AvatarImage src={lead.photo_url} alt="Avatar" />
+                          <AvatarFallback>
+                            {lead.fallback || lead.name.charAt(0)}
+                          </AvatarFallback>
+                        </Avatar>
+                        <p className="text-sm font-medium leading-none ml-4">{`${lead.name}`}</p>
+                      </div>
+                    ))
+                  ) : (
+                    <div className="text-center">No hot leads available.</div>
+                  )}
                 </div>
               </CardContent>
             </ScrollArea>
@@ -127,15 +133,26 @@ export default function Page() {
                 <CardTitle>Mailbox Health</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {Object.entries(dashboardData.mailbox_health).map(
-                  ([email, health], index) => (
-                    <div key={index}>
-                      <p className="text-sm">
-                        {email} - {health}%
-                      </p>
-                      <Progress value={health} className="h-5 mt-2" />
-                    </div>
+                {isLoading ? (
+                  <div className="flex justify-center items-center">
+                    <LoadingCircle />
+                  </div>
+                ) : dashboardData &&
+                  Object.keys(dashboardData.mailbox_health).length > 0 ? (
+                  Object.entries(dashboardData.mailbox_health).map(
+                    ([email, health], index) => (
+                      <div key={index}>
+                        <p className="text-sm">
+                          {email} - {health}%
+                        </p>
+                        <Progress value={health} className="h-5 mt-2" />
+                      </div>
+                    )
                   )
+                ) : (
+                  <div className="text-center">
+                    No mailbox health data available.
+                  </div>
                 )}
               </CardContent>
             </ScrollArea>
@@ -173,32 +190,43 @@ export default function Page() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {dashboardData?.top_performing_campaigns.length > 0
-                      ? dashboardData.top_performing_campaigns.map(
-                          (campaign, index) => (
-                            <TableRow key={index}>
-                              <TableCell>{campaign.campaign_name}</TableCell>
-
-                              <TableCell className="hidden sm:table-cell text-center">
-                                {campaign.engaged_leads}
-                              </TableCell>
-                              <TableCell className="hidden sm:table-cell text-center">
-                                {campaign.response_rate}
-                              </TableCell>
-                              <TableCell className="hidden md:table-cell text-center">
-                                {campaign.bounce_rate === null
-                                  ? 0
-                                  : campaign.bounce_rate}
-                              </TableCell>
-                              <TableCell className=" text-center">
-                                {campaign.open_rate === null
-                                  ? 0
-                                  : campaign.open_rate}
-                              </TableCell>
-                            </TableRow>
-                          )
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center">
+                          <LoadingCircle />
+                        </TableCell>
+                      </TableRow>
+                    ) : dashboardData?.top_performing_campaigns.length > 0 ? (
+                      dashboardData.top_performing_campaigns.map(
+                        (campaign, index) => (
+                          <TableRow key={index}>
+                            <TableCell>{campaign.campaign_name}</TableCell>
+                            <TableCell className="hidden sm:table-cell text-center">
+                              {campaign.engaged_leads}
+                            </TableCell>
+                            <TableCell className="hidden sm:table-cell text-center">
+                              {campaign.response_rate}
+                            </TableCell>
+                            <TableCell className="hidden md:table-cell text-center">
+                              {campaign.bounce_rate === null
+                                ? "0%"
+                                : `${campaign.bounce_rate}%`}
+                            </TableCell>
+                            <TableCell className="text-center">
+                              {campaign.open_rate === null
+                                ? "0%"
+                                : `${campaign.open_rate}%`}
+                            </TableCell>
+                          </TableRow>
                         )
-                      : "Loading...."}
+                      )
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={5} className="text-center">
+                          No top performing campaigns available.
+                        </TableCell>
+                      </TableRow>
+                    )}
                   </TableBody>
                 </Table>
               </CardContent>
