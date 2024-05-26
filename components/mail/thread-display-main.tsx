@@ -319,7 +319,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       const payload = {
         conversation_id: conversationId,
         sender: "muskaan@agentprodai.com",
-        recipient: "hydrogenproton1@gmail.com",
+        recipient: "info.agentprod@gmail.com",
         subject: title,
         body: body,
       };
@@ -341,7 +341,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       const payload = {
         conversation_id: conversationId,
         sender: "muskaan@agentprodai.com",
-        recipient: "hydrogenproton1@gmail.com",
+        recipient: "info.agentprod@gmail.com",
         subject: title,
         body: body,
       };
