@@ -223,9 +223,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                {email.sender !== leads[0].email
-                  ? "You to " + leads[0].first_name
-                  : leads[0].first_name + " to you"}
+                {leads[0]?.email
+                  ? email.sender !== leads[0].email
+                    ? "You to " + leads[0].first_name
+                    : leads[0].first_name + " to you"
+                  : ""}
               </span>
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">
