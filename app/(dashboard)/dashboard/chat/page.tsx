@@ -21,6 +21,7 @@ import { Avatar, AvatarImage } from "@/components/ui/avatar";
 // import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { is } from "date-fns/locale";
 
 // import { useSession } from "next-auth/react";
 
@@ -53,11 +54,11 @@ export default function Home() {
   const [loading, setLoading] = useState(true);
 
   const [allMessages, setAllMessages] = useState<Message[]>([
-    {
-      id: Math.random().toString(),
-      role: "assistant",
-      content: `Hello! I'm Sally, your Sales Rep. I accelerate outbound sales with access to 250 million contacts and manage bespoke email campaigns to thousands. I also reply to queries and schedule meetings. Can I help you start your sales outreach?`,
-    },
+    // {
+    //   id: Math.random().toString(),
+    //   role: "assistant",
+    //   content: `Hello! I'm Sally, your Sales Rep. I accelerate outbound sales with access to 250 million contacts and manage bespoke email campaigns to thousands. I also reply to queries and schedule meetings. Can I help you start your sales outreach?`,
+    // },
   ]);
 
   // console.log("Id: ", userId);
@@ -169,7 +170,7 @@ export default function Home() {
     };
 
     fetchMessages();
-  });
+  }, []);
 
   useEffect(() => {
     if (userId) {
@@ -270,6 +271,16 @@ export default function Home() {
   useEffect(() => {}, [inputRef.current?.value]);
 
   const disabled = isLoading || input.length === 0;
+
+  const internalScrollRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (internalScrollRef.current) {
+      internalScrollRef.current.scrollIntoView({
+        behavior: "smooth",
+        block: "nearest",
+      });
+    }
+  }, []);
 
   return (
     <div>
@@ -442,6 +453,7 @@ export default function Home() {
           LOG
         </button> */}
       </main>
+      <div ref={internalScrollRef} />
     </div>
   );
 }

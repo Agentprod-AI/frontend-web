@@ -8,7 +8,7 @@ import React, {
   useMemo,
 } from "react";
 import axiosInstance from "@/utils/axiosInstance";
-import { useUserContext } from "./user-context"; // Assuming this is correctly imported
+import { useUserContext } from "./user-context";
 
 interface MailGraphData {
   date: string;
@@ -17,15 +17,15 @@ interface MailGraphData {
 }
 
 interface MailGraphContextType {
-  mailGraphData: MailGraphData[]; // Corrected property names
+  mailGraphData: MailGraphData[];
   isLoading: boolean;
-  setMailGraphData: (data: MailGraphData[]) => void; // Corrected setter name
+  setMailGraphData: (data: MailGraphData[]) => void; 
 }
 
 const defaultMailGraphState: MailGraphContextType = {
   mailGraphData: [],
   isLoading: true,
-  setMailGraphData: () => {}, // Make sure the default state matches the interface
+  setMailGraphData: () => {},
 };
 
 const MailGraphContext = createContext<MailGraphContextType>(
