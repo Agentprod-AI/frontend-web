@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
 import { useEffect, useRef, useState } from "react";
@@ -7,38 +8,26 @@ import clsx from "clsx";
 import { LoadingCircle, SendIcon } from "../../../icons";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-// import { createClient } from "@supabase/supabase-js";
 import { toast } from "sonner";
-// import Textarea from "react-textarea-autosize";
-// import { Textarea } from "@/components/ui/textarea";
-
-// import EmailForm from "@/components/forms/emailForm";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
-import { Message } from "ai/react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
-// import { useSession } from "next-auth/react";
 
-// const examples = [
-//   `How much revenue did we close this month?`,
-//   `Send an email wishing happy new year to me`,
-//   `Schedule my meeting with info@agentprod.com tomorrow`,
-// ];
-
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt?: any;
+}
 export default function Home() {
-  // const { data: session } = useSession();
-
-  // console.log("Session: ", session);
+  // const internalScrollRef = useRef<HTMLDivElement>(null);  // for auto scrolling to bottom
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useUserContext();
-  // console.log("User: ", user);
 
   const [userEmail] = useState(user?.email);
-  // const [userEmail, setUserEmail] = useState(user?.email);
-  // const [userId, setUserId] = useState(user?.id);
   const [userId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
   const [allMessages, setAllMessages] = useState<Message[]>([
@@ -100,19 +89,52 @@ export default function Home() {
   //   if (allUsers && allUsers[0].id) setUserId(allUsers[0].id);
   // };
 
+  function formatDate(created_at: any) {
+    // Ensure createdAt is a valid date
+    if (!created_at) return "No date provided";
+
+    const date = new Date(created_at);
+    if (isNaN(date.getTime())) return "Invalid date"; // Check if the date is valid
+
+    const IST_OFFSET = 330; // Indian Standard Time offset in minutes
+    const now = new Date();
+    const past = new Date(date.valueOf() + IST_OFFSET * 60000);
+    if (now.toDateString() === past.toDateString()) {
+      return past.toLocaleTimeString("en-IN", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true,
+      });
+    }
+    const yesterday = new Date(now);
+    yesterday.setDate(yesterday.getDate() - 1);
+    if (yesterday.toDateString() === past.toDateString()) {
+      return "Yesterday";
+    }
+    return past.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  }
+  const now = new Date(); // Get the current date and time
+  const recentDate = now.toLocaleTimeString("en-US", {
+    timeZone: "Asia/Kolkata", // Set the timezone to IST
+    hour: "2-digit", // Specify the hour format
+    minute: "2-digit", // Specify the minute format
+    hour12: true, // Use 12-hour format
+  });
+
   useEffect(() => {
+    if (!userId) return;
     const fetchMessages = () => {
       axiosInstance
         .get(`v2/conversation/${userId}`)
         .then((response) => {
-          // console.log(response);
-          if (response.data.length > 0) {
-            setAllMessages([...response.data]);
-          }
+          const adaptedMessages = response.data.map((msg: any) => ({
+            ...msg,
+            createdAt: msg.created_at,
+          }));
+
+          setAllMessages(adaptedMessages);
         })
-        .catch((error) => {
-          // console.log(error);
-        });
+        .catch((error) => {});
     };
 
     fetchMessages();
@@ -218,8 +240,17 @@ export default function Home() {
 
   const disabled = isLoading || input.length === 0;
 
+  // useEffect(() => { // for auto scrolling to bottom
+  //   if (internalScrollRef.current) {
+  //     internalScrollRef.current.scrollIntoView({
+  //       behavior: "smooth",
+  //       block: "end",
+  //     });
+  //   }
+  // });
+
   return (
-    <div>
+    <div className="flex flex-col-reverse overflow-y-scroll h-screen chat">
       <main className="flex flex-col items-center justify-between pb-20">
         {messages.length > 0 ? (
           messages.map(
@@ -275,8 +306,12 @@ export default function Home() {
                       )}
                     >
                       <span className="text-xs">
-                        {message.role === "assistant" ? "Sally" : "User"} 05:07
-                        PM
+                        {message.role === "assistant"
+                          ? "Sally"
+                          : user?.firstName}{" "}
+                        {formatDate(message?.createdAt) === "No date provided"
+                          ? recentDate
+                          : formatDate(message?.createdAt)}
                       </span>
                       <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
                         <ReactMarkdown

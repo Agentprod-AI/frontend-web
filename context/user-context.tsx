@@ -8,6 +8,12 @@ export interface UserInterface {
   username?: string;
   firstName?: string;
   email?: string;
+  lastName?: string;
+  // company?: string;
+  // companyID: string;
+  // notification: string;
+  // plan: string;
+  // leadUsed: string;
 }
 
 export const DummyUser: UserInterface = {
@@ -15,16 +21,24 @@ export const DummyUser: UserInterface = {
   username: "Agentprod",
   firstName: "Agent",
   email: "agentprod@agentprod.com",
+  lastName: "",
+  // company: "",
+  // companyID: "",
+  // notification: "",
+  // plan: "",
+  // leadUsed: "",
 };
 
 export interface AppState {
   user: UserInterface;
   setUser: (user: UserInterface) => void;
+  updateUser: (updatedFields: UserInterface) => void;
 }
 
 const defaultState: AppState = {
   user: DummyUser,
   setUser: () => {},
+  updateUser: () => {},
 };
 
 const UserContext = React.createContext<AppState>(defaultState);
@@ -51,6 +65,11 @@ export const UserContextProvider: React.FunctionComponent<Props> = ({
 }) => {
   const [user, setUser] = useState<UserInterface>(getUserFromCookies());
 
+  // Update user state
+  const updateUser = (updatedFields: UserInterface) => {
+    setUser((prev) => ({ ...prev, ...updatedFields }));
+  };
+
   useEffect(() => {
     setUserInCookies(user);
   }, [user]);
@@ -59,6 +78,7 @@ export const UserContextProvider: React.FunctionComponent<Props> = ({
     () => ({
       user,
       setUser,
+      updateUser, // Add the updateUser function to the context
     }),
     [user]
   );

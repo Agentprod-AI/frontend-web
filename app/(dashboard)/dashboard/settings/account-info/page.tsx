@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
 
@@ -8,68 +10,141 @@ import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
 
+
 type Info = {
   id: string;
-  // value: string | undefined | null;
   value: string | undefined | null | number;
   isEditable: boolean;
 };
 
 export default function Page() {
-  const { user } = useUserContext();
+  const { user, updateUser } = useUserContext();
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
+  const [dummyAccountInfo, setDummyAccountInfo] = useState<Info[]>([
+    { id: "ID", value: user.id, isEditable: false },
+    { id: "Sender First Name", value: "", isEditable: true },
+    { id: "Sender Last Name", value: "", isEditable: true },
+    { id: "Sender Job", value: "", isEditable: true },
+    { id: "Email", value: "", isEditable: true },
+    { id: "Company", value: "", isEditable: true },
+    { id: "Company ID", value: "", isEditable: false },
+    { id: "Notifications", value: "", isEditable: true },
+    { id: "Plan", value: "", isEditable: false },
+    { id: "Leads used", value: "", isEditable: false },
+  ]);
 
-  React.useEffect(() => {
+  const fetchDataInfo = () => {
     if (user?.id) {
       axiosInstance
         .get(`/v2/settings/${user.id}`)
         .then((response) => {
           const data = response.data;
+
           const initialAccountInfo = [
-            { id: "ID", value: data.user_id, isEditable: false },
+            {
+              id: "ID",
+              value: data.user_id || user.id,
+              isEditable: true,
+            },
             {
               id: "Sender First Name",
               value: data.first_name,
               isEditable: true,
             },
             { id: "Sender Last Name", value: data.last_name, isEditable: true },
-            { id: "Sender Job", value: data.job, isEditable: true },
+            { id: "Sender Job", value: data.job, isEditable: false },
             { id: "Email", value: data.email, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
-            { id: "Company ID", value: data.companyId, isEditable: false },
+            { id: "Company ID", value: data.companyId, isEditable: true },
             {
               id: "Notifications",
               value: data.notifications,
-              isEditable: true,
+              isEditable: false,
             },
             { id: "Plan", value: data.plan, isEditable: false },
             { id: "Leads used", value: data.leads_used, isEditable: false },
           ];
           setAccountInfo(initialAccountInfo);
+          updateUser({
+            id: data.user_id,
+            firstName: data.first_name,
+            lastName: data.last_name,
+          });
         })
         .catch((error) => {
           console.error("Failed to fetch user details:", error);
+          setAccountInfo(dummyAccountInfo);
         });
+    } else {
+      setAccountInfo(dummyAccountInfo);
     }
-  }, [user]);
+  };
+
+  React.useEffect(() => {
+    fetchDataInfo();
+  }, []);
 
   const handleInputChange = (id: string, value: string) => {
-    setAccountInfo(
-      accountInfo.map((info) => (info.id === id ? { ...info, value } : info))
-    );
+    const newAccountInfo = accountInfo.map((item) => {
+      if (item.id === id) {
+        return { ...item, value: value }; // explicitly spread previous item and update value
+      }
+      return item;
+    });
+    setAccountInfo(newAccountInfo);
+    console.log("Updated Info:", newAccountInfo); // Check what the new state looks like
+  };
+
+  const handleUpdateClick = async () => {
+    const updatePayload = accountInfo.reduce((acc: any, { id, value }) => {
+      // Convert the ID for API compatibility: 'First Name' becomes 'first_name'
+      const key = id.replace(/ /g, "_").toLowerCase();
+
+      return acc;
+    }, {});
+
+    const payload = {
+      user_id: accountInfo[0].value,
+      first_name: accountInfo[1].value,
+      last_name: accountInfo[2].value,
+      job_title: accountInfo[3].value,
+      email: accountInfo[4].value,
+      company: accountInfo[5].value,
+      company_id: accountInfo[6].value,
+      notifications: accountInfo[7].value,
+      plan: accountInfo[8].value,
+      leads_used: accountInfo[9].value,
+    };
+    try {
+      const response = await axiosInstance.put(`/v2/settings`, payload);
+      console.log("Update Successful", response.data);
+      setAccountInfo(
+        accountInfo.map((info) => {
+          const newInfo =
+            response.data[info.id.replace(/ /g, "_").toLowerCase()];
+          return newInfo !== undefined ? { ...info, value: newInfo } : info;
+        })
+      );
+
+      setIsEditing(false);
+    } catch (error) {
+      console.error("Failed to update user details:", error);
+    }
   };
 
   const handleEditClick = () => {
     setIsEditing(!isEditing);
   };
 
+  const infoToShow = accountInfo.length > 0 ? accountInfo : dummyAccountInfo;
+
   return (
     <div>
       <div className="rounded-md border border-collapse mb-8">
         <Table className="w-full text-left">
           <TableBody>
-            {accountInfo.map((info) => (
+            {infoToShow.map((info) => (
               <TableRow key={info.id} className="hover:bg-transparent">
                 <TableCell className="font-medium px-4 py-2 border-r bg-muted/50 w-1/3">
                   {info.id}
@@ -78,7 +153,7 @@ export default function Page() {
                   {isEditing && info.isEditable ? (
                     <Input
                       type="text"
-                      value={info?.value?.toString()}
+                      value={info?.value?.toString() ?? ""}
                       onChange={(e) =>
                         handleInputChange(info.id, e.target.value)
                       }
@@ -93,7 +168,7 @@ export default function Page() {
         </Table>
       </div>
       <div className="flex gap-4">
-        <Button onClick={handleEditClick}>
+        <Button onClick={isEditing ? handleUpdateClick : handleEditClick}>
           {isEditing ? "Update" : "Edit"}
         </Button>
         {isEditing && (

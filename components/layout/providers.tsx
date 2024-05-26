@@ -12,6 +12,7 @@ import { CompanyProvider } from "@/context/company-linkedin";
 import { MailboxProvider } from "@/context/mailbox-provider";
 import { AutoGenerateProvider } from "@/context/auto-generate-mail";
 import { FieldsListProvider } from "@/context/training-fields-provider";
+import { MailGraphProvider } from "@/context/chart-data-provider";
 
 export default function Providers({
   // session,
@@ -32,6 +33,8 @@ export default function Providers({
                 <LeadsProvider>
                   <FieldsListProvider>
                     <CampaignProvider>
+                  <CampaignProvider>
+                    <MailGraphProvider>
                       <DashboardProvider>
                         <CompanyProvider>
                           <MailboxProvider>
@@ -43,6 +46,8 @@ export default function Providers({
                       </DashboardProvider>
                     </CampaignProvider>
                   </FieldsListProvider>
+                    </MailGraphProvider>
+                  </CampaignProvider>
                 </LeadsProvider>
               </LeadSheetSidebarProvider>
             </UserContextProvider>

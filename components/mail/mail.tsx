@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
 import * as React from "react";
@@ -72,6 +73,16 @@ export function Mail({
   const { user } = useUserContext();
 
   const { setSenderEmail, isContextBarOpen } = useMailbox();
+  console.log("User from mail", user);
+
+  const {
+    conversationId,
+    setConversationId,
+    setRecipientEmail,
+    recipientEmail,
+    setSenderEmail,
+    senderEmail,
+  } = useMailbox();
 
   const { leads } = useLeads();
 
@@ -108,7 +119,7 @@ export function Mail({
     }
 
     fetchConversations();
-  }, [user]);
+  }, []); // Dependency array remains empty to run once on mount
 
   const filteredMails = React.useMemo(() => {
     return mails.filter((mail) => {
@@ -124,6 +135,11 @@ export function Mail({
       setSenderEmail(filteredMails[0]?.sender);
     }
   }, [filteredMails, setSenderEmail]);
+  // if (filteredMails) {
+  //   setConversationId(filteredMails[0]?.id);
+  //   setRecipientEmail(filteredMails[0]?.recipient);
+  //   setSenderEmail(filteredMails[0]?.sender);
+  // }
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -135,7 +151,7 @@ export function Mail({
           )}`;
         }}
         className="h-full items-stretch"
-        style={{ height: "calc(100vh - 56px)" }}
+        style={{ height: "calc(100vh - 80px)" }} // 56px is the height of the top bar
       >
         <ResizablePanel defaultSize={localIsContextBarOpen ? 40 : 20}>
           <Tabs defaultValue="all">
@@ -215,7 +231,11 @@ export function Mail({
               </form>
             </div>
             <TabsContent value={filter} className="m-0">
-              <MailList items={filteredMails} />
+              {mails.length > 0 ? (
+                <MailList items={filteredMails} />
+              ) : (
+                "No Mails Found"
+              )}
             </TabsContent>
           </Tabs>
         </ResizablePanel>

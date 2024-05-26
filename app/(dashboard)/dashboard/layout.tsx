@@ -39,7 +39,7 @@ export default function DashboardLayout({
   return (
     <>
       <Header />
-      <div className="flex h-screen overflow-hidden md:pt-16">
+      <div className="flex h-screen overflow-hidden md:pt-16 ">
         <TooltipProvider delayDuration={0}>
           <ResizablePanelGroup
             direction="horizontal"

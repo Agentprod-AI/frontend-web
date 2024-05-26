@@ -31,6 +31,8 @@ function PreviewContent() {
   } = useAutoGenerate();
   const params = useParams<{ campaignId: string }>();
 
+  // const { fields } = useFieldValues();
+
   const newPreview = async () => {
     try {
       const response = await getAutogenerateTrainingEmail(
