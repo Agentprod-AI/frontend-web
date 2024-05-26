@@ -5,7 +5,7 @@ import { LineChartComponent } from "@/components/charts/line-chart";
 import {
   Card,
   CardContent,
-  // CardDescription,
+  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -26,11 +26,12 @@ import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { useMailGraphContext } from "@/context/chart-data-provider";
 import { format, parseISO, differenceInCalendarDays } from "date-fns";
+import { LoadingCircle } from "@/app/icons";
 // import { useUserContext } from "@/context/user-context";
 // import useWebSocket from "@/hooks/useWebhook";
 
 export default function Page() {
-  const { dashboardData } = useDashboardContext();
+  const { dashboardData, isLoading } = useDashboardContext();
   const { mailGraphData } = useMailGraphContext();
   // const { user } = useUserContext();
 
@@ -38,6 +39,8 @@ export default function Page() {
   //   "ws://agentprod-backend-framework-zahq.onrender.com/v2/ws/receive/emails/8c7e9baf-e299-4532-9ada-8f338a6ad9b6";
 
   // const { socket, recentActivities } = useWebSocket(ws);
+
+  const recentActivities: any[] = [];
   // React.useEffect(() => {
   //   if (socket) {
   //     console.log("Socket is connected");
@@ -78,7 +81,7 @@ export default function Page() {
                     <p className="font-medium">Emails Pending Approval</p>
                   </div>
                   <Badge variant={"secondary"}>
-                    {dashboardData?.pending_approvals}
+                    {dashboardData?.pending_approvals || 0}
                   </Badge>
                 </CardContent>
               </Card>
@@ -137,11 +140,11 @@ export default function Page() {
 
             <Card className="col-span-2">
               <ScrollArea className="lg:h-56 md:h-[26rem]">
-                {/* <CardHeader>
+                <CardHeader>
                   <CardTitle>Recent Sales</CardTitle>
-                  <CardDescription>
+                  {/* <CardDescription>
                     You made {recentActivities.length} sales this month.
-                  </CardDescription>
+                  </CardDescription> */}
                 </CardHeader>
                 <CardContent>
                   {recentActivities.length > 0 ? (
@@ -173,8 +176,8 @@ export default function Page() {
                   ) : (
                     <p>No recent activities</p>
                   )}
-                </CardContent> */}
-                <CardContent>
+                </CardContent>
+                {/* <CardContent>
                   <div className="space-y-8">
                     <div className="flex items-center">
                       <Avatar className="h-9 w-9">
@@ -249,7 +252,7 @@ export default function Page() {
                       </div>
                     </div>
                   </div>
-                </CardContent>
+                </CardContent> */}
               </ScrollArea>
             </Card>
           </div>
@@ -287,32 +290,43 @@ export default function Page() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {dashboardData?.top_performing_campaigns.length > 0
-                        ? dashboardData.top_performing_campaigns.map(
-                            (campaign, index) => (
-                              <TableRow key={index}>
-                                <TableCell>{campaign.campaign_name}</TableCell>
-
-                                <TableCell className="hidden sm:table-cell text-center">
-                                  {campaign.engaged_leads}
-                                </TableCell>
-                                <TableCell className="hidden sm:table-cell text-center">
-                                  {campaign.response_rate}
-                                </TableCell>
-                                <TableCell className="hidden md:table-cell text-center">
-                                  {campaign.bounce_rate === null
-                                    ? 0
-                                    : campaign.bounce_rate}
-                                </TableCell>
-                                <TableCell className=" text-center">
-                                  {campaign.open_rate === null
-                                    ? 0
-                                    : campaign.open_rate}
-                                </TableCell>
-                              </TableRow>
-                            )
+                      {isLoading ? (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center">
+                            <LoadingCircle />
+                          </TableCell>
+                        </TableRow>
+                      ) : dashboardData?.top_performing_campaigns.length > 0 ? (
+                        dashboardData.top_performing_campaigns.map(
+                          (campaign, index) => (
+                            <TableRow key={index}>
+                              <TableCell>{campaign.campaign_name}</TableCell>
+                              <TableCell className="hidden sm:table-cell text-center">
+                                {campaign.engaged_leads}
+                              </TableCell>
+                              <TableCell className="hidden sm:table-cell text-center">
+                                {campaign.response_rate}
+                              </TableCell>
+                              <TableCell className="hidden md:table-cell text-center">
+                                {campaign.bounce_rate === null
+                                  ? "0%"
+                                  : `${campaign.bounce_rate}%`}
+                              </TableCell>
+                              <TableCell className="text-center">
+                                {campaign.open_rate === null
+                                  ? "0%"
+                                  : `${campaign.open_rate}%`}
+                              </TableCell>
+                            </TableRow>
                           )
-                        : "Loading...."}
+                        )
+                      ) : (
+                        <TableRow>
+                          <TableCell colSpan={5} className="text-center">
+                            No top performing campaigns available.
+                          </TableCell>
+                        </TableRow>
+                      )}
                     </TableBody>
                   </Table>
                 </CardContent>
@@ -326,19 +340,25 @@ export default function Page() {
                 </CardHeader>
                 <CardContent>
                   <div className="space-y-4">
-                    {dashboardData?.hot_leads.length === 0
-                      ? "data not available"
-                      : dashboardData?.hot_leads.map((lead) => (
-                          <div key={lead.name} className="flex items-center">
-                            <Avatar className="h-9 w-9">
-                              <AvatarImage src={lead.photo_url} alt="Avatar" />
-                              <AvatarFallback>
-                                {lead.fallback || lead.name.charAt(0)}
-                              </AvatarFallback>
-                            </Avatar>
-                            <p className="text-sm font-medium leading-none ml-4">{`${lead.name} `}</p>
-                          </div>
-                        ))}
+                    {isLoading ? (
+                      <div className="flex justify-center items-center">
+                        <LoadingCircle />
+                      </div>
+                    ) : dashboardData?.hot_leads.length > 0 ? (
+                      dashboardData.hot_leads.map((lead) => (
+                        <div key={lead.name} className="flex items-center">
+                          <Avatar className="h-9 w-9">
+                            <AvatarImage src={lead.photo_url} alt="Avatar" />
+                            <AvatarFallback>
+                              {lead.fallback || lead.name.charAt(0)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <p className="text-sm font-medium leading-none ml-4">{`${lead.name}`}</p>
+                        </div>
+                      ))
+                    ) : (
+                      <div className="text-center">No hot leads available.</div>
+                    )}
                   </div>
                 </CardContent>
               </ScrollArea>
@@ -349,15 +369,26 @@ export default function Page() {
                 <CardTitle>Mailbox Health</CardTitle>
               </CardHeader>
               <CardContent className="space-y-6">
-                {Object.entries(dashboardData.mailbox_health).map(
-                  ([email, health], index) => (
-                    <div key={index}>
-                      <p className="text-sm">
-                        {email} - {health}%
-                      </p>
-                      <Progress value={health} className="h-5 mt-2" />
-                    </div>
+                {isLoading ? (
+                  <div className="flex justify-center items-center">
+                    <LoadingCircle />
+                  </div>
+                ) : dashboardData &&
+                  Object.keys(dashboardData.mailbox_health).length > 0 ? (
+                  Object.entries(dashboardData.mailbox_health).map(
+                    ([email, health], index) => (
+                      <div key={index}>
+                        <p className="text-sm">
+                          {email} - {health}%
+                        </p>
+                        <Progress value={health} className="h-5 mt-2" />
+                      </div>
+                    )
                   )
+                ) : (
+                  <div className="text-center">
+                    No mailbox health data available.
+                  </div>
                 )}
               </CardContent>
             </Card>
@@ -380,8 +411,8 @@ export default function Page() {
 
               <div className="flex items-end justify-between">
                 {mailGraphData.map((data, index) => {
-                  const dayOfWeek = format(parseISO(data.date), "EEE"); // Formats date to day abbreviation like "Mon", "Tue", etc.
-                  const isActive = index < 3; // You might want to change this condition based on your actual data/logic
+                  const dayOfWeek = format(parseISO(data.date), "EEE");
+                  const isActive = index < 3;
 
                   return (
                     <div

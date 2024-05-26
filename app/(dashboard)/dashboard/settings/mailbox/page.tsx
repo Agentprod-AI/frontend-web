@@ -96,7 +96,6 @@ export default function Page() {
       console.log("Mailboxes fetched successfully:", response.data);
     } catch (error) {
       console.error("Failed to fetch mailboxes:", error);
-      // Optionally set some state to show an error message or alert
     }
   };
   React.useEffect(() => {
@@ -132,12 +131,12 @@ export default function Page() {
     );
   };
 
-  // const addMailbox = (mailbox: any) => {
-  //   setMailboxes([...mailboxes, mailbox]);
-  // };
-  const addMailbox = (newMailbox: any) => {
-    setMailboxes((prevState) => [...prevState, newMailbox]);
+  const addMailbox = (mailbox: any) => {
+    setMailboxes([...mailboxes, mailbox]);
   };
+  // const addMailbox = (newMailbox: any) => {
+  //   setMailboxes((prevState) => [...prevState, newMailbox]);
+  // };
 
   // const removeMailbox = (id: number) => {
   //   setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
@@ -168,10 +167,10 @@ export default function Page() {
             mailboxes.length > 0
               ? Math.max(...mailboxes.map((mb) => mb.id)) + 1
               : 1,
-          email: emailInput,
-          name: nameInput,
-          warmUp: true,
-          dailyLimit: 5,
+          mailbox: emailInput,
+          sender_name: nameInput,
+          warmup: true,
+          daily_limit: 30,
         };
         addMailbox(newMailbox);
         setDomainInput("");
