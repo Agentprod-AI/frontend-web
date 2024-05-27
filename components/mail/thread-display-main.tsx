@@ -3,7 +3,7 @@
 
 "use client";
 
-import React, { useEffect } from "react";
+import React from "react";
 // import { formatDistanceToNow } from "date-fns";
 import axiosInstance from "../../utils/axiosInstance";
 import {
@@ -49,6 +49,7 @@ import { toast } from "sonner";
 import Notification from "./Notification";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { User } from "lucide-react";
+import { LoadingCircle } from "@/app/icons";
 
 // interface ConversationEntry {
 //   id: string;
@@ -172,13 +173,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     console.log("sender emails", email);
 
-    const matchingCampaign = campaigns.find(
-      (campaign) => campaign.id === leadId
-    );
+    // const matchingCampaign = campaigns.find(
+    //   (campaign) => campaign.id === leadId
+    // );
 
     return (
       <div className="flex gap-4 flex-col m-4 h-full ">
-        {matchingCampaign && (
+        {/* {matchingCampaign && (
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <User className="h-4 w-4 text-gray-400" />
@@ -189,7 +190,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               {leads[0].country}
             </div>
           </div>
-        )}
+        )} */}
 
         <div className="flex w-full ">
           <Avatar
@@ -365,7 +366,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     if (isLoading) {
-      return <div>Loading...</div>;
+      return (
+        <div className="m-5">
+          <LoadingCircle />
+        </div>
+      );
     }
 
     if (!emails) {
@@ -621,10 +626,30 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     );
   };
 
+  const matchingCampaign = campaigns.find((campaign) => campaign.id === leadId);
+
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
       <div className="h-full ">
+        {isLoading ? (
+          ""
+        ) : (
+          <div className="m-4">
+            {matchingCampaign && (
+              <div className="flex items-center gap-3">
+                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                  <User className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="text-xs ml-1">
+                  {leads[0].first_name} was added in{" "}
+                  {matchingCampaign.campaign_type} campaign {leads[0].headline}{" "}
+                  in {leads[0].country}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {thread?.length > 0 && (
           <div>
             {thread.map((email, index) => (
@@ -632,6 +657,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             ))}
           </div>
         )}
+
         <DraftEmailComponent />
       </div>
     </div>
