@@ -40,12 +40,12 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  q_keywords: z
-    .object({
+  q_keywords: z.array(
+    z.object({
       id: z.string(),
       text: z.string(),
     })
-    .optional(),
+  ),
   organization_locations: z.array(
     z.object({
       id: z.string(),
@@ -174,6 +174,10 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
   const [jobLocationTags, setJobLocationTags] = React.useState<Tag[]>([]);
 
   const [jobOfferingTags, setJobOfferingTags] = React.useState<Tag[]>([]);
+
+  const [organizationKeywordTags, setOrganizationKeywordTags] = React.useState<
+    Tag[]
+  >([]);
 
   const { setValue } = form;
 
@@ -334,6 +338,11 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       }),
       ...(formData.email_status && {
         email_status: formData.email_status
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
+      ...(formData.q_keywords && {
+        q_keywords: formData.q_keywords
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
@@ -605,7 +614,8 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
     | "person_seniorities"
     | "q_organization_domains"
     | "organization_locations"
-    | "person_titles";
+    | "person_titles"
+    | "q_keywords"
 
   const mapFiltersToTags = (
     filterName: string,
@@ -662,7 +672,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
         "organization_locations"
       );
 
-      form.setValue("q_keywords", allFiltersFromDB.q_keywords);
+      mapFiltersToTags("q_keywords", allFiltersFromDB.q_keywords, setOrganizationKeywordTags, "q_keywords");
 
       const formatCheckedHeadcount =
         allFiltersFromDB.organization_num_employees_ranges.map(
@@ -946,9 +956,6 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                                   <Checkbox
                                     {...field}
                                     className="mr-2"
-                                    // checked={checkedCompanyHeadcount?.includes(
-                                    //   headcountOption.name.replace("+", "-x")
-                                    // )}
                                     checked={checkedCompanyHeadcount?.includes(
                                       headcountOption.value
                                     )}

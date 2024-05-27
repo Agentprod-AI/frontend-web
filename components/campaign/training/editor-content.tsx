@@ -20,6 +20,8 @@ import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useParams } from "next/navigation";
 import { useFieldsList } from "@/context/training-fields-provider";
 import { Textarea } from "@/components/ui/textarea";
+import { getAutogenerateTrainingTemplate } from "./training.api";
+import { allFieldsListType } from "./types";
 
 interface Variable {
   id: string;
@@ -31,11 +33,21 @@ interface Variable {
 export default function EditorContent() {
   const [isOpen, setIsOpen] = useState(false);
   const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(false);
-  const [localBody, setLocalBody] = useState("");
-  const [localSubject, setLocalSubject] = useState("");
-  const [localFollowUp, setLocalFollowUp] = useState("");
+  const {
+    fieldsList,
+    body,
+    setBody,
+    subject,
+    setSubject,
+    followUp,
+    setFollowUp,
+    addField,
+  } = useFieldsList();
+  const params = useParams<{ campaignId: string }>();
 
-  const { fieldsList, setBody, setSubject } = useFieldsList();
+  const [localBody, setLocalBody] = useState(body);
+  const [localSubject, setLocalSubject] = useState(subject);
+  const [localFollowUp, setLocalFollowUp] = useState(followUp);
 
   const toggleFollowUp = () => {
     setShowAdditionalTextArea(!showAdditionalTextArea);
@@ -82,22 +94,110 @@ export default function EditorContent() {
     setText(text);
   };
 
-  const handleSubjectChange = (e: ChangeEvent<HTMLInputElement>) => {
-    const text = e.target.value;
+  const handleSubjectChange = (text: string) => {
     setLocalSubject(text);
     handleTextChange(text, setSubject);
   };
 
-  const handleBodyChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
+  const handleBodyChange = (text: string) => {
     setLocalBody(text);
     handleTextChange(text, setBody);
   };
 
-  const handleFollowUpChange = (e: ChangeEvent<HTMLTextAreaElement>) => {
-    const text = e.target.value;
-    // setLocalFollowUp(text);
+  const handleFollowUpChange = (text: string) => {
+    setLocalFollowUp(text);
     handleTextChange(text, setLocalFollowUp);
+  };
+
+  const mapFields = (response: any, fields: string[]) => {
+    fields.forEach((field: string) => {
+      Object.keys(response[field]).forEach((key) => {
+        console.log("Mapping enriched_fields", key, response[field][key]);
+        addField(
+          {
+            id: String(Math.random()),
+            fieldName: key,
+            description: `${response[field][key]}`,
+          },
+          field
+        );
+      });
+    });
+  };
+
+  const handleAutoGenerateTemplate = async () => {
+    try {
+      const response = await getAutogenerateTrainingTemplate(params.campaignId);
+      console.log(response.template.subject);
+      // setSubject(response.template.subject);
+      // setBody(`${response.template.body}
+      // ${" "}
+      // ${response.template.closing || ""}`);
+
+      handleSubjectChange(response.template.subject);
+      handleBodyChange(response.template.body);
+
+      setLocalSubject(response.template.subject);
+      setLocalBody(`${response.template.body}
+      ${" "}
+      ${response.template.closing || ""}`);
+
+      mapFields(response, [
+        "enriched_fields",
+        "personalized_fields",
+        "offering_variables",
+      ]);
+
+      // Object.keys(response.enriched_fields).forEach((key) => {
+      //   console.log(
+      //     "Mapping enriched_fields",
+      //     key,
+      //     response.enriched_fields[key]
+      //   );
+      //   addField(
+      //     {
+      //       id: String(Math.random()),
+      //       fieldName: key,
+      //       description: `${response.enriched_fields[key]}`,
+      //     },
+      //     "enriched_fields"
+      //   );
+      // });
+
+      // Object.keys(response.offering_variables).forEach((key) => {
+      //   console.log(
+      //     "Mapping offering_variables",
+      //     key,
+      //     response.offering_variables[key]
+      //   );
+      //   addField(
+      //     {
+      //       id: String(Math.random()),
+      //       fieldName: key,
+      //       description: `${response.offering_variables[key]}`,
+      //     },
+      //     "offering_variables"
+      //   );
+      // });
+
+      // Object.keys(response.personalized_fields).forEach((key) => {
+      //   console.log(
+      //     "Mapping personalized_fields",
+      //     key,
+      //     response.personalized_fields[key]
+      //   );
+      //   addField(
+      //     {
+      //       id: String(Math.random()),
+      //       fieldName: key,
+      //       description: `${response.personalized_fields[key]}`,
+      //     },
+      //     "personalized_fields"
+      //   );
+      // });
+    } catch (error) {
+      console.error("Failed to fetch training data:", error);
+    }
   };
 
   return (
@@ -118,7 +218,9 @@ export default function EditorContent() {
                   placeholder="Write an enticing subject"
                   className="flex-1"
                   value={localSubject}
-                  onChange={handleSubjectChange}
+                  onChange={(e: ChangeEvent<HTMLInputElement>) => {
+                    handleSubjectChange(e.target.value);
+                  }}
                 />
                 <CollapsibleTrigger asChild>
                   <Settings className="h-5 w-5 cursor-pointer" />
@@ -131,7 +233,9 @@ export default function EditorContent() {
             <Textarea
               placeholder="Hi {first name}..."
               value={localBody}
-              onChange={handleBodyChange}
+              onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                handleBodyChange(e.target.value);
+              }}
               className="mt-2 w-full h-[200px]"
             />
             <span className="text-xs text-gray-500">
@@ -141,7 +245,9 @@ export default function EditorContent() {
               <Textarea
                 placeholder="Write a follow-up"
                 value={localFollowUp}
-                onChange={handleFollowUpChange}
+                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                  handleFollowUpChange(e.target.value);
+                }}
                 className="mt-2 w-full h-[200px]"
               />
             )}
@@ -149,12 +255,19 @@ export default function EditorContent() {
               <Button
                 className="flex gap-2 bg-white cursor-pointer text-black hover:text-slate-400 disable:cursor-not-allowed"
                 onClick={toggleFollowUp}
-                disabled={showAdditionalTextArea}
               >
-                <Plus className="h-3 w-3 text-gray-400" /> Add follow-Up
+                <Plus
+                  className={`h-3 w-3 text-gray-400 ${
+                    showAdditionalTextArea ? "rotate-45 transition-all" : ""
+                  }`}
+                />
+                {showAdditionalTextArea ? "Remove follow-up" : "Add follow-up"}
               </Button>
-              <Button className="flex gap-2 bg-gray-300 cursor-pointer text-black hover:text-slate-400">
-                Auto Generate
+              <Button
+                onClick={handleAutoGenerateTemplate}
+                // className="flex gap-2 bg-gray-300 cursor-pointer text-black hover:text-slate-400"
+              >
+                Auto Generate Template
               </Button>
             </div>
           </div>
