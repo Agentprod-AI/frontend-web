@@ -168,9 +168,6 @@ export default function Page() {
           daily_limit: 30,
         };
         addMailbox(newMailbox);
-        setDomainInput("");
-        setEmailInput("");
-        setNameInput("");
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
         console.log("Mailbox added successfully:", mailboxes);
@@ -197,75 +194,83 @@ export default function Page() {
         </AlertDescription>
       </Alert>
 
-      <div className="rounded-md border border-collapse mt-4">
-        <Table className="w-full text-left">
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead className="w-1/5">MAILBOX</TableHead>
-              <TableHead>NAME ACCOUNT</TableHead>
-              <TableHead>WARM-UP</TableHead>
-              <TableHead className="text-left">DAILY LIMIT</TableHead>
-              <TableHead> </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mailboxes.map((mailbox, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <GmailIcon />
-                    <span>{mailbox.mailbox}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {mailbox?.sender_name || "No Name Provided"}
-                </TableCell>
-                <TableCell>
-                  <Switch checked={mailbox.warmup} />
-                </TableCell>
-                <TableCell>{mailbox.daily_limit}</TableCell>
-                <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant={"destructive"}>Disconnect</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader className="text-left flex gap-1">
-                        <Icons.alertCircle
-                          size={"40"}
-                          color="red"
-                          className="mb-4"
-                        />
-                        <DialogTitle>Disconnect Account</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to disconnect{" "}
-                          <span className="text-blue-500">
-                            {mailbox.mailbox}
-                          </span>
-                          ? This action cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button type="button" variant={"outline"}>
-                            Cancel
-                          </Button>
-                        </DialogClose>
-                        <Button
-                          type="submit"
-                          variant={"destructive"}
-                          onClick={() => removeMailbox(mailbox.id)}
-                        >
-                          Delete
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
+      <div
+        className={`rounded-md ${
+          mailboxes.length > 0 ? "border" : ""
+        }  border-collapse mt-4`}
+      >
+        {mailboxes.length > 0 ? (
+          <Table className="w-full text-left">
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-1/5">MAILBOX</TableHead>
+                <TableHead>NAME ACCOUNT</TableHead>
+                <TableHead>WARM-UP</TableHead>
+                <TableHead className="text-left">DAILY LIMIT</TableHead>
+                <TableHead> </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {mailboxes.map((mailbox, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <GmailIcon />
+                      <span>{mailbox.mailbox}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {mailbox?.sender_name || "No Name Provided"}
+                  </TableCell>
+                  <TableCell>
+                    <Switch checked={mailbox.warmup} />
+                  </TableCell>
+                  <TableCell>{mailbox.daily_limit}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant={"destructive"}>Disconnect</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader className="text-left flex gap-1">
+                          <Icons.alertCircle
+                            size={"40"}
+                            color="red"
+                            className="mb-4"
+                          />
+                          <DialogTitle>Disconnect Account</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to disconnect{" "}
+                            <span className="text-blue-500">
+                              {mailbox.mailbox}
+                            </span>
+                            ? This action cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant={"outline"}>
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            type="submit"
+                            variant={"destructive"}
+                            onClick={() => removeMailbox(mailbox.id)}
+                          >
+                            Delete
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          "No mailboxes connected."
+        )}
       </div>
 
       <Button className="mt-5" onClick={handleOpenAddMailbox}>

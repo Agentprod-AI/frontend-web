@@ -427,9 +427,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       {"You to " + leads[0]?.first_name}
                     </span>
                     <div className="flex gap-3">
-                      {/* <span className="text-gray-500 text-sm  ">
-                        8 hours ago
-                      </span> */}
                       <span className="text-green-500 text-sm ">Draft</span>
                     </div>
                   </div>
@@ -463,22 +460,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       >
                         Send Now
                       </Button>
-                      {/* {editable && (
-                        <Button
-                          variant={"ghost"}
-                          onClick={() => setEditable(false)}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )} */}
                     </div>
                     <div>
-                      {/* <Button
-                        variant={"ghost"}
-                        onClick={() => setEditable(true)}
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Button> */}
                       <Button variant={"ghost"}>
                         <RefreshCw className="h-4 w-4" />
                       </Button>
