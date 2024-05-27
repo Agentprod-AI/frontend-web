@@ -424,7 +424,7 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    value={mailData[0].Name}
+                    value={mailData[0] ? mailData[0].Name : "No data found"}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                   />
