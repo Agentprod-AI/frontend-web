@@ -74,6 +74,7 @@ export default function Page() {
         `/v2/aws/verify/domain/${domainInput}`
       );
       setMailData(response.data);
+      console.log("Domain data fetched successfully:", response.data);
       setFetchSuccess(true);
       setLoading(false);
     } catch (error) {
@@ -134,13 +135,7 @@ export default function Page() {
   const addMailbox = (mailbox: any) => {
     setMailboxes([...mailboxes, mailbox]);
   };
-  // const addMailbox = (newMailbox: any) => {
-  //   setMailboxes((prevState) => [...prevState, newMailbox]);
-  // };
 
-  // const removeMailbox = (id: number) => {
-  //   setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
-  // };
   const removeMailbox = (idToRemove: number) => {
     setMailboxes((prevState) =>
       prevState.filter((mailbox) => mailbox.id !== idToRemove)
@@ -178,7 +173,6 @@ export default function Page() {
         setNameInput("");
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
-
         console.log("Mailbox added successfully:", mailboxes);
       } else {
         alert("OTP validation failed: " + "Invalid OTP entered.");
@@ -362,7 +356,7 @@ export default function Page() {
       </Dialog>
 
       <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
-        <DialogContent className="w-full">
+        <DialogContent className="w-full max-w-4xl">
           <DialogHeader>
             <DialogTitle>Domain Data</DialogTitle>
             <DialogDescription>
@@ -389,7 +383,7 @@ export default function Page() {
                           onClick={() => handleCopy(mailbox.Name)}
                         />
 
-                        <span className="w-48 overflow-x-scroll">
+                        <span className="w-96 overflow-x-scroll">
                           {mailbox.Name}
                         </span>
                       </div>
@@ -408,6 +402,52 @@ export default function Page() {
               </TableBody>
             </Table>
           </div>
+          <Table className="mt-4 w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Type</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={"MX"}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={mailData[0].Name}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={"1"}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={"inbound-smtp.us-east-1.amazonaws.com."}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
           <DialogFooter>
             <Button type="button" onClick={() => setIsTableDialogOpen(false)}>
               Close
