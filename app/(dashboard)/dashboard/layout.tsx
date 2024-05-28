@@ -32,9 +32,9 @@ export default function DashboardLayout({
 
   const { isContextBarOpen } = useMailbox();
 
-  useEffect(() => {
-    setIsCollapsed(isContextBarOpen);
-  }, [isContextBarOpen]);
+  // useEffect(() => {
+  //   setIsCollapsed(isContextBarOpen);
+  // }, [isContextBarOpen]);
 
   return (
     <>
@@ -52,7 +52,7 @@ export default function DashboardLayout({
           >
             {width > 768 ? (
               <ResizablePanel
-                defaultSize={!isCollapsed ? 15 : 5} // Default size when expanded
+                // defaultSize={!isCollapsed ? 15 : 5} // Default size when expanded
                 collapsedSize={5} // Size when collapsed
                 collapsible={true}
                 minSize={5}
@@ -69,10 +69,7 @@ export default function DashboardLayout({
                     false
                   )}`;
                 }}
-                className={cn(
-                  isCollapsed ? "w-[20px]" : "w-[50px]",
-                  "transition-all duration-300 ease-in-out"
-                )}
+                className={cn("transition-all duration-300 ease-in-out")}
               >
                 <Nav isCollapsed={isCollapsed} links={navItems} />
               </ResizablePanel>

@@ -11,17 +11,16 @@ import {
 import { Input } from "@/components/ui/input";
 import { Tag, TagInput, Tag as type } from "@/components/ui/tag/tag-input";
 import { Button } from "@/components/ui/button";
-import { boolean, input, z } from "zod";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import React, { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "sonner";
-import axios from "axios";
 import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { ChevronUp } from "lucide-react";
 import { v4 as uuid } from "uuid";
 import { orgLocations, jobTitles, seniorities, InputType } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -29,7 +28,8 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { useParams } from "next/navigation";
 import { getAudienceFiltersById } from "../campaign/camapign.api";
-import { set } from "date-fns";
+import { keywords } from "./formUtils";
+import { ScrollArea } from "../ui/scroll-area";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -40,7 +40,7 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  q_keywords: z.array(
+  q_organization_keyword_tags: z.array(
     z.object({
       id: z.string(),
       text: z.string(),
@@ -274,7 +274,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
 
     const formData = {
       q_organization_domains: data.q_organization_domains,
-      q_keywords: data.q_keywords,
+      q_organization_keyword_tags: data.q_organization_keyword_tags,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
@@ -341,8 +341,8 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...(formData.q_keywords && {
-        q_keywords: formData.q_keywords
+      ...(formData.q_organization_keyword_tags && {
+        q_organization_keyword_tags: formData.q_organization_keyword_tags
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
@@ -470,6 +470,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
     headcount: false,
     jobPostings: false,
     companyDomains: false,
+    companyKeywords: false,
   });
   const toggleDropdown = (id: string) => {
     setDropdownsOpen((prev) => ({
@@ -615,7 +616,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
     | "q_organization_domains"
     | "organization_locations"
     | "person_titles"
-    | "q_keywords"
+    | "q_organization_keyword_tags";
 
   const mapFiltersToTags = (
     filterName: string,
@@ -672,7 +673,12 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
         "organization_locations"
       );
 
-      mapFiltersToTags("q_keywords", allFiltersFromDB.q_keywords, setOrganizationKeywordTags, "q_keywords");
+      mapFiltersToTags(
+        "q_organization_keyword_tags",
+        allFiltersFromDB.q_keywords,
+        setOrganizationKeywordTags,
+        "q_organization_keyword_tags"
+      );
 
       const formatCheckedHeadcount =
         allFiltersFromDB.organization_num_employees_ranges.map(
@@ -809,6 +815,33 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
 
     //   console.log(leads);
   };
+
+  const [keywordDropdownIsOpen, setKeywordDropdownIsOpen] =
+    React.useState(false);
+
+  function toggleKeywordsDropdown(isOpen: boolean) {
+    setKeywordDropdownIsOpen(isOpen);
+  }
+
+  function handleDropdownSelect(value: string) {
+    const keywordTag: Tag = {
+      id: uuid(),
+      text: value,
+    };
+    if (!organizationKeywordTags.some((tag) => tag.text === value)) {
+      setOrganizationKeywordTags((prevState) => {
+        const updatedTags = [...prevState, keywordTag];
+        return updatedTags;
+      });
+    }
+  }
+
+  React.useEffect(() => {
+    setValue(
+      "q_organization_keyword_tags",
+      organizationKeywordTags as [Tag, ...Tag[]]
+    );
+  }, [organizationKeywordTags]);
 
   return (
     <Form {...form}>
@@ -1114,6 +1147,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                       />
                     )}
                   </div>
+
                   <div
                     className={`${
                       dropdownsOpen.companyDomains ? "block" : "hidden"
@@ -1151,6 +1185,93 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                   </div>
                 </div>
                 <div className="bg-muted px-2 rounded">
+                  <div
+                    className="flex justify-between w-full py-3 cursor-pointer"
+                    onClick={() => {
+                      toggleDropdown("companyKeywords");
+                    }}
+                  >
+                    <div className="text-sm">Industry and Keyword</div>
+                    {dropdownsOpen.companyKeywords ? (
+                      <ChevronUp color="#000000" />
+                    ) : (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-180"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`${
+                      dropdownsOpen.companyKeywords ? "block" : "hidden"
+                    } relative`}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="q_organization_keyword_tags"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start py-4 w-8/12">
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              tags={organizationKeywordTags}
+                              placeholder="Enter company keywords"
+                              variant={"base"}
+                              onFocus={() => {
+                                toggleKeywordsDropdown(true);
+                              }}
+                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              setTags={(newTags) => {
+                                setOrganizationKeywordTags(newTags);
+                                setValue(
+                                  "q_organization_keyword_tags",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          {/* <FormDescription>
+                        These are the company domains that you&apos;re
+                        interested in.
+                      </FormDescription> */}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="absolute inline-block text-left mt-1">
+                      {keywordDropdownIsOpen && (
+                        <ScrollArea className="w-56 h-[200px] rounded-md shadow-lg bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
+                          <div
+                            className="py-1"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="options-menu"
+                            onClick={(e) => {
+                              toggleKeywordsDropdown(false);
+                            }}
+                          >
+                            {keywords.map((option) => (
+                              <button
+                                key={option}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleDropdownSelect(option);
+                                }}
+                                className={
+                                  "text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                }
+                              >
+                                {option}
+                              </button>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* <div className="bg-muted px-2 rounded">
                   <div
                     className="flex justify-between w-full py-3 cursor-pointer"
                     onClick={() => toggleDropdown("revenueFunding")}
@@ -1249,7 +1370,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                           name="minimum_company_funding"
                           render={({ field }) => (
                             <FormItem className="flex flex-col items-start mx-1 my-4">
-                              {/* <FormLabel className="text-left">Min</FormLabel> */}
+                              
                               <FormControl>
                                 <Input
                                   placeholder="Min"
@@ -1272,10 +1393,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                                   }}
                                 />
                               </FormControl>
-                              {/* <FormDescription>
-                            This is the minimun funding of the company that
-                            you&apos;re interested in.
-                          </FormDescription> */}
+                              
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1286,7 +1404,6 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                             name="maximum_company_funding"
                             render={({ field }) => (
                               <FormItem className="flex flex-col items-start mx-1 my-4">
-                                {/* <FormLabel className="text-left">Max</FormLabel> */}
                                 <FormControl>
                                   <Input
                                     placeholder="Max"
@@ -1309,10 +1426,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                                     }}
                                   />
                                 </FormControl>
-                                {/* <FormDescription>
-                              This is maximun funding of the company that
-                              you&apos;re interested in.
-                            </FormDescription> */}
+                                
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1342,7 +1456,6 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                       dropdownsOpen.jobPostings ? "block" : "hidden"
                     }`}
                   >
-                    {/* <div className="text-sm font-medium">Job postings</div> */}
                     <div className="flex items-center gap-2">
                       <div className="mb-3 w-1/2">
                         <FormField
@@ -1370,10 +1483,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                                   }}
                                 />
                               </FormControl>
-                              {/* <FormDescription>
-                            This is the minimun funding of the company that
-                            you&apos;re interested in.
-                          </FormDescription> */}
+                              
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1406,10 +1516,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                                   }}
                                 />
                               </FormControl>
-                              {/* <FormDescription>
-                              This is maximun funding of the company that
-                              you&apos;re interested in.
-                            </FormDescription> */}
+                              
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1417,7 +1524,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
               </div>
             </div>
             {type === "edit" && (
