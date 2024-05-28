@@ -3,7 +3,7 @@
 
 "use client";
 
-import React from "react";
+import React, { useEffect } from "react";
 // import { formatDistanceToNow } from "date-fns";
 import axiosInstance from "../../utils/axiosInstance";
 import {
@@ -25,7 +25,14 @@ import {
   CommandInput,
   CommandItem,
 } from "@/components/ui/command";
-import { Check, ChevronsUpDown, Edit3, RefreshCw, Trash2 } from "lucide-react";
+import {
+  Check,
+  ChevronsUpDown,
+  Edit3,
+  RefreshCw,
+  Trash2,
+  TrendingUp,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
@@ -44,25 +51,25 @@ import Notification from "./Notification";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { User } from "lucide-react";
 
-interface ConversationEntry {
-  id: string;
-  conversation_id: string;
-  received_datetime: string | null;
-  sender: string;
-  recipient: string;
-  subject: string;
-  body: string;
-  is_reply: boolean;
-  send_datetime: string | null;
-  open_datetime: string | null;
-  click_datetime: string | null;
-  response_datetime: string | null;
-  status: string | null;
-  sentiment: string | null;
-  category: string | null;
-  action_draft: string | null;
-  message_id: string;
-}
+// interface ConversationEntry {
+//   id: string;
+//   conversation_id: string;
+//   received_datetime: string | null;
+//   sender: string;
+//   recipient: string;
+//   subject: string;
+//   body: string;
+//   is_reply: boolean;
+//   send_datetime: string | null;
+//   open_datetime: string | null;
+//   click_datetime: string | null;
+//   response_datetime: string | null;
+//   status: string | null;
+//   sentiment: string | null;
+//   category: string | null;
+//   action_draft: string | null;
+//   message_id: string;
+// }
 
 interface ThreadDisplayMainProps {
   ownerEmail: string;
@@ -101,6 +108,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const { campaigns } = useCampaignContext();
 
   console.log("Thread Capmy", campaigns);
+  console.log("mail thread", thread);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -114,10 +122,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
   };
 
-  console.log("Thread Dlead", leads);
-
   const leadId = leads[0]?.campaign_id;
-  console.log("Thread Display->>>>", leadId);
 
   React.useEffect(() => {
     axiosInstance
@@ -166,64 +171,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     );
   }
 
-  // const EmailComponent = ({ email }: { email: EmailMessage }) => {
-  //   const isEmailFromOwner = email.sender === ownerEmail;
-
-  //   console.log("hehe email", email);
-
-  //   return (
-  //     <div className="flex flex-col gap-3 m-4">
-  //       <div className="flex  w-full">
-  //         <Avatar
-  //           className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-  //           onClick={() => {
-  //             toggleSidebar(true);
-  //           }}
-  //         >
-  //           <AvatarImage
-  //             src={leads[0]?.photo_url ? leads[0].photo_url : ""}
-  //             alt="avatar"
-  //           />
-  //           <AvatarFallback className="bg-yellow-400 text-black text-xs">
-  //             {leads[0]?.first_name && leads[0]?.last_name
-  //               ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
-  //               : ""}
-  //           </AvatarFallback>
-  //         </Avatar>
-  //         <Card className="w-full mr-5">
-  //           <CardHeader>
-  //             <CardTitle className="text-sm">
-  //               {email.subject}{" "}
-  //               {!isEmailFromOwner && email.sentiment && (
-  //                 <Badge className="ml-2" key={"label"}>
-  //                   {email.sentiment}
-  //                 </Badge>
-  //               )}
-  //             </CardTitle>
-  //             <CardDescription className="text-xs">
-  //               {email.body}
-  //             </CardDescription>
-  //           </CardHeader>
-  //           <CardContent className="text-xs">
-  //             <span className="text-muted-foreground">
-  //               {email.sender === ownerEmail ? "you" : email.sender} sent to{" "}
-  //               {email.recipient === ownerEmail ? "you" : email.recipient} -{" "}
-  //               {email.received_datetime &&
-  //                 formatDistanceToNow(
-  //                   new Date(email.received_datetime.toString()),
-  //                   {
-  //                     addSuffix: true,
-  //                   }
-  //                 )}
-  //             </span>
-  //           </CardContent>
-  //         </Card>
-  //       </div>
-  //       <Notification email={email} />
-  //     </div>
-  //   );
-  // };
-
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
 
@@ -254,6 +201,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             </div>
           </div>
         )}
+
         <div className="flex w-full ">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -275,9 +223,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                {email.sender !== leads[0].email
-                  ? "You to " + leads[0].first_name
-                  : leads[0].first_name + " to you"}
+                {leads[0]?.email
+                  ? email.sender !== leads[0].email
+                    ? "You to " + leads[0].first_name
+                    : leads[0].first_name + " to you"
+                  : ""}
               </span>
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">
@@ -430,7 +380,115 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
 
     if (!emails) {
-      return <div>Empty Draft Email</div>;
+      <div>Draft is empty</div>;
+    }
+
+    if (thread.length > 0) {
+      {
+        return (
+          <div className="flex gap-4 flex-col m-4 h-full">
+            <div className="flex items-center gap-3">
+              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                <TrendingUp className="h-4 w-4 text-gray-400" />
+              </div>
+              <div className="text-xs ml-1">
+                Sally will draft a follow-up email when it&apos;s time to
+                reconnect.
+              </div>
+            </div>
+            <div className="flex gap-2 flex-col h-full">
+              <div className="flex w-full">
+                <Avatar
+                  className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+                  onClick={() => {
+                    toggleSidebar(true);
+                  }}
+                >
+                  <AvatarImage
+                    src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+                    alt="avatar"
+                  />
+
+                  <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                    {leads[0]?.first_name && leads[0]?.last_name
+                      ? leads[0].first_name.charAt(0) +
+                        leads[0].last_name.charAt(0)
+                      : ""}
+                  </AvatarFallback>
+                </Avatar>
+                <Card className="w-full mr-5 ">
+                  <div className="flex gap-5 p-4 items-center">
+                    <span className="text-sm font-semibold">
+                      {"You to " + leads[0]?.first_name}
+                    </span>
+                    <div className="flex gap-3">
+                      {/* <span className="text-gray-500 text-sm  ">
+                        8 hours ago
+                      </span> */}
+                      <span className="text-green-500 text-sm ">Draft</span>
+                    </div>
+                  </div>
+                  <CardHeader>
+                    <CardTitle className="text-sm flex -mt-8 -ml-3">
+                      <Input
+                        value={title}
+                        className="text-xs"
+                        placeholder="Subject"
+                        onChange={(e) => setTitle(e.target.value)}
+                      />
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="text-xs -ml-3 -mt-4">
+                    <Textarea
+                      value={body}
+                      className="text-xs h-64"
+                      placeholder="Enter email body"
+                      onChange={(e) => setBody(e.target.value)}
+                    />
+                  </CardContent>
+                  <CardFooter className="flex justify-between text-xs items-center">
+                    <div>
+                      <Button disabled={editable} onClick={handleApproveEmail}>
+                        Approve
+                      </Button>
+                      <Button
+                        variant={"secondary"}
+                        className="ml-2"
+                        onClick={handleSendNow}
+                      >
+                        Send Now
+                      </Button>
+                      {/* {editable && (
+                        <Button
+                          variant={"ghost"}
+                          onClick={() => setEditable(false)}
+                        >
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      )} */}
+                    </div>
+                    <div>
+                      {/* <Button
+                        variant={"ghost"}
+                        onClick={() => setEditable(true)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button> */}
+                      <Button variant={"ghost"}>
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                      <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardFooter>
+                  <div ref={internalScrollRef} />
+                </Card>
+              </div>
+            </div>
+          </div>
+        );
+      }
     }
 
     if (error) {
@@ -460,10 +518,10 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                {leads.length > 0 ? "" : "You to " + leads[0]?.first_name}
+                {"You to " + leads[0]?.first_name}
               </span>
               <div className="flex gap-3">
-                <span className="text-gray-500 text-sm  ">8 hours ago</span>
+                {/* <span className="text-gray-500 text-sm  ">8 hours ago</span> */}
                 <span className="text-green-500 text-sm ">Draft</span>
               </div>
             </div>
