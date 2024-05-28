@@ -74,6 +74,7 @@ export default function Page() {
         `/v2/aws/verify/domain/${domainInput}`
       );
       setMailData(response.data);
+      console.log("Domain data fetched successfully:", response.data);
       setFetchSuccess(true);
       setLoading(false);
     } catch (error) {
@@ -134,13 +135,7 @@ export default function Page() {
   const addMailbox = (mailbox: any) => {
     setMailboxes([...mailboxes, mailbox]);
   };
-  // const addMailbox = (newMailbox: any) => {
-  //   setMailboxes((prevState) => [...prevState, newMailbox]);
-  // };
 
-  // const removeMailbox = (id: number) => {
-  //   setMailboxes(mailboxes.filter((mailbox) => mailbox.id !== id));
-  // };
   const removeMailbox = (idToRemove: number) => {
     setMailboxes((prevState) =>
       prevState.filter((mailbox) => mailbox.id !== idToRemove)
@@ -173,12 +168,8 @@ export default function Page() {
           daily_limit: 30,
         };
         addMailbox(newMailbox);
-        setDomainInput("");
-        setEmailInput("");
-        setNameInput("");
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
-
         console.log("Mailbox added successfully:", mailboxes);
       } else {
         alert("OTP validation failed: " + "Invalid OTP entered.");
@@ -203,75 +194,83 @@ export default function Page() {
         </AlertDescription>
       </Alert>
 
-      <div className="rounded-md border border-collapse mt-4">
-        <Table className="w-full text-left">
-          <TableHeader className="bg-muted/50">
-            <TableRow>
-              <TableHead className="w-1/5">MAILBOX</TableHead>
-              <TableHead>NAME ACCOUNT</TableHead>
-              <TableHead>WARM-UP</TableHead>
-              <TableHead className="text-left">DAILY LIMIT</TableHead>
-              <TableHead> </TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {mailboxes.map((mailbox, index) => (
-              <TableRow key={index}>
-                <TableCell>
-                  <div className="flex items-center gap-3">
-                    <GmailIcon />
-                    <span>{mailbox.mailbox}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  {mailbox?.sender_name || "No Name Provided"}
-                </TableCell>
-                <TableCell>
-                  <Switch checked={mailbox.warmup} />
-                </TableCell>
-                <TableCell>{mailbox.daily_limit}</TableCell>
-                <TableCell>
-                  <Dialog>
-                    <DialogTrigger asChild>
-                      <Button variant={"destructive"}>Disconnect</Button>
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-[425px]">
-                      <DialogHeader className="text-left flex gap-1">
-                        <Icons.alertCircle
-                          size={"40"}
-                          color="red"
-                          className="mb-4"
-                        />
-                        <DialogTitle>Disconnect Account</DialogTitle>
-                        <DialogDescription>
-                          Are you sure you want to disconnect{" "}
-                          <span className="text-blue-500">
-                            {mailbox.mailbox}
-                          </span>
-                          ? This action cannot be undone.
-                        </DialogDescription>
-                      </DialogHeader>
-                      <DialogFooter>
-                        <DialogClose asChild>
-                          <Button type="button" variant={"outline"}>
-                            Cancel
-                          </Button>
-                        </DialogClose>
-                        <Button
-                          type="submit"
-                          variant={"destructive"}
-                          onClick={() => removeMailbox(mailbox.id)}
-                        >
-                          Delete
-                        </Button>
-                      </DialogFooter>
-                    </DialogContent>
-                  </Dialog>
-                </TableCell>
+      <div
+        className={`rounded-md ${
+          mailboxes.length > 0 ? "border" : ""
+        }  border-collapse mt-4`}
+      >
+        {mailboxes.length > 0 ? (
+          <Table className="w-full text-left">
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-1/5">MAILBOX</TableHead>
+                <TableHead>NAME ACCOUNT</TableHead>
+                <TableHead>WARM-UP</TableHead>
+                <TableHead className="text-left">DAILY LIMIT</TableHead>
+                <TableHead> </TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {mailboxes.map((mailbox, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <GmailIcon />
+                      <span>{mailbox.mailbox}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {mailbox?.sender_name || "No Name Provided"}
+                  </TableCell>
+                  <TableCell>
+                    <Switch checked={mailbox.warmup} />
+                  </TableCell>
+                  <TableCell>{mailbox.daily_limit}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant={"destructive"}>Disconnect</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader className="text-left flex gap-1">
+                          <Icons.alertCircle
+                            size={"40"}
+                            color="red"
+                            className="mb-4"
+                          />
+                          <DialogTitle>Disconnect Account</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to disconnect{" "}
+                            <span className="text-blue-500">
+                              {mailbox.mailbox}
+                            </span>
+                            ? This action cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant={"outline"}>
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            type="submit"
+                            variant={"destructive"}
+                            onClick={() => removeMailbox(mailbox.id)}
+                          >
+                            Delete
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          "No mailboxes connected."
+        )}
       </div>
 
       <Button className="mt-5" onClick={handleOpenAddMailbox}>
@@ -362,7 +361,7 @@ export default function Page() {
       </Dialog>
 
       <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
-        <DialogContent className="w-full">
+        <DialogContent className="w-full max-w-4xl">
           <DialogHeader>
             <DialogTitle>Domain Data</DialogTitle>
             <DialogDescription>
@@ -389,7 +388,7 @@ export default function Page() {
                           onClick={() => handleCopy(mailbox.Name)}
                         />
 
-                        <span className="w-48 overflow-x-scroll">
+                        <span className="w-96 overflow-x-scroll">
                           {mailbox.Name}
                         </span>
                       </div>
@@ -408,6 +407,52 @@ export default function Page() {
               </TableBody>
             </Table>
           </div>
+          <Table className="mt-4 w-full">
+            <TableHeader>
+              <TableRow>
+                <TableHead>Type</TableHead>
+                <TableHead>Name</TableHead>
+                <TableHead>Priority</TableHead>
+                <TableHead>Value</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={"MX"}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={mailData[0] ? mailData[0].Name : "No data found"}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={"1"}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+                <TableCell>
+                  <input
+                    type="text"
+                    value={"inbound-smtp.us-east-1.amazonaws.com."}
+                    readOnly
+                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                  />
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
           <DialogFooter>
             <Button type="button" onClick={() => setIsTableDialogOpen(false)}>
               Close
