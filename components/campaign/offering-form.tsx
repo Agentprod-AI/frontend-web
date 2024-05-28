@@ -30,6 +30,7 @@ import {
 } from "./camapign.api";
 import { useUserContext } from "@/context/user-context";
 import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjust the import path as needed
+import { toast } from "sonner";
 
 const profileFormSchema = z.object({
   product_offering: z.string(),
@@ -60,35 +61,33 @@ export function OfferingForm({ type }: { type: string }) {
   });
 
   const fetchPersona = async () => {
-    if (user?.id) {
-      if (type === "edit") {
-        const persona = await getPersonaByCampaignId(params.campaignId);
-        if (persona) {
-          form.setValue("pain_point", persona.pain_point);
-          form.setValue("values", persona.values);
-          form.setValue(
-            "customer_success_stories",
-            persona.customer_success_stories || [""]
-          );
-          form.setValue(
-            "detailed_product_description",
-            persona.detailed_product_description
-          );
-        }
+    const persona = await getPersonaByCampaignId(params.campaignId);
+    if (persona) {
+      form.setValue("pain_point", persona.pain_point);
+      form.setValue("values", persona.values);
+      form.setValue(
+        "customer_success_stories",
+        persona.customer_success_stories || [""]
+      );
+      form.setValue(
+        "detailed_product_description",
+        persona.detailed_product_description
+      );
+    } else {
+      const persona = await getPersonaByUserId(user.id);
+      if (persona) {
+        form.setValue("pain_point", persona.pain_point);
+        form.setValue("values", persona.values);
+        form.setValue(
+          "customer_success_stories",
+          persona.customer_success_stories || [""]
+        );
+        form.setValue(
+          "detailed_product_description",
+          persona.detailed_product_description
+        );
       } else {
-        const persona = await getPersonaByUserId(user.id);
-        if (persona) {
-          form.setValue("pain_point", persona.pain_point);
-          form.setValue("values", persona.values);
-          form.setValue(
-            "customer_success_stories",
-            persona.customer_success_stories || [""]
-          );
-          form.setValue(
-            "detailed_product_description",
-            persona.detailed_product_description
-          );
-        }
+        toast.error("Failed to fetch persona");
       }
     }
   };
