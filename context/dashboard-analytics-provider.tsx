@@ -31,6 +31,16 @@ type ConversionFunnel = {
   [key: string]: number;
 };
 
+type EmailStats = {
+  open_rate: number;
+  reply_rate: number;
+  conversion_rate: number;
+  unsubscribed_rate: number;
+  deliverability_rate: number;
+  negative_email_rate: number;
+  positive_email_rate: number;
+};
+
 interface DashboardEntry {
   id: number;
   pending_approvals: number;
@@ -43,6 +53,7 @@ interface DashboardEntry {
   hot_leads: HotLead[];
   mailbox_health: { [email: string]: number };
   top_performing_campaigns: TopPerformingCampaign[];
+  email_stats: EmailStats;
 }
 
 interface DashboardContextType {
@@ -64,6 +75,15 @@ const defaultDashboardState: DashboardContextType = {
     mailbox_health: {},
     conversion_funnel: {},
     top_performing_campaigns: [],
+    email_stats: {
+      open_rate: 0,
+      reply_rate: 0,
+      conversion_rate: 0,
+      unsubscribed_rate: 0,
+      deliverability_rate: 0,
+      negative_email_rate: 0,
+      positive_email_rate: 0,
+    },
   },
   isLoading: true,
   setDashboardData: () => {},

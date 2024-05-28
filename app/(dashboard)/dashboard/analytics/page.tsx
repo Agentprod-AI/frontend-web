@@ -318,13 +318,34 @@ export default function Page() {
           <Card className="col-span-2 p-4">
             <ScrollArea className="h-[18.5rem]">
               <CardContent className="text-sm space-y-4">
-                <p>Deliverability Rate - 100%</p>
-                <p>Open Rate - 52%</p>
-                <p>Reply Rate - 2.27%</p>
-                <p>Positive Reply Rate - 70%</p>
-                <p>Negative Reply Rate - 30%</p>
-                <p>Conversion Rate - 5.5%</p>
-                <p>Unsubscribe Rate - 0.5%</p>
+                <p>
+                  Deliverability Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.deliverability_rate)}
+                </p>
+                <p>
+                  Open Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.open_rate)}
+                </p>
+                <p>
+                  Reply Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.reply_rate)}
+                </p>
+                <p>
+                  Positive Reply Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.positive_email_rate)}
+                </p>
+                <p>
+                  Negative Reply Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.negative_email_rate)}
+                </p>
+                <p>
+                  Conversion Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.conversion_rate)}
+                </p>
+                <p>
+                  Unsubscribe Rate -{" "}
+                  {Math.round(dashboardData?.email_stats?.unsubscribed_rate)}
+                </p>
               </CardContent>
             </ScrollArea>
           </Card>

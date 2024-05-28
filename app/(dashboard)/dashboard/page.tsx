@@ -29,6 +29,7 @@ import { format, parseISO, differenceInCalendarDays } from "date-fns";
 import { LoadingCircle } from "@/app/icons";
 // import { useUserContext } from "@/context/user-context";
 // import useWebSocket from "@/hooks/useWebhook";
+import { startOfWeek, addDays } from "date-fns";
 
 export default function Page() {
   const { dashboardData, isLoading } = useDashboardContext();
@@ -46,6 +47,19 @@ export default function Page() {
   //     console.log("Socket is connected");
   //   }
   // }, []);
+
+  const getWeekDays = () => {
+    let weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
+    return Array.from({ length: 7 }).map((_, index) =>
+      format(addDays(weekStart, index), "yyyy-MM-dd")
+    );
+  };
+
+  const allWeekDays = getWeekDays();
+
+  const activeDaysSet = new Set(
+    mailGraphData.map((data) => format(parseISO(data.date), "yyyy-MM-dd"))
+  );
 
   const calculateStreak = (data: any) => {
     if (data.length === 0) return 0;
@@ -412,23 +426,21 @@ export default function Page() {
               </div>
 
               <div className="flex items-end justify-between">
-                {mailGraphData.map((data, index) => {
-                  const dayOfWeek = format(parseISO(data.date), "EEE");
-                  const isActive = index < 3;
+                {allWeekDays.map((day, index) => {
+                  const dayOfWeek = format(parseISO(day), "EEE");
+                  const isActive = activeDaysSet.has(day);
 
                   return (
                     <div
                       key={index}
-                      className={`flex flex-col items-center justify-center ${
-                        isActive && "text-purple-400"
-                      }`}
+                      className="flex flex-col items-center justify-center text-gray-400"
                     >
                       <span className="text-sm mb-1">{dayOfWeek}</span>
                       <div
-                        className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                        className={`w-10 h-10 rounded-full flex items-center justify-center ${
                           isActive
-                            ? "bg-gradient-to-r from-purple-700 to-purple-400"
-                            : "bg-muted-foreground opacity-20"
+                            ? "bg-gradient-to-r from-purple-700 to-purple-400 text-purple-400"
+                            : "bg-gray-500"
                         }`}
                       ></div>
                     </div>
