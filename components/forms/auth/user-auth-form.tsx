@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
 import { Button } from "@/components/ui/button";
@@ -15,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-// import { AppState, UserInterface } from "@/context/user-context";
+import { AppState, UserInterface } from "@/context/user-context";
 import { setCookie } from "cookies-next";
 
 import {
@@ -26,7 +27,6 @@ import { toast } from "sonner";
 import { useAuth } from "@/context/auth-provider";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
-// import GoogleSignInButton from "@/components/github-auth-button";
 
 const formSchema = z.object({
   email: z.string().email({ message: "Enter a valid email address" }),
@@ -133,11 +133,16 @@ export default function UserAuthForm({
               userId: userData.user.id,
             }
           );
-          console.log("API call response after new api:", response.data);
+          console.log(
+            "API call response after new api:",
+            response.data,
+            userData.user.id
+          );
         } catch (apiError) {
           console.error("API call failed:", apiError);
           toast.error("Failed to complete user setup.");
         }
+
         login(userData.user);
 
         const userKey = "user";

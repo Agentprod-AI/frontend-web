@@ -5,7 +5,7 @@ import { LineChartComponent } from "@/components/charts/line-chart";
 import {
   Card,
   CardContent,
-  CardDescription,
+  // CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -25,11 +25,16 @@ import { Progress } from "@/components/ui/progress";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { useMailGraphContext } from "@/context/chart-data-provider";
-import { format, parseISO, differenceInCalendarDays } from "date-fns";
+import {
+  format,
+  parseISO,
+  differenceInCalendarDays,
+  startOfWeek,
+  addDays,
+} from "date-fns";
 import { LoadingCircle } from "@/app/icons";
 // import { useUserContext } from "@/context/user-context";
 // import useWebSocket from "@/hooks/useWebhook";
-import { startOfWeek, addDays } from "date-fns";
 
 export default function Page() {
   const { dashboardData, isLoading } = useDashboardContext();
@@ -48,9 +53,11 @@ export default function Page() {
   //   }
   // }, []);
 
+  
+
   const getWeekDays = () => {
-    let weekStart = startOfWeek(new Date(), { weekStartsOn: 1 });
-    return Array.from({ length: 7 }).map((_, index) =>
+    let weekStart = startOfWeek(new Date(), { weekStartsOn: 0});
+    return Array.from({ length: 7}).map((_, index) =>
       format(addDays(weekStart, index), "yyyy-MM-dd")
     );
   };
@@ -79,7 +86,12 @@ export default function Page() {
 
     return streak;
   };
-  const daysStreak = calculateStreak(mailGraphData);
+
+  // Ensure the data is sorted by date
+  const sortedMailGraphData = [...mailGraphData].sort(
+    (a: any, b: any) => +parseISO(a.date) - +parseISO(b.date)
+  );
+  const daysStreak = calculateStreak(sortedMailGraphData);
 
   return (
     <>
@@ -428,7 +440,7 @@ export default function Page() {
               <div className="flex items-end justify-between">
                 {allWeekDays.map((day, index) => {
                   const dayOfWeek = format(parseISO(day), "EEE");
-                  const isActive = activeDaysSet.has(day);
+                  const isActive = activeDaysSet.has(day );
 
                   return (
                     <div
