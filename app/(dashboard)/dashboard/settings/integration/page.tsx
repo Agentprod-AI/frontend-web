@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 "use client";
 import React from "react";
-
-// import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -18,15 +18,12 @@ import {
 } from "@/app/icons";
 import {
   Dialog,
-  // DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  // DialogClose,
 } from "@/components/ui/dialog";
-// import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import logo from "../../../../../public/bw-logo.png";
@@ -48,14 +45,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { hubspotLogin } from ".";
+import { useUserContext } from "@/context/user-context";
+import axiosInstance from "@/utils/axiosInstance";
 
-// type Service = {
-//   name: string;
-//   description: string;
-//   logo: string;
-//   isConnected: boolean;
-//   // onConnect: () => void;
-// };
 
 const FormSchema = z.object({
   type: z.enum(["all", "engaged"], {
@@ -63,49 +56,38 @@ const FormSchema = z.object({
   }),
 });
 
-// const services = [
-//   {
-//     name: "Slack",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <SlackIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   {
-//     name: "HubSpot",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <HubSpotIcon />,
-//     isConnected: true,
-//     available: "Connect",
-//   },
-//   {
-//     name: "LinkedIn",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <LinkedInIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   {
-//     name: "Salesforce",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <SalesForceIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   {
-//     name: "Zapier",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <ZapierIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   // Add more services as needed
-// ];
-
 export default function Page() {
   const [isHubspotMailboxOpen, setIsHubspotMailboxOpen] = React.useState(false);
-  const handleOpenAddMailbox = () => setIsHubspotMailboxOpen(true);
+  const [isConnectedToHubspot, setIsConnectedToHubspot] = React.useState(false);
+
+  const { user } = useUserContext();
+
   const handleCloseAddMailbox = () => setIsHubspotMailboxOpen(false);
+
+  React.useEffect(() => {
+    const fetchHubSpotStatus = async (): Promise<any> => {
+      try {
+        const response = await axiosInstance.get(
+          `v2/hubspot/status/${user.id}`
+        );
+        console.log("HubSpot Status:", response.data);
+        setIsConnectedToHubspot(response.data.message);
+      } catch (error) {
+        console.error("Failed to fetch HubSpot status:", error);
+        throw error;
+      }
+    };
+
+    fetchHubSpotStatus();
+  }, []);
+
+  const handleHubspotConnect = async () => {
+    if (isConnectedToHubspot) {
+      setIsHubspotMailboxOpen(true);
+    } else {
+      hubspotLogin(user.id);
+    }
+  };
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
@@ -269,10 +251,10 @@ export default function Page() {
             <div
               className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
               onClick={() => {
-                handleOpenAddMailbox();
+                handleHubspotConnect();
               }}
             >
-              Connect
+              {isConnectedToHubspot ? "Connected" : "Connect"}
             </div>
           </div>
           <Dialog
