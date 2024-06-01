@@ -70,8 +70,6 @@ export function Mail({
 
   const { user } = useUserContext();
 
-  console.log("User from mail", user);
-
   const {
     conversationId,
     setConversationId,
@@ -187,8 +185,8 @@ export function Mail({
                     <DropdownMenuGroup>
                       <DropdownMenuSeparator />
                       <ScrollArea className="h-[400px] w-full rounded-md">
-                        {allCampaigns &&
-                          allCampaigns?.map((campaignItem, index) => (
+                        {allCampaigns && allCampaigns.length > 0 ? (
+                          allCampaigns.map((campaignItem, index) => (
                             <div key={campaignItem.campaignId}>
                               <DropdownMenuItem
                                 key={campaignItem.campaignId}
@@ -206,7 +204,12 @@ export function Mail({
                                 </p>
                               </DropdownMenuItem>
                             </div>
-                          ))}
+                          ))
+                        ) : (
+                          <p className="text-center mt-10">
+                            No campaign available.
+                          </p>
+                        )}
                       </ScrollArea>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>

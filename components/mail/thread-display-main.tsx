@@ -97,8 +97,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const { leads, setLeads } = useLeads();
   const { campaigns } = useCampaignContext();
 
-  console.log("Thread Capmy", campaigns);
-  console.log("mail thread", thread);
+  // console.log("Thread Capmy", campaigns);
+  // console.log("mail thread", thread);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -118,6 +118,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
+        // if (response.data.mails === null) {
+        //   setThread([]);
+        // } else {
+        //   setThread(response.data);
+        // }
         setThread(response.data);
         console.log("Thread Display->>>>", response.data);
         setIsLoading(false);
