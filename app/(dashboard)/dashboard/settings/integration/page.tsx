@@ -272,7 +272,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Slack</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -459,7 +459,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Hubspot</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -596,7 +596,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>LinkedIn</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -732,7 +732,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Salesforce</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -870,7 +870,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Zapier</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
