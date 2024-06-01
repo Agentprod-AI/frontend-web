@@ -43,12 +43,9 @@ export default function Page() {
   const params = useParams();
   const [isSchedulingBudgetCompleted, setIsSchedulingBudgetCompleted] =
     useState<boolean>(false);
-  const [campaignId, setCampaignId] = useState<string | null>(null);
 
   useEffect(() => {
-    const formsTracker: { [key: string]: boolean } = JSON.parse(
-      localStorage.getItem("formsTracker") || "null"
-    ) || {
+    const defaultFormsTracker = {
       schedulingBudget: false,
       offering: false,
       goal: false,
@@ -57,35 +54,30 @@ export default function Page() {
       autopilot: false,
     };
 
-    // const storedCampaignId: string | null = localStorage.getItem('campaignId');
-
-    localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
-
-    setIsSchedulingBudgetCompleted(formsTracker.schedulingBudget);
-    // setCampaignId(storedCampaignId);
+    // Initialize forms tracker if not present
+    if (!localStorage.getItem("formsTracker")) {
+      localStorage.setItem("formsTracker", JSON.stringify(defaultFormsTracker));
+    }
 
     const handleStorageChange = (): void => {
-      const updatedFormsTracker: { [key: string]: boolean } = JSON.parse(
-        localStorage.getItem("formsTracker") || "null"
+      const updatedFormsTracker = JSON.parse(
+        localStorage.getItem("formsTracker") || "{}"
       );
-      // const updatedCampaignId: string | null = localStorage.getItem('campaignId');
-
       setIsSchedulingBudgetCompleted(
-        updatedFormsTracker?.schedulingBudget || false
+        updatedFormsTracker.schedulingBudget || false
       );
-      // setCampaignId(updatedCampaignId);
     };
+
+    // Check forms tracker on component mount
+    handleStorageChange();
 
     window.addEventListener("storage", handleStorageChange);
     return (): void => {
       window.removeEventListener("storage", handleStorageChange);
     };
-  }, []);
+  }, [params.campaignId]);
 
-  const areCardsEnabled: boolean =
-    isSchedulingBudgetCompleted !==
-    // && campaignId
-    null;
+  const areCardsEnabled = isSchedulingBudgetCompleted;
 
   return (
     <div>

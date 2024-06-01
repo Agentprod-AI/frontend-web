@@ -130,7 +130,7 @@ export function UserNav() {
         email: "",
       });
       logout(); // Ensure logout state is cleared before redirect
-      router.push("/login");
+      router.push("/");
     } catch (error) {
       console.error("Logout failed:", error);
     }

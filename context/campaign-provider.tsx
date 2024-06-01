@@ -166,7 +166,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       thursday_end: data.schedule.weekdayEndTime,
       friday_start: data.schedule.weekdayStartTime,
       friday_end: data.schedule.weekdayEndTime,
-
       is_active: true,
       schedule_type: "none",
     };
@@ -180,6 +179,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
             localStorage.getItem("formsTracker") || "{}"
           );
           formsTracker.schedulingBudget = true;
+          formsTracker.campaignId = response.data.id;
           localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
           router.push(`/dashboard/campaign/create/${response.data.id}`);
@@ -261,7 +261,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       .put(`v2/offerings/${campaignId}`, data)
       .then((response) => {
         console.log("Offering edited successfully:", response.data);
-        router.push(`/dashboard/campaign/create/${campaignId}`);
+        router.push(`/dashboard/campaign/${campaignId}`);
       })
       .catch((error) => {
         console.error("Error editing offering:", error);
@@ -276,7 +276,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     const postData = {
       campaign_id: campaignId,
       emails: data.emails.map((email) => email.value),
-      current_email: "muskaan@agentprodai.com",
+      current_email: data.emails[0].value,
       success_metric: data.success_metric,
       scheduling_link: data.scheduling_link,
       follow_up_days: data.follow_up_days,

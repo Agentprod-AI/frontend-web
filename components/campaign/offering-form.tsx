@@ -25,13 +25,15 @@ import {
   getOfferingById,
   getPersonaByUserId,
   createPersona,
+  getPersonaByCampaignId,
+  editPersona,
 } from "./camapign.api";
 import { useUserContext } from "@/context/user-context";
 import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjust the import path as needed
+import { toast } from "sonner";
 
 const profileFormSchema = z.object({
-  product_offering: z.string().min(2).max(30),
-  offering_details: z.string(),
+  product_offering: z.string(),
   pain_point: z.array(z.string()),
   values: z.array(z.string()),
   customer_success_stories: z.array(z.string()),
@@ -50,7 +52,6 @@ export function OfferingForm({ type }: { type: string }) {
     resolver: zodResolver(profileFormSchema),
     defaultValues: {
       product_offering: "",
-      offering_details: "",
       pain_point: [""],
       values: [""],
       customer_success_stories: [""],
@@ -60,7 +61,19 @@ export function OfferingForm({ type }: { type: string }) {
   });
 
   const fetchPersona = async () => {
-    if (user?.id) {
+    const persona = await getPersonaByCampaignId(params.campaignId);
+    if (persona) {
+      form.setValue("pain_point", persona.pain_point);
+      form.setValue("values", persona.values);
+      form.setValue(
+        "customer_success_stories",
+        persona.customer_success_stories || [""]
+      );
+      form.setValue(
+        "detailed_product_description",
+        persona.detailed_product_description
+      );
+    } else {
       const persona = await getPersonaByUserId(user.id);
       if (persona) {
         form.setValue("pain_point", persona.pain_point);
@@ -73,13 +86,15 @@ export function OfferingForm({ type }: { type: string }) {
           "detailed_product_description",
           persona.detailed_product_description
         );
+      } else {
+        toast.error("Failed to fetch persona");
       }
     }
   };
 
   useEffect(() => {
     fetchPersona();
-  }, [user]);
+  }, [user, params.campaignId]);
 
   const { createOffering, editOffering } = useCampaignContext();
   const [offeringData, setOfferingData] = useState<OfferingFormData>();
@@ -94,23 +109,35 @@ export function OfferingForm({ type }: { type: string }) {
       detailed_product_description: data.detailed_product_description,
     };
 
-    createPersona(postData)
-      .then(() => {
-        if (type === "create") {
+    if (type === "create") {
+      createPersona(postData)
+        .then(() => {
           createOffering(
-            { name: data.product_offering, details: data.offering_details },
+            {
+              name: data.product_offering,
+              details: data.detailed_product_description,
+            },
             params.campaignId
           );
-        } else if (type === "edit") {
+        })
+        .catch((error) => {
+          console.error("Error creating persona:", error);
+        });
+    } else {
+      editPersona(postData)
+        .then(() => {
           editOffering(
-            { name: data.product_offering, details: data.offering_details },
+            {
+              name: data.product_offering,
+              details: data.detailed_product_description,
+            },
             params.campaignId
           );
-        }
-      })
-      .catch((error) => {
-        console.error("Error creating persona:", error);
-      });
+        })
+        .catch((error) => {
+          console.error("Error creating persona:", error);
+        });
+    }
   };
 
   useEffect(() => {
@@ -130,7 +157,6 @@ export function OfferingForm({ type }: { type: string }) {
   useEffect(() => {
     if (offeringData) {
       form.setValue("product_offering", offeringData?.name);
-      form.setValue("offering_details", offeringData?.details);
     }
   }, [offeringData]);
 
@@ -167,25 +193,6 @@ export function OfferingForm({ type }: { type: string }) {
                 <Input placeholder="Product" {...field} />
               </FormControl>
               <FormDescription>This is your product name</FormDescription>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="offering_details"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Details of offers and details</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Describe the product and features."
-                  {...field}
-                />
-              </FormControl>
-              <FormDescription>
-                You can write details of your product here
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -281,7 +288,8 @@ export function OfferingForm({ type }: { type: string }) {
             </FormItem>
           )}
         />
-        <Button type="submit">Create Offer</Button>
+        {type === "create" && <Button type="submit">Create Offer</Button>}
+        {type === "edit" && <Button type="submit">Update Offer</Button>}
       </form>
     </Form>
   );

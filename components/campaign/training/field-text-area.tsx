@@ -20,7 +20,7 @@ import {
 } from "slate-react";
 import ReactDOM from "react-dom";
 import { cn } from "@/lib/utils";
-import { allFieldsListType } from "@/app/(dashboard)/dashboard/campaign/[campaignId]/training/types";
+import { allFieldsListType } from "@/components/campaign/training/types";
 // import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 export type CustomText = {

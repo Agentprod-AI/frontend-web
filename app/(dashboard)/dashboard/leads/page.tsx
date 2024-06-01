@@ -12,13 +12,12 @@ import { Button } from "@/components/ui/button";
 import { useLeads } from "@/context/lead-user";
 import { useEffect, useState } from "react";
 import { LucideUsers2 } from "lucide-react";
-// import { v4 as uuid } from "uuid";
-// import axios from "axios";
-// import { useCompanyInfo } from "@/context/company-linkedin";
 import { ChevronDown } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useUserContext } from "@/context/user-context";
+import { toast } from "sonner";
 
 export default function Page() {
   const { leads, setLeads } = useLeads();
@@ -29,6 +28,7 @@ export default function Page() {
     campaignName: string;
     campaignId: string;
   }>();
+  const { user } = useUserContext();
 
   useEffect(() => {
     async function fetchLeads(campaignId: string) {
@@ -41,9 +41,9 @@ export default function Page() {
           setLoading(false);
         })
         .catch((error) => {
-          // console.log(error);
-          setError(error instanceof Error ? error.toString() : String(error));
           setLoading(false);
+          toast.error(`Error fetching campaigns: ${error}`);
+          setLeads([]);
         });
     }
     if (campaign?.campaignId) {
@@ -52,9 +52,29 @@ export default function Page() {
   }, [campaign, setLeads]);
 
   useEffect(() => {
-    // console.log("campaigns", campaigns);
     setLoading(false);
   }, [campaigns]);
+
+  useEffect(() => {
+    function fetchAllLeads() {
+      setLoading(true);
+      axiosInstance
+        .get(`v2/lead/all/${user?.id}`)
+        .then((response) => {
+          const data = response.data;
+          setLeads(data);
+          setLoading(false);
+        })
+        .catch((error) => {
+          console.log(error);
+          setLoading(false);
+          toast.error("Error fetching leads: " + error);
+          setLeads([]);
+        });
+    }
+
+    fetchAllLeads();
+  }, []);
 
   const allCampaigns:
     | {
@@ -71,7 +91,7 @@ export default function Page() {
   });
 
   if (loading) {
-    return <div>Loading... {error}</div>; // doing this for deployment error.
+    return <div>Loading...</div>; // doing this for deployment error.
   }
   return (
     <>

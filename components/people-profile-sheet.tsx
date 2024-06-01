@@ -8,10 +8,6 @@ import {
   MapPinIcon,
   Phone,
   Linkedin,
-  Link,
-  Twitter,
-  Facebook,
-  Search,
 } from "lucide-react";
 import {
   Collapsible,
@@ -80,58 +76,65 @@ export const PeopleProfileSheet = ({
     return <div>Loading...</div>;
   }
 
+  if (!data) {
+    return <div>No lead found.</div>;
+  }
+
   return (
-    <ScrollArea className="h-full">
+    <ScrollArea className="h-full w-full">
       <div className="space-y-4 py-4">
         <div className="px-3 py-2">
-          <div className={"p-4 h-full"}>
+          <div className="p-4 h-full">
             <div className="flex">
               <Avatar className="flex h-9 w-9 items-center justify-center space-y-0 border">
                 <AvatarImage src={data?.photo_url} alt="avatar" />
                 <AvatarFallback>{initials(data?.name || "AP")}</AvatarFallback>
               </Avatar>
-              <div className="ml-4 space-y-1">
-                {/* <p>Id: {itemId}</p> */}
-                <p className="text-sm font-medium leading-none">{data?.name}</p>
-                <p className="text-sm text-muted-foreground">{data?.email}</p>
+              <div className="ml-4 space-y-1 w-full">
+                <p className="text-sm font-medium leading-none whitespace-normal w-full">
+                  {data.name}
+                </p>
+                <p className="text-sm text-muted-foreground whitespace-normal w-full">
+                  {data.email}
+                </p>
               </div>
             </div>
-            <p className="text-sm text-muted-foreground pt-4">
-              {data?.headline}
+            <p className="text-sm text-muted-foreground pt-4 whitespace-normal w-full">
+              {data.headline}
             </p>
             <br />
-            <div className="pt-4 space-y-3">
-              <div className="flex space-x-2">
+            <div className="pt-4 space-y-3 w-full">
+              <div className="flex space-x-2 w-full">
                 <Briefcase className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {data?.title}
+                <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                  {data.title}
                 </span>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 w-full">
                 <MapPinIcon className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {data?.state}, {data?.country}
+                <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                  {data.state}, {data.country}
                 </span>
               </div>
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 w-full">
                 <Briefcase className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {data?.employment_history &&
-                    data?.employment_history[0]?.organization_name}
+                <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                  {data.employment_history &&
+                    data.employment_history[0].organization_name}
                 </span>
               </div>
-              {data?.phone_numbers && (
-                <div className="flex space-x-2">
+              {data.phone_numbers && (
+                <div className="flex space-x-2 w-full">
                   <Phone className="h-5 w-5 text-muted-foreground" />
-                  <span className="text-sm text-muted-foreground">
-                    {data?.phone_numbers[0]?.sanitized_number || "N/A"}
+                  <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                    {data.phone_numbers[0].sanitized_number || "N/A"}
                   </span>
                 </div>
               )}
-              <div className="flex space-x-2">
+              <div className="flex space-x-2 w-full">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground">
-                  {data?.linkedin_url || "N/A"}
+                <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                  {data.linkedin_url || "N/A"}
                 </span>
               </div>
             </div>
@@ -139,9 +142,9 @@ export const PeopleProfileSheet = ({
             <Collapsible
               open={collapsibleOpen}
               onOpenChange={setCollapsibleOpen}
-              className="w-[350px] pt-4 space-y-2 text-muted-foreground"
+              className="pt-4 space-y-2 text-muted-foreground w-full"
             >
-              <div className="flex items-center justify-between space-x-4">
+              <div className="flex items-center justify-between space-x-4 w-full">
                 <h4 className="text-sm font-semibold">Work History</h4>
                 <CollapsibleTrigger asChild>
                   <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -152,30 +155,32 @@ export const PeopleProfileSheet = ({
               </div>
               {data?.employment_history && (
                 <>
-                  <div className="flex px-2 py-1 font-mono text-xs justify-between">
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
                     <span>
                       {data?.employment_history[0]?.start_date
                         ? data.employment_history[0].start_date.substring(0, 4)
                         : ""}{" "}
                       - present
                     </span>
-                    <span className="w-[200px]">
-                      {data?.employment_history[0].title}
+                    <span className="w-full whitespace-normal">
+                      {data.employment_history[0].title}
                     </span>
                   </div>
-                  <CollapsibleContent className="space-y-2">
-                    {data?.employment_history.map((val, ind) => {
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.employment_history.map((val, ind) => {
                       if (ind === 0) return null;
                       return (
                         <div
-                          className="flex px-2 py-1 font-mono text-xs justify-between"
+                          className="flex px-2 py-1 font-mono text-xs justify-between w-full"
                           key={`e_his${ind}`}
                         >
                           <span>
                             {val.start_date.substring(0, 4)} -{" "}
                             {val.end_date ? val.end_date.substring(0, 4) : ""}
                           </span>
-                          <span className="w-[200px]">{val.title}</span>
+                          <span className="w-full whitespace-normal">
+                            {val.title}
+                          </span>
                         </div>
                       );
                     })}
@@ -186,31 +191,31 @@ export const PeopleProfileSheet = ({
             <br />
             <br />
             <div>
-              <p className="text-sm font-medium leading-none">
-                {data?.employment_history &&
-                  data?.employment_history[0].organization_name}
+              <p className="text-sm font-medium leading-none whitespace-normal w-full">
+                {data.employment_history &&
+                  data.employment_history[0].organization_name}
               </p>
             </div>
             <br />
             {companyInfo && (
-              <div className="space-y-3">
-                <div className="flex space-x-2">
-                  <span className="text-sm text-muted-foreground">
-                    {companyInfo?.about_us}
+              <div className="space-y-3 w-full">
+                <div className="flex space-x-2 w-full">
+                  <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                    {companyInfo.about_us}
                   </span>
                 </div>
                 <br />
 
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-col gap-2 w-full">
                   {companyInfo.company_info &&
                     Object.entries(companyInfo.company_info).map(
                       ([key, value]) => (
                         <div
-                          className="text-sm font-semibold text-muted-foreground"
+                          className="text-sm font-semibold text-muted-foreground whitespace-normal w-full"
                           key={key}
                         >
                           {formatText(key)}:{" "}
-                          <span className="text-sm font-normal text-muted-foreground">
+                          <span className="text-sm font-normal text-muted-foreground whitespace-normal w-full">
                             {value as string}
                           </span>
                         </div>
@@ -221,9 +226,9 @@ export const PeopleProfileSheet = ({
                   <Collapsible
                     open={addressCollapsibleOpen}
                     onOpenChange={setAddressCollapsibleOpen}
-                    className="w-[350px] pt-4 space-y-2 text-muted-foreground"
+                    className="pt-4 space-y-2 text-muted-foreground w-full"
                   >
-                    <div className="flex items-center justify-between space-x-4">
+                    <div className="flex items-center justify-between space-x-4 w-full">
                       <h4 className="text-sm font-semibold">Addresses</h4>
                       <CollapsibleTrigger asChild>
                         <Button variant="ghost" size="sm" className="w-9 p-0">
@@ -232,17 +237,17 @@ export const PeopleProfileSheet = ({
                         </Button>
                       </CollapsibleTrigger>
                     </div>
-                    <div className="px-2 py-1 text-xs">
+                    <div className="px-2 py-1 text-xs whitespace-normal w-full">
                       {companyInfo.addresses[0].replace("Get directions", "")}
                     </div>
-                    <CollapsibleContent className="space-y-2">
-                      <div className="flex flex-col gap-2 px-2">
+                    <CollapsibleContent className="space-y-2 w-full">
+                      <div className="flex flex-col gap-2 px-2 w-full">
                         {companyInfo.addresses.map((address, index) => {
                           if (index === 0) return null;
                           else {
                             return (
                               <div
-                                className="text-xs text-muted-foreground"
+                                className="text-xs text-muted-foreground whitespace-normal w-full"
                                 key={index}
                               >
                                 {address.replace("Get directions", "")}
@@ -256,56 +261,60 @@ export const PeopleProfileSheet = ({
                 )}
 
                 <div>
-                  {companyInfo.affiliated_pages?.title && (
-                    <Collapsible
-                      open={affiliatedPagesCollapsibleOpen}
-                      onOpenChange={setAffiliatedPagesCollapsibleOpen}
-                      className="w-[350px] pt-4 space-y-2 text-muted-foreground"
-                    >
-                      <div className="flex items-center justify-between space-x-4">
-                        <div className="text-sm font-medium text-muted-foreground">
-                          Affiliated Pages:
+                  {companyInfo.affiliated_pages &&
+                    companyInfo.affiliated_pages.length > 0 && (
+                      <Collapsible
+                        open={affiliatedPagesCollapsibleOpen}
+                        onOpenChange={setAffiliatedPagesCollapsibleOpen}
+                        className="pt-4 space-y-2 text-muted-foreground w-full"
+                      >
+                        <div className="flex items-center justify-between space-x-4 w-full">
+                          <div className="text-sm font-medium text-muted-foreground">
+                            Affiliated Pages:
+                          </div>
+                          <CollapsibleTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="w-9 p-0"
+                            >
+                              <ChevronsUpDown className="h-4 w-4" />
+                              <span className="sr-only">Toggle</span>
+                            </Button>
+                          </CollapsibleTrigger>
                         </div>
-                        <CollapsibleTrigger asChild>
-                          <Button variant="ghost" size="sm" className="w-9 p-0">
-                            <ChevronsUpDown className="h-4 w-4" />
-                            <span className="sr-only">Toggle</span>
-                          </Button>
-                        </CollapsibleTrigger>
-                      </div>
-                      <div className="px-2 py-1 text-xs">
-                        <div className="text-muted-foreground">
-                          {companyInfo.affiliated_pages.title[0]}
-                          {companyInfo.affiliated_pages.description[0] &&
-                            ` - ${companyInfo.affiliated_pages.description[0]}`}
+                        <div className="px-2 py-1 text-xs whitespace-normal w-full">
+                          <div className="text-muted-foreground">
+                            {companyInfo.affiliated_pages.title[0]}
+                            {companyInfo.affiliated_pages.description[0] &&
+                              ` - ${companyInfo.affiliated_pages.description[0]}`}
+                          </div>
                         </div>
-                      </div>
-                      <CollapsibleContent className="space-y-2">
-                        <div className="flex flex-col gap-2">
-                          {companyInfo.affiliated_pages.title &&
-                            companyInfo.affiliated_pages.title.map(
-                              (title: string, index: number) => {
-                                if (index === 0) return null;
-                                else {
-                                  return (
-                                    <div
-                                      key={index}
-                                      className="px-2 py-1 text-xs text-muted-foreground"
-                                    >
-                                      {title}
-                                      {companyInfo.affiliated_pages.description[
-                                        index
-                                      ] &&
-                                        ` - ${companyInfo.affiliated_pages.description[index]}`}
-                                    </div>
-                                  );
+                        <CollapsibleContent className="space-y-2 w-full">
+                          <div className="flex flex-col gap-2 w-full">
+                            {companyInfo.affiliated_pages.title &&
+                              companyInfo.affiliated_pages.title.map(
+                                (title: string, index: number) => {
+                                  if (index === 0) return null;
+                                  else {
+                                    return (
+                                      <div
+                                        key={index}
+                                        className="px-2 py-1 text-xs text-muted-foreground whitespace-normal w-full"
+                                      >
+                                        {title}
+                                        {companyInfo.affiliated_pages
+                                          .description[index] &&
+                                          ` - ${companyInfo.affiliated_pages.description[index]}`}
+                                      </div>
+                                    );
+                                  }
                                 }
-                              }
-                            )}
-                        </div>
-                      </CollapsibleContent>
-                    </Collapsible>
-                  )}
+                              )}
+                          </div>
+                        </CollapsibleContent>
+                      </Collapsible>
+                    )}
                 </div>
 
                 {companyInfo.stock_info &&
@@ -320,7 +329,7 @@ export const PeopleProfileSheet = ({
                         {Object.entries(companyInfo.stock_info).map(
                           ([key, value]) => (
                             <div
-                              className="text-muted-foreground text-sm"
+                              className="text-muted-foreground text-sm whitespace-normal w-full"
                               key={key}
                             >
                               {formatText(key)}:{" "}
@@ -346,7 +355,7 @@ export const PeopleProfileSheet = ({
                           {Object.entries(companyInfo.funding_info).map(
                             ([key, value]) => (
                               <div
-                                className="text-muted-foreground text-sm"
+                                className="text-muted-foreground text-sm whitespace-normal w-full"
                                 key={key}
                               >
                                 {formatText(key)}:{" "}
