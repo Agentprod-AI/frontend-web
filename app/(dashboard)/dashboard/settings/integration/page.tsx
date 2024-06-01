@@ -12,6 +12,7 @@ import {
 import {
   HubSpotIcon,
   LinkedInIcon,
+  LoadingCircle,
   SalesForceIcon,
   SlackIcon,
   ZapierIcon,
@@ -27,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import logo from "../../../../../public/bw-logo.png";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, ChevronDown } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 import {
@@ -43,12 +44,22 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
+// import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
 import { hubspotLogin } from ".";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
-
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { useCampaignContext } from "@/context/campaign-provider";
+import { toast } from "sonner";
 
 const FormSchema = z.object({
   type: z.enum(["all", "engaged"], {
@@ -59,8 +70,47 @@ const FormSchema = z.object({
 export default function Page() {
   const [isHubspotMailboxOpen, setIsHubspotMailboxOpen] = React.useState(false);
   const [isConnectedToHubspot, setIsConnectedToHubspot] = React.useState(false);
-
+  const [campaignID, setCampaignID] = React.useState<string>("");
+  const [loading, setLoading] = React.useState(false);
+  const [selectedHubspotLeadType, setSelectedHubspotLeadType] =
+    React.useState("all");
   const { user } = useUserContext();
+  const { campaigns } = useCampaignContext();
+  const [campaign, setCampaign] = React.useState<{
+    campaignName: string;
+    campaignId: string;
+  }>();
+
+  const allCampaigns = campaigns.map((campaign) => ({
+    campaignName: campaign.campaign_name,
+    campaignId: campaign.id,
+    additionalInfo: campaign.additional_details,
+  }));
+
+  React.useEffect(() => {
+    if (campaign?.campaignId) {
+      setCampaignID(campaign.campaignId);
+    }
+  }, [campaign]);
+
+  const updateHubspotLeadType = async () => {
+    setLoading(true);
+    const payload = {
+      campaign_id: campaignID,
+      user_id: user.id,
+    };
+    console.log("Payload:", payload);
+    try {
+      const response = await axiosInstance.post("v2/hubspot/export", payload);
+      console.log("HubSpot Lead Type Updated:", response.data);
+      setLoading(false);
+      toast.success("HubSpot lead type updated successfully");
+      setIsHubspotMailboxOpen(false);
+    } catch (error) {
+      console.error("Failed to update HubSpot lead type:", error);
+      throw error;
+    }
+  };
 
   const handleCloseAddMailbox = () => setIsHubspotMailboxOpen(false);
 
@@ -92,17 +142,6 @@ export default function Page() {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
-
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -137,10 +176,7 @@ export default function Page() {
               </DialogHeader>
               <Separator />
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="w-2/3 space-y-6"
-                >
+                <form className="w-2/3 space-y-6">
                   <FormField
                     control={form.control}
                     name="type"
@@ -224,11 +260,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -278,71 +314,112 @@ export default function Page() {
                 </DialogDescription>
               </DialogHeader>
               <Separator />
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="w-2/3 space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>
-                          <p className="text-base text-gray-400">
-                            Configure Leads
-                          </p>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="all"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">Export All Leads</h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that is enrolled
-                                    from your AgentProd account
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="engaged"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">
-                                    Export Engaged Leads
-                                  </h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that have
-                                    responsed to your outbound workflows
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
+
+              <div>
+                <div className="w-full space-y-6">
+                  <div>
+                    <div className="space-y-3">
+                      {/* select campagin*/}
+                      <div className="flex flex-col gap-3">
+                        <p className="text-base text-gray-400">
+                          Please select the campaign for which you want to
+                          export leads to HubSpot:
+                        </p>
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              className="flex items-center justify-between space-x-2"
+                            >
+                              <span>
+                                {campaign
+                                  ? campaign.campaignName
+                                  : "Select Campaign"}
+                              </span>
+                              <ChevronDown size={20} />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="w-[29rem]">
+                            <DropdownMenuGroup>
+                              <DropdownMenuSeparator />
+                              <ScrollArea className="h-[400px] w-full rounded-md border">
+                                {allCampaigns &&
+                                  allCampaigns?.map((campaignItem, index) => (
+                                    <div key={campaignItem.campaignId}>
+                                      <DropdownMenuItem
+                                        key={campaignItem.campaignId}
+                                        onClick={() =>
+                                          setCampaign({
+                                            campaignName:
+                                              campaignItem.campaignName,
+                                            campaignId: campaignItem.campaignId,
+                                          })
+                                        }
+                                      >
+                                        <p className="cursor-pointer hover:bg-gray-700 w-full h-[22px] px-2 rounded-lg">
+                                          {campaignItem.campaignName}{" "}
+                                          {campaignItem.additionalInfo &&
+                                            `- ${campaignItem.additionalInfo}`}
+                                        </p>
+                                      </DropdownMenuItem>
+                                    </div>
+                                  ))}
+                              </ScrollArea>
+                            </DropdownMenuGroup>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </div>
+                      {/* select campagin*/}
+                      <div>
+                        <p className="text-base text-gray-400">
+                          Configure Leads
+                        </p>
+                      </div>
+                      <div>
+                        <RadioGroup
+                          value={selectedHubspotLeadType}
+                          onValueChange={setSelectedHubspotLeadType}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem value="all" className="h-6 w-6" />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">Export All Leads</h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that is enrolled
+                                  from your AgentProd account
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem
+                                value="engaged"
+                                className="h-6 w-6"
+                              />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">
+                                  Export Engaged Leads
+                                </h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that have responsed
+                                  to your outbound workflows
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <Separator />
               <div className="flex flex-row gap-4">
                 <p className="font-semibold">
@@ -358,19 +435,23 @@ export default function Page() {
                 >
                   Cancel
                 </Button>
-                <Button className="mt-3" type="submit">
-                  Update
+                <Button
+                  className="mt-3"
+                  type="submit"
+                  onClick={() => updateHubspotLeadType()}
+                >
+                  {loading ? <LoadingCircle /> : "Update"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -417,7 +498,7 @@ export default function Page() {
               <Separator />
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  // onSubmit={form.handleSubmit(onSubmit)}
                   className="w-2/3 space-y-6"
                 >
                   <FormField
@@ -503,11 +584,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -553,7 +634,7 @@ export default function Page() {
               <Separator />
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  // onSubmit={}
                   className="w-2/3 space-y-6"
                 >
                   <FormField
@@ -639,11 +720,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -691,7 +772,7 @@ export default function Page() {
               <Separator />
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  // onSubmit={form.handleSubmit(onSubmit)}
                   className="w-2/3 space-y-6"
                 >
                   <FormField
@@ -777,11 +858,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
