@@ -73,14 +73,14 @@ export function Mail({
   const { user } = useUserContext();
 
 
-  const {
-    conversationId,
-    setConversationId,
-    setRecipientEmail,
-    recipientEmail,
-    setSenderEmail,
-    senderEmail,
-  } = useMailbox();
+  // const {
+  //   conversationId,
+  //   setConversationId,
+  //   setRecipientEmail,
+  //   recipientEmail,
+  //   setSenderEmail,
+  //   senderEmail,
+  // } = useMailbox();
 
   const { setSenderEmail, isContextBarOpen } = useMailbox();
   console.log("User from mail", user);
