@@ -72,7 +72,6 @@ export function Mail({
 
   const { user } = useUserContext();
 
-
   // const {
   //   conversationId,
   //   setConversationId,
@@ -86,7 +85,6 @@ export function Mail({
   console.log("User from mail", user);
 
   const { leads } = useLeads();
-
 
   const [localIsContextBarOpen, setLocalIsContextBarOpen] =
     React.useState(false);
@@ -252,7 +250,12 @@ export function Mail({
           minSize={20}
         >
           <ScrollArea className="h-full">
-            <ThreadDisplayMain ownerEmail={""} />
+            {mails.length > 0 ? (
+              <ThreadDisplayMain ownerEmail={mails[0].recipient} />
+            ) : (
+              <p>No draft available</p>
+            )}
+            {/* <ThreadDisplayMain ownerEmail={""} /> */}
           </ScrollArea>
         </ResizablePanel>
         {localIsContextBarOpen && leads.length > 0 && (
