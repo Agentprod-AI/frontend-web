@@ -251,7 +251,7 @@ export default function Home() {
 
   return (
     <div className="flex flex-col-reverse overflow-y-scroll h-screen chat">
-      <main className="flex flex-col items-center justify-between pb-20">
+      <main className="flex flex-col items-center justify-between pb-20 mb-20">
         {messages.length > 0
           ? messages.map(
               (message, i) =>
@@ -365,7 +365,7 @@ export default function Home() {
             )
           : // <LoadingCircle />
             "No messages yet. Start by typing a message in the input field below."}
-        <div className="fixed bottom-0 flex w-full flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
+        <div className="fixed bottom-0 flex w-[85%] bg-black flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
             ref={formRef}
             onSubmit={(e) => {
