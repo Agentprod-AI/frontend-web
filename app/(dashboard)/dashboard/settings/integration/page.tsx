@@ -28,7 +28,7 @@ import {
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import logo from "../../../../../public/bw-logo.png";
-import { ArrowLeftRight, ChevronDown } from "lucide-react";
+import { ArrowLeftRight } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
 import {
@@ -46,19 +46,10 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 // import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { hubspotLogin } from ".";
+import { hubspotLogin, salesforceLogin } from ".";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuGroup,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { useCampaignContext } from "@/context/campaign-provider";
+
 import { toast } from "sonner";
 
 const FormSchema = z.object({
@@ -70,33 +61,20 @@ const FormSchema = z.object({
 export default function Page() {
   const [isHubspotMailboxOpen, setIsHubspotMailboxOpen] = React.useState(false);
   const [isConnectedToHubspot, setIsConnectedToHubspot] = React.useState(false);
-  const [campaignID, setCampaignID] = React.useState<string>("");
+
+  const [isSalesforceMailboxOpen, setIsSalesforceMailboxOpen] =
+    React.useState(false);
+  const [isConnectedToSalesforce, setIsConnectedToSalesforce] =
+    React.useState(false);
+
   const [loading, setLoading] = React.useState(false);
   const [selectedHubspotLeadType, setSelectedHubspotLeadType] =
     React.useState("all");
   const { user } = useUserContext();
-  const { campaigns } = useCampaignContext();
-  const [campaign, setCampaign] = React.useState<{
-    campaignName: string;
-    campaignId: string;
-  }>();
-
-  const allCampaigns = campaigns.map((campaign) => ({
-    campaignName: campaign.campaign_name,
-    campaignId: campaign.id,
-    additionalInfo: campaign.additional_details,
-  }));
-
-  React.useEffect(() => {
-    if (campaign?.campaignId) {
-      setCampaignID(campaign.campaignId);
-    }
-  }, [campaign]);
 
   const updateHubspotLeadType = async () => {
     setLoading(true);
     const payload = {
-      campaign_id: campaignID,
       user_id: user.id,
     };
     console.log("Payload:", payload);
@@ -112,14 +90,39 @@ export default function Page() {
     }
   };
 
-  const handleCloseAddMailbox = () => setIsHubspotMailboxOpen(false);
+  const updateSaleforceLeadType = async () => {
+    setLoading(true);
+    const payload = {
+      user_id: user.id,
+    };
+    console.log("Payload:", payload);
+    try {
+      const response = await axiosInstance.post(
+        "v2/salesforce/export",
+        payload
+      );
+      console.log("Salesforce Lead Type Updated:", response.data);
+      setLoading(false);
+      toast.success("Salesforce lead type updated successfully");
+      setIsSalesforceMailboxOpen(false);
+    } catch (error) {
+      console.error("Failed to update Salesforce lead type:", error);
+      throw error;
+    }
+  };
+
+  // closing dialogbox
+  const handleCloseHubspotMailbox = () => setIsHubspotMailboxOpen(false);
+  const handleCloseSalesforceMailbox = () => setIsSalesforceMailboxOpen(false);
+  // closing dialogbox
 
   React.useEffect(() => {
     const fetchHubSpotStatus = async (): Promise<any> => {
       try {
-        const response = await axiosInstance.get(
-          `v2/hubspot/status/${user.id}`
-        );
+        const response = await axiosInstance.post(`v2/hubspot/status/`, {
+          user_id: user.id,
+          platform: "hubspot",
+        });
         console.log("HubSpot Status:", response.data);
         setIsConnectedToHubspot(response.data.message);
       } catch (error) {
@@ -128,6 +131,21 @@ export default function Page() {
       }
     };
 
+    const fetchSalesforceStatus = async (): Promise<any> => {
+      try {
+        const response = await axiosInstance.post(`v2/hubspot/status/`, {
+          user_id: user.id,
+          platform: "salesforce",
+        });
+        console.log("Salesforce Status:", response.data);
+        setIsConnectedToSalesforce(response.data.message);
+      } catch (error) {
+        console.error("Failed to fetch salesforce status:", error);
+        throw error;
+      }
+    };
+
+    fetchSalesforceStatus();
     fetchHubSpotStatus();
   }, []);
 
@@ -136,6 +154,14 @@ export default function Page() {
       setIsHubspotMailboxOpen(true);
     } else {
       hubspotLogin(user.id);
+    }
+  };
+
+  const handleSalesforceConnect = async () => {
+    if (isConnectedToSalesforce) {
+      setIsSalesforceMailboxOpen(true);
+    } else {
+      salesforceLogin(user.id);
     }
   };
 
@@ -248,7 +274,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
@@ -319,57 +345,6 @@ export default function Page() {
                 <div className="w-full space-y-6">
                   <div>
                     <div className="space-y-3">
-                      {/* select campagin*/}
-                      <div className="flex flex-col gap-3">
-                        <p className="text-base text-gray-400">
-                          Please select the campaign for which you want to
-                          export leads to HubSpot:
-                        </p>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className="flex items-center justify-between space-x-2"
-                            >
-                              <span>
-                                {campaign
-                                  ? campaign.campaignName
-                                  : "Select Campaign"}
-                              </span>
-                              <ChevronDown size={20} />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent className="w-[29rem]">
-                            <DropdownMenuGroup>
-                              <DropdownMenuSeparator />
-                              <ScrollArea className="h-[400px] w-full rounded-md border">
-                                {allCampaigns &&
-                                  allCampaigns?.map((campaignItem, index) => (
-                                    <div key={campaignItem.campaignId}>
-                                      <DropdownMenuItem
-                                        key={campaignItem.campaignId}
-                                        onClick={() =>
-                                          setCampaign({
-                                            campaignName:
-                                              campaignItem.campaignName,
-                                            campaignId: campaignItem.campaignId,
-                                          })
-                                        }
-                                      >
-                                        <p className="cursor-pointer hover:bg-gray-700 w-full h-[22px] px-2 rounded-lg">
-                                          {campaignItem.campaignName}{" "}
-                                          {campaignItem.additionalInfo &&
-                                            `- ${campaignItem.additionalInfo}`}
-                                        </p>
-                                      </DropdownMenuItem>
-                                    </div>
-                                  ))}
-                              </ScrollArea>
-                            </DropdownMenuGroup>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </div>
-                      {/* select campagin*/}
                       <div>
                         <p className="text-base text-gray-400">
                           Configure Leads
@@ -431,7 +406,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
@@ -572,7 +547,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
@@ -609,12 +584,17 @@ export default function Page() {
             <SalesForceIcon />
             <div
               className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
-              onClick={() => {}}
+              onClick={() => {
+                handleSalesforceConnect();
+              }}
             >
-              Connect
+              {isConnectedToSalesforce ? "Connected" : "Connect"}
             </div>
           </div>
-          <Dialog>
+          <Dialog
+            open={isSalesforceMailboxOpen}
+            onOpenChange={setIsSalesforceMailboxOpen}
+          >
             <DialogContent className="w-full">
               <DialogHeader>
                 <DialogTitle>
@@ -622,9 +602,9 @@ export default function Page() {
                     <div className="flex justify-center items-center flex-row gap-3">
                       <Image src={logo} alt="logo" width={40} height={40} />
                       <ArrowLeftRight />
-                      <HubSpotIcon />
+                      <SalesForceIcon />
                     </div>
-                    Export AgentProd Leads to HubSpot
+                    Export AgentProd Leads to Salesforce
                   </div>
                 </DialogTitle>
                 <DialogDescription>
@@ -632,71 +612,61 @@ export default function Page() {
                 </DialogDescription>
               </DialogHeader>
               <Separator />
-              <Form {...form}>
-                <form
-                  // onSubmit={}
-                  className="w-2/3 space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>
-                          <p className="text-base text-gray-400">
-                            Configure Leads
-                          </p>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="all"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">Export All Leads</h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that is enrolled
-                                    from your AgentProd account
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="engaged"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">
-                                    Export Engaged Leads
-                                  </h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that have
-                                    responsed to your outbound workflows
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
+
+              <div>
+                <div className="w-full space-y-6">
+                  <div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-base text-gray-400">
+                          Configure Leads
+                        </p>
+                      </div>
+                      <div>
+                        <RadioGroup
+                          value={selectedHubspotLeadType}
+                          onValueChange={setSelectedHubspotLeadType}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem value="all" className="h-6 w-6" />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">Export All Leads</h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that is enrolled
+                                  from your AgentProd account
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem
+                                value="engaged"
+                                className="h-6 w-6"
+                              />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">
+                                  Export Engaged Leads
+                                </h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that have responsed
+                                  to your outbound workflows
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <Separator />
               <div className="flex flex-row gap-4">
                 <p className="font-semibold">
@@ -708,26 +678,20 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseSalesforceMailbox}
                 >
                   Cancel
                 </Button>
-                <Button className="mt-3" type="submit">
-                  Update
+                <Button
+                  className="mt-3"
+                  type="submit"
+                  onClick={() => updateSaleforceLeadType()}
+                >
+                  {loading ? <LoadingCircle /> : "Update"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm">
-              Disconnect
-            </Button>
-          ) : (
-            <Button variant={"outline"} className="text-sm">
-              Connect
-            </Button>
-          )} */}
         </CardHeader>
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Salesforce</CardTitle>
@@ -846,7 +810,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
