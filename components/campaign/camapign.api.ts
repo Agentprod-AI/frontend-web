@@ -1,6 +1,7 @@
 import axiosInstance from "@/utils/axiosInstance";
 import {
   CampaignEntry,
+  GoalData,
   GoalFormData,
   OfferingFormData,
   defaultCampaignEntry,
@@ -8,6 +9,10 @@ import {
   defaultOfferingEntry,
 } from "@/context/campaign-provider";
 import { toast } from "@/components/ui/use-toast";
+
+export interface GoalDataWithId extends GoalData {
+  id: string;
+}
 
 export const getCampaignById = async (
   campaignId: string
@@ -33,11 +38,11 @@ export const getCampaignById = async (
 
 export const getGoalById = async (
   campaignId: string
-): Promise<GoalFormData> => {
+): Promise<GoalDataWithId> => {
   const response = await axiosInstance
     .get(`v2/goals/${campaignId}`)
     .then((response) => {
-      const data = response.data as GoalFormData;
+      const data = response.data as GoalDataWithId;
       console.log("Goal fetched successfully:", data);
       return data;
     })
@@ -47,7 +52,15 @@ export const getGoalById = async (
         title: "Error fetching campaign",
         description: error.message || "Failed to fetch campaign.",
       });
-      return defaultGoalEntry;
+      return {
+        id: "",
+        success_metric: "",
+        scheduling_link: "",
+        emails: [],
+        follow_up_days: 0,
+        follow_up_times: 0,
+        mark_as_lost: 0,
+      } as GoalDataWithId;
     });
 
   return response;
