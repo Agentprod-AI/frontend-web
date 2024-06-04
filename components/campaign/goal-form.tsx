@@ -29,8 +29,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { toast } from "@/components/ui/use-toast";
-import { useCampaignContext, GoalFormData } from "@/context/campaign-provider";
-import { getGoalById } from "./camapign.api";
+import {
+  useCampaignContext,
+  GoalFormData,
+  GoalData,
+} from "@/context/campaign-provider";
+import { GoalDataWithId, getGoalById } from "./camapign.api";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
@@ -76,14 +80,14 @@ type GoalFormValues = z.infer<typeof goalFormSchema>;
 const defaultValues: Partial<GoalFormValues> = {};
 
 export function GoalForm({ type }: { type: string }) {
-  const router = useRouter();
   const params = useParams<{ campaignId: string }>();
 
   const { createGoal, editGoal } = useCampaignContext();
-  const [goalData, setGoalData] = useState<GoalFormData>();
+  const [goalData, setGoalData] = useState<GoalDataWithId>();
   const { user } = useUserContext();
   const [mailboxes, setMailboxes] =
     useState<{ mailbox: string; sender_name: string }[]>();
+  const [originalData, setOriginalData] = useState<GoalFormData>();
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -91,7 +95,7 @@ export function GoalForm({ type }: { type: string }) {
     mode: "onChange",
   });
 
-  const { control, handleSubmit } = form;
+  const { control, handleSubmit, reset } = form;
   const {
     fields: emailFields,
     append: appendEmail,
@@ -125,6 +129,7 @@ export function GoalForm({ type }: { type: string }) {
       createGoal(data, params.campaignId);
     }
     if (type === "edit") {
+      console.log(watchAllFields);
       const changes = Object.keys(data).reduce((acc, key) => {
         // Ensure the correct key type is used
         const propertyKey = key as keyof GoalFormValues;
@@ -132,7 +137,7 @@ export function GoalForm({ type }: { type: string }) {
         // Compare the stringified versions of the current and previous values
         if (
           JSON.stringify(data[propertyKey]) !==
-          JSON.stringify(watchAllFields[propertyKey])
+          JSON.stringify(originalData?.[propertyKey])
         ) {
           // Assign only if types are compatible
           acc = { ...acc, [propertyKey]: data[propertyKey] };
@@ -140,8 +145,8 @@ export function GoalForm({ type }: { type: string }) {
         return acc;
       }, {} as GoalFormValues);
 
-      if (Object.keys(changes).length > 0) {
-        editGoal(changes, params.campaignId);
+      if (Object.keys(changes).length > 0 && goalData) {
+        editGoal(changes, goalData.id, params.campaignId);
       }
     }
   };
@@ -153,6 +158,10 @@ export function GoalForm({ type }: { type: string }) {
         if (id) {
           const goal = await getGoalById(id);
           setGoalData(goal || null);
+          const formattedEmails = goal.emails.map((email) => ({
+            value: email,
+          }));
+          setOriginalData({ ...goal, emails: formattedEmails });
         }
       }
     };
@@ -161,15 +170,23 @@ export function GoalForm({ type }: { type: string }) {
   }, [params.campaignId, getGoalById]);
 
   useEffect(() => {
+    console.log("goal data", goalData);
     if (goalData) {
-      form.setValue("success_metric", goalData.success_metric);
-      form.setValue("scheduling_link", goalData.scheduling_link);
-      form.setValue("follow_up_days", goalData.follow_up_days);
-      form.setValue("follow_up_times", goalData.follow_up_times);
-      form.setValue("mark_as_lost", goalData.mark_as_lost);
-      form.setValue("emails", goalData.emails);
+      setOriginalData({
+        success_metric: goalData.success_metric,
+        scheduling_link: goalData.scheduling_link,
+        follow_up_days: goalData.follow_up_days,
+        follow_up_times: goalData.follow_up_times,
+        mark_as_lost: goalData.mark_as_lost,
+        emails: goalData.emails.map((email) => ({ value: email })),
+      });
+      // Also update the form values to reflect the initial state
+      form.reset({
+        ...goalData,
+        emails: goalData.emails.map((email) => ({ value: email })),
+      });
     }
-  }, [goalData]);
+  }, [goalData, form]);
 
   useEffect(() => {
     const fetchMailboxes = async () => {
@@ -301,34 +318,37 @@ export function GoalForm({ type }: { type: string }) {
                   <DropdownMenuContent className="w-max">
                     <ScrollArea className="h-60">
                       <DropdownMenuGroup>
-                        {mailboxes &&
-                          mailboxes.map((mailbox, index) => {
-                            return (
-                              <DropdownMenuItem key={index}>
-                                <div
-                                  className="flex items-center space-x-2"
-                                  onClick={(event) => event.stopPropagation()}
-                                >
-                                  <Checkbox
-                                    checked={emailFields.some(
-                                      (emailField) =>
-                                        emailField.value === mailbox.mailbox
-                                    )}
-                                    onCheckedChange={(checked) => {
-                                      if (checked) {
-                                        onEmailAppend(mailbox.mailbox);
-                                      } else {
-                                        onEmailRemove(mailbox.mailbox);
-                                      }
-                                    }}
-                                  />
-                                  <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                    {mailbox.sender_name} - {mailbox.mailbox}
-                                  </label>
-                                </div>
-                              </DropdownMenuItem>
-                            );
-                          })}
+                        {mailboxes && mailboxes[0].mailbox !== null ? (
+                          mailboxes.map((mailbox, index) => (
+                            <DropdownMenuItem key={index}>
+                              <div
+                                className="flex items-center space-x-2"
+                                onClick={(event) => event.stopPropagation()}
+                              >
+                                <Checkbox
+                                  checked={emailFields.some(
+                                    (emailField) =>
+                                      emailField.value === mailbox.mailbox
+                                  )}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      onEmailAppend(mailbox.mailbox);
+                                    } else {
+                                      onEmailRemove(mailbox.mailbox);
+                                    }
+                                  }}
+                                />
+                                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                  {mailbox.sender_name} - {mailbox.mailbox}
+                                </label>
+                              </div>
+                            </DropdownMenuItem>
+                          ))
+                        ) : (
+                          <div className="text-sm m-2">
+                            No mailboxes connected.
+                          </div>
+                        )}
                       </DropdownMenuGroup>
                     </ScrollArea>
                   </DropdownMenuContent>
@@ -415,7 +435,11 @@ export function GoalForm({ type }: { type: string }) {
           )}
         />
 
-        <Button type="submit">Add Goal</Button>
+        {type === "edit" ? (
+          <Button type="submit">Update Goal</Button>
+        ) : (
+          <Button type="submit">Add Goal</Button>
+        )}
       </form>
     </Form>
   );

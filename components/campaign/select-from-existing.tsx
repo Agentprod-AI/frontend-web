@@ -31,7 +31,7 @@ export const SelectFromExisting = () => {
     async function fetchAllLeads() {
       setIsTableLoading(true);
       axiosInstance
-        .get(`v2/lead/all/`)
+        .get(`v2/lead/all/${user.id}`)
         .then((response) => {
           console.log(response);
           setLeads(response.data);
@@ -45,8 +45,6 @@ export const SelectFromExisting = () => {
     }
 
     fetchAllLeads();
-
-    async function fetchCompanyScrape(company: string) {}
   }, []);
 
   function mapLeadsToBodies(leads: Contact[], campaignId: string): Contact[] {

@@ -14,7 +14,7 @@ import { Button } from "@/components/ui/button";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../ui/tabs";
 import { toast } from "sonner";
 import { Contact, Lead, useLeads } from "@/context/lead-user";
@@ -178,6 +178,8 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
   const [organizationKeywordTags, setOrganizationKeywordTags] = React.useState<
     Tag[]
   >([]);
+
+  const keywordDropdownRef = useRef<HTMLDivElement>(null);
 
   const { setValue } = form;
 
@@ -713,13 +715,13 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
   const updateAudience = async () => {
     const formData = form.getValues();
 
-    const pages = formData.per_page ? Math.ceil(formData.per_page / 100) : 1;
+    const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
 
     const filters = {
       ...(pages && { page: pages }),
       ...(formData.per_page && {
         per_page:
-          formData.per_page > 100
+          formData.per_page > 10
             ? Math.ceil(formData.per_page / pages)
             : formData.per_page,
       }),
@@ -842,6 +844,23 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       organizationKeywordTags as [Tag, ...Tag[]]
     );
   }, [organizationKeywordTags]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        keywordDropdownRef.current &&
+        !keywordDropdownRef.current.contains(event.target as Node)
+      ) {
+        setKeywordDropdownIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
     <Form {...form}>
@@ -1210,7 +1229,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                       control={form.control}
                       name="q_organization_keyword_tags"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col items-start py-4 w-8/12">
+                        <FormItem className="flex flex-col items-start pb-4 w-8/12">
                           <FormControl>
                             <TagInput
                               {...field}
@@ -1238,7 +1257,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                         </FormItem>
                       )}
                     />
-                    <div className="absolute inline-block text-left mt-1">
+                    <div className="absolute inline-block text-left -my-4">
                       {keywordDropdownIsOpen && (
                         <ScrollArea className="w-56 h-[200px] rounded-md shadow-lg bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
                           <div
@@ -1249,6 +1268,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                             onClick={(e) => {
                               toggleKeywordsDropdown(false);
                             }}
+                            ref={keywordDropdownRef}
                           >
                             {keywords.map((option) => (
                               <button
