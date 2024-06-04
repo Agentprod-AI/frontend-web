@@ -61,6 +61,7 @@ export default function Training() {
     setContact,
     setLinkedinInformation,
     setPreviewType,
+    previewType,
   } = useAutoGenerate();
   const { fieldsList, body, subject, followUp } = useFieldsList();
   const router = useRouter();
@@ -119,14 +120,21 @@ export default function Training() {
         ),
       };
 
-      console.log("training body", trainingBody);
+      const postTraining = await createTraining(
+        trainingBody as TrainingRequest
+      );
 
-      // const postTraining = await createTraining(
-      //   trainingBody as TrainingRequest
-      // );
-      // const response = await startCampaign(params.campaignId, userId);
+      if (previewType == "previewFromTemplate") {
+        const response = await startCampaign(
+          params.campaignId,
+          userId,
+          "False"
+        );
+      } else if (previewType == "previewFromAI") {
+        const response = await startCampaign(params.campaignId, userId, "True");
+      }
       setStartCampaignIsLoading(false);
-      // router.push("/dashboard/mail");
+      router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);
       toast.error(error.message);
