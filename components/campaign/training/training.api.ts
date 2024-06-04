@@ -137,7 +137,8 @@ export async function getAutogenerateTrainingEmail(
 
 export async function startCampaign(
   campaignId: string,
-  userId: string
+  userId: string,
+  withoutTemplate: "False" | "True"
 ): Promise<any> {
   const postData = {
     campaign_id: campaignId,
@@ -255,4 +256,3 @@ export async function getAutogenerateFollowup(
     throw error;
   }
 }
-
