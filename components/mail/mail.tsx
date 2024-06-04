@@ -72,6 +72,15 @@ export function Mail({
 
   const { user } = useUserContext();
 
+  // const {
+  //   conversationId,
+  //   setConversationId,
+  //   setRecipientEmail,
+  //   recipientEmail,
+  //   setSenderEmail,
+  //   senderEmail,
+  // } = useMailbox();
+
   const { setSenderEmail, isContextBarOpen } = useMailbox();
   console.log("User from mail", user);
 
@@ -187,8 +196,8 @@ export function Mail({
                     <DropdownMenuGroup>
                       <DropdownMenuSeparator />
                       <ScrollArea className="h-[400px] w-full rounded-md">
-                        {allCampaigns &&
-                          allCampaigns.map((campaignItem) => (
+                        {allCampaigns && allCampaigns.length > 0 ? (
+                          allCampaigns.map((campaignItem, index) => (
                             <div key={campaignItem.campaignId}>
                               <DropdownMenuItem
                                 key={campaignItem.campaignId}
@@ -206,7 +215,12 @@ export function Mail({
                                 </p>
                               </DropdownMenuItem>
                             </div>
-                          ))}
+                          ))
+                        ) : (
+                          <p className="text-center mt-10">
+                            No campaign available.
+                          </p>
+                        )}
                       </ScrollArea>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
@@ -236,7 +250,12 @@ export function Mail({
           minSize={20}
         >
           <ScrollArea className="h-full">
-            <ThreadDisplayMain ownerEmail={""} />
+            {mails.length > 0 ? (
+              <ThreadDisplayMain ownerEmail={mails[0].recipient} />
+            ) : (
+              <p>No draft available</p>
+            )}
+            {/* <ThreadDisplayMain ownerEmail={""} /> */}
           </ScrollArea>
         </ResizablePanel>
         {localIsContextBarOpen && leads.length > 0 && (

@@ -1,7 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 "use client";
 import React from "react";
-
-// import { Button } from '@/components/ui/button';
 import {
   Card,
   CardContent,
@@ -12,21 +12,19 @@ import {
 import {
   HubSpotIcon,
   LinkedInIcon,
+  LoadingCircle,
   SalesForceIcon,
   SlackIcon,
   ZapierIcon,
 } from "@/app/icons";
 import {
   Dialog,
-  // DialogTrigger,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
   DialogFooter,
-  // DialogClose,
 } from "@/components/ui/dialog";
-// import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import logo from "../../../../../public/bw-logo.png";
@@ -46,16 +44,13 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-import { toast } from "@/components/ui/use-toast";
+// import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
+import { hubspotLogin, salesforceLogin } from ".";
+import { useUserContext } from "@/context/user-context";
+import axiosInstance from "@/utils/axiosInstance";
 
-// type Service = {
-//   name: string;
-//   description: string;
-//   logo: string;
-//   isConnected: boolean;
-//   // onConnect: () => void;
-// };
+import { toast } from "sonner";
 
 const FormSchema = z.object({
   type: z.enum(["all", "engaged"], {
@@ -63,64 +58,116 @@ const FormSchema = z.object({
   }),
 });
 
-// const services = [
-//   {
-//     name: "Slack",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <SlackIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   {
-//     name: "HubSpot",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <HubSpotIcon />,
-//     isConnected: true,
-//     available: "Connect",
-//   },
-//   {
-//     name: "LinkedIn",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <LinkedInIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   {
-//     name: "Salesforce",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <SalesForceIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   {
-//     name: "Zapier",
-//     description: "Used to interact with the Artisan and receive notifications.",
-//     logo: <ZapierIcon />,
-//     isConnected: false,
-//     available: "Coming Soon",
-//   },
-//   // Add more services as needed
-// ];
-
 export default function Page() {
   const [isHubspotMailboxOpen, setIsHubspotMailboxOpen] = React.useState(false);
-  const handleOpenAddMailbox = () => setIsHubspotMailboxOpen(true);
-  const handleCloseAddMailbox = () => setIsHubspotMailboxOpen(false);
+  const [isConnectedToHubspot, setIsConnectedToHubspot] = React.useState(false);
+
+  const [isSalesforceMailboxOpen, setIsSalesforceMailboxOpen] =
+    React.useState(false);
+  const [isConnectedToSalesforce, setIsConnectedToSalesforce] =
+    React.useState(false);
+
+  const [loading, setLoading] = React.useState(false);
+  const [selectedHubspotLeadType, setSelectedHubspotLeadType] =
+    React.useState("all");
+  const { user } = useUserContext();
+
+  const updateHubspotLeadType = async () => {
+    setLoading(true);
+    const payload = {
+      user_id: user.id,
+    };
+    console.log("Payload:", payload);
+    try {
+      const response = await axiosInstance.post("v2/hubspot/export", payload);
+      console.log("HubSpot Lead Type Updated:", response.data);
+      setLoading(false);
+      toast.success("HubSpot lead type updated successfully");
+      setIsHubspotMailboxOpen(false);
+    } catch (error) {
+      console.error("Failed to update HubSpot lead type:", error);
+      throw error;
+    }
+  };
+
+  const updateSaleforceLeadType = async () => {
+    setLoading(true);
+    const payload = {
+      user_id: user.id,
+    };
+    console.log("Payload:", payload);
+    try {
+      const response = await axiosInstance.post(
+        "v2/salesforce/export",
+        payload
+      );
+      console.log("Salesforce Lead Type Updated:", response.data);
+      setLoading(false);
+      toast.success("Salesforce lead type updated successfully");
+      setIsSalesforceMailboxOpen(false);
+    } catch (error) {
+      console.error("Failed to update Salesforce lead type:", error);
+      throw error;
+    }
+  };
+
+  // closing dialogbox
+  const handleCloseHubspotMailbox = () => setIsHubspotMailboxOpen(false);
+  const handleCloseSalesforceMailbox = () => setIsSalesforceMailboxOpen(false);
+  // closing dialogbox
+
+  React.useEffect(() => {
+    const fetchHubSpotStatus = async (): Promise<any> => {
+      try {
+        const response = await axiosInstance.post(`v2/hubspot/status/`, {
+          user_id: user.id,
+          platform: "hubspot",
+        });
+        console.log("HubSpot Status:", response.data);
+        setIsConnectedToHubspot(response.data.message);
+      } catch (error) {
+        console.error("Failed to fetch HubSpot status:", error);
+        throw error;
+      }
+    };
+
+    const fetchSalesforceStatus = async (): Promise<any> => {
+      try {
+        const response = await axiosInstance.post(`v2/hubspot/status/`, {
+          user_id: user.id,
+          platform: "salesforce",
+        });
+        console.log("Salesforce Status:", response.data);
+        setIsConnectedToSalesforce(response.data.message);
+      } catch (error) {
+        console.error("Failed to fetch salesforce status:", error);
+        throw error;
+      }
+    };
+
+    fetchSalesforceStatus();
+    fetchHubSpotStatus();
+  }, []);
+
+  const handleHubspotConnect = async () => {
+    if (isConnectedToHubspot) {
+      setIsHubspotMailboxOpen(true);
+    } else {
+      hubspotLogin(user.id);
+    }
+  };
+
+  const handleSalesforceConnect = async () => {
+    if (isConnectedToSalesforce) {
+      setIsSalesforceMailboxOpen(true);
+    } else {
+      salesforceLogin(user.id);
+    }
+  };
 
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
-
-  function onSubmit(data: z.infer<typeof FormSchema>) {
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
-  }
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -155,10 +202,7 @@ export default function Page() {
               </DialogHeader>
               <Separator />
               <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="w-2/3 space-y-6"
-                >
+                <form className="w-2/3 space-y-6">
                   <FormField
                     control={form.control}
                     name="type"
@@ -230,7 +274,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
@@ -242,11 +286,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -254,7 +298,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Slack</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -269,10 +313,10 @@ export default function Page() {
             <div
               className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
               onClick={() => {
-                handleOpenAddMailbox();
+                handleHubspotConnect();
               }}
             >
-              Connect
+              {isConnectedToHubspot ? "Connected" : "Connect"}
             </div>
           </div>
           <Dialog
@@ -296,71 +340,61 @@ export default function Page() {
                 </DialogDescription>
               </DialogHeader>
               <Separator />
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="w-2/3 space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>
-                          <p className="text-base text-gray-400">
-                            Configure Leads
-                          </p>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="all"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">Export All Leads</h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that is enrolled
-                                    from your AgentProd account
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="engaged"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">
-                                    Export Engaged Leads
-                                  </h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that have
-                                    responsed to your outbound workflows
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
+
+              <div>
+                <div className="w-full space-y-6">
+                  <div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-base text-gray-400">
+                          Configure Leads
+                        </p>
+                      </div>
+                      <div>
+                        <RadioGroup
+                          value={selectedHubspotLeadType}
+                          onValueChange={setSelectedHubspotLeadType}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem value="all" className="h-6 w-6" />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">Export All Leads</h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that is enrolled
+                                  from your AgentProd account
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem
+                                value="engaged"
+                                className="h-6 w-6"
+                              />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">
+                                  Export Engaged Leads
+                                </h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that have responsed
+                                  to your outbound workflows
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <Separator />
               <div className="flex flex-row gap-4">
                 <p className="font-semibold">
@@ -372,23 +406,27 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
-                <Button className="mt-3" type="submit">
-                  Update
+                <Button
+                  className="mt-3"
+                  type="submit"
+                  onClick={() => updateHubspotLeadType()}
+                >
+                  {loading ? <LoadingCircle /> : "Update"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -396,7 +434,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Hubspot</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -435,7 +473,7 @@ export default function Page() {
               <Separator />
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  // onSubmit={form.handleSubmit(onSubmit)}
                   className="w-2/3 space-y-6"
                 >
                   <FormField
@@ -509,7 +547,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
@@ -521,11 +559,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -533,7 +571,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>LinkedIn</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -546,12 +584,17 @@ export default function Page() {
             <SalesForceIcon />
             <div
               className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
-              onClick={() => {}}
+              onClick={() => {
+                handleSalesforceConnect();
+              }}
             >
-              Connect
+              {isConnectedToSalesforce ? "Connected" : "Connect"}
             </div>
           </div>
-          <Dialog>
+          <Dialog
+            open={isSalesforceMailboxOpen}
+            onOpenChange={setIsSalesforceMailboxOpen}
+          >
             <DialogContent className="w-full">
               <DialogHeader>
                 <DialogTitle>
@@ -559,9 +602,9 @@ export default function Page() {
                     <div className="flex justify-center items-center flex-row gap-3">
                       <Image src={logo} alt="logo" width={40} height={40} />
                       <ArrowLeftRight />
-                      <HubSpotIcon />
+                      <SalesForceIcon />
                     </div>
-                    Export AgentProd Leads to HubSpot
+                    Export AgentProd Leads to Salesforce
                   </div>
                 </DialogTitle>
                 <DialogDescription>
@@ -569,71 +612,61 @@ export default function Page() {
                 </DialogDescription>
               </DialogHeader>
               <Separator />
-              <Form {...form}>
-                <form
-                  onSubmit={form.handleSubmit(onSubmit)}
-                  className="w-2/3 space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>
-                          <p className="text-base text-gray-400">
-                            Configure Leads
-                          </p>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="all"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">Export All Leads</h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that is enrolled
-                                    from your AgentProd account
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="engaged"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">
-                                    Export Engaged Leads
-                                  </h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that have
-                                    responsed to your outbound workflows
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
+
+              <div>
+                <div className="w-full space-y-6">
+                  <div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-base text-gray-400">
+                          Configure Leads
+                        </p>
+                      </div>
+                      <div>
+                        <RadioGroup
+                          value={selectedHubspotLeadType}
+                          onValueChange={setSelectedHubspotLeadType}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem value="all" className="h-6 w-6" />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">Export All Leads</h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that is enrolled
+                                  from your AgentProd account
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem
+                                value="engaged"
+                                className="h-6 w-6"
+                              />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">
+                                  Export Engaged Leads
+                                </h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that have responsed
+                                  to your outbound workflows
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
               <Separator />
               <div className="flex flex-row gap-4">
                 <p className="font-semibold">
@@ -645,31 +678,25 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseSalesforceMailbox}
                 >
                   Cancel
                 </Button>
-                <Button className="mt-3" type="submit">
-                  Update
+                <Button
+                  className="mt-3"
+                  type="submit"
+                  onClick={() => updateSaleforceLeadType()}
+                >
+                  {loading ? <LoadingCircle /> : "Update"}
                 </Button>
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-          {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
-              Disconnect
-            </Button>
-          ) : (
-            <Button variant={"outline"} className="text-sm"> 
-              Connect
-            </Button>
-          )} */}
         </CardHeader>
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Salesforce</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>
@@ -709,7 +736,7 @@ export default function Page() {
               <Separator />
               <Form {...form}>
                 <form
-                  onSubmit={form.handleSubmit(onSubmit)}
+                  // onSubmit={form.handleSubmit(onSubmit)}
                   className="w-2/3 space-y-6"
                 >
                   <FormField
@@ -783,7 +810,7 @@ export default function Page() {
                 <Button
                   variant={"outline"}
                   className="mt-3"
-                  onClick={handleCloseAddMailbox}
+                  onClick={handleCloseHubspotMailbox}
                 >
                   Cancel
                 </Button>
@@ -795,11 +822,11 @@ export default function Page() {
           </Dialog>
 
           {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Disconnect
             </Button>
           ) : (
-            <Button variant={"outline"} className="text-sm"> 
+            <Button variant={"outline"} className="text-sm">
               Connect
             </Button>
           )} */}
@@ -807,7 +834,7 @@ export default function Page() {
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Zapier</CardTitle>
           <CardDescription>
-            Used to interact with the Artisan and receive notifications.
+            Used to interact with the AgentProd and receive notifications.
           </CardDescription>
         </CardContent>
       </Card>

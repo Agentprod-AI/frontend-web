@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
 
-
 type Info = {
   id: string;
   value: string | undefined | null | number;
@@ -45,14 +44,18 @@ export default function Page() {
             {
               id: "ID",
               value: data.user_id || user.id,
-              isEditable: true,
+              isEditable: false,
             },
             {
               id: "Sender First Name",
               value: data.first_name,
               isEditable: true,
             },
-            { id: "Sender Last Name", value: data.last_name, isEditable: true },
+            {
+              id: "Sender Last Name",
+              value: data.last_name,
+              isEditable: true,
+            },
             { id: "Sender Job", value: data.job, isEditable: false },
             { id: "Email", value: data.email, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
