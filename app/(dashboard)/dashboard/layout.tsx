@@ -52,11 +52,10 @@ export default function DashboardLayout({
           >
             {width > 768 ? (
               <ResizablePanel
-                // defaultSize={!isCollapsed ? 15 : 5} // Default size when expanded
+                defaultSize={15} // Default size when expanded
                 collapsedSize={5} // Size when collapsed
                 collapsible={true}
                 minSize={5}
-                maxSize={20}
                 onCollapse={() => {
                   setIsCollapsed(true);
                   document.cookie = `react-resizable-panels:collapsed=${JSON.stringify(

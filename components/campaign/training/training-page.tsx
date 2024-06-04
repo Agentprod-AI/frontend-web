@@ -12,6 +12,8 @@ import {
   getAutogenerateTrainingEmail,
   startCampaign,
   getPreviewByTemplate,
+  createTraining,
+  TrainingRequest,
 } from "./training.api";
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
@@ -19,6 +21,9 @@ import { useParams } from "next/navigation";
 import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useFieldsList } from "@/context/training-fields-provider";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { LoadingCircle } from "@/app/icons";
+import { FieldType, VariableType } from "./types";
+import { toast } from "sonner";
 
 export interface PreviewData {
   email: {
@@ -57,8 +62,10 @@ export default function Training() {
     setLinkedinInformation,
     setPreviewType,
   } = useAutoGenerate();
-  const { fieldsList, body, subject } = useFieldsList();
+  const { fieldsList, body, subject, followUp } = useFieldsList();
   const router = useRouter();
+  const [startCampaignIsLoading, setStartCampaignIsLoading] =
+    React.useState(false);
 
   const handleGenerateWithAI = async () => {
     try {
@@ -81,14 +88,47 @@ export default function Training() {
   };
 
   const handleStartCampaign = async () => {
+    setStartCampaignIsLoading(true);
     const userId = user.id as string;
 
     try {
+      const trainingBody = {
+        campaign_id: params.campaignId,
+        template: `Subject: ${subject}
+        
+        ${body}
+        `,
+        follow_up_template: followUp,
+        variables: fieldsList.variables.map((variable: VariableType) => {
+          return variable.value;
+        }),
+        offering_variables: fieldsList.offering_variables.reduce<
+          Record<string, string>
+        >((acc, field) => {
+          acc[field.fieldName] = field.description;
+          return acc;
+        }, {}),
+        personalized_fields: fieldsList.personalized_fields.reduce<
+          Record<string, string>
+        >((acc, field) => {
+          acc[field.fieldName] = field.description;
+          return acc;
+        }, {}),
+        enriched_fields: fieldsList.enriched_fields.map(
+          (field) => field.fieldName
+        ),
+      };
+
+      const postTraining = await createTraining(
+        trainingBody as TrainingRequest
+      );
       const response = await startCampaign(params.campaignId, userId);
-      console.log("trainingResponse", response);
+      setStartCampaignIsLoading(false);
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);
+      toast.error(error.message);
+      setStartCampaignIsLoading(false);
     }
   };
 
@@ -178,7 +218,11 @@ export default function Training() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button onClick={handleStartCampaign}>Start campaign</Button>
+          {startCampaignIsLoading ? (
+            <LoadingCircle />
+          ) : (
+            <Button onClick={handleStartCampaign}>Start campaign</Button>
+          )}
         </div>
       </div>
       {activeTab === "editor" ? (
