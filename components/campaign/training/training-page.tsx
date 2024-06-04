@@ -119,12 +119,14 @@ export default function Training() {
         ),
       };
 
-      const postTraining = await createTraining(
-        trainingBody as TrainingRequest
-      );
-      const response = await startCampaign(params.campaignId, userId);
+      console.log("training body", trainingBody);
+
+      // const postTraining = await createTraining(
+      //   trainingBody as TrainingRequest
+      // );
+      // const response = await startCampaign(params.campaignId, userId);
       setStartCampaignIsLoading(false);
-      router.push("/dashboard/mail");
+      // router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);
       toast.error(error.message);
