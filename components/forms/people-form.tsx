@@ -713,13 +713,13 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
   const updateAudience = async () => {
     const formData = form.getValues();
 
-    const pages = formData.per_page ? Math.ceil(formData.per_page / 100) : 1;
+    const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
 
     const filters = {
       ...(pages && { page: pages }),
       ...(formData.per_page && {
         per_page:
-          formData.per_page > 100
+          formData.per_page > 10
             ? Math.ceil(formData.per_page / pages)
             : formData.per_page,
       }),
