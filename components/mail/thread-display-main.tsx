@@ -452,9 +452,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   </CardContent>
                   <CardFooter className="flex justify-between text-xs items-center">
                     <div>
-                      <Button disabled={editable} onClick={handleApproveEmail}>
+                      {/* <Button disabled={editable} onClick={handleApproveEmail}>
                         Approve
-                      </Button>
+                      </Button> */}
                       <Button
                         variant={"secondary"}
                         className="ml-2"
