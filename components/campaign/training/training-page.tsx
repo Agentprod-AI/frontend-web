@@ -121,9 +121,12 @@ export default function Training() {
         ${body}
         `,
         follow_up_template: followUp,
-        variables: fieldsList.variables.map((variable: VariableType) => {
-          return variable.value;
-        }),
+        variables: fieldsList.variables.reduce<Record<string, string>>(
+          (acc, field) => {
+            acc[field.id] = field.value;
+            return acc;
+          }, {}
+        ),
         offering_variables: fieldsList.offering_variables.reduce<
           Record<string, string>
         >((acc, field) => {
