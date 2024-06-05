@@ -19,6 +19,7 @@ import { useParams } from "next/navigation";
 import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useFieldsList } from "@/context/training-fields-provider";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { toast } from "sonner";
 
 export interface PreviewData {
   email: {
@@ -86,6 +87,9 @@ export default function Training() {
     try {
       const response = await startCampaign(params.campaignId, userId);
       console.log("trainingResponse", response);
+      toast.success(
+        "Your drafts are getting created, it might take some time."
+      );
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);
