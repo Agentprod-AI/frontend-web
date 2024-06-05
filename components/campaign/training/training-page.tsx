@@ -93,6 +93,27 @@ export default function Training() {
     const userId = user.id as string;
 
     try {
+      if (previewType == "previewFromTemplate") {
+        const response = await startCampaign(
+          params.campaignId,
+          userId,
+          "False"
+        );
+      } else if (previewType == "previewFromAI") {
+        const response = await startCampaign(params.campaignId, userId, "True");
+      }
+      setStartCampaignIsLoading(false);
+      router.push("/dashboard/mail");
+    } catch (error: any) {
+      console.log("TrainingResponse", error);
+      toast.error(error.message);
+      setStartCampaignIsLoading(false);
+    }
+  };
+
+  const handleCustomGenerate = async () => {
+    try {
+
       const trainingBody = {
         campaign_id: params.campaignId,
         template: `Subject: ${subject}
@@ -124,26 +145,6 @@ export default function Training() {
         trainingBody as TrainingRequest
       );
 
-      if (previewType == "previewFromTemplate") {
-        const response = await startCampaign(
-          params.campaignId,
-          userId,
-          "False"
-        );
-      } else if (previewType == "previewFromAI") {
-        const response = await startCampaign(params.campaignId, userId, "True");
-      }
-      setStartCampaignIsLoading(false);
-      router.push("/dashboard/mail");
-    } catch (error: any) {
-      console.log("TrainingResponse", error);
-      toast.error(error.message);
-      setStartCampaignIsLoading(false);
-    }
-  };
-
-  const handleCustomGenerate = async () => {
-    try {
       const response = await getPreviewByTemplate({
         campaign_id: params.campaignId,
         user_id: user.id,
