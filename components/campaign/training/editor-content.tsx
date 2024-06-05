@@ -6,7 +6,7 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Input } from "@/components/ui/input";
-import { Settings, Plus } from "lucide-react";
+import { Settings, Plus, Loader } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
@@ -20,9 +20,14 @@ import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useParams } from "next/navigation";
 import { useFieldsList } from "@/context/training-fields-provider";
 import { Textarea } from "@/components/ui/textarea";
-import { getAutogenerateTrainingTemplate } from "./training.api";
-import { allFieldsListType } from "./types";
+import {
+  getAutogenerateFollowup,
+  getAutogenerateTrainingTemplate,
+} from "./training.api";
+import { FieldType, VariableType, allFieldsListType } from "./types";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { LoadingCircle } from "@/app/icons";
+import { toast } from "sonner";
 
 interface Variable {
   id: string;
@@ -34,13 +39,15 @@ interface Variable {
 export default function EditorContent() {
   const [isOpen, setIsOpen] = useState(false);
   const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(false);
-  const [keywordDropdownIsOpen, setKeywordDropdownIsOpen] = useState(false);
+  const [variableDropdownIsOpen, setVariableDropdownIsOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState<number | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
     top: number;
     left: number;
   } | null>(null);
+  const [templateIsLoading, setTemplateIsLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const followUpRef = useRef<HTMLTextAreaElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   const {
@@ -51,15 +58,16 @@ export default function EditorContent() {
     setSubject,
     followUp,
     setFollowUp,
-    addField,
+    setFieldsList,
   } = useFieldsList();
   const params = useParams<{ campaignId: string }>();
 
   const [localBody, setLocalBody] = useState(body);
   const [localSubject, setLocalSubject] = useState(subject);
   const [localFollowUp, setLocalFollowUp] = useState(followUp);
+  const [focusedField, setFocusedField] = useState<string | null>(null);
 
-  const keywords = [
+  const presetVariables = [
     "first name",
     "last name",
     "current company",
@@ -75,25 +83,24 @@ export default function EditorContent() {
   const handleTextChange = (text: string, setText: (value: string) => void) => {
     const variablePattern = /\{([^\}]+)\}/g;
     let match;
-    const newVariables: Variable[] = [];
+    const newVariables: VariableType[] = [];
 
     while ((match = variablePattern.exec(text)) !== null) {
       let variableName = match[1].trim();
       variableName = variableName.replace(/['"]/g, "");
 
       let custom = true;
-      if (variableName) {
-        if (keywords.includes(variableName)) {
-          custom = false;
-        }
-        const newVariable = {
-          id: Math.random().toString(),
-          value: variableName,
-          length: "auto",
-          isCustom: custom,
-        };
-        newVariables.push(newVariable);
+      if (presetVariables.includes(variableName)) {
+        custom = false;
       }
+
+      const newVariable: VariableType = {
+        id: Math.random().toString(),
+        value: variableName,
+        length: "auto",
+        isCustom: custom,
+      };
+      newVariables.push(newVariable);
     }
 
     const updatedVariables = fieldsList.variables.filter((variable) =>
@@ -106,82 +113,161 @@ export default function EditorContent() {
       ) {
         updatedVariables.push(newVar);
       }
-      setKeywordDropdownIsOpen(false);
+      setVariableDropdownIsOpen(false);
     });
 
-    fieldsList.variables = updatedVariables;
+    setFieldsList({ ...fieldsList, variables: updatedVariables });
     setText(text);
   };
 
   const handleSubjectChange = (text: string) => {
     setLocalSubject(text);
-    handleTextChange(text, setSubject);
+    handleTextChange(`${text} ${localBody} ${localFollowUp}`, setSubject);
   };
 
   const handleBodyChange = (text: string, cursorPos?: number) => {
     setLocalBody(text);
-    handleTextChange(text, setBody);
+    handleTextChange(`${localSubject} ${text} ${localFollowUp}`, setBody);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }
   };
 
-  const handleFollowUpChange = (text: string) => {
+  const handleFollowUpChange = (text: string, cursorPos?: number) => {
     setLocalFollowUp(text);
-    handleTextChange(text, setLocalFollowUp);
+    handleTextChange(`${localSubject} ${localBody} ${text}`, setFollowUp);
+    console.log("current position: ", cursorPos);
+    if (cursorPos !== undefined) {
+      setCursorPosition(cursorPos);
+    }
   };
 
   const handleDropdownSelect = (option: string) => {
     if (cursorPosition === null) return;
 
     const variable = `${option}}`;
-    const newBody =
-      localBody.slice(0, cursorPosition) +
-      variable +
-      localBody.slice(cursorPosition);
-    handleBodyChange(newBody, cursorPosition + variable.length);
-    setKeywordDropdownIsOpen(false);
+    let newText = "";
+    let setText: (value: string) => void;
+
+    if (focusedField === "subject") {
+      newText =
+        localSubject.slice(0, cursorPosition) +
+        variable +
+        localSubject.slice(cursorPosition);
+      setText = setLocalSubject;
+      handleSubjectChange(newText);
+    } else if (focusedField === "body") {
+      newText =
+        localBody.slice(0, cursorPosition) +
+        variable +
+        localBody.slice(cursorPosition);
+      setText = setLocalBody;
+      handleBodyChange(newText, cursorPosition + variable.length);
+    } else if (focusedField === "followUp") {
+      newText =
+        localFollowUp.slice(0, cursorPosition) +
+        variable +
+        localFollowUp.slice(cursorPosition);
+      setText = setLocalFollowUp;
+      handleFollowUpChange(newText);
+    }
+
+    setVariableDropdownIsOpen(false);
   };
 
-  const mapFields = (response: any, fields: string[]) => {
-    fields.forEach((field: string) => {
-      Object.keys(response[field]).forEach((key) => {
-        addField(
-          {
+  const mapFields = (response: any) => {
+    const newFieldsList: allFieldsListType = {
+      variables: [...fieldsList.variables],
+      personalized_fields: [],
+      offering_variables: [],
+      enriched_fields: [],
+    };
+
+    const addFieldsFromCategory = (category: keyof allFieldsListType) => {
+      if (response[category] && category !== "variables") {
+        Object.keys(response[category]).forEach((key) => {
+          const field: FieldType = {
             id: String(Math.random()),
             fieldName: key,
-            description: `${response[field][key]}`,
-          },
-          field
-        );
-      });
-    });
+            description: `${response[category][key]}`,
+          };
+          if (
+            category === "personalized_fields" ||
+            category === "offering_variables" ||
+            category === "enriched_fields"
+          ) {
+            newFieldsList[category].push(field as FieldType);
+          }
+        });
+      } else {
+        if (response.variables && response.variables.lenght > 0) {
+          response.variables.forEach((variable: string) => {
+            let custom = true;
+            if (presetVariables.includes(variable)) {
+              custom = false;
+            }
+            const newVariable = {
+              id: String(Math.random()),
+              length: "auto",
+              isCustom: custom,
+              value: variable,
+            };
+            if (
+              fieldsList.variables.some((field) => field.value === variable)
+            ) {
+              newFieldsList.variables.push(newVariable);
+            }
+          });
+        }
+      }
+    };
+
+    addFieldsFromCategory("enriched_fields");
+    addFieldsFromCategory("personalized_fields");
+    addFieldsFromCategory("offering_variables");
+
+    console.log(newFieldsList);
+    setTimeout(() => {
+      setFieldsList(newFieldsList);
+    }, 0);
   };
 
   const handleAutoGenerateTemplate = async () => {
     try {
+      setTemplateIsLoading(true);
       const response = await getAutogenerateTrainingTemplate(params.campaignId);
+      const followup = await getAutogenerateFollowup(params.campaignId);
 
-      handleSubjectChange(response.template.subject);
-      handleBodyChange(response.template.body);
+      console.log(response); // For debugging
+      console.log("followup", followup);
+
+      const newSubject = response.template.subject;
+      const newBody = `${response.template.body} ${
+        response.template.closing || ""
+      }`;
+      const newFollowUp = followup;
+
+      setLocalSubject(newSubject);
+      setLocalBody(newBody);
+      setLocalFollowUp(newFollowUp);
+      setShowAdditionalTextArea(true);
 
       setLocalSubject(response.template.subject);
       setLocalBody(
         `${response.template.body} ${response.template.closing || ""}`
       );
-
-      mapFields(response, [
-        "enriched_fields",
-        "personalized_fields",
-        "offering_variables",
-      ]);
-    } catch (error) {
+      setLocalFollowUp(followup);
+      mapFields(response);
+      setTemplateIsLoading(false);
+    } catch (error: any) {
       console.error("Failed to fetch training data:", error);
+      toast.error(error.message);
+      setTemplateIsLoading(false);
     }
   };
 
   const updateDropdownPosition = (cursorPos: number) => {
-    const textarea = textareaRef.current;
+    const textarea = textareaRef.current || followUpRef.current;
     if (!textarea) return;
 
     const text = textarea.value;
@@ -193,32 +279,30 @@ export default function EditorContent() {
     const top = lineNumber * lineHeight + 5 - textarea.scrollTop;
     const left = charNumber * 8; // Approximate character width in pixels
 
-    console.log({ top, left });
     setDropdownPosition({ top, left });
   };
 
   useEffect(() => {
-    const textarea = textareaRef.current;
-    if (!textarea) return;
+    const activeElementRef = textareaRef.current || followUpRef.current;
+    if (!activeElementRef) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === "{") {
-        const cursorPos = textarea.selectionStart;
+        const cursorPos = activeElementRef.selectionStart;
         setCursorPosition(cursorPos);
-        // updateDropdownPosition(cursorPos);
         setTimeout(() => {
-          setKeywordDropdownIsOpen(true);
+          setVariableDropdownIsOpen(true);
           updateDropdownPosition(cursorPos);
         }, 0);
       }
     };
 
-    textarea.addEventListener("keydown", handleKeyDown);
+    activeElementRef.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      textarea.removeEventListener("keydown", handleKeyDown);
+      activeElementRef.removeEventListener("keydown", handleKeyDown);
     };
-  }, []);
+  }, [localBody, localSubject, localFollowUp]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -226,7 +310,7 @@ export default function EditorContent() {
         dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node)
       ) {
-        setKeywordDropdownIsOpen(false);
+        setVariableDropdownIsOpen(false);
       }
     };
 
@@ -258,6 +342,7 @@ export default function EditorContent() {
                   onChange={(e: ChangeEvent<HTMLInputElement>) => {
                     handleSubjectChange(e.target.value);
                   }}
+                  onFocus={() => setFocusedField("subject")}
                 />
                 <CollapsibleTrigger asChild>
                   <Settings className="h-5 w-5 cursor-pointer" />
@@ -276,11 +361,12 @@ export default function EditorContent() {
                 }}
                 className="mt-2 w-full h-[200px]"
                 ref={textareaRef}
+                onFocus={() => setFocusedField("body")}
               />
               <span className="text-xs text-gray-500">
                 *use variables like: &#123;variable_name&#125;
               </span>
-              {keywordDropdownIsOpen && (
+              {variableDropdownIsOpen && (
                 <div
                   className={`absolute z-10 inline-block text-left mt-1`}
                   ref={dropdownRef}
@@ -295,9 +381,9 @@ export default function EditorContent() {
                       role="menu"
                       aria-orientation="vertical"
                       aria-labelledby="options-menu"
-                      onClick={() => setKeywordDropdownIsOpen(false)}
+                      onClick={() => setVariableDropdownIsOpen(false)}
                     >
-                      {keywords.map((option) => (
+                      {presetVariables.map((option) => (
                         <button
                           key={option}
                           onClick={(e) => {
@@ -319,17 +405,16 @@ export default function EditorContent() {
               <Textarea
                 placeholder="Write a follow-up"
                 value={localFollowUp}
+                ref={followUpRef}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
-                  handleFollowUpChange(e.target.value);
+                  handleFollowUpChange(e.target.value, e.target.selectionStart);
                 }}
                 className="mt-2 w-full h-[200px]"
+                onFocus={() => setFocusedField("followUp")}
               />
             )}
             <div className="mt-4 flex flex-row gap-4">
-              <Button
-                className="flex gap-2 bg-white cursor-pointer text-black hover:text-slate-400 disable:cursor-not-allowed"
-                onClick={toggleFollowUp}
-              >
+              <Button variant={"outline"} onClick={toggleFollowUp}>
                 <Plus
                   className={`h-3 w-3 text-gray-400 ${
                     showAdditionalTextArea ? "rotate-45 transition-all" : ""
@@ -337,9 +422,16 @@ export default function EditorContent() {
                 />
                 {showAdditionalTextArea ? "Remove follow-up" : "Add follow-up"}
               </Button>
-              <Button onClick={handleAutoGenerateTemplate}>
-                Auto Generate Template
-              </Button>
+              {templateIsLoading ? (
+                <LoadingCircle />
+              ) : (
+                <Button
+                  variant={"outline"}
+                  onClick={handleAutoGenerateTemplate}
+                >
+                  Auto Generate Template
+                </Button>
+              )}
             </div>
           </div>
         </div>

@@ -35,6 +35,15 @@ export interface GoalFormData {
   mark_as_lost: number;
 }
 
+export interface GoalData {
+  success_metric: string;
+  scheduling_link: string;
+  emails: string[];
+  follow_up_days: number;
+  follow_up_times: number;
+  mark_as_lost: number;
+}
+
 export interface CampaignEntry {
   id: string;
   user_id: string;
@@ -105,7 +114,7 @@ interface CampaignContextType {
   createOffering: (data: OfferingFormData, campaignId: string) => void;
   editOffering: (data: OfferingFormData, campaignId: string) => void;
   createGoal: (data: GoalFormData, campaignId: string) => void;
-  editGoal: (data: GoalFormData, campaignId: string) => void;
+  editGoal: (data: GoalFormData, goalId: string, campaignId: string) => void;
   toggleCampaignIsActive: (campaignId: string) => void;
   isLoading: boolean;
 }
@@ -305,12 +314,12 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       });
   };
 
-  const editGoal = (data: GoalFormData, campaignId: string) => {
+  const editGoal = (data: GoalFormData, goalId: string, campaignId: string) => {
     axiosInstance
-      .put(`v2/goals/${campaignId}`, data)
+      .put(`v2/goals/${goalId}`, data)
       .then((response) => {
         console.log("Goal edited successfully:", response.data);
-        router.push(`/dashboard/campaign/create/${campaignId}`);
+        router.push(`/dashboard/campaign/${campaignId}`);
       })
       .catch((error) => {
         console.error("Error editing goal:", error);

@@ -12,6 +12,8 @@ import {
   getAutogenerateTrainingEmail,
   startCampaign,
   getPreviewByTemplate,
+  createTraining,
+  TrainingRequest,
 } from "./training.api";
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
@@ -19,6 +21,8 @@ import { useParams } from "next/navigation";
 import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useFieldsList } from "@/context/training-fields-provider";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
+import { LoadingCircle } from "@/app/icons";
+import { FieldType, VariableType } from "./types";
 import { toast } from "sonner";
 
 export interface PreviewData {
@@ -57,9 +61,12 @@ export default function Training() {
     setContact,
     setLinkedinInformation,
     setPreviewType,
+    previewType,
   } = useAutoGenerate();
-  const { fieldsList, body, subject } = useFieldsList();
+  const { fieldsList, body, subject, followUp } = useFieldsList();
   const router = useRouter();
+  const [startCampaignIsLoading, setStartCampaignIsLoading] =
+    React.useState(false);
 
   const handleGenerateWithAI = async () => {
     try {
@@ -82,22 +89,72 @@ export default function Training() {
   };
 
   const handleStartCampaign = async () => {
+    setStartCampaignIsLoading(true);
     const userId = user.id as string;
 
     try {
-      const response = await startCampaign(params.campaignId, userId);
-      console.log("trainingResponse", response);
+      if (previewType == "previewFromTemplate") {
+        const response = await startCampaign(
+          params.campaignId,
+          userId,
+          "False"
+        );
+        console.log("trainingResponse", response);
+         
+      } else if (previewType == "previewFromAI") {
+        const response = await startCampaign(params.campaignId, userId, "True");
+        console.log("trainingResponse", response);
+      }
       toast.success(
         "Your drafts are getting created, it might take some time."
       );
+      setStartCampaignIsLoading(false);
+
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);
+      toast.error(error.message);
+      setStartCampaignIsLoading(false);
     }
   };
 
   const handleCustomGenerate = async () => {
     try {
+
+      const trainingBody = {
+        campaign_id: params.campaignId,
+        template: `Subject: ${subject}
+        
+        ${body}
+        `,
+        follow_up_template: followUp,
+        variables: fieldsList.variables.reduce<Record<string, string>>(
+          (acc, field) => {
+            acc[field.id] = field.value;
+            return acc;
+          }, {}
+        ),
+        offering_variables: fieldsList.offering_variables.reduce<
+          Record<string, string>
+        >((acc, field) => {
+          acc[field.fieldName] = field.description;
+          return acc;
+        }, {}),
+        personalized_fields: fieldsList.personalized_fields.reduce<
+          Record<string, string>
+        >((acc, field) => {
+          acc[field.fieldName] = field.description;
+          return acc;
+        }, {}),
+        enriched_fields: fieldsList.enriched_fields.map(
+          (field) => field.fieldName
+        ),
+      };
+
+      const postTraining = await createTraining(
+        trainingBody as TrainingRequest
+      );
+
       const response = await getPreviewByTemplate({
         campaign_id: params.campaignId,
         user_id: user.id,
@@ -182,7 +239,11 @@ export default function Training() {
               </TabsTrigger>
             </TabsList>
           </Tabs>
-          <Button onClick={handleStartCampaign}>Start campaign</Button>
+          {startCampaignIsLoading ? (
+            <LoadingCircle />
+          ) : (
+            <Button onClick={handleStartCampaign}>Start campaign</Button>
+          )}
         </div>
       </div>
       {activeTab === "editor" ? (

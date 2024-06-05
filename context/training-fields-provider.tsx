@@ -18,6 +18,7 @@ interface FieldsListContextType {
   addField: (field: FieldType | VariableType, fieldType: string) => void;
   removeField: (fieldId: string) => void;
   editField: (field: FieldType | VariableType, fieldId: string) => void;
+  setFieldsList: (fieldsList: allFieldsListType) => void;
   body: string;
   setBody: (body: string) => void;
   subject: string;
@@ -36,6 +37,7 @@ const defaultState: FieldsListContextType = {
   addField: () => {},
   removeField: () => {},
   editField: () => {},
+  setFieldsList: () => {},
   body: "",
   setBody: () => {},
   subject: "",
@@ -143,6 +145,7 @@ export const FieldsListProvider: React.FC<FieldsListProviderProps> = ({
       removeField,
       addField,
       editField,
+      setFieldsList,
       body,
       setBody,
       subject,
@@ -150,7 +153,7 @@ export const FieldsListProvider: React.FC<FieldsListProviderProps> = ({
       followUp,
       setFollowUp,
     }),
-    [fieldsList, body, subject, followUp]
+    [fieldsList, body, subject, followUp, setFieldsList]
   );
 
   return (

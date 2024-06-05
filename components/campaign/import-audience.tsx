@@ -38,6 +38,7 @@ import { AudienceTableClient } from "../tables/audience-table/client";
 import { v4 as uuid } from "uuid";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/user-context";
+import { useParams, useRouter } from "next/navigation";
 
 interface CSVData {
   [key: string]: string;
@@ -52,18 +53,9 @@ export const ImportAudience = () => {
   const [isLeadsTableActive, setIsLeadsTableActive] = useState(false);
   const [isAudienceLoading, setIsAudienceLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
-  const [campaignId, setCampaignId] = useState("");
   const { user } = useUserContext();
-
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedValue = window.localStorage.getItem("campaignId");
-
-      if (storedValue) {
-        setCampaignId(storedValue);
-      }
-    }
-  }, []);
+  const params = useParams<{ campaignId: string }>();
+  const router = useRouter()
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log("analyzing filez");
@@ -164,7 +156,7 @@ export const ImportAudience = () => {
         const data = response.data;
         data.map((person: Lead): void => {
           person.type = "prospective";
-          person.campaign_id = campaignId;
+          person.campaign_id = params.campaignId;
           person.id = uuid();
         });
         setLeads(data);
@@ -179,13 +171,12 @@ export const ImportAudience = () => {
 
     console.log("enriched leads: ", enrichedLeads);
   };
- 
-  
-  function mapLeadsToBodies(leads: Lead[], campaignId: string): Contact[] {
+
+  function mapLeadsToBodies(leads: Lead[]): Contact[] {
     return leads.map((lead) => ({
       id: lead.id,
       user_id: user.id,
-      campaign_id: campaignId,
+      campaign_id: lead.campaign_id,
       type: "prospective",
       first_name: lead.first_name,
       last_name: lead.last_name,
@@ -219,7 +210,7 @@ export const ImportAudience = () => {
   }
 
   const createAudience = async () => {
-    const audienceBody = mapLeadsToBodies(leads as Lead[], campaignId);
+    const audienceBody = mapLeadsToBodies(leads as Lead[]);
     console.log(audienceBody);
 
     setIsCreateBtnLoading(true);
@@ -235,6 +226,7 @@ export const ImportAudience = () => {
         }
         setIsCreateBtnLoading(false);
         toast.success("Audience created successfully");
+        router.push(`/dashboard/campaign/${params.campaignId}`);
       })
       .catch((error: any) => {
         console.log(error);
