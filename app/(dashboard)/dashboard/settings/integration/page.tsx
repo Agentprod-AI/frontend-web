@@ -123,7 +123,6 @@ export default function Page() {
           user_id: user.id,
           platform: "hubspot",
         });
-        console.log("HubSpot Status:", response.data);
         setIsConnectedToHubspot(response.data.message);
       } catch (error) {
         console.error("Failed to fetch HubSpot status:", error);
@@ -137,7 +136,6 @@ export default function Page() {
           user_id: user.id,
           platform: "salesforce",
         });
-        console.log("Salesforce Status:", response.data);
         setIsConnectedToSalesforce(response.data.message);
       } catch (error) {
         console.error("Failed to fetch salesforce status:", error);
@@ -177,10 +175,10 @@ export default function Page() {
           <div className="flex justify-between items-center">
             <SlackIcon />
             <div
-              className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
+              className={`text-sm border rounded-lg text-center p-2 cursor-not-allowed`}
               onClick={() => {}}
             >
-              Connect
+              Coming Soon
             </div>
           </div>
           <Dialog>
@@ -447,10 +445,10 @@ export default function Page() {
           <div className="flex justify-between items-center">
             <LinkedInIcon />
             <div
-              className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
+              className={`text-sm border rounded-lg text-center p-2 cursor-not-allowed`}
               onClick={() => {}}
             >
-              Connect
+              Coming Soon
             </div>
           </div>
           <Dialog>
@@ -710,10 +708,10 @@ export default function Page() {
           <div className="flex justify-between items-center">
             <ZapierIcon />
             <div
-              className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
+              className={`text-sm border rounded-lg text-center p-2 cursor-not-allowed`}
               onClick={() => {}}
             >
-              Connect
+              Coming Soon
             </div>
           </div>
           <Dialog>

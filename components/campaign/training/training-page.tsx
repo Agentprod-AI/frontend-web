@@ -99,10 +99,17 @@ export default function Training() {
           userId,
           "False"
         );
+        console.log("trainingResponse", response);
+         
       } else if (previewType == "previewFromAI") {
         const response = await startCampaign(params.campaignId, userId, "True");
+        console.log("trainingResponse", response);
       }
+      toast.success(
+        "Your drafts are getting created, it might take some time."
+      );
       setStartCampaignIsLoading(false);
+
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);

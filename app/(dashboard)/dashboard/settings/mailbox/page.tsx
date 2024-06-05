@@ -136,11 +136,21 @@ export default function Page() {
     setMailboxes([...mailboxes, mailbox]);
   };
 
-  const removeMailbox = (idToRemove: number) => {
-    setMailboxes((prevState) =>
-      prevState.filter((mailbox) => mailbox.id !== idToRemove)
-    );
+  // Removing Mailbox --- testing left
+  const removeMailbox = async (idToRemove: any) => {
+    try {
+      await axiosInstance.delete(`/v2/user/mailbox/${idToRemove}`);
+      setMailboxes((prevState) =>
+        prevState.filter((mailbox) => mailbox.id !== idToRemove)
+      );
+      console.log("Mailbox removed successfully:", mailboxes);
+    } catch (error: any) {
+      console.error("Failed to remove mailbox.", error);
+      alert("Failed to remove mailbox.");
+    }
   };
+  // Removing Mailbox --- testing left
+
   const saveChanges = async () => {
     const payload = {
       sender_id: String(senderID),
@@ -256,7 +266,7 @@ export default function Page() {
                           <Button
                             type="submit"
                             variant={"destructive"}
-                            onClick={() => removeMailbox(mailbox.id)}
+                            onClick={() => removeMailbox(senderID)}
                           >
                             Delete
                           </Button>
@@ -363,9 +373,10 @@ export default function Page() {
       <Dialog open={isTableDialogOpen} onOpenChange={setIsTableDialogOpen}>
         <DialogContent className="w-full max-w-4xl">
           <DialogHeader>
-            <DialogTitle>Domain Data</DialogTitle>
+            <DialogTitle>Publish DNS Records</DialogTitle>
             <DialogDescription>
-              Here is the domain data you requested.
+              Publish these records on your email provider in DNS Management
+              (eg.- Go daddy)
             </DialogDescription>
           </DialogHeader>
           <div className="grid items-center gap-4 w-full">
