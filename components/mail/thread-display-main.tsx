@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
 
@@ -90,7 +91,6 @@ const frameworks = [
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   ownerEmail,
 }) => {
-
   // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
   //   []
   // );
@@ -107,9 +107,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
   const { leads, setLeads } = useLeads();
   const { campaigns } = useCampaignContext();
-
-  // console.log("Thread Capmy", campaigns);
-  // console.log("mail thread", thread);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -129,13 +126,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
-        // if (response.data.mails === null) {
-        //   setThread([]);
-        // } else {
-        //   setThread(response.data);
-        // }
         setThread(response.data);
-        console.log("Thread Display->>>>", response.data);
+        // console.log("Thread Display->>>>", response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -143,7 +135,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         setError(error.message || "Failed to load conversation.");
         setIsLoading(false);
       });
-  }, [conversationId]);
+  }, [conversationId, thread.length]);
 
   React.useEffect(() => {
     if (recipientEmail) {
@@ -152,7 +144,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .then((response) => {
           setItemId(response.data.id);
           setLeads([response.data]);
-          console.log(response.data);
+          // console.log(response.data);
         })
         .catch((error) => {
           console.error("Error fetching data:", error);
@@ -187,7 +179,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       });
     };
 
-    console.log("sender emails", email);
+    // console.log("sender emails", email);
 
     // const matchingCampaign = campaigns.find(
     //   (campaign) => campaign.id === leadId
@@ -271,6 +263,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
+    const [isLoadingButton, SetIsLoadingButton] = React.useState(false);
     // const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
     const [emails, setEmails] = React.useState<
       {
@@ -291,7 +284,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          console.log("response for drafts", response);
+          // console.log("response for drafts", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -335,8 +328,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .post("/v2/mailbox/draft/send", payload)
         .then((response) => {
-          toast.success("Your email has been sent successfully!");
-          console.log(response.data);
+          toast.success("Draft Approved!");
+          setThread(response.data);
+          // console.log("Approve Data", response.data);
           setEditable(false);
         })
         .catch((error) => {
@@ -346,6 +340,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     const handleSendNow = () => {
+      SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
         sender: "muskaan@agentprodai.com",
@@ -358,7 +353,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .post("/v2/mailbox/send/immediately", payload)
         .then((response) => {
           toast.success("Your email has been sent successfully!");
-          console.log(response.data);
+          // console.log("Send Data", response.data);
+          setThread(response.data);
+          SetIsLoadingButton(false);
           setEditable(false);
         })
         .catch((error) => {
@@ -455,27 +452,28 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   </CardContent>
                   <CardFooter className="flex justify-between text-xs items-center">
                     <div>
-                      <Button disabled={editable} onClick={handleApproveEmail}>
+                      {/* <Button disabled={editable} onClick={handleApproveEmail}>
                         Approve
-                      </Button>
+                      </Button> */}
                       <Button
                         variant={"secondary"}
                         className="ml-2"
                         onClick={handleSendNow}
                       >
-                        Send Now
+                        {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                       </Button>
                     </div>
+
                     <div>
                       <Button variant={"ghost"}>
                         <RefreshCw className="h-4 w-4" />
                       </Button>
+
                       <Button variant={"ghost"} onClick={handleDeleteDraft}>
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
                   </CardFooter>
-                  <div ref={internalScrollRef} />
                 </Card>
               </div>
             </div>

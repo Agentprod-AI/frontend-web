@@ -133,7 +133,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {!email.is_reply && email.status === "SENT" && (
+      {!email.is_reply && email?.status?.toLowerCase() === "sent" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <SendHorizontal className="h-4 w-4 text-gray-400" />
@@ -148,7 +148,22 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           </span>
         </div>
       )}
-      {!email.is_reply && email.status === "CLICK" && (
+      {!email.is_reply && email?.status?.toLowerCase() === "scheduled" && (
+        <div className="flex items-center gap-3">
+          <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+            <SendHorizontal className="h-4 w-4 text-gray-400" />
+          </div>
+          <p className=" ml-1 text-xs ">Your draft has been scheduled.</p>
+          <span className="text-gray-400 text-xs">
+            {email.send_datetime && (
+              <span className="text-gray-400 text-xs">
+                {formatDate(email.send_datetime)}
+              </span>
+            )}
+          </span>
+        </div>
+      )}
+      {!email.is_reply && email?.status?.toLowerCase() === "click" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Clock3 className="h-4 w-4 text-gray-400" />
@@ -164,7 +179,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {!email.is_reply && email.status === "DELIVERED" && (
+      {!email.is_reply && email?.status?.toLowerCase() === "delivered" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Mail className="h-4 w-4 text-gray-400" />
@@ -182,7 +197,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {!email.is_reply && email.status === "BOUNCE" && (
+      {!email.is_reply && email?.status?.toLowerCase() === "bounce" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Archive className="h-4 w-4 text-gray-400" />
@@ -200,7 +215,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {!email.is_reply && email.status === "COMPLAIN" && (
+      {!email.is_reply && email?.status?.toLowerCase() === "complain" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
             <Clock3 className="h-4 w-4 text-gray-400" />

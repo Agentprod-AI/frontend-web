@@ -101,7 +101,6 @@ export function Mail({
     })) || null;
 
   React.useEffect(() => {
-    console.log("user from inbox", user);
     async function fetchConversations() {
       setLoading(true);
       try {
@@ -110,6 +109,7 @@ export function Mail({
         );
         console.log("Mail Responses", response.data.mails[0].campaign_id);
         setMails(response.data.mails as Conversations[]);
+        console.log("Mails to check", response.data.mails);
         setLoading(false);
       } catch (err: any) {
         console.error("Error fetching mails:", err);
