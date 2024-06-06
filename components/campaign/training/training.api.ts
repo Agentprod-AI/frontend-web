@@ -145,7 +145,7 @@ export async function startCampaign(
     user_id: userId,
   };
   await axiosInstance
-    .post(`/v2/send/contacts`, postData)
+    .post(`/v2/send/contacts?without_template=False`, postData)
     .then((response) => {
       const data = response.data;
       console.log(data);

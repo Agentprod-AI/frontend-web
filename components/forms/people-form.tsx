@@ -297,13 +297,13 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
 
     if (!prevInputValues) shouldCallAPI = true;
 
-    const pages = formData.per_page ? Math.ceil(formData.per_page / 100) : 1;
+    const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
 
     const body = {
       ...(pages && { page: pages }), // Only include if pages is truthy
       ...(formData.per_page && {
         per_page:
-          formData.per_page > 100
+          formData.per_page > 10
             ? Math.ceil(formData.per_page / pages)
             : formData.per_page,
       }),
