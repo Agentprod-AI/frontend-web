@@ -315,7 +315,7 @@ export default function Page() {
             </CardContent>
           </Card>
 
-          <Card className="col-span-2 p-4">
+          {/* <Card className="col-span-2 p-4">
             <ScrollArea className="h-[18.5rem]">
               <CardContent className="text-sm space-y-4">
                 <p>
@@ -346,6 +346,99 @@ export default function Page() {
                   Unsubscribe Rate -{" "}
                   {Math.round(dashboardData?.email_stats?.unsubscribed_rate)}
                 </p>
+              </CardContent>
+            </ScrollArea>
+          </Card> */}
+
+          <Card className="col-span-2">
+            <ScrollArea className="h-[18.5rem]">
+              <CardHeader className="px-7">
+                <CardTitle>Email Statistics</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Metric</TableHead>
+                      <TableHead className="text-right">Value</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {isLoading ? (
+                      <TableRow>
+                        <TableCell colSpan={2} className="text-center">
+                          <LoadingCircle />
+                        </TableCell>
+                      </TableRow>
+                    ) : dashboardData?.email_stats ? (
+                      <>
+                        <TableRow>
+                          <TableCell>Deliverability Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(
+                              dashboardData.email_stats.deliverability_rate
+                            )}
+                            %
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Open Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(dashboardData.email_stats.open_rate)}%
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Reply Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(dashboardData.email_stats.reply_rate)}%
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Positive Reply Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(
+                              dashboardData.email_stats.positive_email_rate
+                            )}
+                            %
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Negative Reply Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(
+                              dashboardData.email_stats.negative_email_rate
+                            )}
+                            %
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Conversion Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(
+                              dashboardData.email_stats.conversion_rate
+                            )}
+                            %
+                          </TableCell>
+                        </TableRow>
+                        <TableRow>
+                          <TableCell>Unsubscribe Rate</TableCell>
+                          <TableCell className="text-right">
+                            {Math.round(
+                              dashboardData.email_stats.unsubscribed_rate
+                            )}
+                            %
+                          </TableCell>
+                        </TableRow>
+                      </>
+                    ) : (
+                      <TableRow>
+                        <TableCell colSpan={2} className="text-center">
+                          No email statistics available.
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </TableBody>
+                </Table>
               </CardContent>
             </ScrollArea>
           </Card>
