@@ -37,7 +37,7 @@ interface MailData {
   Name: string;
   Type: string;
   Value: string;
-  sender_id: string;
+  sender_id: any;
 }
 
 const initialMailboxes = [
@@ -142,7 +142,7 @@ export default function Page() {
   // Removing Mailbox --- testing left
   const removeMailbox = async (sender_id: any) => {
     try {
-      await axiosInstance.delete(`/v2/user/mailbox/${senderID}`);
+      await axiosInstance.delete(`/v2/user/mailbox/${sender_id}`);
       setMailboxes((prevState) =>
         prevState.filter((mailbox) => mailbox.sender_id !== sender_id)
       );
@@ -270,7 +270,7 @@ export default function Page() {
                           <Button
                             type="submit"
                             variant={"destructive"}
-                            onClick={() => removeMailbox(senderID)}
+                            onClick={() => removeMailbox(mailbox.sender_id)}
                           >
                             Delete
                           </Button>
