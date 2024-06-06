@@ -1,5 +1,6 @@
 import {
   Archive,
+  Bell,
   // Archive,
   Clock3,
   Mail,
@@ -151,7 +152,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       {!email.is_reply && email?.status?.toLowerCase() === "scheduled" && (
         <div className="flex items-center gap-3">
           <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-            <SendHorizontal className="h-4 w-4 text-gray-400" />
+            <Bell className="h-4 w-4 text-gray-400" />
           </div>
           <p className=" ml-1 text-xs ">Your draft has been scheduled.</p>
           <span className="text-gray-400 text-xs">

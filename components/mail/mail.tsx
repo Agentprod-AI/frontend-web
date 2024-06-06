@@ -135,6 +135,7 @@ export function Mail({
       setSenderEmail(filteredMails[0]?.sender);
     }
   }, [filteredMails, setSenderEmail]);
+
   // if (filteredMails) {
   //   setConversationId(filteredMails[0]?.id);
   //   setRecipientEmail(filteredMails[0]?.recipient);
@@ -157,7 +158,7 @@ export function Mail({
           <Tabs defaultValue="all">
             <div className="flex items-center px-4 pt-2 pb-0">
               <h1 className="text-xl font-bold">Inbox</h1>
-              <TabsList className="ml-auto flex space-x-4 relative">
+              <TabsList className="ml-auto flex relative">
                 <TabsTrigger
                   value="all"
                   onClick={() => setFilter("all")}
@@ -165,6 +166,7 @@ export function Mail({
                 >
                   All
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="to-approve"
                   onClick={() => setFilter("to-approve")}
@@ -172,12 +174,21 @@ export function Mail({
                 >
                   To approve
                 </TabsTrigger>
+
                 <TabsTrigger
                   value="scheduled"
                   onClick={() => setFilter("scheduled")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   Scheduled
+                </TabsTrigger>
+
+                <TabsTrigger
+                  value="sent"
+                  onClick={() => setFilter("sent")}
+                  className="text-zinc-800 dark:text-zinc-200"
+                >
+                  Sent
                 </TabsTrigger>
 
                 <DropdownMenu>
