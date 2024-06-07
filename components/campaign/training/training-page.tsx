@@ -63,7 +63,7 @@ export default function Training() {
     setPreviewType,
     previewType,
   } = useAutoGenerate();
-  const { fieldsList, body, subject, followUp } = useFieldsList();
+  const { fieldsList, body, subject, followUp, subjectOptions } = useFieldsList();
   const router = useRouter();
   const [startCampaignIsLoading, setStartCampaignIsLoading] =
     React.useState(false);
@@ -149,9 +149,12 @@ export default function Training() {
         enriched_fields: fieldsList.enriched_fields.map(
           (field) => field.fieldName
         ),
+        subject_field_options: subjectOptions
       };
 
-      const postTraining = await createTraining(
+      console.log(trainingBody);
+
+      await createTraining(
         trainingBody as TrainingRequest
       );
 

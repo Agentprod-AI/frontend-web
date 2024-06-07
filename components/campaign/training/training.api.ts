@@ -6,6 +6,7 @@ export interface TrainingRequest {
   offering_variables?: Record<string, any>;
   personalized_fields?: Record<string, any>;
   enriched_fields?: string[];
+  subject_field_options?: string[];
 }
 
 export interface TrainingUpdateRequest {

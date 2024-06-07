@@ -3,7 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
+import { useFieldsList } from "@/context/training-fields-provider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
@@ -45,6 +45,8 @@ const FormSchema = z.object({
 });
 
 export default function SubjectForm() {
+  const { setSubjectOptions } = useFieldsList(); // Get setSubjectOptions from the context
+
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
     defaultValues: {
@@ -53,11 +55,18 @@ export default function SubjectForm() {
   });
 
   function onSubmit(data: z.infer<typeof FormSchema>) {
+    const selectedLabels = data.items.map((itemId) => {
+      const item = items.find((i) => i.id === itemId);
+      return item ? item.label : "";
+    });
+
+    setSubjectOptions(selectedLabels.filter(Boolean)); // Update context with selected labels
+
     toast({
       title: "You submitted the following values:",
       description: (
         <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
+          <code className="text-white">{JSON.stringify(selectedLabels, null, 2)}</code>
         </pre>
       ),
     });
@@ -71,12 +80,6 @@ export default function SubjectForm() {
           name="items"
           render={() => (
             <FormItem>
-              {/* <div className="mb-4">
-                <FormLabel className="text-base">Sidebar</FormLabel>
-                <FormDescription>
-                  Select the items you want to display in the sidebar.
-                </FormDescription>
-              </div> */}
               {items.map((item) => (
                 <FormField
                   key={item.id}
@@ -114,7 +117,7 @@ export default function SubjectForm() {
             </FormItem>
           )}
         />
-        {/* <Button type="submit">Submit</Button> */}
+        <Button type="submit">Submit</Button>
       </form>
     </Form>
   );
