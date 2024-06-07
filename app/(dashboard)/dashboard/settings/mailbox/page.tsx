@@ -30,17 +30,20 @@ import { GmailIcon, LoadingCircle } from "@/app/icons";
 import { Switch } from "@/components/ui/switch";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { toast } from "sonner";
 
 interface MailData {
   id: number;
   Name: string;
   Type: string;
   Value: string;
+  sender_id: any;
 }
 
 const initialMailboxes = [
   {
     id: 1,
+    sender_id: "",
     mailbox: "",
     sender_name: "",
     warmup: true,
@@ -137,16 +140,17 @@ export default function Page() {
   };
 
   // Removing Mailbox --- testing left
-  const removeMailbox = async (idToRemove: any) => {
+  const removeMailbox = async (sender_id: any) => {
     try {
-      await axiosInstance.delete(`/v2/user/mailbox/${idToRemove}`);
+      await axiosInstance.delete(`/v2/user/mailbox/${sender_id}`);
       setMailboxes((prevState) =>
-        prevState.filter((mailbox) => mailbox.id !== idToRemove)
+        prevState.filter((mailbox) => mailbox.sender_id !== sender_id)
       );
+      toast.success("Mailbox removed successfully.");
       console.log("Mailbox removed successfully:", mailboxes);
     } catch (error: any) {
       console.error("Failed to remove mailbox.", error);
-      alert("Failed to remove mailbox.");
+      toast.error("Failed to remove mailbox.");
     }
   };
   // Removing Mailbox --- testing left
@@ -266,7 +270,7 @@ export default function Page() {
                           <Button
                             type="submit"
                             variant={"destructive"}
-                            onClick={() => removeMailbox(senderID)}
+                            onClick={() => removeMailbox(mailbox.sender_id)}
                           >
                             Delete
                           </Button>

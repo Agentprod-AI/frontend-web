@@ -28,7 +28,6 @@ import { useMailGraphContext } from "@/context/chart-data-provider";
 import {
   format,
   parseISO,
-  differenceInCalendarDays,
   startOfWeek,
   addDays,
 } from "date-fns";
@@ -53,11 +52,9 @@ export default function Page() {
   //   }
   // }, []);
 
-  
-
   const getWeekDays = () => {
-    let weekStart = startOfWeek(new Date(), { weekStartsOn: 0});
-    return Array.from({ length: 7}).map((_, index) =>
+    let weekStart = startOfWeek(new Date(), { weekStartsOn: 0 });
+    return Array.from({ length: 7 }).map((_, index) =>
       format(addDays(weekStart, index), "yyyy-MM-dd")
     );
   };
@@ -68,30 +65,26 @@ export default function Page() {
     mailGraphData.map((data) => format(parseISO(data.date), "yyyy-MM-dd"))
   );
 
-  const calculateStreak = (data: any) => {
-    if (data.length === 0) return 0;
+  // const calculateStreak = (data: any) => {
+  //   if (data.length === 0) return 0;
 
-    let streak = 1;
-    let lastDate = parseISO(data[0].date);
+  //   let streak = 1;
+  //   let lastDate = parseISO(data[0].date);
 
-    for (let i = 1; i < data.length; i++) {
-      const currentDate = parseISO(data[i].date);
-      if (differenceInCalendarDays(currentDate, lastDate) === 1) {
-        streak++;
-      } else if (differenceInCalendarDays(currentDate, lastDate) > 1) {
-        break;
-      }
-      lastDate = currentDate;
-    }
+  //   for (let i = 1; i < data.length; i++) {
+  //     const currentDate = parseISO(data[i].date);
+  //     if (differenceInCalendarDays(currentDate, lastDate) === 1) {
+  //       streak++;
+  //     } else if (differenceInCalendarDays(currentDate, lastDate) > 1) {
+  //       break;
+  //     }
+  //     lastDate = currentDate;
+  //   }
 
-    return streak;
-  };
+  //   return streak;
+  // };
 
-  // Ensure the data is sorted by date
-  const sortedMailGraphData = [...mailGraphData].sort(
-    (a: any, b: any) => +parseISO(a.date) - +parseISO(b.date)
-  );
-  const daysStreak = calculateStreak(sortedMailGraphData);
+
 
   return (
     <>
@@ -424,9 +417,7 @@ export default function Page() {
             <Card className="col-span-2 p-4 space-y-16">
               <div className="flex justify-between items-center gap-5 mb-4">
                 <div>
-                  <div className="text-lg font-semibold">
-                    {daysStreak} {daysStreak > 1 ? "Days" : "Day"} Streak
-                  </div>
+                  <div className="text-lg font-semibold">Email Streak</div>
                   <div className="text-sm text-gray-600">
                     Approve emails today to start a new streak
                   </div>
@@ -440,7 +431,7 @@ export default function Page() {
               <div className="flex items-end justify-between">
                 {allWeekDays.map((day, index) => {
                   const dayOfWeek = format(parseISO(day), "EEE");
-                  const isActive = activeDaysSet.has(day );
+                  const isActive = activeDaysSet.has(day);
 
                   return (
                     <div
