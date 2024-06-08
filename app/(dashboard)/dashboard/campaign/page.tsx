@@ -58,7 +58,7 @@ export default function Page() {
   return (
     <div className="space-y-2 mb-5 ">
       <Card className="bg-accent px-4 py-6">
-        <CardTitle>Send your first outbound Email campaign</CardTitle>
+        <CardTitle>Send Your Email Campaign</CardTitle>
         <Button className="mt-4">
           <Link
             href={`/dashboard/campaign/create/${uuid()}`}

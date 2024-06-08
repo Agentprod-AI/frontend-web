@@ -264,6 +264,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
     const [isLoadingButton, SetIsLoadingButton] = React.useState(false);
+    const [loadingSmartSchedule, setLoadingSmartSchedule] =
+      React.useState(false);
     // const [currentEmailIndex, setCurrentEmailIndex] = React.useState(0);
     const [emails, setEmails] = React.useState<
       {
@@ -317,6 +319,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }, [emails]);
 
     const handleApproveEmail = () => {
+      setLoadingSmartSchedule(true);
       const payload = {
         conversation_id: conversationId,
         sender: "muskaan@agentprodai.com",
@@ -331,6 +334,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           toast.success("Draft Approved!");
           setThread(response.data);
           // console.log("Approve Data", response.data);
+          setLoadingSmartSchedule(false);
           setEditable(false);
         })
         .catch((error) => {
@@ -539,14 +543,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <CardFooter className="flex justify-between text-xs items-center">
               <div>
                 <Button disabled={editable} onClick={handleApproveEmail}>
-                  Approve
+                  {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
                 </Button>
                 <Button
                   variant={"secondary"}
                   className="ml-2"
                   onClick={handleSendNow}
                 >
-                  Send Now
+                  {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                 </Button>
                 {editable && (
                   <Button variant={"ghost"} onClick={() => setEditable(false)}>
@@ -625,6 +629,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const matchingCampaign = campaigns.find((campaign) => campaign.id === leadId);
 
+  console.log(matchingCampaign, "matchingCampaign");
+
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
@@ -640,8 +646,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 </div>
                 <div className="text-xs ml-1">
                   {leads[0].first_name} was added in{" "}
-                  {matchingCampaign.campaign_type} campaign {leads[0].headline}{" "}
-                  in {leads[0].country}
+                  {matchingCampaign.campaign_type}{" "}
+                  {matchingCampaign.campaign_name} campaign
                 </div>
               </div>
             )}
