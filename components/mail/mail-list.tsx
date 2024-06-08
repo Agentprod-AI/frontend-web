@@ -195,7 +195,7 @@ export function MailList({ items }: MailListProps) {
   }, [user?.id]);
 
   return (
-    <ScrollArea className="h-screen pb-40">
+    <ScrollArea className="h-screen pb-44">
       <div className="flex flex-col gap-2 p-4 pt-0">
         {items.length > 0 ? (
           items.map((item) => (

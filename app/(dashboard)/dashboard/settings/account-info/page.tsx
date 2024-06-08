@@ -9,6 +9,7 @@ import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "sonner";
 
 type Info = {
   id: string;
@@ -21,7 +22,7 @@ export default function Page() {
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
   const [dummyAccountInfo, setDummyAccountInfo] = useState<Info[]>([
-    { id: "ID", value: user.id, isEditable: false },
+    { id: "ID", value: "", isEditable: false },
     { id: "Sender First Name", value: "", isEditable: true },
     { id: "Sender Last Name", value: "", isEditable: true },
     { id: "Sender Job", value: "", isEditable: true },
@@ -129,10 +130,11 @@ export default function Page() {
           return newInfo !== undefined ? { ...info, value: newInfo } : info;
         })
       );
-
+      toast.success("User details updated successfully");
       setIsEditing(false);
     } catch (error) {
       console.error("Failed to update user details:", error);
+      toast.error("Error in updating user details.");
     }
   };
 

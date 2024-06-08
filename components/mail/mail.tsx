@@ -172,7 +172,7 @@ export function Mail({
                   onClick={() => setFilter("to-approve")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
-                  To approve
+                  To do
                 </TabsTrigger>
 
                 <TabsTrigger
@@ -207,6 +207,11 @@ export function Mail({
                     <DropdownMenuGroup>
                       <DropdownMenuSeparator />
                       <ScrollArea className="h-[400px] w-full rounded-md">
+                        <DropdownMenuItem
+                          onClick={() => setCampaign(undefined)} // This clears the current campaign filter
+                        >
+                          <p className="cursor-pointer">All Campaigns</p>
+                        </DropdownMenuItem>
                         {allCampaigns && allCampaigns.length > 0 ? (
                           allCampaigns.map((campaignItem, index) => (
                             <div key={campaignItem.campaignId}>
@@ -219,7 +224,7 @@ export function Mail({
                                   })
                                 }
                               >
-                                <p>
+                                <p className="cursor-pointer">
                                   {campaignItem.campaignName}{" "}
                                   {campaignItem.additionalInfo &&
                                     `- ${campaignItem.additionalInfo}`}
