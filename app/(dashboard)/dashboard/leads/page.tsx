@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 "use client";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
 import {
@@ -11,8 +13,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { useLeads } from "@/context/lead-user";
 import { useEffect, useState } from "react";
-import { LucideUsers2 } from "lucide-react";
-import { ChevronDown } from "lucide-react";
+import { LucideUsers2, ChevronDown } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -22,77 +23,62 @@ import { toast } from "sonner";
 export default function Page() {
   const { leads, setLeads } = useLeads();
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const { campaigns } = useCampaignContext();
   const [campaign, setCampaign] = useState<{
     campaignName: string;
     campaignId: string;
   }>();
+
   const { user } = useUserContext();
 
   useEffect(() => {
-    async function fetchLeads(campaignId: string) {
-      setLoading(true);
-      axiosInstance
-        .get(`v2/lead/campaign/${campaignId}`)
-        .then((response) => {
-          const data = response.data;
-          setLeads(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          setLoading(false);
-          toast.error(`Error fetching campaigns: ${error}`);
-          setLeads([]);
-        });
+    if (!campaign) {
+      fetchAllLeads();
+    } else {
+      fetchLeadsForCampaign(campaign.campaignId);
     }
-    if (campaign?.campaignId) {
-      fetchLeads(campaign.campaignId as string);
-    }
-  }, [campaign, setLeads]);
+  }, [campaign]);
 
-  useEffect(() => {
-    setLoading(false);
-  }, [campaigns]);
+  const fetchAllLeads = () => {
+    setLoading(true);
+    axiosInstance
+      .get(`v2/lead/all/${user?.id}`)
+      .then((response) => {
+        setLeads(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching all leads:", error);
+        setLoading(false);
+        toast.error("Error fetching all leads: " + error);
+        setLeads([]);
+      });
+  };
 
-  useEffect(() => {
-    function fetchAllLeads() {
-      setLoading(true);
-      axiosInstance
-        .get(`v2/lead/all/${user?.id}`)
-        .then((response) => {
-          const data = response.data;
-          setLeads(data);
-          setLoading(false);
-        })
-        .catch((error) => {
-          console.log(error);
-          setLoading(false);
-          toast.error("Error fetching leads: " + error);
-          setLeads([]);
-        });
-    }
+  const fetchLeadsForCampaign = (campaignId: any) => {
+    setLoading(true);
+    axiosInstance
+      .get(`v2/lead/campaign/${campaignId}`)
+      .then((response) => {
+        setLeads(response.data);
+        setLoading(false);
+      })
+      .catch((error) => {
+        console.error("Error fetching leads for campaign:", error);
+        setLoading(false);
+        toast.error(`Error fetching leads for campaign: ${error}`);
+        setLeads([]);
+      });
+  };
 
-    fetchAllLeads();
-  }, []);
+  const allCampaigns = campaigns.map((campaign) => ({
+    campaignName: campaign.campaign_name,
+    campaignId: campaign.id,
+    additionalInfo: campaign.additional_details,
+  }));
 
-  const allCampaigns:
-    | {
-        campaignName: string;
-        campaignId: string;
-        additionalInfo: string | undefined;
-      }[]
-    | null = campaigns.map((campaign) => {
-    return {
-      campaignName: campaign.campaign_name,
-      campaignId: campaign.id,
-      additionalInfo: campaign.additional_details,
-    };
-  });
+  if (loading) return <div>Loading...</div>;
 
-  if (loading) {
-    return <div>Loading...</div>; // doing this for deployment error.
-  }
   return (
     <>
       <div className="flex gap-8">
@@ -123,37 +109,28 @@ export default function Page() {
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80">
             <DropdownMenuGroup>
-              {/* <DropdownMenuItem
-                className="flex space-x-2"
-                onClick={() => {
-                  setCampaign(undefined);
-                }}
-              >
-                Select Campaign
-              </DropdownMenuItem> */}
               <DropdownMenuSeparator />
-              <ScrollArea className="h-[400px] w-full rounded-md border">
-                {allCampaigns &&
-                  allCampaigns?.map((campaignItem, index) => (
-                    <div key={campaignItem.campaignId}>
-                      <DropdownMenuItem
-                        key={campaignItem.campaignId}
-                        onClick={() =>
-                          setCampaign({
-                            campaignName: campaignItem.campaignName,
-                            campaignId: campaignItem.campaignId,
-                          })
-                        }
-                      >
-                        <p>
-                          {campaignItem.campaignName}{" "}
-                          {campaignItem.additionalInfo &&
-                            `- ${campaignItem.additionalInfo}`}
-                        </p>
-                      </DropdownMenuItem>
-                      {/* {index !== campaign?.length - 1 && <DropdownMenuSeparator />} */}
-                    </div>
-                  ))}
+              <ScrollArea className="h-[400px] w-full rounded-md border p-2">
+                <DropdownMenuItem onClick={() => setCampaign(undefined)}>
+                  <p className="cursor-pointer">All Campaigns</p>
+                </DropdownMenuItem>
+                {allCampaigns?.map((campaignItem) => (
+                  <DropdownMenuItem
+                    key={campaignItem.campaignId}
+                    onClick={() =>
+                      setCampaign({
+                        campaignName: campaignItem.campaignName,
+                        campaignId: campaignItem.campaignId,
+                      })
+                    }
+                  >
+                    <p className="cursor-pointer">
+                      {campaignItem.campaignName}{" "}
+                      {campaignItem.additionalInfo &&
+                        `- ${campaignItem.additionalInfo}`}
+                    </p>
+                  </DropdownMenuItem>
+                ))}
               </ScrollArea>
             </DropdownMenuGroup>
           </DropdownMenuContent>

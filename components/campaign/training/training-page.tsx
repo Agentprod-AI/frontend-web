@@ -93,23 +93,23 @@ export default function Training() {
     const userId = user.id as string;
 
     try {
+      toast.success(
+        "Your drafts are getting created, it might take some time."
+      );
       if (previewType == "previewFromTemplate") {
         const response = await startCampaign(
           params.campaignId,
           userId,
           "False"
         );
+
         console.log("trainingResponse", response);
-         
       } else if (previewType == "previewFromAI") {
         const response = await startCampaign(params.campaignId, userId, "True");
         console.log("trainingResponse", response);
       }
-      toast.success(
-        "Your drafts are getting created, it might take some time."
-      );
-      setStartCampaignIsLoading(false);
 
+      setStartCampaignIsLoading(false);
       router.push("/dashboard/mail");
     } catch (error: any) {
       console.log("TrainingResponse", error);
@@ -120,7 +120,6 @@ export default function Training() {
 
   const handleCustomGenerate = async () => {
     try {
-
       const trainingBody = {
         campaign_id: params.campaignId,
         template: `Subject: ${subject}
@@ -132,7 +131,8 @@ export default function Training() {
           (acc, field) => {
             acc[field.id] = field.value;
             return acc;
-          }, {}
+          },
+          {}
         ),
         offering_variables: fieldsList.offering_variables.reduce<
           Record<string, string>

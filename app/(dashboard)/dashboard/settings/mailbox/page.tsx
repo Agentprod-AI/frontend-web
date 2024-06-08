@@ -80,10 +80,11 @@ export default function Page() {
       console.log("Domain data fetched successfully:", response.data);
       setFetchSuccess(true);
       setLoading(false);
+      toast.success("Domain Data Fetched Successfully.");
     } catch (error) {
-      console.error("Failed to fetch domain data:", error);
       setLoading(false);
       setFetchSuccess(false);
+      toast.error("Failed To Fetch Domain Data");
     }
   }, [domainInput]);
 
@@ -123,12 +124,15 @@ export default function Page() {
       setIsVerifyEmailOpen(true);
     } catch (error) {
       console.error("Failed to verify email:", error);
+      toast.error("Email Already In Use.");
     }
   };
 
   const handleCopy = (text: string) => {
     navigator.clipboard.writeText(text).then(
-      () => {},
+      () => {
+        toast.success("Copied");
+      },
       (err) => {
         console.error("Could not copy text: ", err);
       }
@@ -139,7 +143,6 @@ export default function Page() {
     setMailboxes([...mailboxes, mailbox]);
   };
 
-  // Removing Mailbox --- testing left
   const removeMailbox = async (sender_id: any) => {
     try {
       await axiosInstance.delete(`/v2/user/mailbox/${sender_id}`);
@@ -147,13 +150,11 @@ export default function Page() {
         prevState.filter((mailbox) => mailbox.sender_id !== sender_id)
       );
       toast.success("Mailbox removed successfully.");
-      console.log("Mailbox removed successfully:", mailboxes);
     } catch (error: any) {
       console.error("Failed to remove mailbox.", error);
       toast.error("Failed to remove mailbox.");
     }
   };
-  // Removing Mailbox --- testing left
 
   const saveChanges = async () => {
     const payload = {
@@ -184,15 +185,14 @@ export default function Page() {
         addMailbox(newMailbox);
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
+        toast.success("Mailbox Added Successfully");
         console.log("Mailbox added successfully:", mailboxes);
       } else {
         alert("OTP validation failed: " + "Invalid OTP entered.");
       }
     } catch (error) {
       console.error("Failed to validate OTP:", error);
-      alert(
-        "Error validating OTP. Please check your connection and try again."
-      );
+      toast.error("Email Verification Failed");
     }
   };
 

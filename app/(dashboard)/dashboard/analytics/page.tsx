@@ -202,20 +202,20 @@ export default function Page() {
                           <TableRow key={index}>
                             <TableCell>{campaign.campaign_name}</TableCell>
                             <TableCell className="hidden sm:table-cell text-center">
-                              {campaign.engaged_leads}
+                              {Math.round(campaign.engaged_leads)}
                             </TableCell>
                             <TableCell className="hidden sm:table-cell text-center">
-                              {campaign.response_rate}
+                              {Math.round(campaign.response_rate)}
                             </TableCell>
                             <TableCell className="hidden md:table-cell text-center">
                               {campaign.bounce_rate === null
                                 ? "0%"
-                                : `${campaign.bounce_rate}%`}
+                                : `${Math.round(campaign.bounce_rate)}%`}
                             </TableCell>
                             <TableCell className="text-center">
                               {campaign.open_rate === null
                                 ? "0%"
-                                : `${campaign.open_rate}%`}
+                                : `${Math.round(campaign.open_rate)}%`}
                             </TableCell>
                           </TableRow>
                         )
@@ -241,7 +241,13 @@ export default function Page() {
               <div className="flex items-center flex-col gap-24">
                 <div className="transform rotate-[-90deg] mt-20 w-full">
                   <Progress
-                    value={dashboardData.conversion_funnel?.sent || 0}
+                    value={
+                      dashboardData.conversion_funnel?.sent < 100
+                        ? dashboardData.conversion_funnel?.sent
+                        : dashboardData.conversion_funnel?.sent > 100
+                        ? 100
+                        : 0
+                    }
                     className="h-2 w-40"
                   />
                 </div>
@@ -261,7 +267,13 @@ export default function Page() {
               <div className="flex items-center flex-col gap-24">
                 <div className="transform rotate-[-90deg] mt-20 w-full">
                   <Progress
-                    value={dashboardData.conversion_funnel?.opened || 0}
+                    value={
+                      dashboardData.conversion_funnel?.opened < 100
+                        ? dashboardData.conversion_funnel?.opened
+                        : dashboardData.conversion_funnel?.opened > 100
+                        ? 100
+                        : 0
+                    }
                     className="h-2 w-40"
                   />
                 </div>
@@ -281,7 +293,13 @@ export default function Page() {
               <div className="flex items-center flex-col gap-24">
                 <div className="transform rotate-[-90deg] mt-20 w-full">
                   <Progress
-                    value={dashboardData.conversion_funnel?.cta_clicked || 0}
+                    value={
+                      dashboardData.conversion_funnel?.cta_clicked < 100
+                        ? dashboardData.conversion_funnel?.cta_clicked
+                        : dashboardData.conversion_funnel?.cta_clicked > 100
+                        ? 100
+                        : 0
+                    }
                     className="h-2 w-40"
                   />
                 </div>
@@ -301,7 +319,13 @@ export default function Page() {
               <div className="flex items-center flex-col gap-24">
                 <div className="transform rotate-[-90deg] mt-20 w-full">
                   <Progress
-                    value={dashboardData.conversion_funnel?.goal || 0}
+                    value={
+                      dashboardData.conversion_funnel?.goal < 100
+                        ? dashboardData.conversion_funnel?.goal
+                        : dashboardData.conversion_funnel?.goal > 100
+                        ? 100
+                        : 0
+                    }
                     className="h-2 w-40"
                   />
                 </div>
@@ -314,41 +338,6 @@ export default function Page() {
               </div>
             </CardContent>
           </Card>
-
-          {/* <Card className="col-span-2 p-4">
-            <ScrollArea className="h-[18.5rem]">
-              <CardContent className="text-sm space-y-4">
-                <p>
-                  Deliverability Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.deliverability_rate)}
-                </p>
-                <p>
-                  Open Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.open_rate)}
-                </p>
-                <p>
-                  Reply Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.reply_rate)}
-                </p>
-                <p>
-                  Positive Reply Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.positive_email_rate)}
-                </p>
-                <p>
-                  Negative Reply Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.negative_email_rate)}
-                </p>
-                <p>
-                  Conversion Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.conversion_rate)}
-                </p>
-                <p>
-                  Unsubscribe Rate -{" "}
-                  {Math.round(dashboardData?.email_stats?.unsubscribed_rate)}
-                </p>
-              </CardContent>
-            </ScrollArea>
-          </Card> */}
 
           <Card className="col-span-2">
             <ScrollArea className="h-[18.5rem]">
