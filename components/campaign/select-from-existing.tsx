@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 import { useState, useEffect } from "react";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
 import axios from "axios";
@@ -80,6 +82,10 @@ export const SelectFromExisting = () => {
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
       company_linkedin_url: lead.company_linkedin_url,
+      pain_points: lead.pain_points || [], // Assuming optional or provide default
+      value: lead.value || [], // Assuming optional or provide default
+      metrics: lead.metrics || [], // Assuming optional or provide default
+      compliments: lead.compliments || [], // Assuming optional or provide default
     }));
   }
 

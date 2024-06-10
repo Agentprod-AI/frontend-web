@@ -31,6 +31,8 @@ import {
 import { useUserContext } from "@/context/user-context";
 import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjust the import path as needed
 import { toast } from "sonner";
+import { Label } from "../ui/label";
+import axiosInstance from "@/utils/axiosInstance";
 
 const profileFormSchema = z.object({
   product_offering: z.string(),
@@ -172,6 +174,32 @@ export function OfferingForm({ type }: { type: string }) {
     };
   };
 
+  const handleFileChange = async (event: any) => {
+    const selectedFile = event.target.files[0];
+    console.log(selectedFile);
+    if (selectedFile && selectedFile.type === "application/pdf") {
+      const payload = {
+        file: selectedFile,
+        campaign_id: params.campaignId,
+      };
+      try {
+        const response = await axiosInstance.post("/v2/upload-pdf/", payload);
+
+        if (response.status === 200) {
+          toast.success("PDF uploaded successfully.");
+        } else {
+          toast.error("Failed to upload PDF.");
+        }
+      } catch (error) {
+        console.error("Error uploading PDF:", error);
+        toast.error("Error uploading PDF.");
+        // setLoading(false);
+      }
+    } else {
+      toast.error("Please select a PDF file.");
+    }
+  };
+
   const handleCompanyProfileChange = (
     newValue: any[],
     fieldName: "pain_point" | "values" | "customer_success_stories"
@@ -288,8 +316,28 @@ export function OfferingForm({ type }: { type: string }) {
             </FormItem>
           )}
         />
-        {type === "create" && <Button type="submit">Create Offer</Button>}
-        {type === "edit" && <Button type="submit">Update Offer</Button>}
+        <div className="flex flex-col gap-10 ">
+          <div className="grid w-full max-w-sm items-center gap-1.5">
+            <Label htmlFor="picture">Add your sales knowledge</Label>
+            <Input
+              id="picture"
+              type="file"
+              accept="application/pdf"
+              onChange={handleFileChange}
+            />
+          </div>
+
+          {type === "create" && (
+            <Button type="submit" className="cursor-pointer w-32 ">
+              Create Offer
+            </Button>
+          )}
+          {type === "edit" && (
+            <Button type="submit" className="cursor-pointer w-32">
+              Update Offer
+            </Button>
+          )}
+        </div>
       </form>
     </Form>
   );
