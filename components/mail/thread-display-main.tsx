@@ -52,6 +52,7 @@ import Notification from "./Notification";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { User } from "lucide-react";
 import { LoadingCircle } from "@/app/icons";
+import { useUserContext } from "@/context/user-context";
 
 // interface ConversationEntry {
 //   id: string;
@@ -280,13 +281,15 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState("");
 
+    const { user } = useUserContext();
+
     const internalScrollRef = React.useRef<HTMLDivElement>(null);
 
     React.useEffect(() => {
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          // console.log("response for drafts", response);
+          console.log("The draft i need", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -367,6 +370,34 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           toast.error("Failed to send the email. Please try again.");
         });
     };
+
+    // regenerate the draft email
+
+    const handleRegenrateDraft = () => {
+      const payload = {
+        user_id: user.id,
+        conversation_id: conversationId,
+        campaign_id: leads[0].campaign_id,
+      };
+
+      console.log("Payload for regeenerate", payload);
+
+      axiosInstance
+        .post(`/v2/mailbox/draft/regenerate`, payload)
+        .then((response) => {
+          toast.success("Your draft has been regenerated successfully!");
+          setTitle(response.data.subject);
+          setBody(response.data.body);
+          console.log(response.data);
+          setEditable(false);
+        })
+        .catch((error) => {
+          console.error("Failed to regenerate draft:", error);
+          toast.error("Failed to regenerate the draft. Please try again.");
+        });
+    };
+
+    // regenerate the draft email
 
     const handleDeleteDraft = () => {
       axiosInstance
@@ -469,7 +500,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                     </div>
 
                     <div>
-                      <Button variant={"ghost"}>
+                      <Button variant={"ghost"} onClick={handleRegenrateDraft}>
                         <RefreshCw className="h-4 w-4" />
                       </Button>
 
@@ -562,7 +593,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <Button variant={"ghost"} onClick={() => setEditable(true)}>
                   <Edit3 className="h-4 w-4" />
                 </Button>
-                <Button variant={"ghost"}>
+                <Button variant={"ghost"} onClick={handleRegenrateDraft}>
                   <RefreshCw className="h-4 w-4" />
                 </Button>
                 <Button variant={"ghost"} onClick={handleDeleteDraft}>
@@ -628,8 +659,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   };
 
   const matchingCampaign = campaigns.find((campaign) => campaign.id === leadId);
-
-  console.log(matchingCampaign, "matchingCampaign");
 
   return (
     <div className="relative">

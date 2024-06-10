@@ -1,3 +1,5 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable import/no-unresolved */
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
@@ -30,12 +32,18 @@ export const PeopleProfileSheet = ({
 }: PeopleProfileSheetProps) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
+  const [painPointsCollapsibleOpen, setPainPointsCollapsibleOpen] =
+    useState(false);
+  const [complimentsCollapsibleOpen, setComplimentsCollapsibleOpen] =
+    useState(false);
+  const [valueCollapsibleOpen, setValueCollapsibleOpen] = useState(false);
+  const [metricsCollapsibleOpen, setMetricsCollapsibleOpen] = useState(false);
   const [affiliatedPagesCollapsibleOpen, setAffiliatedPagesCollapsibleOpen] =
     useState(false);
   const [loading, setLoading] = useState(true);
   const { getCompanyInfo, companyInfo, setCompanyLinkedin } = useCompanyInfo();
 
-  console.log(data);
+  console.log("Leads Data for Indiviual User", data);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -139,6 +147,144 @@ export const PeopleProfileSheet = ({
               </div>
             </div>
             <br />
+            {/* Show here */}
+            {companyInfo && (
+              <div className="flex flex-col gap-2 w-full">
+                {companyInfo.company_info &&
+                  Object.entries(companyInfo.company_info).map(
+                    ([key, value]) => (
+                      <div
+                        className="text-sm font-semibold text-muted-foreground whitespace-normal w-full"
+                        key={key}
+                      >
+                        {formatText(key)}:{" "}
+                        <span className="text-sm font-normal text-muted-foreground whitespace-normal w-full">
+                          {value as string}
+                        </span>
+                      </div>
+                    )
+                  )}
+
+                {companyInfo.addresses && companyInfo.addresses.length > 0 && (
+                  <Collapsible
+                    open={addressCollapsibleOpen}
+                    onOpenChange={setAddressCollapsibleOpen}
+                    className="pt-4 space-y-2 text-muted-foreground w-full"
+                  >
+                    <div className="flex items-center justify-between space-x-4 w-full">
+                      <h4 className="text-sm font-semibold">Addresses</h4>
+                      <CollapsibleTrigger asChild>
+                        <Button variant="ghost" size="sm" className="w-9 p-0">
+                          <ChevronsUpDown className="h-4 w-4" />
+                          <span className="sr-only">Toggle</span>
+                        </Button>
+                      </CollapsibleTrigger>
+                    </div>
+                    <div className="px-2 py-1 text-xs whitespace-normal w-full">
+                      {companyInfo.addresses[0].replace("Get directions", "")}
+                    </div>
+                    <CollapsibleContent className="space-y-2 w-full">
+                      <div className="flex flex-col gap-2 px-2 w-full">
+                        {companyInfo.addresses.map((address, index) => {
+                          if (index === 0) return null;
+                          else {
+                            return (
+                              <div
+                                className="text-xs text-muted-foreground whitespace-normal w-full"
+                                key={index}
+                              >
+                                {address.replace("Get directions", "")}
+                              </div>
+                            );
+                          }
+                        })}
+                      </div>
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
+
+                {companyInfo.affiliated_pages &&
+                  companyInfo.affiliated_pages.length > 0 && (
+                    <Collapsible
+                      open={affiliatedPagesCollapsibleOpen}
+                      onOpenChange={setAffiliatedPagesCollapsibleOpen}
+                      className="pt-4 space-y-2 text-muted-foreground w-full"
+                    >
+                      <div className="flex items-center justify-between space-x-4 w-full">
+                        <div className="text-sm font-medium text-muted-foreground">
+                          Affiliated Pages:
+                        </div>
+                        <CollapsibleTrigger asChild>
+                          <Button variant="ghost" size="sm" className="w-9 p-0">
+                            <ChevronsUpDown className="h-4 w-4" />
+                            <span className="sr-only">Toggle</span>
+                          </Button>
+                        </CollapsibleTrigger>
+                      </div>
+                      <CollapsibleContent className="space-y-2 w-full">
+                        {companyInfo.affiliated_pages.title.map(
+                          (title: any, index: any) =>
+                            index > 0 && (
+                              <div
+                                className="px-2 py-1 text-xs text-muted-foreground whitespace-normal w-full"
+                                key={index}
+                              >
+                                {title}
+                                {companyInfo.affiliated_pages.description[
+                                  index
+                                ] &&
+                                  ` - ${companyInfo.affiliated_pages.description[index]}`}
+                              </div>
+                            )
+                        )}
+                      </CollapsibleContent>
+                    </Collapsible>
+                  )}
+
+                {companyInfo.stock_info &&
+                  Object.entries(companyInfo.stock_info).length > 0 && (
+                    <div>
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        Stock Info:
+                      </div>
+                      {Object.entries(companyInfo.stock_info).map(
+                        ([key, value]) => (
+                          <div
+                            className="text-muted-foreground text-sm whitespace-normal w-full"
+                            key={key}
+                          >
+                            {formatText(key)}:{" "}
+                            <span className="font-normal">
+                              {value as string}
+                            </span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+
+                {companyInfo.funding_info &&
+                  Object.entries(companyInfo.funding_info).length > 0 && (
+                    <div>
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        Funding Info:
+                      </div>
+                      {Object.entries(companyInfo.funding_info).map(
+                        ([key, value]) => (
+                          <div
+                            className="text-muted-foreground text-sm whitespace-normal w-full"
+                            key={key}
+                          >
+                            {formatText(key)}: <span>{value as string}</span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+              </div>
+            )}
+
+            {/* Show here */}
             <Collapsible
               open={collapsibleOpen}
               onOpenChange={setCollapsibleOpen}
@@ -188,6 +334,171 @@ export const PeopleProfileSheet = ({
                 </>
               )}
             </Collapsible>
+
+            {/* Pain Points */}
+            <Collapsible
+              open={painPointsCollapsibleOpen}
+              onOpenChange={setPainPointsCollapsibleOpen}
+              className="pt-4 space-y-2 text-muted-foreground w-full"
+            >
+              <div className="flex items-center justify-between space-x-4 w-full">
+                <h4 className="text-sm font-semibold">Pain Poitns</h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              {data?.pain_points && (
+                <>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                    <span>{data?.pain_points[0]}</span>
+                  </div>
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.pain_points.map((val: any, ind: any) => {
+                      if (ind === 0) return null;
+                      return (
+                        <div
+                          className="flex px-2 py-1 font-mono text-xs justify-between w-full"
+                          key={`e_his${ind}`}
+                        >
+                          <span className="w-full whitespace-normal">
+                            {val}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </>
+              )}
+            </Collapsible>
+
+            {/* Pain Points */}
+
+            {/* Value */}
+            <Collapsible
+              open={valueCollapsibleOpen}
+              onOpenChange={setValueCollapsibleOpen}
+              className="pt-4 space-y-2 text-muted-foreground w-full"
+            >
+              <div className="flex items-center justify-between space-x-4 w-full">
+                <h4 className="text-sm font-semibold">Values</h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              {data?.value && (
+                <>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                    <span>{data?.value[0]}</span>
+                  </div>
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.value.map((val: any, ind: any) => {
+                      if (ind === 0) return null;
+                      return (
+                        <div
+                          className="flex px-2 py-1 font-mono text-xs justify-between w-full"
+                          key={`e_his${ind}`}
+                        >
+                          <span className="w-full whitespace-normal">
+                            {val}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </>
+              )}
+            </Collapsible>
+
+            {/* Value */}
+
+            {/* Metrics */}
+            <Collapsible
+              open={metricsCollapsibleOpen}
+              onOpenChange={setMetricsCollapsibleOpen}
+              className="pt-4 space-y-2 text-muted-foreground w-full"
+            >
+              <div className="flex items-center justify-between space-x-4 w-full">
+                <h4 className="text-sm font-semibold">Metrics</h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              {data?.metrics && (
+                <>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                    <span>{data?.metrics[0]}</span>
+                  </div>
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.metrics.map((val: any, ind: any) => {
+                      if (ind === 0) return null;
+                      return (
+                        <div
+                          className="flex px-2 py-1 font-mono text-xs justify-between w-full"
+                          key={`e_his${ind}`}
+                        >
+                          <span className="w-full whitespace-normal">
+                            {val}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </>
+              )}
+            </Collapsible>
+
+            {/* Metrics */}
+
+            {/* Compliments */}
+            <Collapsible
+              open={complimentsCollapsibleOpen}
+              onOpenChange={setComplimentsCollapsibleOpen}
+              className="pt-4 space-y-2 text-muted-foreground w-full"
+            >
+              <div className="flex items-center justify-between space-x-4 w-full">
+                <h4 className="text-sm font-semibold">Compliments</h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              {data?.compliments && (
+                <>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                    <span>{data?.compliments[0]}</span>
+                  </div>
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.compliments.map((val: any, ind: any) => {
+                      if (ind === 0) return null;
+                      return (
+                        <div
+                          className="flex px-2 py-1 font-mono text-xs justify-between w-full"
+                          key={`e_his${ind}`}
+                        >
+                          <span className="w-full whitespace-normal">
+                            {val}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </CollapsibleContent>
+                </>
+              )}
+            </Collapsible>
+
+            {/* Compliments */}
+
             <br />
             <br />
             <div>
@@ -196,6 +507,7 @@ export const PeopleProfileSheet = ({
                   data.employment_history[0].organization_name}
               </p>
             </div>
+
             <br />
             {companyInfo && (
               <div className="space-y-3 w-full">
@@ -205,168 +517,6 @@ export const PeopleProfileSheet = ({
                   </span>
                 </div>
                 <br />
-
-                <div className="flex flex-col gap-2 w-full">
-                  {companyInfo.company_info &&
-                    Object.entries(companyInfo.company_info).map(
-                      ([key, value]) => (
-                        <div
-                          className="text-sm font-semibold text-muted-foreground whitespace-normal w-full"
-                          key={key}
-                        >
-                          {formatText(key)}:{" "}
-                          <span className="text-sm font-normal text-muted-foreground whitespace-normal w-full">
-                            {value as string}
-                          </span>
-                        </div>
-                      )
-                    )}
-                </div>
-                {companyInfo.addresses && companyInfo.addresses.length > 0 && (
-                  <Collapsible
-                    open={addressCollapsibleOpen}
-                    onOpenChange={setAddressCollapsibleOpen}
-                    className="pt-4 space-y-2 text-muted-foreground w-full"
-                  >
-                    <div className="flex items-center justify-between space-x-4 w-full">
-                      <h4 className="text-sm font-semibold">Addresses</h4>
-                      <CollapsibleTrigger asChild>
-                        <Button variant="ghost" size="sm" className="w-9 p-0">
-                          <ChevronsUpDown className="h-4 w-4" />
-                          <span className="sr-only">Toggle</span>
-                        </Button>
-                      </CollapsibleTrigger>
-                    </div>
-                    <div className="px-2 py-1 text-xs whitespace-normal w-full">
-                      {companyInfo.addresses[0].replace("Get directions", "")}
-                    </div>
-                    <CollapsibleContent className="space-y-2 w-full">
-                      <div className="flex flex-col gap-2 px-2 w-full">
-                        {companyInfo.addresses.map((address, index) => {
-                          if (index === 0) return null;
-                          else {
-                            return (
-                              <div
-                                className="text-xs text-muted-foreground whitespace-normal w-full"
-                                key={index}
-                              >
-                                {address.replace("Get directions", "")}
-                              </div>
-                            );
-                          }
-                        })}
-                      </div>
-                    </CollapsibleContent>
-                  </Collapsible>
-                )}
-
-                <div>
-                  {companyInfo.affiliated_pages &&
-                    companyInfo.affiliated_pages.length > 0 && (
-                      <Collapsible
-                        open={affiliatedPagesCollapsibleOpen}
-                        onOpenChange={setAffiliatedPagesCollapsibleOpen}
-                        className="pt-4 space-y-2 text-muted-foreground w-full"
-                      >
-                        <div className="flex items-center justify-between space-x-4 w-full">
-                          <div className="text-sm font-medium text-muted-foreground">
-                            Affiliated Pages:
-                          </div>
-                          <CollapsibleTrigger asChild>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              className="w-9 p-0"
-                            >
-                              <ChevronsUpDown className="h-4 w-4" />
-                              <span className="sr-only">Toggle</span>
-                            </Button>
-                          </CollapsibleTrigger>
-                        </div>
-                        <div className="px-2 py-1 text-xs whitespace-normal w-full">
-                          <div className="text-muted-foreground">
-                            {companyInfo.affiliated_pages.title[0]}
-                            {companyInfo.affiliated_pages.description[0] &&
-                              ` - ${companyInfo.affiliated_pages.description[0]}`}
-                          </div>
-                        </div>
-                        <CollapsibleContent className="space-y-2 w-full">
-                          <div className="flex flex-col gap-2 w-full">
-                            {companyInfo.affiliated_pages.title &&
-                              companyInfo.affiliated_pages.title.map(
-                                (title: string, index: number) => {
-                                  if (index === 0) return null;
-                                  else {
-                                    return (
-                                      <div
-                                        key={index}
-                                        className="px-2 py-1 text-xs text-muted-foreground whitespace-normal w-full"
-                                      >
-                                        {title}
-                                        {companyInfo.affiliated_pages
-                                          .description[index] &&
-                                          ` - ${companyInfo.affiliated_pages.description[index]}`}
-                                      </div>
-                                    );
-                                  }
-                                }
-                              )}
-                          </div>
-                        </CollapsibleContent>
-                      </Collapsible>
-                    )}
-                </div>
-
-                {companyInfo.stock_info &&
-                  Object.entries(companyInfo.stock_info).length > 0 && (
-                    <>
-                      <br />
-                      <br />
-                      <div>
-                        <div className="text-sm font-semibold text-muted-foreground">
-                          Stock Info:
-                        </div>
-                        {Object.entries(companyInfo.stock_info).map(
-                          ([key, value]) => (
-                            <div
-                              className="text-muted-foreground text-sm whitespace-normal w-full"
-                              key={key}
-                            >
-                              {formatText(key)}:{" "}
-                              <span className="font-normal">
-                                {value as string}
-                              </span>
-                            </div>
-                          )
-                        )}
-                      </div>
-                    </>
-                  )}
-                {companyInfo.funding_info &&
-                  Object.entries(companyInfo.funding_info).length > 0 && (
-                    <>
-                      <br />
-                      <br />
-                      <div>
-                        <div className="text-sm font-semibold text-muted-foreground">
-                          Funding Info:
-                        </div>
-                        <div>
-                          {Object.entries(companyInfo.funding_info).map(
-                            ([key, value]) => (
-                              <div
-                                className="text-muted-foreground text-sm whitespace-normal w-full"
-                                key={key}
-                              >
-                                {formatText(key)}:{" "}
-                                <span>{value as string}</span>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      </div>
-                    </>
-                  )}
               </div>
             )}
           </div>
