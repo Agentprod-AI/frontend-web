@@ -188,6 +188,7 @@ export default function Training() {
   };
 
   const handleLetAiWrite = async () => {
+    toast.success("AI is writing your email, it might take some time.");
     try {
       const response = await getAutogenerateTrainingEmail(
         params.campaignId,

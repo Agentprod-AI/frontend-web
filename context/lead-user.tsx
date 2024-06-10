@@ -1,4 +1,3 @@
-import { set } from "date-fns";
 import React, {
   createContext,
   useContext,
@@ -76,6 +75,10 @@ export interface Lead {
   intent_strength: null; // Assuming null, adjust if there's a specific type
   show_intent: boolean;
   revealed_for_current_team: boolean;
+  pain_points: any[];
+  value: any[];
+  metrics: any[];
+  compliments: any[];
 }
 
 export interface Contact {
@@ -111,6 +114,10 @@ export interface Contact {
   last_contacted?: string;
   is_responded?: boolean | null;
   company_linkedin_url: string | null;
+  pain_points: any[];
+  value: any[];
+  metrics: any[];
+  compliments: any[];
 }
 
 // Define the state structure for our context

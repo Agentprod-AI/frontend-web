@@ -69,6 +69,7 @@ export function Mail({
     campaignName: string;
     campaignId: string;
   }>();
+  const [searchTerm, setSearchTerm] = React.useState("");
 
   const { user } = useUserContext();
 
@@ -121,14 +122,25 @@ export function Mail({
     fetchConversations();
   }, []); // Dependency array remains empty to run once on mount
 
+  // const filteredMails = React.useMemo(() => {
+  //   return mails.filter((mail) => {
+  //     return (
+  //       (filter === "all" || mail.status.toLowerCase() === filter) &&
+  //       (!campaign || mail.campaign_id === campaign.campaignId)
+  //     );
+  //   });
+  // }, [mails, filter, campaign]);
+
   const filteredMails = React.useMemo(() => {
-    return mails.filter((mail) => {
-      return (
+    return mails.filter(
+      (mail) =>
+        (mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase())) &&
         (filter === "all" || mail.status.toLowerCase() === filter) &&
         (!campaign || mail.campaign_id === campaign.campaignId)
-      );
-    });
-  }, [mails, filter, campaign]);
+    );
+  }, [mails, filter, campaign, searchTerm]);
 
   React.useEffect(() => {
     if (filteredMails.length > 0) {
@@ -247,7 +259,12 @@ export function Mail({
               <form>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input placeholder="Search" className="pl-8" />
+                  <Input
+                    placeholder="Search"
+                    className="pl-8"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
                 </div>
               </form>
             </div>

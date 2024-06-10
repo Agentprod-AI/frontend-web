@@ -20,6 +20,7 @@ import {
   DialogTrigger,
   DialogClose,
 } from "@/components/ui/dialog";
+import { Textarea } from "../ui/textarea";
 
 interface Field {
   label: string;
@@ -83,7 +84,7 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
                 key={itemIndex}
                 className="flex justify-between items-center mt-2"
               >
-                <Input
+                <Textarea
                   value={item}
                   onChange={(e) =>
                     handleFieldChange(index, itemIndex, e.target.value)

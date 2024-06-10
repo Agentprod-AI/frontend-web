@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { LoadingCircle } from "@/app/icons";
@@ -55,7 +57,7 @@ export const ImportAudience = () => {
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
-  const router = useRouter()
+  const router = useRouter();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log("analyzing filez");
@@ -206,6 +208,10 @@ export const ImportAudience = () => {
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
       company_linkedin_url: lead.company_linkedin_url,
+      pain_points: lead.pain_points || [], // Assuming optional or provide default
+      value: lead.value || [], // Assuming optional or provide default
+      metrics: lead.metrics || [], // Assuming optional or provide default
+      compliments: lead.compliments || [], // Assuming optional or provide default
     }));
   }
 

@@ -559,6 +559,10 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
       company_linkedin_url: lead.company_linkedin_url,
+      pain_points: lead.pain_points || [], // Assuming optional or provide default
+      value: lead.value || [], // Assuming optional or provide default
+      metrics: lead.metrics || [], // Assuming optional or provide default
+      compliments: lead.compliments || [], // Assuming optional or provide default
     }));
   }
 

@@ -19,6 +19,7 @@ import { useCampaignContext } from "@/context/campaign-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUserContext } from "@/context/user-context";
 import { toast } from "sonner";
+import { LoadingCircle } from "@/app/icons";
 
 export default function Page() {
   const { leads, setLeads } = useLeads();
@@ -45,6 +46,7 @@ export default function Page() {
       .get(`v2/lead/all/${user?.id}`)
       .then((response) => {
         setLeads(response.data);
+        console.log("Leads for campaign:", response.data);
         setLoading(false);
       })
       .catch((error) => {
@@ -77,7 +79,13 @@ export default function Page() {
     additionalInfo: campaign.additional_details,
   }));
 
-  if (loading) return <div>Loading...</div>;
+  if (loading)
+    return (
+      <div className="w-full flex flex-col items-center">
+        <LoadingCircle />
+        <span>Loading Leads</span>
+      </div>
+    );
 
   return (
     <>

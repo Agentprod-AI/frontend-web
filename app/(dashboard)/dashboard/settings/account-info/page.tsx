@@ -57,7 +57,7 @@ export default function Page() {
               value: data.last_name,
               isEditable: true,
             },
-            { id: "Sender Job", value: data.job, isEditable: false },
+            { id: "Sender Job", value: data.job, isEditable: true },
             { id: "Email", value: data.email, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
             { id: "Company ID", value: data.companyId, isEditable: true },

@@ -45,7 +45,7 @@ export const contactsColumn: ColumnDef<Lead>[] = [
     header: "ROLE",
   },
   {
-    accessorKey: "responded",
+    accessorKey: "is_responded",
     header: "RESPONDED",
   },
   {
