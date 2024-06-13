@@ -1,23 +1,24 @@
+/* eslint-disable no-console */
 import {
   Archive,
   Bell,
-  // Archive,
   Clock3,
+  ListTodo,
   Mail,
+  MailPlus,
   SendHorizontal,
-  // SendHorizontal,
-  // ThumbsDown,
 } from "lucide-react";
 import React from "react";
 
-import { Avatar, AvatarFallback } from "../ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "../ui/card";
 import { Input } from "../ui/input";
 import { Textarea } from "../ui/textarea";
-
-// import { Badge } from "../ui/badge";
 import { useLeads } from "@/context/lead-user";
 import { useUserContext } from "@/context/user-context";
+import { Button } from "../ui/button";
+import { useMailbox } from "@/context/mailbox-provider";
+import axiosInstance from "@/utils/axiosInstance";
 
 interface EmailMessage {
   id: any;
@@ -50,9 +51,23 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       minute: "2-digit",
     });
   };
-
+  const [questions, setQuestions] = React.useState([]);
+  const { setIsContextBarOpen } = useMailbox();
   const { leads } = useLeads();
   const { user } = useUserContext();
+
+  React.useEffect(() => {
+    if (email.status.toLowerCase() === "information required") {
+      axiosInstance
+        .get(`/questions/${email.message_id}`)
+        .then((response) => {
+          setQuestions(response.data.questions);
+          console.log("Questions", response.data.questions);
+        })
+        .catch((error) => console.error("Failed to fetch questions", error));
+    }
+  }, [email]);
+
   const parseActionDraft = (actionDraft: any) => {
     if (!actionDraft)
       return { subject: "No subject", body: "No details provided" };
@@ -67,7 +82,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       subject = actionDraft.substring(subjectMarker.length, splitIndex);
       body = actionDraft.substring(splitIndex + 2);
     } else {
-      // Fallback if the format isn't as expected
       body = actionDraft.substring(subjectMarker.length);
     }
 
@@ -133,6 +147,87 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           </div>
         </div>
       )}
+
+      {!email.is_reply &&
+        email?.status?.toLowerCase() === "information required" && (
+          <div>
+            <div className="flex gap-2 flex-col h-full">
+              <div className="flex w-full">
+                <Avatar
+                  className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+                  onClick={() => {
+                    setIsContextBarOpen(true);
+                  }}
+                >
+                  <AvatarImage
+                    src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+                    alt="avatar"
+                  />
+
+                  <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                    {leads[0]?.first_name && leads[0]?.last_name
+                      ? leads[0].first_name.charAt(0) +
+                        leads[0].last_name.charAt(0)
+                      : ""}
+                  </AvatarFallback>
+                </Avatar>
+                <Card className="w-full mr-5 ">
+                  <div className="flex gap-5 p-4 items-center">
+                    <span className="text-sm font-semibold">
+                      {leads[0]?.first_name + " to you"}
+                    </span>
+                    <div className="flex gap-3 items-center">
+                      <span className="text-gray-500 text-sm  ">
+                        2 minutes ago
+                      </span>
+                      <span className="bg-green-100 text-green-600 text-xs border p-1 border-green-100 flex gap-1 items-center rounded-full">
+                        <MailPlus className="h-4 w-4" />{" "}
+                        <span> Information requested</span>
+                      </span>
+                    </div>
+                  </div>
+                  <CardHeader></CardHeader>
+                  <CardContent className="text-xs -ml-3 -mt-10">
+                    <Textarea
+                      value={`Hi Jason,\n\What's the pricing? I coudn't find it on the website. \n\nThanks\nJason`}
+                      className="text-xs h-40"
+                      placeholder="Enter email body"
+                      readOnly
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-3">
+              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                <ListTodo className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className=" ml-1 text-xs ">
+                <span className="text-gray-500">Todo: </span> Respond to ask
+                question
+              </p>
+            </div>
+
+            <div className="flex gap-2 flex-col h-full">
+              {questions.map((question: any, index: any) => (
+                <div key={index} className="flex w-full mr-4">
+                  <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
+                    <span className="text-xs w-2/3">{question}</span>
+                    <Input className="w-1/3" placeholder="Answer" />
+                  </Card>
+                </div>
+              ))}
+
+              <Button
+                className="ml-12 w-48 flex gap-2 items-center"
+                variant="secondary"
+              >
+                <span>Generate response</span>
+              </Button>
+            </div>
+          </div>
+        )}
 
       {!email.is_reply && email?.status?.toLowerCase() === "sent" && (
         <div className="flex items-center gap-3">
@@ -248,5 +343,3 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
 };
 
 export default Notification;
-
-// ----------------------NEW TESTING----------------------

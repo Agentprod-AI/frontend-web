@@ -126,15 +126,15 @@ export const CompanyProfile: React.FC<CompanyProfileProps> = ({
                     <DialogTitle>Add {field.actionLabel}</DialogTitle>
                   </DialogHeader>
                   <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <Label htmlFor="newItem" className="text-right">
+                    <div className="flex flex-col gap-2">
+                      <Label htmlFor="newItem" className="">
                         {field.actionLabel}
                       </Label>
-                      <Input
+                      <Textarea
                         id="newItem"
                         value={detailsInput}
                         onChange={(e) => setDetailsInput(e.target.value)}
-                        className="col-span-3"
+                        className="col-span-3 h-28"
                       />
                     </div>
                   </div>
