@@ -318,7 +318,9 @@ export function GoalForm({ type }: { type: string }) {
                   <DropdownMenuContent className="w-max">
                     <ScrollArea className="h-60">
                       <DropdownMenuGroup>
-                        {mailboxes && mailboxes[0].mailbox !== null ? (
+                        {mailboxes &&
+                        mailboxes.length > 0 &&
+                        mailboxes[0].mailbox !== null ? (
                           mailboxes.map((mailbox, index) => (
                             <DropdownMenuItem key={index}>
                               <div
@@ -346,7 +348,7 @@ export function GoalForm({ type }: { type: string }) {
                           ))
                         ) : (
                           <div className="text-sm m-2">
-                            No mailboxes connected.
+                            <p> No mailboxes connected.</p>
                           </div>
                         )}
                       </DropdownMenuGroup>
