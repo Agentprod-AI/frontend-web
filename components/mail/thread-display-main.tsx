@@ -30,6 +30,8 @@ import {
   Check,
   ChevronsUpDown,
   Edit3,
+  ListTodo,
+  MailPlus,
   RefreshCw,
   Trash2,
   TrendingUp,
@@ -180,27 +182,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       });
     };
 
-    // console.log("sender emails", email);
-
-    // const matchingCampaign = campaigns.find(
-    //   (campaign) => campaign.id === leadId
-    // );
-
     return (
       <div className="flex gap-4 flex-col m-4 h-full ">
-        {/* {matchingCampaign && (
-          <div className="flex items-center gap-3">
-            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <User className="h-4 w-4 text-gray-400" />
-            </div>
-            <div className="text-xs ml-1">
-              {leads[0].first_name} was added in{" "}
-              {matchingCampaign.campaign_type} campaign {leads[0].headline} in{" "}
-              {leads[0].country}
-            </div>
-          </div>
-        )} */}
-
         <div className="flex w-full ">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -289,7 +272,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          console.log("The draft i need", response);
+          // console.log("The draft i need", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -663,6 +646,89 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
+
+      {/* UI creation */}
+      {/* <div className="flex gap-2 flex-col m-4 h-full">
+        <div className="flex w-full">
+          <Avatar
+            className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+            onClick={() => {
+              setIsContextBarOpen(true);
+            }}
+          >
+            <AvatarImage
+              src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+              alt="avatar"
+            />
+
+            <AvatarFallback className="bg-yellow-400 text-black text-xs">
+              {leads[0]?.first_name && leads[0]?.last_name
+                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
+                : ""}
+            </AvatarFallback>
+          </Avatar>
+          <Card className="w-full mr-5 ">
+            <div className="flex gap-5 p-4 items-center">
+              <span className="text-sm font-semibold">
+                {leads[0]?.first_name + " to you"}
+              </span>
+              <div className="flex gap-3 items-center">
+                <span className="text-gray-500 text-sm  ">2 minutes ago</span>
+                <span className="bg-green-100 text-green-600 text-xs border p-1 border-green-100 flex gap-1 items-center rounded-full">
+                  <MailPlus className="h-4 w-4" />{" "}
+                  <span> Information requested</span>
+                </span>
+              </div>
+            </div>
+            <CardHeader></CardHeader>
+            <CardContent className="text-xs -ml-3 -mt-10">
+              <Textarea
+                value={`Hi Jason,\n\What's the pricing? I coudn't find it on the website. \n\nThanks\nJason`}
+                className="text-xs h-40"
+                placeholder="Enter email body"
+                readOnly
+              />
+            </CardContent>
+          </Card>
+        </div>
+      </div>
+
+      <div className="flex items-center gap-3 m-4">
+        <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+          <ListTodo className="h-4 w-4 text-gray-400" />
+        </div>
+        <p className=" ml-1 text-xs ">
+          <span className="text-gray-500">Todo: </span> Respond to ask question
+        </p>
+      </div>
+
+      <div className="flex gap-2 flex-col m-4 h-full">
+        <div className="flex flex-col w-full mr-4 gap-5">
+          <Card className="w-full ml-12 p-4 flex flex-col justify-between gap-5">
+            <div className="flex justify-between items-center">
+              <span className="text-xs w-2/3">
+                What is the pricing for FirstQuadrant&apos;s service?
+              </span>
+              <Input className="w-1/3" placeholder="Answer" />
+            </div>
+            <div className="flex justify-between items-center">
+              <span className="text-xs w-2/3">
+                What is the pricing for FirstQuadrant&apos;s service?
+              </span>
+              <Input className="w-1/3" placeholder="Answer" />
+            </div>
+          </Card>
+        </div>
+
+        <Button
+          className="ml-12 w-48 flex gap-2 items-center"
+          variant="secondary"
+        >
+          <span>Generate response</span>
+        </Button>
+      </div> */}
+      {/* UI Creation */}
+
       <div className="h-full ">
         {isLoading ? (
           ""
