@@ -13,6 +13,7 @@ import { MailboxProvider } from "@/context/mailbox-provider";
 import { AutoGenerateProvider } from "@/context/auto-generate-mail";
 import { FieldsListProvider } from "@/context/training-fields-provider";
 import { MailGraphProvider } from "@/context/chart-data-provider";
+import { ButtonStatusProvider } from "@/context/button-status";
 
 export default function Providers({
   // session,
@@ -35,13 +36,15 @@ export default function Providers({
                     <CampaignProvider>
                       <MailGraphProvider>
                         <DashboardProvider>
-                          <CompanyProvider>
-                            <MailboxProvider>
-                              {/* <SessionProvider session={session}> */}
-                              {children}
-                              {/* </SessionProvider> */}
-                            </MailboxProvider>
-                          </CompanyProvider>
+                          <ButtonStatusProvider>
+                            <CompanyProvider>
+                              <MailboxProvider>
+                                {/* <SessionProvider session={session}> */}
+                                {children}
+                                {/* </SessionProvider> */}
+                              </MailboxProvider>
+                            </CompanyProvider>
+                          </ButtonStatusProvider>
                         </DashboardProvider>
                       </MailGraphProvider>
                     </CampaignProvider>
