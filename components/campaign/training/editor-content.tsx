@@ -122,11 +122,14 @@ export default function EditorContent() {
 
   const handleSubjectChange = (text: string) => {
     setLocalSubject(text);
+    setSubject(text);
+
     handleTextChange(`${text} ${localBody} ${localFollowUp}`, setSubject);
   };
 
   const handleBodyChange = (text: string, cursorPos?: number) => {
     setLocalBody(text);
+    setBody(text);
     handleTextChange(`${localSubject} ${text} ${localFollowUp}`, setBody);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
@@ -136,7 +139,6 @@ export default function EditorContent() {
   const handleFollowUpChange = (text: string, cursorPos?: number) => {
     setLocalFollowUp(text);
     handleTextChange(`${localSubject} ${localBody} ${text}`, setFollowUp);
-    console.log("current position: ", cursorPos);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }
@@ -145,31 +147,27 @@ export default function EditorContent() {
   const handleDropdownSelect = (option: string) => {
     if (cursorPosition === null) return;
 
-    const variable = `${option}}`;
+    const variable = `{${option}}`;
     let newText = "";
-    let setText: (value: string) => void;
 
     if (focusedField === "subject") {
       newText =
         localSubject.slice(0, cursorPosition) +
         variable +
         localSubject.slice(cursorPosition);
-      setText = setLocalSubject;
       handleSubjectChange(newText);
     } else if (focusedField === "body") {
       newText =
         localBody.slice(0, cursorPosition) +
         variable +
         localBody.slice(cursorPosition);
-      setText = setLocalBody;
       handleBodyChange(newText, cursorPosition + variable.length);
     } else if (focusedField === "followUp") {
       newText =
         localFollowUp.slice(0, cursorPosition) +
         variable +
         localFollowUp.slice(cursorPosition);
-      setText = setLocalFollowUp;
-      handleFollowUpChange(newText);
+      handleFollowUpChange(newText, cursorPosition + variable.length);
     }
 
     setVariableDropdownIsOpen(false);
@@ -200,7 +198,7 @@ export default function EditorContent() {
           }
         });
       } else {
-        if (response.variables && response.variables.lenght > 0) {
+        if (response.variables && response.variables.length > 0) {
           response.variables.forEach((variable: string) => {
             let custom = true;
             if (presetVariables.includes(variable)) {
@@ -213,7 +211,7 @@ export default function EditorContent() {
               value: variable,
             };
             if (
-              fieldsList.variables.some((field) => field.value === variable)
+              !fieldsList.variables.some((field) => field.value === variable)
             ) {
               newFieldsList.variables.push(newVariable);
             }
@@ -235,14 +233,12 @@ export default function EditorContent() {
   const handleAutoGenerateTemplate = async () => {
     try {
       setTemplateIsLoading(true);
+
       const response = await getAutogenerateTrainingTemplate(params.campaignId);
       const followup = await getAutogenerateFollowup(params.campaignId);
 
-      console.log(response); // For debugging
-      console.log("followup", followup);
-
-      const newSubject = response.template.subject;
-      const newBody = `${response.template.body} ${
+      const newSubject = `${localSubject} ${response.template.subject}`;
+      const newBody = `${localBody} ${response.template.body} ${
         response.template.closing || ""
       }`;
       const newFollowUp = followup;
@@ -250,13 +246,11 @@ export default function EditorContent() {
       setLocalSubject(newSubject);
       setLocalBody(newBody);
       setLocalFollowUp(newFollowUp);
-      setShowAdditionalTextArea(true);
+      setShowAdditionalTextArea(false); //updated
 
-      setLocalSubject(response.template.subject);
-      setLocalBody(
-        `${response.template.body} ${response.template.closing || ""}`
-      );
-      setLocalFollowUp(followup);
+      setSubject(newSubject);
+      setBody(newBody);
+      setFollowUp(newFollowUp);
       mapFields(response);
       setTemplateIsLoading(false);
     } catch (error: any) {
@@ -423,7 +417,13 @@ export default function EditorContent() {
                 {showAdditionalTextArea ? "Remove follow-up" : "Add follow-up"}
               </Button>
               {templateIsLoading ? (
-                <LoadingCircle />
+                <Button
+                  variant={"outline"}
+                  onClick={handleAutoGenerateTemplate}
+                >
+                  <LoadingCircle />
+                  <span className="mr-2">Auto Generate Template</span>
+                </Button>
               ) : (
                 <Button
                   variant={"outline"}

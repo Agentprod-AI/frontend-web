@@ -2,27 +2,27 @@
 /* eslint-disable no-console */
 
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Pencil, Eye } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import EditorContent from "./editor-content";
 import PreviewContent from "./preview-content";
+
 import {
   getAutogenerateTrainingEmail,
   startCampaign,
   getPreviewByTemplate,
   createTraining,
   TrainingRequest,
+  updateTraining,
 } from "./training.api";
 import { useUserContext } from "@/context/user-context";
-import { useRouter } from "next/navigation";
-import { useParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import { useAutoGenerate } from "@/context/auto-generate-mail";
 import { useFieldsList } from "@/context/training-fields-provider";
 import AutoAwesomeIcon from "@mui/icons-material/AutoAwesome";
 import { LoadingCircle } from "@/app/icons";
-import { FieldType, VariableType } from "./types";
 import { toast } from "sonner";
 
 export interface PreviewData {
@@ -33,20 +33,12 @@ export interface PreviewData {
   contact?: any;
   linkedin_information?: string;
 }
-
-interface Lead {
-  firstName: string;
-  email: string;
-  position: string;
-  companyName: string;
-  phone: string;
-  linkedinUrl: string;
-  industry: string;
-  companySize: string;
-  headquarters: string;
-  foundedYear: string;
-  specialties: string[];
-}
+const loadingStates = [
+  { text: "Converting Text" },
+  { text: "Generating Preview" },
+  { text: "Processing Data" },
+  { text: "Finalizing" },
+];
 
 export default function Training() {
   const [activeTab, setActiveTab] = React.useState("editor");
@@ -63,10 +55,18 @@ export default function Training() {
     setPreviewType,
     previewType,
   } = useAutoGenerate();
-  const { fieldsList, body, subject, followUp, subjectOptions } = useFieldsList();
+  const { fieldsList, body, subject, followUp, subjectOptions } =
+    useFieldsList();
   const router = useRouter();
   const [startCampaignIsLoading, setStartCampaignIsLoading] =
     React.useState(false);
+
+  // useEffect(() => {
+  //   if (previewData && activeTab === "preview") {
+  //     // If preview data is available and tab is switched to preview, fetch preview content
+  //     handleCustomGenerate();
+  //   }
+  // }, []);
 
   const handleGenerateWithAI = async () => {
     try {
@@ -77,11 +77,7 @@ export default function Training() {
       console.log(response);
       const { email, contact, linkedin_information } = response;
 
-      setPreviewData({
-        email,
-        contact,
-        linkedin_information,
-      });
+      setPreviewData({ email, contact, linkedin_information });
       setActiveTab("preview");
     } catch (error) {
       console.error("Failed to fetch training data:", error);
@@ -96,15 +92,14 @@ export default function Training() {
       toast.success(
         "Your drafts are getting created, it might take some time."
       );
-      if (previewType == "previewFromTemplate") {
+      if (previewType === "previewFromTemplate") {
         const response = await startCampaign(
           params.campaignId,
           userId,
           "False"
         );
-
         console.log("trainingResponse", response);
-      } else if (previewType == "previewFromAI") {
+      } else if (previewType === "previewFromAI") {
         const response = await startCampaign(params.campaignId, userId, "True");
         console.log("trainingResponse", response);
       }
@@ -122,10 +117,7 @@ export default function Training() {
     try {
       const trainingBody = {
         campaign_id: params.campaignId,
-        template: `Subject: ${subject}
-        
-        ${body}
-        `,
+        template: `Subject: ${subject}\n\n${body}`,
         follow_up_template: followUp,
         variables: fieldsList.variables.reduce<Record<string, string>>(
           (acc, field) => {
@@ -149,41 +141,43 @@ export default function Training() {
         enriched_fields: fieldsList.enriched_fields.map(
           (field) => field.fieldName
         ),
-        subject_field_options: subjectOptions
+        subject_field_options: subjectOptions,
       };
 
       console.log(trainingBody);
+      // await createTraining(trainingBody as TrainingRequest);
 
-      await createTraining(
-        trainingBody as TrainingRequest
-      );
+      await updateTraining(user.id, trainingBody);
 
       const response = await getPreviewByTemplate({
         campaign_id: params.campaignId,
         user_id: user.id,
-        template: `Subject: ${subject}
-        Body: ${body}`,
+        template: `Subject: ${subject}\nBody: ${body}`,
         variables: fieldsList.variables,
         offering_variables: fieldsList.offering_variables,
         personalized_fields: fieldsList.personalized_fields,
         enriched_fields: fieldsList.enriched_fields,
       });
+      console.log("response from api " + response.email);
+
       setPreviewData({
         email: {
           body: response.body,
           subject: response.subject,
         },
       });
+
       console.log("response from get email by template", response);
       setAutoGeneratedBody(response.email.body);
       setAutoGeneratedSubject(response.email.subject);
       setContact(response.contact);
       setLinkedinInformation(response.linkedin_information);
       setPreviewType("previewFromTemplate");
+      toast.success("Preview Generated");
     } catch (error) {
       console.error("Failed to fetch training data:", error);
-    } finally {
-      setActiveTab("preview");
+
+      // Handle error gracefully, maybe set some state or log the error.
     }
   };
 
@@ -207,10 +201,9 @@ export default function Training() {
       setLinkedinInformation(response.linkedin_information);
       setPreviewType("previewFromAI");
       console.log("response from training page", response);
+      setActiveTab("preview");
     } catch (error) {
       console.error("Failed to fetch training data:", error);
-    } finally {
-      setActiveTab("preview");
     }
   };
 
