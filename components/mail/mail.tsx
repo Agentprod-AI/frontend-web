@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
@@ -272,7 +273,9 @@ export function Mail({
               {mails.length > 0 ? (
                 <MailList items={filteredMails} />
               ) : (
-                "No Mails Found"
+                <p className="flex justify-center items-center mt-10 text-gray-500">
+                  No Mails Available
+                </p>
               )}
             </TabsContent>
           </Tabs>
@@ -283,10 +286,12 @@ export function Mail({
           minSize={20}
         >
           <ScrollArea className="h-full">
-            {mails.length > 0 ? (
+            {filteredMails.length > 0 ? (
               <ThreadDisplayMain ownerEmail={mails[0].recipient} />
             ) : (
-              <p>No draft available</p>
+              <p className="flex justify-center items-center mt-10 text-gray-500">
+                No Draft Available
+              </p>
             )}
             {/* <ThreadDisplayMain ownerEmail={""} /> */}
           </ScrollArea>

@@ -363,9 +363,8 @@ export default function Home() {
                   </div>
                 )
             )
-          : // <LoadingCircle />
-            "No messages yet. Start by typing a message in the input field below."}
-        <div className="fixed bottom-0 flex w-[85%] bg-black flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
+          : "No messages yet. Start by typing a message in the input field below."}
+        <div className="fixed bottom-0 flex w-[85%] bg-transparent backdrop-blur-3xl flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <form
             ref={formRef}
             onSubmit={(e) => {

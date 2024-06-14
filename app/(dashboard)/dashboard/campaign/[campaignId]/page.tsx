@@ -59,7 +59,7 @@ export default function Page({ params }: { params: { campaignId: string } }) {
         </CardContent> */}
           <CardFooter className="flex py-0 justify-between">
             <Button asChild variant={"outline"}>
-              <Link href={`${params.campaignId}/${val.href}`}>Edit</Link>
+              <Link href={`${params.campaignId}/${val.href}`}>Added</Link>
             </Button>
           </CardFooter>
         </Card>

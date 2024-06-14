@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
+
 import { useRouter } from "next/navigation";
 import {
   Form,
@@ -563,6 +567,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       value: lead.value || [], // Assuming optional or provide default
       metrics: lead.metrics || [], // Assuming optional or provide default
       compliments: lead.compliments || [], // Assuming optional or provide default
+      lead_information: lead.lead_information || String,
     }));
   }
 
@@ -1564,7 +1569,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
           </TabsContent>
           <TabsContent value="tab2">
             {isTableLoading ? <LoadingCircle /> : <AudienceTableClient />}
-            {isCreateBtnLoading ? (
+            {/* {isCreateBtnLoading ? (
               <LoadingCircle />
             ) : type === "create" ? (
               <Button
@@ -1574,6 +1579,28 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                 }}
               >
                 Create Audience
+              </Button>
+            ) : (
+              <div className="w-1/4 flex justify-between">
+                <Button>Go Back</Button>
+                <Button
+                  onClick={(event) => {
+                    event.preventDefault();
+                    createAudience();
+                  }}
+                >
+                  Update Audience
+                </Button>
+              </div>
+            )} */}
+            {type === "create" ? (
+              <Button
+                onClick={(event) => {
+                  event.preventDefault();
+                  createAudience();
+                }}
+              >
+                {isCreateBtnLoading ? <LoadingCircle /> : "Create Audience"}
               </Button>
             ) : (
               <div className="w-1/4 flex justify-between">

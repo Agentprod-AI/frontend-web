@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
@@ -28,7 +31,7 @@ import { ChevronDown, Plus, Minus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import {
   useCampaignContext,
   GoalFormData,
@@ -88,6 +91,7 @@ export function GoalForm({ type }: { type: string }) {
   const [mailboxes, setMailboxes] =
     useState<{ mailbox: string; sender_name: string }[]>();
   const [originalData, setOriginalData] = useState<GoalFormData>();
+  const [displayEmail, setDisplayEmail] = useState("Select Email"); // Select Email
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -109,6 +113,7 @@ export function GoalForm({ type }: { type: string }) {
     // Check if the email is not already present to avoid duplicates
     if (!emailFields.some((emailField) => emailField.value === email)) {
       appendEmail({ value: email });
+      setDisplayEmail(email); // Set display email when a new email is added
     }
   };
 
@@ -119,6 +124,7 @@ export function GoalForm({ type }: { type: string }) {
     );
     if (indexToRemove !== -1) {
       removeEmail(indexToRemove);
+      setDisplayEmail("Select Email"); // Reset to default text if email is removed
     }
   };
 
@@ -149,6 +155,7 @@ export function GoalForm({ type }: { type: string }) {
         editGoal(changes, goalData.id, params.campaignId);
       }
     }
+    toast.success("Goal added successfully");
   };
 
   useEffect(() => {
@@ -311,7 +318,7 @@ export function GoalForm({ type }: { type: string }) {
                       variant="outline"
                       className="flex items-center justify-center space-x-3"
                     >
-                      <span>Select Email</span>
+                      <span>{displayEmail}</span>
                       <ChevronDown size={20} />
                     </Button>
                   </DropdownMenuTrigger>

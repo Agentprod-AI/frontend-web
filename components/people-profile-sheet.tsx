@@ -10,6 +10,7 @@ import {
   MapPinIcon,
   Phone,
   Linkedin,
+  MonitorUp,
 } from "lucide-react";
 import {
   Collapsible,
@@ -498,6 +499,13 @@ export const PeopleProfileSheet = ({
             </Collapsible>
 
             {/* Compliments */}
+            <br />
+            <div className="flex space-x-2 w-full">
+              <MonitorUp className="h-5 w-5 text-muted-foreground" />
+              <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                {data?.lead_information || "No Information"}
+              </span>
+            </div>
 
             <br />
             <br />

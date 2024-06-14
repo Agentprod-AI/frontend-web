@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 "use client";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -85,11 +87,28 @@ export default function Page() {
                   </div>
 
                   <div className="flex gap-4 items-center">
-                    <p className="text-sm text-muted-foreground">50/400</p>
+                    <p className="text-sm text-muted-foreground">
+                      {campaignItem.daily_outreach_number || 0}/
+                      {campaignItem?.contacts || 0}
+                    </p>
                     <CircularProgressbar
-                      value={50}
-                      maxValue={400}
-                      text={`${12}%`}
+                      value={
+                        campaignItem?.daily_outreach_number &&
+                        campaignItem?.contacts
+                          ? (campaignItem.daily_outreach_number /
+                              campaignItem.contacts) *
+                            100
+                          : 0
+                      }
+                      maxValue={100}
+                      text={`${
+                        campaignItem?.daily_outreach_number &&
+                        campaignItem?.contacts
+                          ? (campaignItem.daily_outreach_number /
+                              campaignItem.contacts) *
+                            100
+                          : 0
+                      }%`}
                       className="w-10 h-10"
                     />
                   </div>
@@ -110,19 +129,19 @@ export default function Page() {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
-                  <p className="text-sm text-muted-foreground">
-                    Campaign description coming from offering.
+                  <p className="text-sm text-muted-foreground truncate">
+                    {campaignItem?.offering_details[0] || "No details"}
                   </p>
                 </div>
 
                 <div className="flex space-x-4 text-sm text-muted-foreground">
                   <div className="flex items-center">
                     <Icons.circle className="mr-1 h-3 w-3" />
-                    Reply-20
+                    Reply-{campaignItem?.replies}
                   </div>
                   <div className="flex items-center">
                     <Icons.star className="mr-1 h-3 w-3" />
-                    Mettings booked-5
+                    Mettings booked-{campaignItem?.meetings_booked}
                   </div>
                 </div>
 
@@ -153,7 +172,10 @@ export default function Page() {
             </Card>
           ))
         ) : (
-          <LoadingCircle />
+          <div className="flex flex-col items-center w-[75rem]">
+            <LoadingCircle />
+            <p>Loading Campaigns</p>
+          </div>
         )}
       </div>
     </div>
