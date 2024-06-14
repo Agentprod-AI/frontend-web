@@ -25,12 +25,7 @@ import { Progress } from "@/components/ui/progress";
 import DashboardPageHeader from "@/components/layout/dashboard-page-header";
 import { useDashboardContext } from "@/context/dashboard-analytics-provider";
 import { useMailGraphContext } from "@/context/chart-data-provider";
-import {
-  format,
-  parseISO,
-  startOfWeek,
-  addDays,
-} from "date-fns";
+import { format, parseISO, startOfWeek, addDays } from "date-fns";
 import { LoadingCircle } from "@/app/icons";
 // import { useUserContext } from "@/context/user-context";
 // import useWebSocket from "@/hooks/useWebhook";
@@ -83,8 +78,6 @@ export default function Page() {
 
   //   return streak;
   // };
-
-
 
   return (
     <>
@@ -312,7 +305,9 @@ export default function Page() {
                       {isLoading ? (
                         <TableRow>
                           <TableCell colSpan={5} className="text-center">
-                            <LoadingCircle />
+                            <div className="flex flex-col items-center">
+                              <LoadingCircle />
+                            </div>
                           </TableCell>
                         </TableRow>
                       ) : dashboardData?.top_performing_campaigns.length > 0 ? (

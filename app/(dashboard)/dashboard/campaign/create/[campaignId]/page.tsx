@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useButtonStatus } from "@/context/button-status";
+import { Check } from "lucide-react";
 
 const campaignPages = [
   {
@@ -112,7 +113,7 @@ export default function Page() {
                 }
                 passHref
               >
-                <span>{completedPages[val.href] ? "Added" : "Add"}</span>
+                <span>{completedPages[val.href] ? <Check /> : "Add"}</span>
               </Link>
             </Button>
           </CardFooter>

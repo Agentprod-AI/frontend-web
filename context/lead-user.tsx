@@ -79,6 +79,7 @@ export interface Lead {
   value: any[];
   metrics: any[];
   compliments: any[];
+  lead_information: any;
 }
 
 export interface Contact {
@@ -118,6 +119,7 @@ export interface Contact {
   value: any[];
   metrics: any[];
   compliments: any[];
+  lead_information: any;
 }
 
 // Define the state structure for our context

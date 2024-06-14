@@ -121,6 +121,7 @@ export function OfferingForm({ type }: { type: string }) {
             },
             params.campaignId
           );
+          toast.success("Offering created successfully.");
         })
         .catch((error) => {
           console.error("Error creating persona:", error);

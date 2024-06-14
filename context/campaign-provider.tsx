@@ -66,6 +66,10 @@ export interface CampaignEntry {
   thursday_end?: string;
   friday_start?: string;
   friday_end?: string;
+  contacts?: any;
+  offering_details: any[];
+  replies: any;
+  meetings_booked: any;
 }
 
 export const defaultCampaignEntry: CampaignEntry = {
@@ -90,6 +94,10 @@ export const defaultCampaignEntry: CampaignEntry = {
   thursday_end: "",
   friday_start: "",
   friday_end: "",
+  contacts: "",
+  offering_details: [],
+  replies: "",
+  meetings_booked: "",
 };
 
 export const defaultGoalEntry: GoalFormData = {

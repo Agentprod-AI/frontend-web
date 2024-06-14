@@ -212,6 +212,7 @@ export const ImportAudience = () => {
       value: lead.value || [], // Assuming optional or provide default
       metrics: lead.metrics || [], // Assuming optional or provide default
       compliments: lead.compliments || [], // Assuming optional or provide default
+      lead_information: lead.lead_information || String,
     }));
   }
 
