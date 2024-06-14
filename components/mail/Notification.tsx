@@ -57,7 +57,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
   const { user } = useUserContext();
 
   React.useEffect(() => {
-    if (email.status.toLowerCase() === "information required") {
+    if (
+      !email.is_reply &&
+      email?.status?.toLowerCase() === "information required"
+    ) {
       axiosInstance
         .get(`/questions/${email.message_id}`)
         .then((response) => {
