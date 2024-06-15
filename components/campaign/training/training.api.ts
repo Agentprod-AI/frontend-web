@@ -108,7 +108,7 @@ export async function getAutogenerateTrainingTemplate(
 ): Promise<any> {
   try {
     const response = await axiosInstance.get<any>(
-      `v2/training/autogenerate/template/${campaignId}`
+      `v2/training/autogenerate/template`
     );
     return response.data;
   } catch (error) {
@@ -183,11 +183,11 @@ export async function getPreviewByTemplate({
 }: {
   user_id: string;
   campaign_id: string;
-  template: string;
-  variables: VariableType[];
-  offering_variables: FieldType[];
-  personalized_fields: FieldType[];
-  enriched_fields: FieldType[];
+    template: string;
+    variables: VariableType[];
+    offering_variables: FieldType[];
+    personalized_fields: FieldType[];
+    enriched_fields: FieldType[];
 }): Promise<any> {
   console.log(
     "data to preview api",
@@ -249,7 +249,7 @@ export async function getAutogenerateFollowup(
 ): Promise<any> {
   try {
     const response = await axiosInstance.get<any>(
-      `v2/training/autogenerate/followup/${campaignId}`
+      `v2/training/autogenerate/followup/`
     );
     return response.data;
   } catch (error) {

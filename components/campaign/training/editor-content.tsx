@@ -23,6 +23,7 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   getAutogenerateFollowup,
   getAutogenerateTrainingTemplate,
+  getTraining,
 } from "./training.api";
 import { FieldType, VariableType, allFieldsListType } from "./types";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -76,12 +77,51 @@ export default function EditorContent() {
     "industry",
   ];
 
+  // useEffect(() => {
+  //   const fetchTrainingData = async () => {
+  //     try {
+  //       const trainingData = await getTraining(params.campaignId);
+  //       console.log(trainingData.template);
+
+  //       const parseTemplate = (template: string) => {
+  //         const subjectStart =
+  //           template.indexOf("Subject: ") + "Subject: ".length;
+  //         const subjectEnd = template.indexOf("\n", subjectStart);
+  //         const subject = template.substring(subjectStart, subjectEnd).trim();
+  //         const bodyStart = template.indexOf("\n", subjectEnd) + 1;
+  //         const body = template.substring(bodyStart).trim();
+  //         return { subject, body };
+  //       };
+
+  //       const splitSections = trainingData.template.split("---");
+
+  //       if (splitSections.length > 1) {
+  //         const mainEmail = parseTemplate(splitSections[0]);
+  //         const followUpEmail = parseTemplate(splitSections[1]);
+
+  //         setBody(mainEmail.subject);
+  //         setSubject(mainEmail.body);
+  //         setFollowUp(followUpEmail.body);
+  //       } else {
+  //         const mainEmail = parseTemplate(trainingData.template);
+
+  //         setLocalSubject(mainEmail.subject);
+  //         setLocalBody(mainEmail.body);
+  //       }
+  //     } catch (error) {
+  //       console.error("Failed to fetch training data:", error);
+  //     }
+  //   };
+
+  //   fetchTrainingData();
+  // }, [params.campaignId]);
+
   const toggleFollowUp = () => {
     setShowAdditionalTextArea(!showAdditionalTextArea);
   };
 
   const handleTextChange = (text: string, setText: (value: string) => void) => {
-    const variablePattern = /\{([^\}]+)\}/g;
+    const variablePattern = /[\[\{]([^\]\}]+)[\]\}]/g;
     let match;
     const newVariables: VariableType[] = [];
 
@@ -122,11 +162,13 @@ export default function EditorContent() {
 
   const handleSubjectChange = (text: string) => {
     setLocalSubject(text);
+    setSubject(text);
     handleTextChange(`${text} ${localBody} ${localFollowUp}`, setSubject);
   };
 
   const handleBodyChange = (text: string, cursorPos?: number) => {
     setLocalBody(text);
+    setBody(text);
     handleTextChange(`${localSubject} ${text} ${localFollowUp}`, setBody);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
@@ -136,7 +178,6 @@ export default function EditorContent() {
   const handleFollowUpChange = (text: string, cursorPos?: number) => {
     setLocalFollowUp(text);
     handleTextChange(`${localSubject} ${localBody} ${text}`, setFollowUp);
-    console.log("current position: ", cursorPos);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }
@@ -145,27 +186,43 @@ export default function EditorContent() {
   const handleDropdownSelect = (option: string) => {
     if (cursorPosition === null) return;
 
-    const variable = `${option}}`;
+    const textarea = textareaRef.current || followUpRef.current;
+    if (!textarea) return;
+
+    // Get the text before the cursor position to determine the opening bracket
+    const textBeforeCursor = textarea.value.slice(0, cursorPosition);
+    const openingBracket = textBeforeCursor.slice(-1); // Last character before cursor
+
+    let variable = "";
+    if (openingBracket === "[") {
+      variable = `[${option}]`;
+    } else if (openingBracket === "{") {
+      variable = `{${option}}`;
+    } else {
+      // Default to square brackets if no valid opening bracket is found
+      variable = `[${option}]`;
+    }
+
     let newText = "";
     let setText: (value: string) => void;
 
     if (focusedField === "subject") {
       newText =
-        localSubject.slice(0, cursorPosition) +
+        localSubject.slice(0, cursorPosition - 1) + // Remove the opening bracket
         variable +
         localSubject.slice(cursorPosition);
       setText = setLocalSubject;
       handleSubjectChange(newText);
     } else if (focusedField === "body") {
       newText =
-        localBody.slice(0, cursorPosition) +
+        localBody.slice(0, cursorPosition - 1) + // Remove the opening bracket
         variable +
         localBody.slice(cursorPosition);
       setText = setLocalBody;
-      handleBodyChange(newText, cursorPosition + variable.length);
+      handleBodyChange(newText, cursorPosition - 1 + variable.length);
     } else if (focusedField === "followUp") {
       newText =
-        localFollowUp.slice(0, cursorPosition) +
+        localFollowUp.slice(0, cursorPosition - 1) + // Remove the opening bracket
         variable +
         localFollowUp.slice(cursorPosition);
       setText = setLocalFollowUp;
@@ -200,7 +257,7 @@ export default function EditorContent() {
           }
         });
       } else {
-        if (response.variables && response.variables.lenght > 0) {
+        if (response.variables && response.variables.length > 0) {
           response.variables.forEach((variable: string) => {
             let custom = true;
             if (presetVariables.includes(variable)) {
@@ -213,7 +270,7 @@ export default function EditorContent() {
               value: variable,
             };
             if (
-              fieldsList.variables.some((field) => field.value === variable)
+              !fieldsList.variables.some((field) => field.value === variable)
             ) {
               newFieldsList.variables.push(newVariable);
             }
@@ -227,9 +284,7 @@ export default function EditorContent() {
     addFieldsFromCategory("offering_variables");
 
     console.log(newFieldsList);
-    setTimeout(() => {
-      setFieldsList(newFieldsList);
-    }, 0);
+    setFieldsList(newFieldsList);
   };
 
   const handleAutoGenerateTemplate = async () => {
@@ -240,25 +295,23 @@ export default function EditorContent() {
 
       console.log(response); // For debugging
       console.log("followup", followup);
-
-      const newSubject = response.template.subject;
-      const newBody = `${response.template.body} ${
-        response.template.closing || ""
-      }`;
+      const newSubject = `${localSubject} ${response.subject}`;
+      const newBody = `${localBody} ${response.body} ${response.closing || ""}`;
       const newFollowUp = followup;
-
+      console.log("reached here");
       setLocalSubject(newSubject);
       setLocalBody(newBody);
-      setLocalFollowUp(newFollowUp);
-      setShowAdditionalTextArea(true);
+      setLocalFollowUp(`${newFollowUp.subject}\n\n ${newFollowUp.body}`);
+      setShowAdditionalTextArea(false); //updaated
+      console.log("setup here here");
 
-      setLocalSubject(response.template.subject);
-      setLocalBody(
-        `${response.template.body} ${response.template.closing || ""}`
-      );
-      setLocalFollowUp(followup);
+      setSubject(newSubject);
+      setBody(newBody);
+      setFollowUp(newFollowUp);
+      console.log("response from the variables" + response);
       mapFields(response);
       setTemplateIsLoading(false);
+      console.log("end here");
     } catch (error: any) {
       console.error("Failed to fetch training data:", error);
       toast.error(error.message);
@@ -287,7 +340,7 @@ export default function EditorContent() {
     if (!activeElementRef) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "{") {
+      if (event.key === "[" || event.key === "{") {
         const cursorPos = activeElementRef.selectionStart;
         setCursorPosition(cursorPos);
         setTimeout(() => {
@@ -354,7 +407,7 @@ export default function EditorContent() {
             </Collapsible>
             <div className="relative">
               <Textarea
-                placeholder="Hi {first name}..."
+                placeholder="Hi [first name]..."
                 value={localBody}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
                   handleBodyChange(e.target.value, e.target.selectionStart);
@@ -364,11 +417,11 @@ export default function EditorContent() {
                 onFocus={() => setFocusedField("body")}
               />
               <span className="text-xs text-gray-500">
-                *use variables like: &#123;variable_name&#125;
+                *use variables like: [variable_name] or {`{variable_name}`}
               </span>
               {variableDropdownIsOpen && (
                 <div
-                  className={`absolute z-10 inline-block text-left mt-1`}
+                  className="absolute z-10 inline-block text-left mt-1"
                   ref={dropdownRef}
                   style={{
                     top: dropdownPosition ? `${dropdownPosition.top}px` : "0",
@@ -390,7 +443,7 @@ export default function EditorContent() {
                             e.preventDefault();
                             handleDropdownSelect(option);
                           }}
-                          className="text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                          className="text-white block px-4 py-2 text-sm w-full text-left hover"
                         >
                           {option}
                         </button>
@@ -400,7 +453,6 @@ export default function EditorContent() {
                 </div>
               )}
             </div>
-
             {showAdditionalTextArea && (
               <Textarea
                 placeholder="Write a follow-up"
@@ -423,7 +475,13 @@ export default function EditorContent() {
                 {showAdditionalTextArea ? "Remove follow-up" : "Add follow-up"}
               </Button>
               {templateIsLoading ? (
-                <LoadingCircle />
+                <Button
+                  variant={"outline"}
+                  onClick={handleAutoGenerateTemplate}
+                >
+                  <LoadingCircle />
+                  <span className="ml-2">Auto Generate Template</span>
+                </Button>
               ) : (
                 <Button
                   variant={"outline"}
