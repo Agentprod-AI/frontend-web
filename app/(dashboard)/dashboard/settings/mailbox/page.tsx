@@ -521,6 +521,7 @@ interface MailData {
   Type: string;
   Value: string;
   sender_id: any;
+  platform: String;
 }
 
 const initialMailboxes = [
@@ -531,10 +532,13 @@ const initialMailboxes = [
     sender_name: "",
     warmup: true,
     daily_limit: 30,
+    platform: "",
   },
 ];
 
 export default function Page() {
+  const [googleMail, setGoogleMail] = useState<any>("");
+  const [inputAppPassword, setInputAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchSuccess, setFetchSuccess] = useState(false);
   const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
@@ -548,7 +552,6 @@ export default function Page() {
   const [otpInput, setOtpInput] = useState("");
   const [senderID, setSenderID] = useState("");
   const [isChooseServiceOpen, setIsChooseServiceOpen] = useState(false);
-  const [selectService, setSelectService] = useState("");
   const [isWarmupDialogOpen, setIsWarmupDialogOpen] = useState(false);
   const [isSecondWarmupDialogOpen, setIsSecondWarmupDialogOpen] =
     useState(false);
@@ -561,19 +564,50 @@ export default function Page() {
     setIsChooseServiceOpen(false);
     setIsAddMailboxOpen(true);
   };
+
   const handleOpenGoogleService = () => {
-    setSelectService("google");
     setIsChooseServiceOpen(false);
 
-    toast.success("Google service flow initiated.");
-    const newMailbox = {
-      id: 1000, // This is a temporary id for google service
-      mailbox: "google.com",
-      sender_name: "Gmail",
-      warmup: false,
-      daily_limit: 30,
+    if (user?.id) {
+      window.location.href = `${process.env.NEXT_PUBLIC_SERVER_URL}v2/google/authorize/${user.id}`;
+    } else {
+      toast.error("User ID is missing. Please try again.");
+    }
+  };
+
+  const handleEnableWarmup = async () => {
+    setIsWarmupDialogOpen(true);
+    try {
+      const response = await axiosInstance.post(`/v2/google/warmup`, {
+        user_id: user.id,
+      });
+      console.log("Warmup Response:", response.data);
+    } catch (error) {
+      console.error("Failed to enable warmup:", error);
+      toast.error("Failed to enable warmup.");
+    }
+  };
+
+  const handleAppPassword = async () => {
+    const payload = {
+      email: googleMail,
+      app_password: inputAppPassword,
     };
-    addMailbox(newMailbox);
+    try {
+      const response = await axiosInstance.post(
+        `/v2/google/setup-warmup`,
+        payload
+      );
+      if (response.status === 200) {
+        setIsSecondWarmupDialogOpen(false);
+        toast.success("Warmup Enabled!!");
+      } else {
+        toast.error("Failed to setup warmup.");
+      }
+    } catch (error) {
+      console.error("Failed to setup warmup:", error);
+      toast.error("Failed to setup warmup.");
+    }
   };
 
   const fetchDomainData = React.useCallback(async () => {
@@ -604,7 +638,15 @@ export default function Page() {
       const response = await axiosInstance.get(
         `/v2/settings/mailboxes/${user.id}`
       );
-      setMailboxes(response.data);
+      const mailboxes = response.data;
+      setMailboxes(mailboxes);
+
+      const googleMailbox = mailboxes.find(
+        (mailbox: any) => mailbox.platform === "Google"
+      );
+      if (googleMailbox) {
+        setGoogleMail(googleMailbox.mailbox);
+      }
       console.log("Mailboxes fetched successfully:", response.data);
     } catch (error) {
       console.error("Failed to fetch mailboxes:", error);
@@ -743,10 +785,10 @@ export default function Page() {
                     {mailbox?.sender_name || "No Name Provided"}
                   </TableCell>
                   <TableCell>
-                    {selectService === "google" && mailbox.id === 1000 ? (
+                    {mailbox?.platform === "Google" ? (
                       <Button
                         variant="secondary"
-                        onClick={() => setIsWarmupDialogOpen(true)}
+                        onClick={() => handleEnableWarmup()}
                       >
                         Setup Warmup
                       </Button>
@@ -812,9 +854,19 @@ export default function Page() {
             <DialogDescription>
               Enable your Imap and forwading
             </DialogDescription>
-
-            <p>{"Gmail -> All Settings -> Imap and forwarding -> ENABLE"}</p>
           </DialogHeader>
+
+          <p>· Open Gmail.</p>
+          <p>
+            · Go to <b>Settings.</b>
+          </p>
+          <p>
+            · Navigate to the <b>IMAP</b> and <b>Forwarding</b> section.
+          </p>
+          <p>
+            · Enable both <b>IMAP</b> and <b>Forwarding.</b>
+          </p>
+
           <DialogFooter>
             <Button
               onClick={() => {
@@ -839,21 +891,29 @@ export default function Page() {
               Enable 2 factor verification and app password
             </DialogDescription>
           </DialogHeader>
-          <p>Go to myaccount.google.com</p>
-          <p>{"Search app password -> Generate one"}</p>
+          <p>
+            · Go to <b>myaccount.google.com</b>
+          </p>
+          <p>
+            · Enable <b>2-Factor Verification.</b>
+          </p>
+          <p>
+            · Search for <b>App Passwords.</b>
+          </p>
+          <p>· Generate a new app password.</p>
 
           <div className="grid gap-4 py-4">
             <div className="grid items-center gap-4">
               <p className="text-sm">Enter Your App Password</p>
               <Input
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
+                value={inputAppPassword}
+                onChange={(e) => setInputAppPassword(e.target.value)}
                 placeholder="Password"
               />
             </div>
           </div>
           <DialogFooter>
-            <Button>Send</Button>
+            <Button onClick={handleAppPassword}>Send</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>

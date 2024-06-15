@@ -41,6 +41,7 @@ import { GoalDataWithId, getGoalById } from "./camapign.api";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { useButtonStatus } from "@/context/button-status";
 
 const dummyEmails = [
   "john.doe@example.com",
@@ -65,7 +66,8 @@ const goalFormSchema = z.object({
       })
     )
     .refine((value) => value.length > 0, {
-      message: "You have to select at least one email.",
+      message:
+        "Please select at least one email. You can add a mailbox on the settings page.",
     }),
   follow_up_days: z
     .number()
@@ -83,6 +85,7 @@ type GoalFormValues = z.infer<typeof goalFormSchema>;
 const defaultValues: Partial<GoalFormValues> = {};
 
 export function GoalForm({ type }: { type: string }) {
+  const { setPageCompletion } = useButtonStatus();
   const params = useParams<{ campaignId: string }>();
 
   const { createGoal, editGoal } = useCampaignContext();
@@ -155,6 +158,7 @@ export function GoalForm({ type }: { type: string }) {
         editGoal(changes, goalData.id, params.campaignId);
       }
     }
+    setPageCompletion("goal", true); // Set the page completion to true
     toast.success("Goal added successfully");
   };
 
@@ -354,8 +358,9 @@ export function GoalForm({ type }: { type: string }) {
                             </DropdownMenuItem>
                           ))
                         ) : (
-                          <div className="text-sm m-2">
+                          <div className="text-sm m-2 text-center">
                             <p> No mailboxes connected.</p>
+                            <p>You can add a mailbox on the settings page.</p>
                           </div>
                         )}
                       </DropdownMenuGroup>
