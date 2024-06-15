@@ -31,6 +31,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { getCampaignById } from "./camapign.api";
 import { CampaignEntry } from "@/context/campaign-provider";
+import { useButtonStatus } from "@/context/button-status";
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -84,11 +85,13 @@ export function SchedulingForm({ type }: { type: string }) {
   const watchAllFields = form.watch();
 
   const [campaignData, setCampaignData] = useState<CampaignEntry>();
+  const { setPageCompletion } = useButtonStatus();
 
   const onSubmit = async (data: CampaignFormValues) => {
     if (type === "create") {
       createCampaign(data);
       toast.success("Campaign is scheduled successfully!");
+      setPageCompletion("scheduling-budget", true); // Set the page completion to true
     } else if (type === "edit") {
       const changes = Object.keys(data).reduce((acc, key) => {
         // Ensure the correct key type is used

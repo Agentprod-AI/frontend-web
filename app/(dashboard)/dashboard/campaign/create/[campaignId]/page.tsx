@@ -42,7 +42,7 @@ const campaignPages = [
 ];
 
 export default function Page() {
-  const { completedPages, togglePageCompletion } = useButtonStatus();
+  const { completedPages } = useButtonStatus();
   const params = useParams();
   const [isSchedulingBudgetCompleted, setIsSchedulingBudgetCompleted] =
     useState<boolean>(false);
@@ -102,7 +102,7 @@ export default function Page() {
               asChild
               variant={"outline"}
               disabled={!areCardsEnabled && val.href !== "scheduling-budget"}
-              onClick={() => togglePageCompletion(val.href)}
+              // onClick={() => togglePageCompletion(val.href)}
             >
               <Link
                 href={`/dashboard/campaign/create/${params.campaignId}/${val.href}`}

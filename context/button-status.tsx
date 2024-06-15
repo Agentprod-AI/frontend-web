@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, ReactNode } from "react";
 interface ButtonStatusContextType {
   completedPages: { [key: string]: boolean };
   togglePageCompletion: (pageKey: string) => void;
+  setPageCompletion: (pageKey: string, status: boolean) => void;
 }
 const ButtonStatusContext = createContext<ButtonStatusContextType | undefined>(
   undefined
@@ -20,17 +21,22 @@ export const ButtonStatusProvider: React.FC<ButtonStatusProviderProps> = ({
   }>({});
 
   const togglePageCompletion = (pageKey: string) => {
-    setTimeout(() => {
-      setCompletedPages((prev) => ({
-        ...prev,
-        [pageKey]: !prev[pageKey],
-      }));
-    }, 10000);
+    setCompletedPages((prev) => ({
+      ...prev,
+      [pageKey]: !prev[pageKey],
+    }));
+  };
+
+  const setPageCompletion = (pageKey: string, status: boolean) => {
+    setCompletedPages((prev) => ({
+      ...prev,
+      [pageKey]: status,
+    }));
   };
 
   return (
     <ButtonStatusContext.Provider
-      value={{ completedPages, togglePageCompletion }}
+      value={{ completedPages, togglePageCompletion, setPageCompletion }}
     >
       {children}
     </ButtonStatusContext.Provider>

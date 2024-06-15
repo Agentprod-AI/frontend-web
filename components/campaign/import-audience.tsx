@@ -41,6 +41,7 @@ import { v4 as uuid } from "uuid";
 import { toast } from "sonner";
 import { useUserContext } from "@/context/user-context";
 import { useParams, useRouter } from "next/navigation";
+import { useButtonStatus } from "@/context/button-status";
 
 interface CSVData {
   [key: string]: string;
@@ -58,6 +59,7 @@ export const ImportAudience = () => {
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
+  const { setPageCompletion } = useButtonStatus();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log("analyzing filez");
@@ -232,6 +234,7 @@ export const ImportAudience = () => {
           setLeads([data]);
         }
         setIsCreateBtnLoading(false);
+        setPageCompletion("audience", true); // Set the page completion to true
         toast.success("Audience created successfully");
         router.push(`/dashboard/campaign/${params.campaignId}`);
       })

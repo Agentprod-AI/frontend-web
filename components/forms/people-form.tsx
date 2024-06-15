@@ -34,6 +34,7 @@ import { useParams } from "next/navigation";
 import { getAudienceFiltersById } from "../campaign/camapign.api";
 import { keywords } from "./formUtils";
 import { ScrollArea } from "../ui/scroll-area";
+import { useButtonStatus } from "@/context/button-status";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -220,6 +221,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
   const [allFiltersFromDB, setAllFiltersFromDB] = React.useState<any>();
 
   const [audienceId, setAudienceId] = React.useState<string>();
+  const { setPageCompletion } = useButtonStatus();
 
   React.useEffect(() => {
     const fetchAudienceFilters = async () => {
@@ -294,7 +296,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       job_locations: data.job_locations,
       job_offerings: data.job_offerings,
     };
-
+    setPageCompletion("audience", true); // Set the page completion to true
     console.log("form data", formData);
 
     let shouldCallAPI = false;
@@ -311,6 +313,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
             ? Math.ceil(formData.per_page / pages)
             : formData.per_page,
       }),
+
       prospected_by_current_team: ["No"],
       // ...(formData.prospected_by_current_team?.text && {
       //   prospected_by_current_team: [formData.prospected_by_current_team.text],

@@ -116,7 +116,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <Card className="w-full mr-7 ">
               <div className="flex gap-4 p-4">
                 <span className="text-sm font-semibold">
-                  {leads[0].first_name ? "You to" + leads[0].first_name : ""}
+                  {leads[0].first_name ? "You to " + leads[0].first_name : ""}
                 </span>
                 <span className="text-gray-600 text-sm ">
                   {formatDate(email.received_datetime)}
