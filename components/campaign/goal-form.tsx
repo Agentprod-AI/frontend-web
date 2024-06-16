@@ -42,6 +42,7 @@ import { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { useButtonStatus } from "@/context/button-status";
+import Link from "next/link";
 
 const dummyEmails = [
   "john.doe@example.com",
@@ -360,7 +361,16 @@ export function GoalForm({ type }: { type: string }) {
                         ) : (
                           <div className="text-sm m-2 text-center">
                             <p> No mailboxes connected.</p>
-                            <p>You can add a mailbox on the settings page.</p>
+                            <p>
+                              You can add a mailbox on the{" "}
+                              <Link
+                                href="/dashboard/settings/mailbox"
+                                className="text-blue-600 underline"
+                              >
+                                Settings
+                              </Link>{" "}
+                              page.
+                            </p>
                           </div>
                         )}
                       </DropdownMenuGroup>
