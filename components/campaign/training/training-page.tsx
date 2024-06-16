@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { Pencil, Eye } from "lucide-react";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -14,6 +14,7 @@ import {
   getPreviewByTemplate,
   createTraining,
   TrainingRequest,
+  updateTraining,
 } from "./training.api";
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
@@ -53,6 +54,7 @@ export default function Training() {
   const [previewData, setPreviewData] = React.useState<PreviewData | null>(
     null
   );
+  const [previewLoading, setPreviewLoading] = useState(false);
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const {
@@ -63,30 +65,31 @@ export default function Training() {
     setPreviewType,
     previewType,
   } = useAutoGenerate();
-  const { fieldsList, body, subject, followUp, subjectOptions } = useFieldsList();
+  const { fieldsList, body, subject, followUp, subjectOptions } =
+    useFieldsList();
   const router = useRouter();
   const [startCampaignIsLoading, setStartCampaignIsLoading] =
     React.useState(false);
 
-  const handleGenerateWithAI = async () => {
-    try {
-      const response = await getAutogenerateTrainingEmail(
-        params.campaignId,
-        user.id
-      );
-      console.log(response);
-      const { email, contact, linkedin_information } = response;
+  // const handleGenerateWithAI = async () => {
+  //   try {
+  //     const response = await getAutogenerateTrainingEmail(
+  //       params.campaignId,
+  //       user.id
+  //     );
+  //     console.log(response);
+  //     const { email, contact, linkedin_information } = response;
 
-      setPreviewData({
-        email,
-        contact,
-        linkedin_information,
-      });
-      setActiveTab("preview");
-    } catch (error) {
-      console.error("Failed to fetch training data:", error);
-    }
-  };
+  //     setPreviewData({
+  //       email,
+  //       contact,
+  //       linkedin_information,
+  //     });
+  //     setActiveTab("preview");
+  //   } catch (error) {
+  //     console.error("Failed to fetch training data:", error);
+  //   }
+  // };
 
   const handleStartCampaign = async () => {
     setStartCampaignIsLoading(true);
@@ -119,6 +122,50 @@ export default function Training() {
   };
 
   const handleCustomGenerate = async () => {
+    setPreviewLoading(true);
+    const toastMessages = [
+      {
+        title: "Enriching data for your variables...1",
+        description: "Our AI is understanding your template variables and learning your tone",
+      },
+      {
+        title: "Understanding your audience and offering...",
+        description:
+          "Our AI is understanding your audience and offering to generate relevant messages",
+      },
+      {
+        title: "Training AI on your messaging and tone...",
+        description:
+          "Your previous revisions are being used to train AI to write in your voice ",
+      },
+      {
+        title: "Generating a preview for your message...",
+        description:
+          "We're generating a preview for your message to make sure everyting looks good",
+      },
+    ];
+
+    let toastIndex = 0;
+    const intervalId = setInterval(() => {
+      if (toastIndex < toastMessages.length) {
+        toast.dismiss(); // Remove previous toasts
+        toast.loading(
+          <div className="flex items-center h-full">
+            <div>
+              <LoadingCircle />
+            </div>
+            <div className="ml-2">
+              <strong>{toastMessages[toastIndex].title}</strong>
+              <p>{toastMessages[toastIndex].description}</p>
+            </div>
+          </div>
+        );
+        toastIndex++;
+      } else {
+        clearInterval(intervalId);
+      }
+    }, 2000);
+
     try {
       const trainingBody = {
         campaign_id: params.campaignId,
@@ -149,14 +196,11 @@ export default function Training() {
         enriched_fields: fieldsList.enriched_fields.map(
           (field) => field.fieldName
         ),
-        subject_field_options: subjectOptions
+        subject_field_options: subjectOptions,
       };
 
-      console.log(trainingBody);
-
-      await createTraining(
-        trainingBody as TrainingRequest
-      );
+      await createTraining(trainingBody as TrainingRequest);
+      // await updateTraining(user.id, trainingBody);
 
       const response = await getPreviewByTemplate({
         campaign_id: params.campaignId,
@@ -168,22 +212,34 @@ export default function Training() {
         personalized_fields: fieldsList.personalized_fields,
         enriched_fields: fieldsList.enriched_fields,
       });
+      console.log("debugger   " + response.template);
+
       setPreviewData({
         email: {
           body: response.body,
           subject: response.subject,
         },
       });
+
       console.log("response from get email by template", response);
+
       setAutoGeneratedBody(response.email.body);
       setAutoGeneratedSubject(response.email.subject);
       setContact(response.contact);
       setLinkedinInformation(response.linkedin_information);
       setPreviewType("previewFromTemplate");
+
+      toast.dismiss(); // Remove any remaining loading toasts
+      toast.success("Email auto-generation complete.");
     } catch (error) {
       console.error("Failed to fetch training data:", error);
+      toast.dismiss(); // Remove any remaining loading toasts
+      toast.error("Failed to fetch training data.");
+      setPreviewLoading(false);
     } finally {
+      clearInterval(intervalId);
       setActiveTab("preview");
+      setPreviewLoading(false);
     }
   };
 
@@ -215,7 +271,7 @@ export default function Training() {
   };
 
   const onTabChange = (tab: string) => {
-    setActiveTab(tab);
+    setActiveTab("editor");
   };
 
   return (
@@ -238,8 +294,17 @@ export default function Training() {
                 className="flex gap-1"
                 onClick={handleCustomGenerate}
               >
-                <Eye className="h-3 w-3" />
-                Preview
+                {previewLoading ? (
+                  <div className="flex items-center">
+                    <LoadingCircle />
+                    <span className="ml-2">Preview</span>
+                  </div>
+                ) : (
+                  <div className="flex items-center">
+                    <Eye className="h-3 w-3 mr-2" />
+                    Preview
+                  </div>
+                )}
               </TabsTrigger>
             </TabsList>
           </Tabs>
