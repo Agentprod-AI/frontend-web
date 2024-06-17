@@ -3,19 +3,20 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
+import { useEffect } from "react";
 import { useFieldsList } from "@/context/training-fields-provider";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
+import { Check } from "lucide-react";
 
 const items = [
   {
@@ -54,6 +55,22 @@ export default function SubjectForm() {
     },
   });
 
+  // Load form state from local storage on component mount
+  useEffect(() => {
+    const storedItems = localStorage.getItem("subjectFormItems");
+    if (storedItems) {
+      form.reset({ items: JSON.parse(storedItems) });
+    }
+  }, [form]);
+
+  // Save form state to local storage whenever it changes
+  useEffect(() => {
+    localStorage.setItem(
+      "subjectFormItems",
+      JSON.stringify(form.watch("items"))
+    );
+  }, [form.watch("items")]);
+
   function onSubmit(data: z.infer<typeof FormSchema>) {
     const selectedLabels = data.items.map((itemId) => {
       const item = items.find((i) => i.id === itemId);
@@ -61,15 +78,8 @@ export default function SubjectForm() {
     });
 
     setSubjectOptions(selectedLabels.filter(Boolean)); // Update context with selected labels
-
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(selectedLabels, null, 2)}</code>
-        </pre>
-      ),
-    });
+    console.log("data submitted" + selectedLabels);
+    toast.success("Setting updated successfully");
   }
 
   return (
@@ -117,7 +127,7 @@ export default function SubjectForm() {
             </FormItem>
           )}
         />
-        <Button type="submit">Submit</Button>
+        <Button type="submit"><Check/></Button>
       </form>
     </Form>
   );

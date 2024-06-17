@@ -92,7 +92,7 @@ export function SchedulingForm({ type }: { type: string }) {
       createCampaign(data);
       toast.success("Campaign is scheduled successfully!");
       setPageCompletion("scheduling-budget", true); // Set the page completion to true
-    } else if (type === "edit") {
+    } else {
       const changes = Object.keys(data).reduce((acc, key) => {
         // Ensure the correct key type is used
         const propertyKey = key as keyof CampaignFormValues;

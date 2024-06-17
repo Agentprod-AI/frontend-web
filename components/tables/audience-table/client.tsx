@@ -35,12 +35,14 @@ export const AudienceTableClient = ({
   if (isContacts) {
     tableColumns = checkboxes ? selectContactsColumn : contactsColumn;
     tableDataComponent = (
-      <DataTable<Contact, (typeof leads)[0]> // Use the specific type for TValue if it's known
-        searchKey="name"
-        columns={tableColumns}
-        data={leads as Contact[]}
-        simple={checkboxes ? false : true}
-      />
+      <>
+        <DataTable<Contact, (typeof leads)[0]> // Use the specific type for TValue if it's known
+          searchKey="name"
+          columns={tableColumns}
+          data={leads as Contact[]}
+          simple={checkboxes ? false : true}
+        />
+      </>
     );
   } else {
     tableColumns = leadColumns;
