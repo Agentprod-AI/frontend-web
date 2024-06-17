@@ -10,6 +10,8 @@ import { Button } from "@/components/ui/button";
 import { LoadingCircle } from "@/app/icons";
 import { v4 as uuid } from "uuid";
 import { useUserContext } from "@/context/user-context";
+import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 export const SelectFromExisting = () => {
   const { setLeads, existingLeads } = useLeads();
@@ -17,18 +19,10 @@ export const SelectFromExisting = () => {
   const [error, setError] = useState<string | null>(null);
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
-  const [campaignId, setCampaignId] = useState("");
   const { user } = useUserContext();
+  const params = useParams<{ campaignId: string }>();
+  const router = useRouter();
 
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      const storedValue = window.localStorage.getItem("campaignId");
-
-      if (storedValue) {
-        setCampaignId(storedValue);
-      }
-    }
-  }, []);
   useEffect(() => {
     async function fetchAllLeads() {
       setIsTableLoading(true);
@@ -94,7 +88,7 @@ export const SelectFromExisting = () => {
     console.log(existingLeads);
     const audienceBody = mapLeadsToBodies(
       existingLeads as Contact[],
-      campaignId
+      params.campaignId
     );
     console.log(audienceBody);
 
@@ -111,6 +105,7 @@ export const SelectFromExisting = () => {
         }
         setIsCreateBtnLoading(false);
         toast.success("Audience created successfully");
+        router.push(`/dashboard/campaign/create/${params.campaignId}`);
       })
       .catch((error: any) => {
         console.log(error);
