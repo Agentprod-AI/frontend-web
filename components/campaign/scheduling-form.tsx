@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
@@ -16,7 +19,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
 import React, { useState } from "react";
 import Link from "next/link";
@@ -28,6 +31,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { getCampaignById } from "./camapign.api";
 import { CampaignEntry } from "@/context/campaign-provider";
+import { useButtonStatus } from "@/context/button-status";
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -81,10 +85,13 @@ export function SchedulingForm({ type }: { type: string }) {
   const watchAllFields = form.watch();
 
   const [campaignData, setCampaignData] = useState<CampaignEntry>();
+  const { setPageCompletion } = useButtonStatus();
 
   const onSubmit = async (data: CampaignFormValues) => {
     if (type === "create") {
       createCampaign(data);
+      toast.success("Campaign is scheduled successfully!");
+      setPageCompletion("scheduling-budget", true); // Set the page completion to true
     } else if (type === "edit") {
       const changes = Object.keys(data).reduce((acc, key) => {
         // Ensure the correct key type is used

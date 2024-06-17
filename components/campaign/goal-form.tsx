@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
@@ -28,7 +31,7 @@ import { ChevronDown, Plus, Minus } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import {
   useCampaignContext,
   GoalFormData,
@@ -38,6 +41,8 @@ import { GoalDataWithId, getGoalById } from "./camapign.api";
 import { useEffect, useState } from "react";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { useButtonStatus } from "@/context/button-status";
+import Link from "next/link";
 
 const dummyEmails = [
   "john.doe@example.com",
@@ -62,7 +67,8 @@ const goalFormSchema = z.object({
       })
     )
     .refine((value) => value.length > 0, {
-      message: "You have to select at least one email.",
+      message:
+        "Please select at least one email. You can add a mailbox on the settings page.",
     }),
   follow_up_days: z
     .number()
@@ -80,6 +86,7 @@ type GoalFormValues = z.infer<typeof goalFormSchema>;
 const defaultValues: Partial<GoalFormValues> = {};
 
 export function GoalForm({ type }: { type: string }) {
+  const { setPageCompletion } = useButtonStatus();
   const params = useParams<{ campaignId: string }>();
 
   const { createGoal, editGoal } = useCampaignContext();
@@ -88,6 +95,7 @@ export function GoalForm({ type }: { type: string }) {
   const [mailboxes, setMailboxes] =
     useState<{ mailbox: string; sender_name: string }[]>();
   const [originalData, setOriginalData] = useState<GoalFormData>();
+  const [displayEmail, setDisplayEmail] = useState("Select Email"); // Select Email
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -109,6 +117,7 @@ export function GoalForm({ type }: { type: string }) {
     // Check if the email is not already present to avoid duplicates
     if (!emailFields.some((emailField) => emailField.value === email)) {
       appendEmail({ value: email });
+      setDisplayEmail(email); // Set display email when a new email is added
     }
   };
 
@@ -119,6 +128,7 @@ export function GoalForm({ type }: { type: string }) {
     );
     if (indexToRemove !== -1) {
       removeEmail(indexToRemove);
+      setDisplayEmail("Select Email"); // Reset to default text if email is removed
     }
   };
 
@@ -149,6 +159,8 @@ export function GoalForm({ type }: { type: string }) {
         editGoal(changes, goalData.id, params.campaignId);
       }
     }
+    setPageCompletion("goal", true); // Set the page completion to true
+    toast.success("Goal added successfully");
   };
 
   useEffect(() => {
@@ -311,14 +323,16 @@ export function GoalForm({ type }: { type: string }) {
                       variant="outline"
                       className="flex items-center justify-center space-x-3"
                     >
-                      <span>Select Email</span>
+                      <span>{displayEmail}</span>
                       <ChevronDown size={20} />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent className="w-max">
                     <ScrollArea className="h-60">
                       <DropdownMenuGroup>
-                        {mailboxes && mailboxes[0].mailbox !== null ? (
+                        {mailboxes &&
+                        mailboxes.length > 0 &&
+                        mailboxes[0].mailbox !== null ? (
                           mailboxes.map((mailbox, index) => (
                             <DropdownMenuItem key={index}>
                               <div
@@ -345,8 +359,18 @@ export function GoalForm({ type }: { type: string }) {
                             </DropdownMenuItem>
                           ))
                         ) : (
-                          <div className="text-sm m-2">
-                            No mailboxes connected.
+                          <div className="text-sm m-2 text-center">
+                            <p> No mailboxes connected.</p>
+                            <p>
+                              You can add a mailbox on the{" "}
+                              <Link
+                                href="/dashboard/settings/mailbox"
+                                className="text-blue-600 underline"
+                              >
+                                Settings
+                              </Link>{" "}
+                              page.
+                            </p>
                           </div>
                         )}
                       </DropdownMenuGroup>

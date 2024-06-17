@@ -1,3 +1,7 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable no-console */
+
 import { useRouter } from "next/navigation";
 import {
   Form,
@@ -30,6 +34,7 @@ import { useParams } from "next/navigation";
 import { getAudienceFiltersById } from "../campaign/camapign.api";
 import { keywords } from "./formUtils";
 import { ScrollArea } from "../ui/scroll-area";
+import { useButtonStatus } from "@/context/button-status";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -216,6 +221,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
   const [allFiltersFromDB, setAllFiltersFromDB] = React.useState<any>();
 
   const [audienceId, setAudienceId] = React.useState<string>();
+  const { setPageCompletion } = useButtonStatus();
 
   React.useEffect(() => {
     const fetchAudienceFilters = async () => {
@@ -290,23 +296,24 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       job_locations: data.job_locations,
       job_offerings: data.job_offerings,
     };
-
+    setPageCompletion("audience", true); // Set the page completion to true
     console.log("form data", formData);
 
     let shouldCallAPI = false;
 
     if (!prevInputValues) shouldCallAPI = true;
 
-    const pages = formData.per_page ? Math.ceil(formData.per_page / 100) : 1;
+    const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
 
     const body = {
       ...(pages && { page: pages }), // Only include if pages is truthy
       ...(formData.per_page && {
         per_page:
-          formData.per_page > 100
+          formData.per_page > 10
             ? Math.ceil(formData.per_page / pages)
             : formData.per_page,
       }),
+
       prospected_by_current_team: ["No"],
       // ...(formData.prospected_by_current_team?.text && {
       //   prospected_by_current_team: [formData.prospected_by_current_team.text],
@@ -563,6 +570,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       value: lead.value || [], // Assuming optional or provide default
       metrics: lead.metrics || [], // Assuming optional or provide default
       compliments: lead.compliments || [], // Assuming optional or provide default
+      lead_information: lead.lead_information || String,
     }));
   }
 
@@ -1564,7 +1572,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
           </TabsContent>
           <TabsContent value="tab2">
             {isTableLoading ? <LoadingCircle /> : <AudienceTableClient />}
-            {isCreateBtnLoading ? (
+            {/* {isCreateBtnLoading ? (
               <LoadingCircle />
             ) : type === "create" ? (
               <Button
@@ -1574,6 +1582,28 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
                 }}
               >
                 Create Audience
+              </Button>
+            ) : (
+              <div className="w-1/4 flex justify-between">
+                <Button>Go Back</Button>
+                <Button
+                  onClick={(event) => {
+                    event.preventDefault();
+                    createAudience();
+                  }}
+                >
+                  Update Audience
+                </Button>
+              </div>
+            )} */}
+            {type === "create" ? (
+              <Button
+                onClick={(event) => {
+                  event.preventDefault();
+                  createAudience();
+                }}
+              >
+                {isCreateBtnLoading ? <LoadingCircle /> : "Create Audience"}
               </Button>
             ) : (
               <div className="w-1/4 flex justify-between">

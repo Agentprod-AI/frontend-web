@@ -14,6 +14,7 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarImage } from "@/components/ui/avatar";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Message {
   id: string;
@@ -26,10 +27,11 @@ export default function Home() {
   const formRef = useRef<HTMLFormElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const { user } = useUserContext();
-
+  const [loader, setLoader] = useState(true);
   const [userEmail] = useState(user?.email);
   const [userId] = useState(user?.id);
   const [loading, setLoading] = useState(true);
+  const [sallyLoad, setSallyLoad] = useState(false);
   const [allMessages, setAllMessages] = useState<Message[]>([
     // {
     //   id: Math.random().toString(),
@@ -133,6 +135,7 @@ export default function Home() {
           }));
 
           setAllMessages(adaptedMessages);
+          setLoader(false);
         })
         .catch((error) => {});
     };
@@ -206,14 +209,23 @@ export default function Home() {
         user_id: userId,
         content: inputRef.current?.value,
       },
+
       onResponse: async (response) => {
+        console.log("here");
+
         if (response.status === 429) {
           toast.error("You have reached your request limit for the day.");
           va.track("Rate limited");
+          setSallyLoad(false);
+          console.log("here");
+
           return;
         } else {
-          va.track("Chat initiated");
           const assistantResponse = await response.json();
+          va.track("Chat initiated");
+          setSallyLoad(false);
+          console.log("here");
+
           // console.log(assistantResponse);
           setAllMessages((prevMessages: Message[]) => [
             ...prevMessages,
@@ -223,6 +235,7 @@ export default function Home() {
               content: assistantResponse,
             },
           ]);
+          // setSallyLoad(false);
         }
       },
       onError: (error) => {
@@ -230,6 +243,7 @@ export default function Home() {
           input,
           error: error.message,
         });
+        setSallyLoad(false);
       },
       onFinish(message) {
         // console.log(message);
@@ -252,89 +266,87 @@ export default function Home() {
   return (
     <div className="flex flex-col-reverse overflow-y-scroll h-screen chat">
       <main className="flex flex-col items-center justify-between pb-20 mb-20">
-        {messages.length > 0
-          ? messages.map(
-              (message, i) =>
-                message && (
+        {messages.length > 0 ? (
+          messages.map(
+            (message, i) =>
+              message && (
+                <div
+                  key={i}
+                  className={clsx(
+                    "flex w-full items-center justify-center py-4"
+                    // message.type === "user" ? "bg-black" : "bg-black/5",
+                  )}
+                >
                   <div
-                    key={i}
                     className={clsx(
-                      "flex w-full items-center justify-center py-4"
-                      // message.type === "user" ? "bg-black" : "bg-black/5",
+                      "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
+                      message.role === "user" ? "flex-row-reverse" : "flex-row"
                     )}
                   >
                     <div
                       className={clsx(
-                        "flex w-full max-w-screen-lg items-start space-x-4 px-5 sm:px-0",
-                        message.role === "user"
-                          ? "flex-row-reverse"
-                          : "flex-row"
+                        "p-1.5 text-white",
+                        message.role === "assistant" ? "" : ""
                       )}
                     >
-                      <div
-                        className={clsx(
-                          "p-1.5 text-white",
-                          message.role === "assistant" ? "" : ""
-                        )}
-                      >
-                        {message.role === "user" ? (
-                          <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
-                            <AvatarImage src="/user.png" alt="user" />
-                            {/* <AvatarFallback>NB</AvatarFallback> */}
-                          </Avatar>
-                        ) : (
-                          <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
-                            {/* <AvatarFallback>JL</AvatarFallback> */}
-                            <AvatarImage
-                              src="/ai-sales-rep.png"
-                              alt="agentprod logo"
-                            />
-                            {/* <Image
+                      {message.role === "user" ? (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white">
+                          <AvatarImage src="/user.png" alt="user" />
+                          {/* <AvatarFallback>NB</AvatarFallback> */}
+                        </Avatar>
+                      ) : (
+                        <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border">
+                          {/* <AvatarFallback>JL</AvatarFallback> */}
+                          <AvatarImage
+                            src="/ai-sales-rep.png"
+                            alt="agentprod logo"
+                          />
+                          {/* <Image
                         // className="mx-auto"
                         width={100}
                         height={100}
                         src={"/bw-logo.png"}
                         alt="AgentProd"
                       /> */}
-                          </Avatar>
-                        )}
-                      </div>
-                      <div
-                        className={clsx(
-                          "flex flex-col !mr-3 space-y-1",
-                          message.role === "assistant"
-                            ? "items-start"
-                            : "items-end"
-                        )}
-                      >
-                        <span className="text-xs">
-                          {message.role === "assistant"
-                            ? "Sally"
-                            : user?.firstName}{" "}
-                          {formatDate(message?.createdAt) === "No date provided"
-                            ? recentDate
-                            : formatDate(message?.createdAt)}
-                        </span>
-                        <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
-                          <ReactMarkdown
-                            className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
-                            remarkPlugins={[remarkGfm]}
-                            components={{
-                              // open links in new tab
-                              a: (props) => (
-                                <a
-                                  {...props}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                />
-                              ),
-                            }}
-                          >
-                            {message.content &&
-                              message.content.replace("Assistant: ", "")}
-                          </ReactMarkdown>
+                        </Avatar>
+                      )}
+                    </div>
+                    <div
+                      className={clsx(
+                        "flex flex-col !mr-3 space-y-1",
+                        message.role === "assistant"
+                          ? "items-start"
+                          : "items-end"
+                      )}
+                    >
+                      <span className="text-xs">
+                        {message.role === "assistant"
+                          ? "Sally"
+                          : user?.firstName}{" "}
+                        {formatDate(message?.createdAt) === "No date provided"
+                          ? recentDate
+                          : formatDate(message?.createdAt)}
+                      </span>
+                      <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                        <ReactMarkdown
+                          className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            // open links in new tab
+                            a: (props) => (
+                              <a
+                                {...props}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                              />
+                            ),
+                          }}
+                        >
+                          {message.content &&
+                            message.content.replace("Assistant: ", "")}
+                        </ReactMarkdown>
 
-                          {/* <div
+                        {/* <div
                       className={clsx(
                         "button-container mt-4",
                         message.type === "assistant" ? "pb-4" : "pb-0"
@@ -357,15 +369,74 @@ export default function Home() {
                           )
                         : null}
                     </div> */}
-                        </div>
                       </div>
                     </div>
                   </div>
-                )
-            )
-          : // <LoadingCircle />
-            "No messages yet. Start by typing a message in the input field below."}
-        <div className="fixed bottom-0 flex w-[85%] bg-black flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
+                </div>
+              )
+          )
+        ) : loader ? (
+          <div className="flex flex-col  h-full w-full pt-40 px-52 space-y-8">
+            <div className="flex justify-start  space-x-4 animate-pulse">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+              </div>
+            </div>
+
+            <div className="flex justify-end space-x-4 animate-pulse">
+              <div className="space-y-2 text-right">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+              </div>
+              <Skeleton className="h-12 w-12 rounded-full" />
+            </div>
+
+            <div className="flex justify-start  space-x-4 animate-pulse">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+              </div>
+            </div>
+
+            <div className="flex justify-end  space-x-4 animate-pulse">
+              <div className="space-y-2 text-right">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+              </div>
+              <Skeleton className="h-12 w-12 rounded-full" />
+            </div>
+
+            <div className="flex justify-start  space-x-4 animate-pulse">
+              <Skeleton className="h-12 w-12 rounded-full" />
+              <div className="space-y-2">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+              </div>
+            </div>
+            <div className="flex justify-end  space-x-4 animate-pulse">
+              <div className="space-y-2 text-right">
+                <Skeleton className="h-4 w-[250px]" />
+                <Skeleton className="h-4 w-[250px]" />
+              </div>
+              <Skeleton className="h-12 w-12 rounded-full" />
+            </div>
+          </div>
+        ) : (
+          <div className="flex justify-center h-screen items-center">
+            No messages yet. Start by typing a message in the input field below.
+          </div>
+        )}
+        <div className="fixed bottom-0 flex w-[85%] dark:bg-black bg-white flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
+          <div className="flex ">
+            {sallyLoad && (
+              <div className="w-screen pl-60 text-start italic font-thin text-white/60">
+                Sally is typing ...
+              </div>
+            )}
+          </div>
           <form
             ref={formRef}
             onSubmit={(e) => {
@@ -396,6 +467,7 @@ export default function Home() {
                 if (e.key === "Enter" && !e.shiftKey) {
                   formRef.current?.requestSubmit();
                   e.preventDefault();
+                  setSallyLoad(true);
                 }
               }}
               spellCheck={false}
@@ -425,6 +497,9 @@ export default function Home() {
               variant={"outline"}
               className="ml-3"
               disabled={disabled}
+              onClick={() => {
+                setSallyLoad(true);
+              }}
             >
               {loading || isLoading ? (
                 <LoadingCircle />

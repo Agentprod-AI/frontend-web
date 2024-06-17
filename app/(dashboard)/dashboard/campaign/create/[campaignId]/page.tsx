@@ -11,6 +11,7 @@ import {
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useButtonStatus } from "@/context/button-status";
+import { Check } from "lucide-react";
 
 const campaignPages = [
   {
@@ -41,7 +42,7 @@ const campaignPages = [
 ];
 
 export default function Page() {
-  const { completedPages, togglePageCompletion } = useButtonStatus();
+  const { completedPages } = useButtonStatus();
   const params = useParams();
   const [isSchedulingBudgetCompleted, setIsSchedulingBudgetCompleted] =
     useState<boolean>(false);
@@ -101,7 +102,7 @@ export default function Page() {
               asChild
               variant={"outline"}
               disabled={!areCardsEnabled && val.href !== "scheduling-budget"}
-              onClick={() => togglePageCompletion(val.href)}
+              // onClick={() => togglePageCompletion(val.href)}
             >
               <Link
                 href={`/dashboard/campaign/create/${params.campaignId}/${val.href}`}
@@ -112,7 +113,7 @@ export default function Page() {
                 }
                 passHref
               >
-                <span>{completedPages[val.href] ? "Added" : "Add"}</span>
+                <span>{completedPages[val.href] ? <Check /> : "Add"}</span>
               </Link>
             </Button>
           </CardFooter>

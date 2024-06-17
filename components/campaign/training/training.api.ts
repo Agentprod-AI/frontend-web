@@ -6,6 +6,7 @@ export interface TrainingRequest {
   offering_variables?: Record<string, any>;
   personalized_fields?: Record<string, any>;
   enriched_fields?: string[];
+  subject_field_options?: string[];
 }
 
 export interface TrainingUpdateRequest {
@@ -107,7 +108,7 @@ export async function getAutogenerateTrainingTemplate(
 ): Promise<any> {
   try {
     const response = await axiosInstance.get<any>(
-      `v2/training/autogenerate/template/${campaignId}`
+      `v2/training/autogenerate/template`
     );
     return response.data;
   } catch (error) {
@@ -145,7 +146,7 @@ export async function startCampaign(
     user_id: userId,
   };
   await axiosInstance
-    .post(`/v2/send/contacts`, postData)
+    .post(`/v2/send/contacts?without_template=False`, postData)
     .then((response) => {
       const data = response.data;
       console.log(data);
@@ -182,11 +183,11 @@ export async function getPreviewByTemplate({
 }: {
   user_id: string;
   campaign_id: string;
-  template: string;
-  variables: VariableType[];
-  offering_variables: FieldType[];
-  personalized_fields: FieldType[];
-  enriched_fields: FieldType[];
+    template: string;
+    variables: VariableType[];
+    offering_variables: FieldType[];
+    personalized_fields: FieldType[];
+    enriched_fields: FieldType[];
 }): Promise<any> {
   console.log(
     "data to preview api",
@@ -248,7 +249,7 @@ export async function getAutogenerateFollowup(
 ): Promise<any> {
   try {
     const response = await axiosInstance.get<any>(
-      `v2/training/autogenerate/followup/${campaignId}`
+      `v2/training/autogenerate/followup/`
     );
     return response.data;
   } catch (error) {

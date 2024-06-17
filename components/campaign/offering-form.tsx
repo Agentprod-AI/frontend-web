@@ -1,3 +1,6 @@
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 
 import { useEffect, useState } from "react";
@@ -33,6 +36,7 @@ import { CompanyProfile } from "@/components/campaign/company-profile"; // Adjus
 import { toast } from "sonner";
 import { Label } from "../ui/label";
 import axiosInstance from "@/utils/axiosInstance";
+import { useButtonStatus } from "@/context/button-status";
 
 const profileFormSchema = z.object({
   product_offering: z.string(),
@@ -100,6 +104,7 @@ export function OfferingForm({ type }: { type: string }) {
 
   const { createOffering, editOffering } = useCampaignContext();
   const [offeringData, setOfferingData] = useState<OfferingFormData>();
+  const { setPageCompletion } = useButtonStatus();
 
   const onSubmit = async (data: OfferingFormValues) => {
     const postData = {
@@ -121,6 +126,8 @@ export function OfferingForm({ type }: { type: string }) {
             },
             params.campaignId
           );
+          setPageCompletion("offering", true); // Set the page completion to true
+          toast.success("Offering created successfully.");
         })
         .catch((error) => {
           console.error("Error creating persona:", error);
