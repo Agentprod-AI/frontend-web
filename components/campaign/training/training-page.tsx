@@ -125,8 +125,9 @@ export default function Training() {
     setPreviewLoading(true);
     const toastMessages = [
       {
-        title: "Enriching data for your variables...1",
-        description: "Our AI is understanding your template variables and learning your tone",
+        title: "Enriching data for your variables...",
+        description:
+          "Our AI is understanding your template variables and learning your tone",
       },
       {
         title: "Understanding your audience and offering...",

@@ -54,6 +54,7 @@ export default function EditorContent() {
   const {
     fieldsList,
     body,
+
     setBody,
     subject,
     setSubject,
@@ -163,13 +164,13 @@ export default function EditorContent() {
   const handleSubjectChange = (text: string) => {
     setLocalSubject(text);
     setSubject(text);
-    handleTextChange(`${text} ${localBody} ${localFollowUp}`, setSubject);
+    handleTextChange(`${text} ${localBody}`, setSubject);
   };
 
   const handleBodyChange = (text: string, cursorPos?: number) => {
     setLocalBody(text);
     setBody(text);
-    handleTextChange(`${localSubject} ${text} ${localFollowUp}`, setBody);
+    handleTextChange(`${localSubject} ${text}`, setBody);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }
@@ -177,7 +178,8 @@ export default function EditorContent() {
 
   const handleFollowUpChange = (text: string, cursorPos?: number) => {
     setLocalFollowUp(text);
-    handleTextChange(`${localSubject} ${localBody} ${text}`, setFollowUp);
+    setFollowUp(text);
+    handleTextChange(`${localFollowUp} ${text}`, setFollowUp);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }
@@ -295,8 +297,8 @@ export default function EditorContent() {
 
       console.log(response); // For debugging
       console.log("followup", followup);
-      const newSubject = `${localSubject} ${response.subject}`;
-      const newBody = `${localBody} ${response.body} ${response.closing || ""}`;
+      const newSubject = `${response.subject}`;
+      const newBody = `${response.body} ${response.closing || ""}`;
       const newFollowUp = followup;
       console.log("reached here");
       setLocalSubject(newSubject);
@@ -316,6 +318,7 @@ export default function EditorContent() {
       console.error("Failed to fetch training data:", error);
       toast.error(error.message);
       setTemplateIsLoading(false);
+      handleTextChange;
     }
   };
 
@@ -374,12 +377,14 @@ export default function EditorContent() {
     };
   }, []);
 
+  console.log("localbodyy ==  " + localBody);
+  console.log("body " + body);
   return (
     <ResizablePanelGroup direction="horizontal" className="">
       <ResizablePanel defaultSize={75}>
         <div className="flex justify-center px-6 py-4">
           <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border bg-white mr-2">
-            <AvatarFallback>AV</AvatarFallback>
+            <AvatarFallback> AV</AvatarFallback>
           </Avatar>
           <div className="flex-col w-full">
             <Collapsible
@@ -407,7 +412,7 @@ export default function EditorContent() {
             </Collapsible>
             <div className="relative">
               <Textarea
-                placeholder="Hi [first name]..."
+                placeholder="Write a message"
                 value={localBody}
                 onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
                   handleBodyChange(e.target.value, e.target.selectionStart);
