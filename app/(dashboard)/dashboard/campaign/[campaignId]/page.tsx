@@ -58,9 +58,20 @@ export default function Page({ params }: { params: { campaignId: string } }) {
           
         </CardContent> */}
           <CardFooter className="flex py-0 justify-between">
-            <Button asChild variant={"outline"}>
-              <Link href={`${params.campaignId}/${val.href}`}>Edit</Link>
-            </Button>
+            {val.title !== "Audience" ? (
+              <Button asChild variant={"outline"}>
+                <Link href={`${params.campaignId}/${val.href}`}>Edit</Link>
+              </Button>
+            ) : (
+              <Button
+                asChild
+                variant={"outline"}
+                disabled={true}
+                className="pointer-events-none opacity-40 bg-accent cursor-not-allowed"
+              >
+                <Link href={`${params.campaignId}/${val.href}`}>Edit</Link>
+              </Button>
+            )}
           </CardFooter>
         </Card>
       ))}
