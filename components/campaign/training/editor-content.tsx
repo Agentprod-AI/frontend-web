@@ -39,7 +39,7 @@ interface Variable {
 
 export default function EditorContent() {
   const [isOpen, setIsOpen] = useState(false);
-  const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(false);
+  const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(true);
   const [variableDropdownIsOpen, setVariableDropdownIsOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState<number | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
@@ -459,16 +459,56 @@ export default function EditorContent() {
               )}
             </div>
             {showAdditionalTextArea && (
-              <Textarea
-                placeholder="Write a follow-up"
-                value={localFollowUp}
-                ref={followUpRef}
-                onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
-                  handleFollowUpChange(e.target.value, e.target.selectionStart);
-                }}
-                className="mt-2 w-full h-[200px]"
-                onFocus={() => setFocusedField("followUp")}
-              />
+              <div>
+                <Textarea
+                  placeholder="Write a follow-up"
+                  value={localFollowUp}
+                  ref={followUpRef}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                    handleFollowUpChange(
+                      e.target.value,
+                      e.target.selectionStart
+                    );
+                  }}
+                  className="mt-2 w-full h-[200px]"
+                  onFocus={() => setFocusedField("followUp")}
+                />
+                {/* {variableDropdownIsOpen && (
+                  <div
+                    className="absolute z-10 inline-block text-left mt-1"
+                    ref={dropdownRef}
+                    style={{
+                      top: dropdownPosition ? `${dropdownPosition.top}px` : "0",
+                      left: dropdownPosition
+                        ? `${dropdownPosition.left}px`
+                        : "0",
+                    }}
+                  >
+                    <ScrollArea className="w-56 h-[200px] rounded-md shadow-lg bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
+                      <div
+                        className="py-1"
+                        role="menu"
+                        aria-orientation="vertical"
+                        aria-labelledby="options-menu"
+                        onClick={() => setVariableDropdownIsOpen(false)}
+                      >
+                        {presetVariables.map((option) => (
+                          <button
+                            key={option}
+                            onClick={(e) => {
+                              e.preventDefault();
+                              handleDropdownSelect(option);
+                            }}
+                            className="text-white block px-4 py-2 text-sm w-full text-left hover"
+                          >
+                            {option}
+                          </button>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </div>
+                )} */}
+              </div>
             )}
             <div className="mt-4 flex flex-row gap-4">
               <Button variant={"outline"} onClick={toggleFollowUp}>
@@ -479,7 +519,7 @@ export default function EditorContent() {
                 />
                 {showAdditionalTextArea ? "Remove follow-up" : "Add follow-up"}
               </Button>
-              {templateIsLoading ? (
+              {/* {templateIsLoading ? (
                 <Button
                   variant={"outline"}
                   onClick={handleAutoGenerateTemplate}
@@ -494,7 +534,7 @@ export default function EditorContent() {
                 >
                   Auto Generate Template
                 </Button>
-              )}
+              )} */}
             </div>
           </div>
         </div>

@@ -85,7 +85,16 @@ type GoalFormValues = z.infer<typeof goalFormSchema>;
 
 const defaultValues: Partial<GoalFormValues> = {};
 
-export function GoalForm({ type }: { type: string }) {
+export function GoalForm() {
+  const defaultFormsTracker = {
+    schedulingBudget: true,
+    offering: false,
+    goal: false,
+    audience: false,
+    training: false,
+  };
+  const [formsTracker, setFormsTracker] = useState(defaultFormsTracker);
+
   const { setPageCompletion } = useButtonStatus();
   const params = useParams<{ campaignId: string }>();
 
@@ -96,6 +105,7 @@ export function GoalForm({ type }: { type: string }) {
     useState<{ mailbox: string; sender_name: string }[]>();
   const [originalData, setOriginalData] = useState<GoalFormData>();
   const [displayEmail, setDisplayEmail] = useState("Select Email"); // Select Email
+  const [type, setType] = useState<"create" | "edit">("create");
 
   const form = useForm<GoalFormValues>({
     resolver: zodResolver(goalFormSchema),
@@ -112,6 +122,30 @@ export function GoalForm({ type }: { type: string }) {
     control,
     name: "emails",
   });
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `https://agentprod-backend-framework-zahq.onrender.com/v2/goals/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Goal not found") {
+            setType("create");
+          } else {
+            setGoalData(data);
+            setType("edit");
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
 
   const onEmailAppend = (email: string) => {
     // Check if the email is not already present to avoid duplicates
@@ -137,6 +171,17 @@ export function GoalForm({ type }: { type: string }) {
   const onSubmit: SubmitHandler<GoalFormValues> = (data) => {
     if (type === "create") {
       createGoal(data, params.campaignId);
+      const updatedFormsTracker = {
+        schedulingBudget: true,
+        offering: true,
+        goal: true,
+        audience: true,
+      };
+      localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
+      setFormsTracker((prevFormsTracker) => ({
+        ...prevFormsTracker,
+        ...updatedFormsTracker,
+      }));
     }
     if (type === "edit") {
       console.log(watchAllFields);
@@ -159,6 +204,17 @@ export function GoalForm({ type }: { type: string }) {
         editGoal(changes, goalData.id, params.campaignId);
       }
     }
+    const updatedFormsTracker = {
+      schedulingBudget: true,
+      offering: true,
+      goal: true,
+      audience: true,
+    };
+    localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
+    setFormsTracker((prevFormsTracker) => ({
+      ...prevFormsTracker,
+      ...updatedFormsTracker,
+    }));
     setPageCompletion("goal", true); // Set the page completion to true
     toast.success("Goal added successfully");
   };

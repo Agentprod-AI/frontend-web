@@ -54,8 +54,7 @@ export default function Page() {
   const { user } = useUserContext();
   console.log("fromCampaignPage", user);
 
-  // const params = useParams();
-  // console.log("campaign from create", params);
+  localStorage.removeItem("formsTracker");
 
   return (
     <div className="space-y-2 mb-5 ">
@@ -63,7 +62,7 @@ export default function Page() {
         <CardTitle>Send Your Email Campaign</CardTitle>
         <Button className="mt-4">
           <Link
-            href={`/dashboard/campaign/create/${uuid()}`}
+            href={`/dashboard/campaign/${uuid()}`}
             className="flex items-center gap-1"
           >
             <Plus size={16} /> Create Campaign

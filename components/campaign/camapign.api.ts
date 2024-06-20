@@ -21,7 +21,7 @@ export const getCampaignById = async (
     .get(`v2/campaigns/${campaignId}`)
     .then((response) => {
       const data = response.data as CampaignEntry;
-      // console.log("Campaign fetched successfully:", data);
+      console.log("Campaign fetched successfully:", data);
       return data;
     })
     .catch((error) => {

@@ -48,11 +48,23 @@ const profileFormSchema = z.object({
 
 type OfferingFormValues = z.infer<typeof profileFormSchema>;
 
-export function OfferingForm({ type }: { type: string }) {
+export function OfferingForm() {
   const router = useRouter();
   const params = useParams<{ campaignId: string }>();
-
+  const defaultFormsTracker = {
+    schedulingBudget: true,
+    offering: false,
+    goal: false,
+    audience: false,
+    training: false,
+  };
   const { user } = useUserContext();
+  const { createOffering, editOffering } = useCampaignContext();
+  const { setPageCompletion } = useButtonStatus();
+
+  const [offeringData, setOfferingData] = useState<OfferingFormData>();
+  const [type, setType] = useState<"create" | "edit">("create");
+  const [formsTracker, setFormsTracker] = useState(defaultFormsTracker);
 
   const form = useForm<OfferingFormValues>({
     resolver: zodResolver(profileFormSchema),
@@ -66,21 +78,33 @@ export function OfferingForm({ type }: { type: string }) {
     mode: "onChange",
   });
 
-  const fetchPersona = async () => {
-    const persona = await getPersonaByCampaignId(params.campaignId);
-    if (persona) {
-      form.setValue("pain_point", persona.pain_point);
-      form.setValue("values", persona.values);
-      form.setValue(
-        "customer_success_stories",
-        persona.customer_success_stories || [""]
-      );
-      form.setValue(
-        "detailed_product_description",
-        persona.detailed_product_description
-      );
-    } else {
-      const persona = await getPersonaByUserId(user.id);
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `https://agentprod-backend-framework-zahq.onrender.com/v2/offerings/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Offering not found") {
+            setType("create");
+          } else {
+            setOfferingData(data as OfferingFormData);
+            setType("edit");
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
+
+  useEffect(() => {
+    const fetchPersona = async () => {
+      const persona = await getPersonaByCampaignId(params.campaignId);
       if (persona) {
         form.setValue("pain_point", persona.pain_point);
         form.setValue("values", persona.values);
@@ -93,18 +117,32 @@ export function OfferingForm({ type }: { type: string }) {
           persona.detailed_product_description
         );
       } else {
-        toast.error("Failed to fetch persona");
+        const persona = await getPersonaByUserId(user.id);
+        if (persona) {
+          form.setValue("pain_point", persona.pain_point);
+          form.setValue("values", persona.values);
+          form.setValue(
+            "customer_success_stories",
+            persona.customer_success_stories || [""]
+          );
+          form.setValue(
+            "detailed_product_description",
+            persona.detailed_product_description
+          );
+        } else {
+          toast.error("Failed to fetch persona");
+        }
       }
-    }
-  };
+    };
 
-  useEffect(() => {
     fetchPersona();
   }, [user, params.campaignId]);
 
-  const { createOffering, editOffering } = useCampaignContext();
-  const [offeringData, setOfferingData] = useState<OfferingFormData>();
-  const { setPageCompletion } = useButtonStatus();
+  useEffect(() => {
+    if (offeringData) {
+      form.setValue("product_offering", offeringData?.name);
+    }
+  }, [offeringData]);
 
   const onSubmit = async (data: OfferingFormValues) => {
     const postData = {
@@ -116,82 +154,70 @@ export function OfferingForm({ type }: { type: string }) {
       detailed_product_description: data.detailed_product_description,
     };
 
-    if (type === "create") {
-      createPersona(postData)
-        .then(() => {
-          createOffering(
-            {
-              name: data.product_offering,
-              details: data.detailed_product_description,
-            },
-            params.campaignId
-          );
-          setPageCompletion("offering", true); // Set the page completion to true
-          toast.success("Offering created successfully.");
-        })
-        .catch((error) => {
-          console.error("Error creating persona:", error);
-        });
-    } else {
-      editPersona(postData)
-        .then(() => {
-          editOffering(
-            {
-              name: data.product_offering,
-              details: data.detailed_product_description,
-            },
-            params.campaignId
-          );
-        })
-        .catch((error) => {
-          console.error("Error creating persona:", error);
-        });
-    }
-  };
-
-  useEffect(() => {
-    const fetchOffering = async () => {
-      if (type === "edit") {
-        const id = params.campaignId;
-        if (id) {
-          const offering = await getOfferingById(id);
-          setOfferingData(offering || undefined);
-        }
+    try {
+      if (type === "create") {
+        await createPersona(postData);
+        await createOffering(
+          {
+            name: data.product_offering,
+            details: data.detailed_product_description,
+          },
+          params.campaignId
+        );
+        setPageCompletion("offering", true);
+        const updatedFormsTracker = {
+          schedulingBudget: true,
+          offering: true,
+          goal: true,
+        };
+        localStorage.setItem(
+          "formsTracker",
+          JSON.stringify(updatedFormsTracker)
+        );
+        setFormsTracker((prevFormsTracker) => ({
+          ...prevFormsTracker,
+          ...updatedFormsTracker,
+        }));
+        toast.success("Offering created successfully.");
+      } else {
+        await editPersona(postData);
+        await editOffering(
+          {
+            name: data.product_offering,
+            details: data.detailed_product_description,
+          },
+          params.campaignId
+        );
+        const updatedFormsTracker = {
+          schedulingBudget: true,
+          offering: true,
+          goal: true,
+        };
+        localStorage.setItem(
+          "formsTracker",
+          JSON.stringify(updatedFormsTracker)
+        );
+        setFormsTracker((prevFormsTracker) => ({
+          ...prevFormsTracker,
+          ...updatedFormsTracker,
+        }));
+        toast.success("Offering updated successfully.");
       }
-    };
-
-    fetchOffering();
-  }, [params.campaignId]);
-
-  useEffect(() => {
-    if (offeringData) {
-      form.setValue("product_offering", offeringData?.name);
+    } catch (error) {
+      console.error("Error handling offering:", error);
+      toast.error("Failed to handle offering.");
     }
-  }, [offeringData]);
-
-  const transformToCompanyProfile = (
-    data: string[],
-    label: string,
-    actionLabel: string
-  ) => {
-    return {
-      label: label,
-      items: data,
-      actionLabel: actionLabel,
-    };
   };
 
   const handleFileChange = async (event: any) => {
     const selectedFile = event.target.files[0];
-    console.log(selectedFile);
     if (selectedFile && selectedFile.type === "application/pdf") {
-      const payload = {
-        file: selectedFile,
-        campaign_id: params.campaignId,
-      };
+      const payload = new FormData();
+      payload.append("file", selectedFile);
+      payload.append("campaign_id", params.campaignId);
+
       try {
         const response = await axiosInstance.post("/v2/upload-pdf/", payload);
-
         if (response.status === 200) {
           toast.success("PDF uploaded successfully.");
         } else {
@@ -200,7 +226,6 @@ export function OfferingForm({ type }: { type: string }) {
       } catch (error) {
         console.error("Error uploading PDF:", error);
         toast.error("Error uploading PDF.");
-        // setLoading(false);
       }
     } else {
       toast.error("Please select a PDF file.");
@@ -264,11 +289,11 @@ export function OfferingForm({ type }: { type: string }) {
               <FormControl>
                 <CompanyProfile
                   value={[
-                    transformToCompanyProfile(
-                      field.value,
-                      "Pain Points",
-                      "Pain Point"
-                    ),
+                    {
+                      label: "Pain Points",
+                      items: field.value,
+                      actionLabel: "Pain Point",
+                    },
                   ]}
                   onChange={(newValue) =>
                     handleCompanyProfileChange(newValue, "pain_point")
@@ -287,7 +312,11 @@ export function OfferingForm({ type }: { type: string }) {
               <FormControl>
                 <CompanyProfile
                   value={[
-                    transformToCompanyProfile(field.value, "Values", "Value"),
+                    {
+                      label: "Values",
+                      items: field.value,
+                      actionLabel: "Value",
+                    },
                   ]}
                   onChange={(newValue) =>
                     handleCompanyProfileChange(newValue, "values")
@@ -306,11 +335,11 @@ export function OfferingForm({ type }: { type: string }) {
               <FormControl>
                 <CompanyProfile
                   value={[
-                    transformToCompanyProfile(
-                      field.value,
-                      "Social Proof",
-                      "Success Story"
-                    ),
+                    {
+                      label: "Social Proof",
+                      items: field.value,
+                      actionLabel: "Success Story",
+                    },
                   ]}
                   onChange={(newValue) =>
                     handleCompanyProfileChange(

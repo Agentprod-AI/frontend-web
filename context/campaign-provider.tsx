@@ -6,6 +6,7 @@ import React, {
   useContext,
   useMemo,
   ReactNode,
+  useEffect,
 } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
@@ -45,6 +46,7 @@ export interface GoalData {
 }
 
 export interface CampaignEntry {
+  detail: string;
   id: string;
   user_id: string;
   campaign_name: string;
@@ -98,6 +100,7 @@ export const defaultCampaignEntry: CampaignEntry = {
   offering_details: [],
   replies: "",
   meetings_booked: "",
+  detail: "",
 };
 
 export const defaultGoalEntry: GoalFormData = {
@@ -199,7 +202,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
           formsTracker.campaignId = response.data.id;
           localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
-          router.push(`/dashboard/campaign/create/${response.data.id}`);
+          router.push(`/dashboard/campaign/${response.data.id}`);
         })
         .catch((error) => {
           console.error("Error creating Campaign:", error);
@@ -215,7 +218,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       .put(`v2/campaigns/${campaignId}`, data)
       .then((response) => {
         console.log("Campaign edited successfully:", response.data);
-        router.push(`/dashboard/campaign/create/${campaignId}`);
+        router.push(`/dashboard/campaign/${campaignId}`);
       })
       .catch((error) => {
         console.error("Error editing campaign:", error);
@@ -262,7 +265,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
         console.log("Offering created successfully:", response.data);
-        router.push(`/dashboard/campaign/create/${campaignId}`);
+        router.push(`/dashboard/campaign/${campaignId}`);
       })
       .catch((error) => {
         console.error("Error creating offering:", error);
@@ -311,7 +314,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
 
         console.log("Goal created successfully:", response.data);
-        router.push(`/dashboard/campaign/create/${campaignId}`);
+        router.push(`/dashboard/campaign/${campaignId}`);
       })
       .catch((error) => {
         console.error("Error creating goal:", error);
@@ -364,21 +367,29 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     );
   };
 
-  React.useEffect(() => {
-    if (userId) {
-      axiosInstance
-        .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
-        .then((response) => {
-          console.log("response from all campaigns api", response);
-          setCampaigns(response.data);
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching campaign:", error);
-          setError(error.message || "Failed to load campaign.");
-          setIsLoading(false);
-        });
-    }
+  useEffect(() => {
+    const fetchCampaigns = () => {
+      if (userId) {
+        axiosInstance
+          .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
+          .then((response) => {
+            console.log("response from all campaigns api", response);
+            setCampaigns(response.data);
+            setIsLoading(false);
+          })
+          .catch((error) => {
+            console.error("Error fetching campaign:", error);
+            setError(error.message || "Failed to load campaign.");
+            setIsLoading(false);
+          });
+      }
+    };
+
+    fetchCampaigns(); // Fetch initially
+
+    const intervalId = setInterval(fetchCampaigns, 10000); // Fetch every 7 seconds
+
+    return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [userId]);
 
   const contextValue = useMemo(
