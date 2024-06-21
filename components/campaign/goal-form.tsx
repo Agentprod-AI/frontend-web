@@ -43,6 +43,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { useButtonStatus } from "@/context/button-status";
 import Link from "next/link";
+import axios from "axios";
 
 const dummyEmails = [
   "john.doe@example.com",
@@ -168,7 +169,7 @@ export function GoalForm() {
 
   const watchAllFields = form.watch();
 
-  const onSubmit: SubmitHandler<GoalFormValues> = (data) => {
+  const onSubmit: SubmitHandler<GoalFormValues> = async (data) => {
     if (type === "create") {
       createGoal(data, params.campaignId);
       const updatedFormsTracker = {
@@ -185,6 +186,7 @@ export function GoalForm() {
     }
     if (type === "edit") {
       console.log(watchAllFields);
+
       const changes = Object.keys(data).reduce((acc, key) => {
         // Ensure the correct key type is used
         const propertyKey = key as keyof GoalFormValues;
