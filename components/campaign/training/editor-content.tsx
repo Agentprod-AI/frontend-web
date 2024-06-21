@@ -6,12 +6,13 @@ import {
   ResizablePanelGroup,
 } from "@/components/ui/resizable";
 import { Input } from "@/components/ui/input";
-import { Settings, Plus, Loader } from "lucide-react";
+import { Settings, Plus, Loader, X } from "lucide-react";
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from "@/components/ui/collapsible";
+
 import SubjectForm from "@/components/campaign/training/subject-form";
 import FieldList from "@/components/campaign/training/field-list";
 import FieldTextArea from "@/components/campaign/training/field-text-area";
@@ -29,6 +30,7 @@ import { FieldType, VariableType, allFieldsListType } from "./types";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { LoadingCircle } from "@/app/icons";
 import { toast } from "sonner";
+import { useUserContext } from "@/context/user-context";
 
 interface Variable {
   id: string;
@@ -38,8 +40,14 @@ interface Variable {
 }
 
 export default function EditorContent() {
+  const { user } = useUserContext();
+
   const [isOpen, setIsOpen] = useState(false);
-  const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(true);
+  const [showAdditionalTextArea, setShowAdditionalTextArea] = useState(false);
+  const [showAdditionalTextAreaTwo, setShowAdditionalTextAreaTwo] =
+    useState(false);
+  const [followUpButton, setFollowUpButton] = useState(false);
+
   const [variableDropdownIsOpen, setVariableDropdownIsOpen] = useState(false);
   const [cursorPosition, setCursorPosition] = useState<number | null>(null);
   const [dropdownPosition, setDropdownPosition] = useState<{
@@ -68,6 +76,7 @@ export default function EditorContent() {
   const [localSubject, setLocalSubject] = useState(subject);
   const [localFollowUp, setLocalFollowUp] = useState(followUp);
   const [focusedField, setFocusedField] = useState<string | null>(null);
+  const [examplePopup, setExamplePopup] = useState(false);
 
   const presetVariables = [
     "first name",
@@ -119,6 +128,10 @@ export default function EditorContent() {
 
   const toggleFollowUp = () => {
     setShowAdditionalTextArea(!showAdditionalTextArea);
+  };
+
+  const toggleFollowUpTwo = () => {
+    setShowAdditionalTextAreaTwo(!showAdditionalTextAreaTwo);
   };
 
   const handleTextChange = (text: string, setText: (value: string) => void) => {
@@ -384,7 +397,7 @@ export default function EditorContent() {
       <ResizablePanel defaultSize={75}>
         <div className="flex justify-center px-6 py-4">
           <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border bg-white mr-2">
-            <AvatarFallback> AV</AvatarFallback>
+            <AvatarFallback> {user?.firstName?.[0]}</AvatarFallback>
           </Avatar>
           <div className="flex-col w-full">
             <Collapsible
@@ -458,6 +471,7 @@ export default function EditorContent() {
                 </div>
               )}
             </div>
+
             {showAdditionalTextArea && (
               <div>
                 <Textarea
@@ -473,52 +487,38 @@ export default function EditorContent() {
                   className="mt-2 w-full h-[200px]"
                   onFocus={() => setFocusedField("followUp")}
                 />
-                {/* {variableDropdownIsOpen && (
-                  <div
-                    className="absolute z-10 inline-block text-left mt-1"
-                    ref={dropdownRef}
-                    style={{
-                      top: dropdownPosition ? `${dropdownPosition.top}px` : "0",
-                      left: dropdownPosition
-                        ? `${dropdownPosition.left}px`
-                        : "0",
-                    }}
-                  >
-                    <ScrollArea className="w-56 h-[200px] rounded-md shadow-lg bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
-                      <div
-                        className="py-1"
-                        role="menu"
-                        aria-orientation="vertical"
-                        aria-labelledby="options-menu"
-                        onClick={() => setVariableDropdownIsOpen(false)}
-                      >
-                        {presetVariables.map((option) => (
-                          <button
-                            key={option}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              handleDropdownSelect(option);
-                            }}
-                            className="text-white block px-4 py-2 text-sm w-full text-left hover"
-                          >
-                            {option}
-                          </button>
-                        ))}
-                      </div>
-                    </ScrollArea>
-                  </div>
-                )} */}
+              </div>
+            )}
+            {showAdditionalTextAreaTwo && (
+              <div>
+                <Textarea
+                  placeholder="Write a follow-up Two"
+                  value={localFollowUp}
+                  ref={followUpRef}
+                  onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
+                    handleFollowUpChange(
+                      e.target.value,
+                      e.target.selectionStart
+                    );
+                  }}
+                  className="mt-2 w-full h-[200px]"
+                  onFocus={() => setFocusedField("followUp")}
+                />
               </div>
             )}
             <div className="mt-4 flex flex-row gap-4">
-              <Button variant={"outline"} onClick={toggleFollowUp}>
-                <Plus
-                  className={`h-3 w-3 text-gray-400 ${
-                    showAdditionalTextArea ? "rotate-45 transition-all" : ""
-                  }`}
-                />
-                {showAdditionalTextArea ? "Remove follow-up" : "Add follow-up"}
-              </Button>
+              {!showAdditionalTextArea && (
+                <Button variant="outline" onClick={toggleFollowUp}>
+                  <Plus className="h-3 w-3 text-gray-400" />
+                  Add follow-up
+                </Button>
+              )}{" "}
+              {!showAdditionalTextAreaTwo && (
+                <Button variant="outline" onClick={toggleFollowUpTwo}>
+                  <Plus className="h-3 w-3 text-gray-400" />
+                  Add follow-up 2
+                </Button>
+              )}{" "}
               {/* {templateIsLoading ? (
                 <Button
                   variant={"outline"}
@@ -535,7 +535,87 @@ export default function EditorContent() {
                   Auto Generate Template
                 </Button>
               )} */}
+              <Button
+                variant={"outline"}
+                onClick={() => {
+                  setExamplePopup(!examplePopup);
+                }}
+              >
+                <span className="ml-2">Example Email</span>
+              </Button>
             </div>
+            {examplePopup && (
+              <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+                <div className="w-1/2 h-4/5 overflow-y-scroll flex flex-col space-y-3 p-6 bg-black border rounded-lg">
+                  <div className="flex justify-between items-center">
+                    <div className="text-xl font-semibold text-white">
+                      Example sequence
+                    </div>
+                    <div>
+                      <X
+                        className="cursor-pointer"
+                        onClick={() => {
+                          setExamplePopup(!examplePopup);
+                        }}
+                      />
+                    </div>
+                  </div>
+                  <div className="font-semibold text-white">First contact</div>
+                  <div className="font-semibold text-base text-white">
+                    Subject:{" "}
+                    <span className="font-normal text-white/40">
+                      Connecting with AgentProd founders
+                    </span>{" "}
+                  </div>
+                  <div className="flex space-x-5 py-4">
+                    <div className="w-3 h-full bg-white/20"></div>
+                    <div className="text-white/40 space-y-4">
+                      <div>
+                        Hi Samrah, I came across Koxa and saw that you’re
+                        selling an accounting-to-banking API. We can help you
+                        find the right CFOs at the right software companies and
+                        scale up sales without increasing your headcount.
+                      </div>
+                      <div>
+                        I’m the co-founder of AgentProd. An AI sales automation
+                        platform. We’re helping some of the fastest growing
+                        startups in Silicon Valley to scale sales on autopilot
+                        with our GPT-based platform. We’re in private beta right
+                        now but I thought you may be interested in giving 1Q a
+                        try. Happy to prioritize you.
+                      </div>
+                      <div>Cheers, Muskaan</div>
+                    </div>
+                  </div>
+                  <div className="text-lg font-semibold text-white">
+                    Follow-up 1
+                  </div>
+                  <div className="flex space-x-5 py-4">
+                    <div className="w-3 h-full bg-white/20"></div>
+                    <div className="text-white/40 space-y-4">
+                      Hi Samrah, just bumping this up since I haven’t heard back
+                      from you yet. Other API-first companies like Svix have
+                      already increased their sales by 30% through us. Happy to
+                      jump on a call and discuss how we can help you guys out
+                      too.
+                    </div>
+                  </div>
+                  <div className="text-lg font-semibold text-white">
+                    Follow-up 2
+                  </div>
+                  <div className="flex space-x-5 py-4">
+                    <div className="w-3 h-full bg-white/20"></div>
+                    <div className="text-white/40 space-y-4">
+                      Hi Samrah, since I haven’t heard back from you yet, I
+                      assume automating sales with AI is not relevant to you at
+                      this point. If there’s someone else in your team who might
+                      be the right point of contact, please connect me. Sorry if
+                      I bothered you, and wish you all the best!
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </ResizablePanel>
