@@ -184,9 +184,9 @@ export function MailList({ items }: MailListProps) {
     axiosInstance
       .get(`/v2/mailbox/${user?.id}`)
       .then((response) => {
-        setConversationId(response.data.mails[0].id);
-        setRecipientEmail(response.data.mails[0].recipient);
-        setSenderEmail(response.data.mails[0].sender);
+        // setConversationId(response.data.mails[0].id);
+        // setRecipientEmail(response.data.mails[0].recipient);
+        // setSenderEmail(response.data.mails[0].sender);
         console.log("resssss", response.data);
       })
       .catch((error) => {

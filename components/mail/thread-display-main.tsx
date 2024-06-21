@@ -5,19 +5,17 @@
 "use client";
 
 import React from "react";
-// import { formatDistanceToNow } from "date-fns";
+import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "../../utils/axiosInstance";
 import {
   Card,
   CardContent,
-  // CardDescription,
+  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-// import { Badge } from "../ui/badge";
-
 import { useLeadSheetSidebar } from "@/context/lead-sheet-sidebar";
 import {
   Command,
@@ -55,29 +53,11 @@ import { useCampaignContext } from "@/context/campaign-provider";
 import { User } from "lucide-react";
 import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
-
-// interface ConversationEntry {
-//   id: string;
-//   conversation_id: string;
-//   received_datetime: string | null;
-//   sender: string;
-//   recipient: string;
-//   subject: string;
-//   body: string;
-//   is_reply: boolean;
-//   send_datetime: string | null;
-//   open_datetime: string | null;
-//   click_datetime: string | null;
-//   response_datetime: string | null;
-//   status: string | null;
-//   sentiment: string | null;
-//   category: string | null;
-//   action_draft: string | null;
-//   message_id: string;
-// }
+import { Badge } from "../ui/badge";
 
 interface ThreadDisplayMainProps {
   ownerEmail: string;
+  updateMailStatus: (mailId: string, status: string) => void;
 }
 
 const frameworks = [
@@ -93,10 +73,8 @@ const frameworks = [
 
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   ownerEmail,
+  updateMailStatus,
 }) => {
-  // const [conversations, setConversations] = React.useState<ConversationEntry[]>(
-  //   []
-  // );
   const {
     conversationId,
     thread,
@@ -126,13 +104,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const leadId = leads[0]?.campaign_id;
 
-  console.log("Coversation ID from thread", conversationId);
+  console.log("Threading convoID", conversationId);
 
   React.useEffect(() => {
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
         setThread(response.data);
+        console.log("Thread Data", response.data);
         setIsLoading(false);
       })
       .catch((error) => {
@@ -160,8 +139,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium">Loading...</div>
+      <div className="m-4 flex flex-row ">
+        <Skeleton className="h-7 w-7 rounded-full" />
+        <div className="flex flex-col space-y-3 ml-5">
+          <Skeleton className="h-[25px] w-[30rem] rounded-lg" />
+          <Skeleton className="h-[325px] w-[30rem] rounded-xl" />
+        </div>
       </div>
     );
   }
@@ -173,6 +156,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       </div>
     );
   }
+
+  console.log("Threading recipent", ownerEmail);
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
@@ -265,18 +250,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     >();
     const [isLoading, setIsLoading] = React.useState(true);
     const [error, setError] = React.useState("");
-
     const { user } = useUserContext();
-
     const internalScrollRef = React.useRef<HTMLDivElement>(null);
-
-    console.log("Draft Convo ID", conversationId);
-
+    
     React.useEffect(() => {
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
-          // console.log("The draft i need", response);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -324,6 +304,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           toast.success("Draft Approved!");
           setThread(response.data);
           // console.log("Approve Data", response.data);
+          updateMailStatus(conversationId, "scheduled"); // Update mail status
           setLoadingSmartSchedule(false);
           setEditable(false);
         })
@@ -349,6 +330,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           toast.success("Your email has been sent successfully!");
           // console.log("Send Data", response.data);
           setThread(response.data);
+          updateMailStatus(conversationId, "sent"); // Update mail status
           SetIsLoadingButton(false);
           setEditable(false);
         })
@@ -402,8 +384,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     if (isLoading) {
       return (
-        <div className="m-5">
-          <LoadingCircle />
+        <div className="m-4 flex flex-row ">
+          {/* <LoadingCircle /> */}
+          <Skeleton className="h-7 w-7 rounded-full" />
+          <div className="flex flex-col space-y-3 ml-5">
+            <Skeleton className="h-[25px] w-[30rem] rounded-lg" />
+            <Skeleton className="h-[325px] w-[30rem] rounded-xl" />
+          </div>
         </div>
       );
     }
