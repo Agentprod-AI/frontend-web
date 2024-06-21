@@ -40,6 +40,7 @@ export default function Page() {
         .get(`/v2/settings/${user.id}`)
         .then((response) => {
           const data = response.data;
+          console.log("Data in settings", data);
 
           const initialAccountInfo = [
             {
@@ -57,7 +58,7 @@ export default function Page() {
               value: data.last_name,
               isEditable: true,
             },
-            { id: "Sender Job", value: data.job, isEditable: true },
+            { id: "Sender Job", value: data.job_title, isEditable: true },
             { id: "Email", value: data.email, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
             { id: "Company ID", value: data.companyId, isEditable: true },

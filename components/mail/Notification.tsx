@@ -1,13 +1,25 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 import {
   Archive,
   Bell,
+  CalendarCheck,
+  // CalendarClock,
   Clock3,
+  Forward,
   ListTodo,
   Mail,
   MailPlus,
+  MailQuestion,
+  MailWarning,
   SendHorizontal,
+  ThumbsDown,
+  ThumbsUp,
+  TimerReset,
+  UserX,
 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+
 import React from "react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -91,18 +103,97 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     return { subject, body };
   };
 
+  const cleanedCategory = email?.category?.trim(); // Trim the category string
+
   return (
     <div className="flex flex-col gap-3 w-full">
       {email.is_reply && (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <Clock3 className="h-4 w-4 text-gray-400" />
+              {cleanedCategory === "OOO" && (
+                <UserX className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Positive" && (
+                <ThumbsUp className="h-4 w-4 text-gray-400 -scale-x-100" />
+              )}
+              {cleanedCategory === "Negative" && (
+                <MailWarning className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Forwarded" && (
+                <Forward className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Later" && (
+                <MailQuestion className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Demo" && (
+                <MailQuestion className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Neutral" && (
+                <Mail className="h-4 w-4 text-gray-400" />
+              )}
             </div>
-            <p className=" ml-1 text-xs ">{email.category}</p>
-            <span className="text-gray-600 text-sm ">
+            <p className="ml-1 text-xs">
+              {cleanedCategory === "OOO" && "Currently out of office."}
+              {cleanedCategory === "Positive" && "Positive response received."}
+              {cleanedCategory === "Negative" && "Negative feedback received."}
+              {cleanedCategory === "Forwarded" &&
+                "This message has been forwarded."}
+              {cleanedCategory === "Later" && "Response will be delayed."}
+              {cleanedCategory === "Demo" &&
+                "Demo scheduling requested by client."}
+              {cleanedCategory === "Neutral" && "Neutral response received."}
+            </p>
+            <span className="text-gray-600 text-sm">
               {formatDate(email.received_datetime)}
             </span>
+            <p className="ml-1 text-xs">
+              {cleanedCategory === "OOO" && (
+                <div className="bg-yellow-600 text-yellow-900 flex flex-row gap-1 text-xs font-bold items-center p-1 rounded-full px-2">
+                  <UserX className="-scale-x-100 h-4 w-4 " />
+                  Unavailable
+                </div>
+              )}
+              {cleanedCategory === "Positive" && (
+                <Badge className="gap-1 items-center rounded-full bg-green-600">
+                  <ThumbsUp className="h-[14px] w-[14px] scale-x-100" />
+                  Positive
+                </Badge>
+              )}
+              {cleanedCategory === "Negative" && (
+                <Badge
+                  variant="destructive"
+                  className="gap-1 items-center rounded-full"
+                >
+                  <ThumbsDown className="-scale-x-100 h-[14px] w-[14px]" />
+                  Destructive
+                </Badge>
+              )}
+              {cleanedCategory === "Forwarded" && (
+                <Badge className="gap-1 items-center rounded-full bg-yellow-600">
+                  <Forward className="h-[14px] w-[14px]" />
+                  Forwarded
+                </Badge>
+              )}
+              {cleanedCategory === "Later" && (
+                <Badge className="gap-1 items-center rounded-full bg-yellow-600">
+                  <TimerReset className="h-[14px] w-[14px]" />
+                  Delayed
+                </Badge>
+              )}
+              {cleanedCategory === "Demo" && (
+                <Badge className="gap-1 items-center rounded-full bg-yellow-600">
+                  <Bell className="h-[14px] w-[14px]" />
+                  Demo
+                </Badge>
+              )}
+              {cleanedCategory === "Neutral" && (
+                <Badge className="gap-1 items-center rounded-full bg-blue-600">
+                  <Bell className="h-[14px] w-[14px]" />
+                  Neutral
+                </Badge>
+              )}
+            </p>
           </div>
 
           <div className="flex w-full">
@@ -113,10 +204,16 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   : ""}
               </AvatarFallback>
             </Avatar>
-            <Card className="w-full mr-7 ">
+            <Card
+              className={`w-full mr-7 ${
+                cleanedCategory === "Negative" ? "opacity-40" : ""
+              }`}
+            >
               <div className="flex gap-4 p-4">
                 <span className="text-sm font-semibold">
-                  {leads[0].first_name ? "You to " + leads[0].first_name : ""}
+                  {leads.length > 0 && leads[0].first_name
+                    ? "You to " + leads[0].first_name
+                    : ""}
                 </span>
                 <span className="text-gray-600 text-sm ">
                   {formatDate(email.received_datetime)}
@@ -124,7 +221,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               </div>
               <CardHeader className="-mt-8 -ml-3">
                 <CardTitle className="text-sm flex flex-col ">
-                  <Input
+                  {/* <Input
                     className="text-xs"
                     placeholder="Subject"
                     value={
@@ -132,22 +229,55 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                       parseActionDraft(email.action_draft).subject
                     }
                     readOnly
-                  />
+                  /> */}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
                 <Textarea
                   className="text-xs h-40"
                   placeholder="Enter email body"
-                  value={
-                    email.action_draft &&
-                    parseActionDraft(email.action_draft).body
-                  }
+                  value={email.action_draft && email.action_draft}
                   readOnly
                 />
               </CardContent>
             </Card>
           </div>
+          {cleanedCategory === "Negative" && (
+            <div className="flex items-center gap-3">
+              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                {cleanedCategory === "Negative" && (
+                  <MailWarning className="h-4 w-4 text-gray-400" />
+                )}
+              </div>
+              <p className="ml-1 text-xs">
+                {cleanedCategory === "Negative" &&
+                  ` ${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : ""
+                  } was blocked because of a negative reply.`}
+              </p>
+              <span className="text-gray-600 text-sm">
+                {formatDate(email.received_datetime)}
+              </span>
+            </div>
+          )}
+          {cleanedCategory === "Demo" && (
+            <div className="flex items-center gap-3">
+              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                {email.category === "Demo" && (
+                  <CalendarCheck className="h-4 w-4 text-gray-400" />
+                )}
+              </div>
+              <p className="ml-1 text-xs">
+                {cleanedCategory === "Demo" &&
+                  `Meeting successfully scheduled.`}
+              </p>
+              <span className="text-gray-600 text-sm">
+                {formatDate(email.received_datetime)}
+              </span>
+            </div>
+          )}
         </div>
       )}
 
