@@ -23,6 +23,8 @@ interface FieldsListContextType {
   setSubject: (subject: string) => void;
   followUp: string;
   setFollowUp: (followUp: string) => void;
+  followUpOne: string;
+  setFollowUpOne: (followUp: string) => void;
   subjectOptions: string[];
   setSubjectOptions: (options: string[]) => void;
 }
@@ -44,6 +46,8 @@ const defaultState: FieldsListContextType = {
   setSubject: () => {},
   followUp: "",
   setFollowUp: () => {},
+  followUpOne: "",
+  setFollowUpOne: () => {},
   subjectOptions: [],
   setSubjectOptions: () => {},
 };
@@ -63,6 +67,8 @@ export const FieldsListProvider: React.FC<FieldsListProviderProps> = ({
   const [body, setBody] = useState<string>("");
   const [subject, setSubject] = useState<string>("");
   const [followUp, setFollowUp] = useState<string>("");
+  const [followUpOne, setFollowUpOne] = useState<string>("");
+
   const [subjectOptions, setSubjectOptions] = useState<string[]>([]);
 
   const addField = (field: FieldType | VariableType, fieldType: string) => {
@@ -155,10 +161,12 @@ export const FieldsListProvider: React.FC<FieldsListProviderProps> = ({
       setSubject,
       followUp,
       setFollowUp,
+      followUpOne,
+      setFollowUpOne,
       subjectOptions,
       setSubjectOptions,
     }),
-    [fieldsList, body, subject, followUp, subjectOptions]
+    [fieldsList, body, subject, followUp, subjectOptions, followUpOne]
   );
 
   return (

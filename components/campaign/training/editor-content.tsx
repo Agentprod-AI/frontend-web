@@ -66,6 +66,8 @@ export default function EditorContent() {
     setBody,
     subject,
     setSubject,
+    followUpOne,
+    setFollowUpOne,
     followUp,
     setFollowUp,
     setFieldsList,
@@ -74,10 +76,12 @@ export default function EditorContent() {
 
   const [localBody, setLocalBody] = useState(body);
   const [localSubject, setLocalSubject] = useState(subject);
-  const [localFollowUp, setLocalFollowUp] = useState(followUp);
+  const [localFollowUp, setLocalFollowUp] = useState("");
+  const [localFollowUpTwo, setLocalFollowUpTwo] = useState("");
+
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [examplePopup, setExamplePopup] = useState(false);
-
+  const [button1, setButton1] = useState(true);
   const presetVariables = [
     "first name",
     "last name",
@@ -128,6 +132,7 @@ export default function EditorContent() {
 
   const toggleFollowUp = () => {
     setShowAdditionalTextArea(!showAdditionalTextArea);
+    setButton1(false);
   };
 
   const toggleFollowUpTwo = () => {
@@ -192,6 +197,14 @@ export default function EditorContent() {
   const handleFollowUpChange = (text: string, cursorPos?: number) => {
     setLocalFollowUp(text);
     setFollowUp(text);
+    handleTextChange(`${localFollowUp} ${text}`, setFollowUp);
+    if (cursorPos !== undefined) {
+      setCursorPosition(cursorPos);
+    }
+  };
+  const handleFollowUpChangeTwo = (text: string, cursorPos?: number) => {
+    setLocalFollowUpTwo(text);
+    setFollowUpOne(text);
     handleTextChange(`${localFollowUp} ${text}`, setFollowUp);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
@@ -302,38 +315,38 @@ export default function EditorContent() {
     setFieldsList(newFieldsList);
   };
 
-  const handleAutoGenerateTemplate = async () => {
-    try {
-      setTemplateIsLoading(true);
-      const response = await getAutogenerateTrainingTemplate(params.campaignId);
-      const followup = await getAutogenerateFollowup(params.campaignId);
+  // const handleAutoGenerateTemplate = async () => {
+  //   try {
+  //     setTemplateIsLoading(true);
+  //     const response = await getAutogenerateTrainingTemplate(params.campaignId);
+  //     const followup = await getAutogenerateFollowup(params.campaignId);
 
-      console.log(response); // For debugging
-      console.log("followup", followup);
-      const newSubject = `${response.subject}`;
-      const newBody = `${response.body} ${response.closing || ""}`;
-      const newFollowUp = followup;
-      console.log("reached here");
-      setLocalSubject(newSubject);
-      setLocalBody(newBody);
-      setLocalFollowUp(`${newFollowUp.subject}\n\n ${newFollowUp.body}`);
-      setShowAdditionalTextArea(false); //updaated
-      console.log("setup here here");
+  //     console.log(response); // For debugging
+  //     console.log("followup", followup);
+  //     const newSubject = `${response.subject}`;
+  //     const newBody = `${response.body} ${response.closing || ""}`;
+  //     const newFollowUp = followup;
+  //     console.log("reached here");
+  //     setLocalSubject(newSubject);
+  //     setLocalBody(newBody);
+  //     setLocalFollowUp(`${newFollowUp.subject}\n\n ${newFollowUp.body}`);
+  //     setShowAdditionalTextArea(false); //updaated
+  //     console.log("setup here here");
 
-      setSubject(newSubject);
-      setBody(newBody);
-      setFollowUp(newFollowUp);
-      console.log("response from the variables" + response);
-      mapFields(response);
-      setTemplateIsLoading(false);
-      console.log("end here");
-    } catch (error: any) {
-      console.error("Failed to fetch training data:", error);
-      toast.error(error.message);
-      setTemplateIsLoading(false);
-      handleTextChange;
-    }
-  };
+  //     setSubject(newSubject);
+  //     setBody(newBody);
+  //     setFollowUp(newFollowUp);
+  //     console.log("response from the variables" + response);
+  //     mapFields(response);
+  //     setTemplateIsLoading(false);
+  //     console.log("end here");
+  //   } catch (error: any) {
+  //     console.error("Failed to fetch training data:", error);
+  //     toast.error(error.message);
+  //     setTemplateIsLoading(false);
+  //     handleTextChange;
+  //   }
+  // };
 
   const updateDropdownPosition = (cursorPos: number) => {
     const textarea = textareaRef.current || followUpRef.current;
@@ -493,10 +506,10 @@ export default function EditorContent() {
               <div>
                 <Textarea
                   placeholder="Write a follow-up Two"
-                  value={localFollowUp}
+                  value={localFollowUpTwo}
                   ref={followUpRef}
                   onChange={(e: ChangeEvent<HTMLTextAreaElement>) => {
-                    handleFollowUpChange(
+                    handleFollowUpChangeTwo(
                       e.target.value,
                       e.target.selectionStart
                     );
@@ -513,10 +526,10 @@ export default function EditorContent() {
                   Add follow-up
                 </Button>
               )}{" "}
-              {!showAdditionalTextAreaTwo && (
+              {!button1 && !showAdditionalTextAreaTwo && (
                 <Button variant="outline" onClick={toggleFollowUpTwo}>
                   <Plus className="h-3 w-3 text-gray-400" />
-                  Add follow-up 2
+                  Add follow-up
                 </Button>
               )}{" "}
               {/* {templateIsLoading ? (
