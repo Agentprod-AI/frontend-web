@@ -3,6 +3,9 @@
 "use client";
 
 import React, { useState } from "react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
+
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -75,6 +78,7 @@ export default function Page() {
   const [isWarmupDialogOpen, setIsWarmupDialogOpen] = useState(false);
   const [isSecondWarmupDialogOpen, setIsSecondWarmupDialogOpen] =
     useState(false);
+  const [isLoadingMailboxes, setIsLoadingMailboxes] = useState(false); // Shimmer UI Prep
   const { user } = useUserContext();
 
   const handleOpenAddMailbox = () => setIsChooseServiceOpen(true);
@@ -166,6 +170,7 @@ export default function Page() {
   };
 
   const fetchMailboxes = async () => {
+    setIsLoadingMailboxes(true); // Shimmer UI Prep
     try {
       const response = await axiosInstance.get(
         `/v2/settings/mailboxes/${user.id}`
@@ -183,6 +188,7 @@ export default function Page() {
     } catch (error) {
       console.error("Failed to fetch mailboxes:", error);
     }
+    setIsLoadingMailboxes(false); // Shimmer UI Prep
   };
   React.useEffect(() => {
     if (user?.id) {
@@ -293,7 +299,113 @@ export default function Page() {
           mailboxes.length > 0 ? "border" : ""
         }  border-collapse mt-4`}
       >
-        {mailboxes.length > 0 ? (
+        {/* {mailboxes.length > 0 ? (
+          <Table className="w-full text-left">
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                <TableHead className="w-1/5">MAILBOX</TableHead>
+                <TableHead>NAME ACCOUNT</TableHead>
+                <TableHead>WARM-UP</TableHead>
+                <TableHead className="text-left">DAILY LIMIT</TableHead>
+                <TableHead> </TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {mailboxes.map((mailbox, index) => (
+                <TableRow key={index}>
+                  <TableCell>
+                    <div className="flex items-center gap-3">
+                      <GmailIcon />
+                      <span>{mailbox.mailbox}</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>{mailbox?.sender_name}</TableCell>
+                  <TableCell>
+                    {mailbox?.platform === "Google" ? (
+                      mailbox.warmup ? (
+                        <Switch
+                          checked={mailbox.warmup}
+                          onChange={() =>
+                            mailbox.warmup
+                              ? handleDisableWarmup(mailbox.mailbox)
+                              : handleEnableWarmup(mailbox.mailbox)
+                          }
+                        />
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          onClick={() => handleEnableWarmup(mailbox.mailbox)}
+                        >
+                          Setup Warmup
+                        </Button>
+                      )
+                    ) : (
+                      <Switch
+                        checked={mailbox.warmup}
+                        onChange={() =>
+                          mailbox.warmup
+                            ? handleDisableWarmup(mailbox.mailbox)
+                            : handleEnableWarmup(mailbox.mailbox)
+                        }
+                      />
+                    )}
+                  </TableCell>
+
+                  <TableCell>{mailbox.daily_limit}</TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger asChild>
+                        <Button variant={"destructive"}>Disconnect</Button>
+                      </DialogTrigger>
+                      <DialogContent className="sm:max-w-[425px]">
+                        <DialogHeader className="text-left flex gap-1">
+                          <Icons.alertCircle
+                            size={"40"}
+                            color="red"
+                            className="mb-4"
+                          />
+                          <DialogTitle>Disconnect Account</DialogTitle>
+                          <DialogDescription>
+                            Are you sure you want to disconnect{" "}
+                            <span className="text-blue-500">
+                              {mailbox.mailbox}
+                            </span>
+                            ? This action cannot be undone.
+                          </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                          <DialogClose asChild>
+                            <Button type="button" variant={"outline"}>
+                              Cancel
+                            </Button>
+                          </DialogClose>
+                          <Button
+                            type="submit"
+                            variant={"destructive"}
+                            onClick={() => removeMailbox(mailbox.sender_id)}
+                          >
+                            Delete
+                          </Button>
+                        </DialogFooter>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        ) : (
+          "No mailboxes connected."
+        )} */}
+        {isLoadingMailboxes ? (
+          <div className="border-none">
+            <div>
+              <Skeleton className="w-full h-[40px] rounded-none" />
+            </div>
+            <Separator className="bg-gray-300" />
+            <Skeleton className="w-full h-[70px] rounded-none" />
+          </div>
+        ) : mailboxes.length > 0 ? (
           <Table className="w-full text-left">
             <TableHeader className="bg-muted/50">
               <TableRow>

@@ -142,8 +142,10 @@ export const PeopleProfileSheet = ({
               )}
               <div className="flex space-x-2 w-full">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
-                <span className="text-sm text-muted-foreground whitespace-normal w-full">
-                  {data.linkedin_url || "N/A"}
+                <span className="text-sm text-muted-foreground whitespace-normal w-full underline">
+                  <a href={data.linkedin_url || ""} target="_blank">
+                    {data.linkedin_url || "N/A"}
+                  </a>
                 </span>
               </div>
             </div>
@@ -276,7 +278,7 @@ export const PeopleProfileSheet = ({
                             className="text-muted-foreground text-sm whitespace-normal w-full"
                             key={key}
                           >
-                            {formatText(key)}: <span>{value as string}</span>
+                            {formatText(key)}: <span>(value as string)</span>
                           </div>
                         )
                       )}
