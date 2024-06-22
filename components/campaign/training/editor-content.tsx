@@ -132,7 +132,7 @@ export default function EditorContent() {
 
   const toggleFollowUp = () => {
     setShowAdditionalTextArea(!showAdditionalTextArea);
-    setButton1(false);
+    setButton1(!button1);
   };
 
   const toggleFollowUpTwo = () => {
@@ -486,7 +486,13 @@ export default function EditorContent() {
             </div>
 
             {showAdditionalTextArea && (
-              <div>
+              <div className="relative">
+                <button
+                  className="absolute top-2 right-2 bg-transparent text-xl font-semibold leading-none focus:outline-none"
+                  onClick={toggleFollowUp}
+                >
+                  &times;
+                </button>
                 <Textarea
                   placeholder="Write a follow-up"
                   value={localFollowUp}
@@ -502,8 +508,15 @@ export default function EditorContent() {
                 />
               </div>
             )}
+
             {showAdditionalTextAreaTwo && (
-              <div>
+              <div className="relative">
+                <button
+                  className="absolute top-2 right-2 bg-transparent text-xl font-semibold leading-none focus:outline-none"
+                  onClick={toggleFollowUpTwo}
+                >
+                  &times;
+                </button>
                 <Textarea
                   placeholder="Write a follow-up Two"
                   value={localFollowUpTwo}
