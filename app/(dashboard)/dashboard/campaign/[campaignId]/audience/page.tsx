@@ -90,23 +90,7 @@ export default function Page() {
       </RadioGroup>
       {isProspectActive && (
         <div>
-          {/* <RadioGroup
-              className="my-3 flex"
-              defaultValue="people"
-              onValueChange={onFormRadioChange}
-            >
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="people" />
-                <Label htmlFor="people">People</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="org" />
-                <Label htmlFor="org">Organizations</Label>
-              </div>
-            </RadioGroup> */}
-          {/* {isPeopleFormActive ?  */}
-          <PeopleFormComponent type="edit" />
-          {/* : <OrgFormComponent />} */}
+          <PeopleFormComponent type="create" />
         </div>
       )}
       {isImportActive && <ImportAudience />}

@@ -4,11 +4,9 @@
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
-import axios from "axios";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
-
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -21,13 +19,11 @@ import {
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
 import { RadioGroup, RadioGroupItem } from "../ui/radio-group";
-import React, { useState } from "react";
-import Link from "next/link";
+import React, { useEffect, useState } from "react";
 import {
   CampaignFormData,
   useCampaignContext,
 } from "@/context/campaign-provider";
-import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
 import { getCampaignById } from "./camapign.api";
 import { CampaignEntry } from "@/context/campaign-provider";
@@ -43,19 +39,6 @@ const campaignFormSchema = z.object({
   campaignType: z.enum(["Outbound", "Inbound", "Nurturing"], {
     required_error: "Please select a campaign type.",
   }),
-  // dailyOutreach: z.preprocess(
-  //   (value) => {
-  //     // Convert the input value to a number if it's a string
-  //     if (typeof value === "string") {
-  //       return parseInt(value, 10);
-  //     }
-  //     return value;
-  //   },
-  //   z
-  //     .number()
-  //     .min(1, "You must outreach to at least 1 prospect per day.")
-  //     .max(500, "You cannot outreach to more than 500 prospects per day.")
-  // ),
   schedule: z.object({
     weekdayStartTime: z.string().optional(),
     weekdayEndTime: z.string().optional(),
@@ -64,78 +47,97 @@ const campaignFormSchema = z.object({
 
 type CampaignFormValues = z.infer<typeof campaignFormSchema>;
 
-// This can come from your database or API.
-const defaultValues: Partial<CampaignFormValues> = {
-  // name: "Your name",
-  // dob: new Date("2023-01-23"),
-};
+const defaultValues: Partial<CampaignFormValues> = {};
 
-export function SchedulingForm({ type }: { type: string }) {
+export function SchedulingForm() {
   const router = useRouter();
   const params = useParams<{ campaignId: string }>();
-
   const form = useForm<CampaignFormValues>({
     resolver: zodResolver(campaignFormSchema),
     defaultValues,
   });
+  const defaultFormsTracker = {
+    schedulingBudget: true,
+    offering: false,
+    goal: false,
+    audience: false,
+    training: false,
+  };
 
   const { createCampaign, editCampaign } = useCampaignContext();
   const { user } = useUserContext();
-  // console.log("SchedulingForm", user);
   const watchAllFields = form.watch();
-
   const [campaignData, setCampaignData] = useState<CampaignEntry>();
   const { setPageCompletion } = useButtonStatus();
+  const [type, setType] = useState<"create" | "edit">("create");
+  const [formsTracker, setFormsTracker] = useState(defaultFormsTracker);
 
   const onSubmit = async (data: CampaignFormValues) => {
     if (type === "create") {
-      createCampaign(data);
+      await createCampaign(data);
       toast.success("Campaign is scheduled successfully!");
-      setPageCompletion("scheduling-budget", true); // Set the page completion to true
-    } else {
+      // setPageCompletion("scheduling-budget", true);
+      const updatedFormsTracker = {
+        schedulingBudget: true,
+        offering: true,
+      };
+      localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
+      setFormsTracker((prevFormsTracker) => ({
+        ...prevFormsTracker,
+        ...updatedFormsTracker,
+      }));
+    } else if (type === "edit") {
       const changes = Object.keys(data).reduce((acc, key) => {
-        // Ensure the correct key type is used
         const propertyKey = key as keyof CampaignFormValues;
-
-        // Compare the stringified versions of the current and previous values
         if (
           JSON.stringify(data[propertyKey]) !==
           JSON.stringify(watchAllFields[propertyKey])
         ) {
-          // Assign only if types are compatible
           acc = { ...acc, [propertyKey]: data[propertyKey] };
         }
         return acc;
       }, {} as CampaignFormValues);
 
-      if (Object.keys(changes).length > 0) {
-        editCampaign(changes, params.campaignId);
-      } else {
-        console.log("No changes detected.");
-        // Handle no changes scenario
-      }
+      await editCampaign(changes, params.campaignId);
+      toast.success("Campaign is updated successfully!");
+
+      const updatedFormsTracker = {
+        schedulingBudget: true,
+        offering: true,
+      };
+      localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
+      setFormsTracker((prevFormsTracker) => ({
+        ...prevFormsTracker,
+        ...updatedFormsTracker,
+      }));
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     const fetchCampaign = async () => {
-      if (type === "edit") {
-        const id = params.campaignId;
-        console.log("id in scheduling form", id);
-        if (id) {
-          const campaign = await getCampaignById(id);
-          console.log("campaign in scheduling form", campaign);
-          if (campaign) {
-            setCampaignData(campaign as CampaignEntry);
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `https://agentprod-backend-framework-zahq.onrender.com/v2/campaigns/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Campaign not found") {
+            setType("create");
+          } else {
+            setCampaignData(data as CampaignEntry);
+            setType("edit");
           }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
         }
       }
     };
 
     fetchCampaign();
-  }, [params.campaignId, getCampaignById]);
+  }, [params.campaignId]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (campaignData) {
       form.setValue("campaignName", campaignData.campaign_name);
       form.setValue(
@@ -144,11 +146,9 @@ export function SchedulingForm({ type }: { type: string }) {
       );
 
       const processTime = (timeString: string) => {
-        const [hours, minutes, seconds] = timeString.split(":").map(Number);
-
+        const [hours, minutes] = timeString.split(":").map(Number);
         const paddedHours = String(hours).padStart(2, "0");
         const paddedMinutes = String(minutes).padStart(2, "0");
-
         return `${paddedHours}:${paddedMinutes}`;
       };
 
@@ -194,24 +194,17 @@ export function SchedulingForm({ type }: { type: string }) {
                   value={field.value || campaignData?.campaign_type}
                   className="flex flex-col space-y-1"
                 >
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="Outbound" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Outbound</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="Inbound" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Inbound</FormLabel>
-                  </FormItem>
-                  <FormItem className="flex items-center space-x-3 space-y-0">
-                    <FormControl>
-                      <RadioGroupItem value="Nurturing" />
-                    </FormControl>
-                    <FormLabel className="font-normal">Nurturing</FormLabel>
-                  </FormItem>
+                  {campaignTypes.map((type) => (
+                    <FormItem
+                      key={type}
+                      className="flex items-center space-x-3 space-y-0"
+                    >
+                      <FormControl>
+                        <RadioGroupItem value={type} />
+                      </FormControl>
+                      <FormLabel className="font-normal">{type}</FormLabel>
+                    </FormItem>
+                  ))}
                 </RadioGroup>
               </FormControl>
               <FormMessage />
@@ -219,40 +212,16 @@ export function SchedulingForm({ type }: { type: string }) {
           )}
         />
 
-        {/* <FormField
-          control={form.control}
-          name="dailyOutreach"
-          render={({ field, fieldState: { error } }) => (
-            <FormItem>
-              <FormLabel>Daily Outreach</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Number of daily outreach"
-                  {...field}
-                />
-              </FormControl>
-              <FormMessage>{error?.message}</FormMessage>
-            </FormItem>
-          )}
-        /> */}
-
-        {/* Dynamically create a time input for each day */}
         <h1>Schedule</h1>
         <div className="flex w-[400px] justify-between">
           <h1>Weekdays</h1>
           <div className="flex gap-2">
             <FormField
               control={form.control}
-              //@ts-ignore
               name={`schedule.weekdayStartTime`}
               render={({ field, fieldState: { error } }) => (
                 <FormItem>
-                  {/* <FormLabel>{`${
-                    day.charAt(0).toUpperCase() + day.slice(1)
-                  } Start Time`}</FormLabel> */}
                   <FormControl>
-                    {/* @ts-ignore */}
                     <Input type="time" {...field} />
                   </FormControl>
                   <FormMessage>{error?.message}</FormMessage>
@@ -261,15 +230,10 @@ export function SchedulingForm({ type }: { type: string }) {
             />
             <FormField
               control={form.control}
-              //@ts-ignore
               name={`schedule.weekdayEndTime`}
               render={({ field, fieldState: { error } }) => (
                 <FormItem>
-                  {/* <FormLabel>{`${
-                    day.charAt(0).toUpperCase() + day.slice(1)
-                  } End Time`}</FormLabel> */}
                   <FormControl>
-                    {/* @ts-ignore */}
                     <Input type="time" placeholder="End Time" {...field} />
                   </FormControl>
                   <FormMessage>{error?.message}</FormMessage>
@@ -278,15 +242,7 @@ export function SchedulingForm({ type }: { type: string }) {
             />
           </div>
         </div>
-
         <Button type="submit">
-          {/* {
-            type === "create" ?
-            <a href="/dashboard/campaign/create">
-              Add Campagin
-            </a> :
-            "Update Campagin"
-          } */}
           {type === "create" ? "Add" : "Update"} Campaign
         </Button>
       </form>

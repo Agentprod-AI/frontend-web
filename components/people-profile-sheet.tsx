@@ -324,7 +324,7 @@ export const PeopleProfileSheet = ({
                           key={`e_his${ind}`}
                         >
                           <span>
-                            {val.start_date.substring(0, 4)} -{" "}
+                            {/* {val.start_date.substring(0, 4)} -{" "} */}
                             {val.end_date ? val.end_date.substring(0, 4) : ""}
                           </span>
                           <span className="w-full whitespace-normal">
