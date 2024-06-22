@@ -1,7 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
-
 "use client";
 
 import React from "react";
@@ -104,8 +103,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const leadId = leads[0]?.campaign_id;
 
-  console.log("Threading convoID", conversationId);
-
   React.useEffect(() => {
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
@@ -156,8 +153,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       </div>
     );
   }
-
-  console.log("Threading recipent", ownerEmail);
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
@@ -252,7 +247,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [error, setError] = React.useState("");
     const { user } = useUserContext();
     const internalScrollRef = React.useRef<HTMLDivElement>(null);
-    
+
     React.useEffect(() => {
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)

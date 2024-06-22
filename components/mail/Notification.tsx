@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 import {
@@ -31,6 +32,8 @@ import { useUserContext } from "@/context/user-context";
 import { Button } from "../ui/button";
 import { useMailbox } from "@/context/mailbox-provider";
 import axiosInstance from "@/utils/axiosInstance";
+import { toast } from "sonner";
+import { LoadingCircle } from "@/app/icons";
 
 interface EmailMessage {
   id: any;
@@ -64,24 +67,50 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     });
   };
   const [questions, setQuestions] = React.useState([]);
+  const [answers, setAnswers] = React.useState<string[]>([]);
+  const [answerLoading, setAnswerLoading] = React.useState(false);
   const { setIsContextBarOpen } = useMailbox();
   const { leads } = useLeads();
   const { user } = useUserContext();
 
+  const messageId =
+    email.category === "Information Required" && email.message_id;
+
   React.useEffect(() => {
-    if (
-      !email.is_reply &&
-      email?.status?.toLowerCase() === "information required"
-    ) {
+    if (email.is_reply && email?.category === "Information Required") {
       axiosInstance
-        .get(`/questions/${email.message_id}`)
+        .get(`v2/questions/${messageId}`)
         .then((response) => {
-          setQuestions(response.data.questions);
+          setQuestions(response.data.questions.questions);
           console.log("Questions", response.data.questions);
         })
         .catch((error) => console.error("Failed to fetch questions", error));
     }
-  }, [email]);
+  }, [setQuestions]);
+
+  const handleInputChange = (index: number, value: string) => {
+    const newAnswers = [...answers];
+    newAnswers[index] = value;
+    setAnswers(newAnswers);
+  };
+
+  const handleGenerateResponse = () => {
+    setAnswerLoading(true);
+    axiosInstance
+      .post("/v2/answers", {
+        user_id: user.id,
+        questions,
+        answers,
+      })
+      .then((response) => {
+        toast.success("Response submitted successfully");
+        console.log("Response submitted successfully", response);
+        setAnswerLoading(false);
+      })
+      .catch((error) => {
+        console.error("Failed to submit response", error);
+      });
+  };
 
   const parseActionDraft = (actionDraft: any) => {
     if (!actionDraft)
@@ -139,7 +168,12 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               {cleanedCategory === "Negative" && "Negative feedback received."}
               {cleanedCategory === "Forwarded" &&
                 "This message has been forwarded."}
-              {cleanedCategory === "Later" && "Response will be delayed."}
+              {cleanedCategory === "Later" &&
+                `Follow up with ${
+                  leads.length > 0 && leads[0].first_name
+                    ? leads[0].first_name
+                    : ""
+                } in a few day as requested.`}
               {cleanedCategory === "Demo" &&
                 "Demo scheduling requested by client."}
               {cleanedCategory === "Neutral" && "Neutral response received."}
@@ -149,10 +183,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             </span>
             <p className="ml-1 text-xs">
               {cleanedCategory === "OOO" && (
-                <div className="bg-yellow-600 text-yellow-900 flex flex-row gap-1 text-xs font-bold items-center p-1 rounded-full px-2">
-                  <UserX className="-scale-x-100 h-4 w-4 " />
+                <Badge className="gap-1 items-center rounded-full bg-yellow-600">
+                  <UserX className="h-[14px] w-[14px] scale-x-100" />
                   Unavailable
-                </div>
+                </Badge>
               )}
               {cleanedCategory === "Positive" && (
                 <Badge className="gap-1 items-center rounded-full bg-green-600">
@@ -183,7 +217,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               )}
               {cleanedCategory === "Demo" && (
                 <Badge className="gap-1 items-center rounded-full bg-yellow-600">
-                  <Bell className="h-[14px] w-[14px]" />
+                  <CalendarCheck className="h-[14px] w-[14px]" />
                   Demo
                 </Badge>
               )}
@@ -229,7 +263,8 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                       parseActionDraft(email.action_draft).subject
                     }
                     readOnly
-                  /> */}
+                  />
+                   */}
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
@@ -281,86 +316,102 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {!email.is_reply &&
-        email?.status?.toLowerCase() === "information required" && (
-          <div>
-            <div className="flex gap-2 flex-col h-full">
-              <div className="flex w-full">
-                <Avatar
-                  className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-                  onClick={() => {
-                    setIsContextBarOpen(true);
-                  }}
-                >
-                  <AvatarImage
-                    src={leads[0]?.photo_url ? leads[0].photo_url : ""}
-                    alt="avatar"
-                  />
+      {/* Working in this part right now */}
 
-                  <AvatarFallback className="bg-yellow-400 text-black text-xs">
-                    {leads[0]?.first_name && leads[0]?.last_name
-                      ? leads[0].first_name.charAt(0) +
-                        leads[0].last_name.charAt(0)
-                      : ""}
-                  </AvatarFallback>
-                </Avatar>
-                <Card className="w-full mr-5 ">
-                  <div className="flex gap-5 p-4 items-center">
-                    <span className="text-sm font-semibold">
-                      {leads[0]?.first_name + " to you"}
-                    </span>
-                    <div className="flex gap-3 items-center">
-                      <span className="text-gray-500 text-sm  ">
-                        2 minutes ago
-                      </span>
-                      <span className="bg-green-100 text-green-600 text-xs border p-1 border-green-100 flex gap-1 items-center rounded-full">
-                        <MailPlus className="h-4 w-4" />{" "}
-                        <span> Information requested</span>
-                      </span>
-                    </div>
-                  </div>
-                  <CardHeader></CardHeader>
-                  <CardContent className="text-xs -ml-3 -mt-10">
-                    <Textarea
-                      value={`Hi Jason,\n\What's the pricing? I coudn't find it on the website. \n\nThanks\nJason`}
-                      className="text-xs h-40"
-                      placeholder="Enter email body"
-                      readOnly
-                    />
-                  </CardContent>
-                </Card>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                <ListTodo className="h-4 w-4 text-gray-400" />
-              </div>
-              <p className=" ml-1 text-xs ">
-                <span className="text-gray-500">Todo: </span> Respond to ask
-                question
-              </p>
-            </div>
-
-            <div className="flex gap-2 flex-col h-full">
-              {questions.map((question: any, index: any) => (
-                <div key={index} className="flex w-full mr-4">
-                  <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
-                    <span className="text-xs w-2/3">{question}</span>
-                    <Input className="w-1/3" placeholder="Answer" />
-                  </Card>
-                </div>
-              ))}
-
-              <Button
-                className="ml-12 w-48 flex gap-2 items-center"
-                variant="secondary"
+      {email.is_reply && email?.category === "Information Required" && (
+        <div>
+          <div className="flex gap-2 flex-col h-full">
+            <div className="flex w-full">
+              <Avatar
+                className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+                onClick={() => {
+                  setIsContextBarOpen(true);
+                }}
               >
-                <span>Generate response</span>
-              </Button>
+                <AvatarImage
+                  src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+                  alt="avatar"
+                />
+
+                <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                  {leads[0]?.first_name && leads[0]?.last_name
+                    ? leads[0].first_name.charAt(0) +
+                      leads[0].last_name.charAt(0)
+                    : ""}
+                </AvatarFallback>
+              </Avatar>
+              <Card className="w-full mr-5 ">
+                <div className="flex gap-5 p-4 items-center">
+                  <span className="text-sm font-semibold">
+                    {leads.length > 0 && leads[0].first_name
+                      ? leads[0]?.first_name + " to you"
+                      : ""}
+                  </span>
+                  <div className="flex gap-3 items-center">
+                    <span className="text-gray-500 text-sm  ">
+                      2 minutes ago
+                    </span>
+
+                    <span>
+                      <Badge className="gap-1 items-center rounded-full bg-green-600">
+                        <MailPlus className="h-[14px] w-[14px] scale-x-100" />
+                        Information requested
+                      </Badge>
+                    </span>
+                  </div>
+                </div>
+                <CardHeader></CardHeader>
+                <CardContent className="text-xs -ml-3 -mt-10">
+                  <Textarea
+                    value={email.body}
+                    className="text-xs h-40"
+                    placeholder="Enter email body"
+                    readOnly
+                  />
+                </CardContent>
+              </Card>
             </div>
           </div>
-        )}
+
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <ListTodo className="h-4 w-4 text-gray-400" />
+            </div>
+            <p className=" ml-1 text-xs ">
+              <span className="text-gray-500">Todo: </span> Respond to ask
+              question
+            </p>
+          </div>
+
+          <div className="flex gap-2 flex-col h-full">
+            {questions.map((question: any, index: any) => (
+              <div key={index} className="flex w-full mr-4">
+                <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
+                  <span className="text-xs w-2/3">{question}</span>
+                  <Input
+                    className="w-1/3"
+                    placeholder="Answer"
+                    value={answers[index]}
+                    onChange={(e) => handleInputChange(index, e.target.value)}
+                  />
+                </Card>
+              </div>
+            ))}
+
+            <Button
+              className="ml-12 w-48 flex gap-2 items-center"
+              variant="secondary"
+              onClick={handleGenerateResponse}
+            >
+              <span>
+                {answerLoading ? <LoadingCircle /> : "Generate response"}
+              </span>
+            </Button>
+          </div>
+        </div>
+      )}
+
+      {/* Working in this part right now */}
 
       {!email.is_reply && email?.status?.toLowerCase() === "sent" && (
         <div className="flex items-center gap-3">

@@ -18,7 +18,6 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUserContext } from "@/context/user-context";
-import { toast } from "sonner";
 import { LoadingCircle } from "@/app/icons";
 
 export default function Page() {
@@ -52,7 +51,6 @@ export default function Page() {
       .catch((error) => {
         console.error("Error fetching all leads:", error);
         setLoading(false);
-        toast.error("Error fetching all leads: " + error);
         setLeads([]);
       });
   };
@@ -68,7 +66,6 @@ export default function Page() {
       .catch((error) => {
         console.error("Error fetching leads for campaign:", error);
         setLoading(false);
-        toast.error(`Error fetching leads for campaign: ${error}`);
         setLeads([]);
       });
   };
