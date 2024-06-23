@@ -18,6 +18,7 @@ const defaultFormsTracker = {
   audience: false,
   training: false,
 };
+import { Skeleton } from "@/components/ui/skeleton";
 
 export default function Page() {
   const params = useParams();
@@ -111,7 +112,13 @@ export default function Page() {
   return (
     <div>
       {isCampaignFound === null ? (
-        <p>Loading...</p>
+        <div className="flex justify-center flex-col space-y-4">
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+        </div>
       ) : (
         <>
           <Card className="w-[95%] min-w-[330px] m-2 flex justify-between">

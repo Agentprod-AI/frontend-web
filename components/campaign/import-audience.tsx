@@ -57,6 +57,8 @@ export const ImportAudience = () => {
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+
   const { setPageCompletion } = useButtonStatus();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -205,6 +207,66 @@ export const ImportAudience = () => {
     }
   };
 
+  const [searchText, setSearchText] = useState("");
+
+  const filteredOptions = [
+    "First Name",
+    "Last Name",
+    "Email",
+    "Hashed Email",
+    "Full Name",
+    "Phone Number",
+    "Apollo ID",
+    "LinkedIn URL",
+    "Bio",
+    "Avatar URL",
+    "Website URL",
+    "Location",
+    "Time Zone",
+    "City",
+    "State",
+    "Country Code",
+    "Latitude",
+    "Longitude",
+    "Employment Title",
+    "Employment Seniority",
+    "Twitter URL",
+    "Facebook URL",
+    "GitHub URL",
+    "Company Name",
+    "Company Domain",
+    "Company Nickname",
+    "Company Bio",
+    "Company Avatar URL",
+    "Company Website URL",
+    "Company Street",
+    "Company City",
+    "Company State",
+    "Company Postal Code",
+    "Company Country",
+    "Company Raw Address",
+    "Company Founded Year",
+    "Company Employees Count",
+    "Company Alexa Global Rank",
+    "Company Retail Locations Count",
+    "Company Annual Revenue",
+    "Company Funding Total",
+    "Company Funding Stage",
+    "Company Ticker",
+    "Company Primary Industry",
+    "Company Secondary Industries",
+    "Company Tags",
+    "Company Languages",
+    "Company Tech Stack",
+    "Company Phone",
+    "Company Blog URL",
+    "Company AngelList URL",
+    "Company LinkedIn URL",
+    "Company Twitter URL",
+    "Company Facebook URL",
+    "Company Crunchbase URL",
+  ].filter((option) => option.toLowerCase().includes(searchText.toLowerCase()));
+
   return (
     <>
       <div className="my-4">
@@ -244,27 +306,25 @@ export const ImportAudience = () => {
                         <SelectTrigger className="w-[180px]">
                           <SelectValue placeholder="Type" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="h-60">
                           <SelectGroup>
                             <SelectLabel>Options</SelectLabel>
-                            <SelectItem value={`first_name~${column}`}>
-                              First Name
-                            </SelectItem>
-                            <SelectItem value={`last_name~${column}`}>
-                              Last Name
-                            </SelectItem>
-                            <SelectItem value={`email~${column}`}>
-                              Email
-                            </SelectItem>
-                            <SelectItem value={`domain~${column}`}>
-                              Domain
-                            </SelectItem>
-                            <SelectItem value={`organization_name~${column}`}>
-                              Company
-                            </SelectItem>
-                            <SelectItem value={`linkedin_url~${column}`}>
-                              Linkedin
-                            </SelectItem>
+                            <Input
+                              placeholder="Search..."
+                              value={searchText}
+                              onChange={(e) => setSearchText(e.target.value)}
+                              className="mb-2 sticky "
+                            />
+                            {filteredOptions.map((option, index) => (
+                              <SelectItem
+                                key={index}
+                                value={`${option
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")}~${column}`}
+                              >
+                                {option}
+                              </SelectItem>
+                            ))}
                           </SelectGroup>
                         </SelectContent>
                       </Select>
