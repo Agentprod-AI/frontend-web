@@ -79,6 +79,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     thread,
     setThread,
     recipientEmail,
+    senderEmail,
     setIsContextBarOpen,
     setConversationId,
   } = useMailbox();
@@ -287,8 +288,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       setLoadingSmartSchedule(true);
       const payload = {
         conversation_id: conversationId,
-        sender: "muskaan@agentprodai.com",
-        recipient: "info.agentprod@gmail.com",
+        sender: senderEmail,
+        recipient: recipientEmail,
         subject: title,
         body: body,
       };
@@ -313,8 +314,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
-        sender: "muskaan@agentprodai.com",
-        recipient: "info.agentprod@gmail.com",
+        sender: senderEmail,
+        recipient: recipientEmail,
         subject: title,
         body: body,
       };
