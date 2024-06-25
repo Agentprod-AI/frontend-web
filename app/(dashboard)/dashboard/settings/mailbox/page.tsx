@@ -234,6 +234,7 @@ export default function Page() {
       console.error("Failed to verify email:", error);
       toast.error("Email Already In Use.");
     }
+    setIsVerifyEmailOpen(true);
   };
 
   const handleCopy = (text: string) => {
@@ -683,7 +684,8 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    value={mailData[0] ? mailData[0].Name : "No data found"}
+                    // value={mailData[0] ? mailData[0].Name : "No data found"}
+                    value={domainInput}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                   />
