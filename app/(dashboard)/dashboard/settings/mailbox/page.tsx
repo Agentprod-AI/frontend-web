@@ -644,7 +644,7 @@ export default function Page() {
                         />
 
                         <span className="w-96 overflow-x-scroll">
-                          {mailbox.Name}
+                          {mailbox.Name.replace("@", "")}
                         </span>
                       </div>
                     </TableCell>
