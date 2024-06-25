@@ -118,46 +118,6 @@ export default function Page() {
             </div>
           </div>
         </div>
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="flex items-center justify-center space-x-2"
-            >
-              <span>
-                {campaign ? campaign.campaignName : "Select Campaign"}
-              </span>
-              <ChevronDown size={20} />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="w-80">
-            <DropdownMenuGroup>
-              <DropdownMenuSeparator />
-              <ScrollArea className="h-[400px] w-full rounded-md border p-2">
-                <DropdownMenuItem onClick={() => setCampaign(undefined)}>
-                  <p className="cursor-pointer">All Campaigns</p>
-                </DropdownMenuItem>
-                {allCampaigns?.map((campaignItem) => (
-                  <DropdownMenuItem
-                    key={campaignItem.campaignId}
-                    onClick={() =>
-                      setCampaign({
-                        campaignName: campaignItem.campaignName,
-                        campaignId: campaignItem.campaignId,
-                      })
-                    }
-                  >
-                    <p className="cursor-pointer">
-                      {campaignItem.campaignName}{" "}
-                      {campaignItem.additionalInfo &&
-                        `- ${campaignItem.additionalInfo}`}
-                    </p>
-                  </DropdownMenuItem>
-                ))}
-              </ScrollArea>
-            </DropdownMenuGroup>
-          </DropdownMenuContent>
-        </DropdownMenu>
       </div>
       <main>
         <AudienceTableClient isContacts={true} />

@@ -429,7 +429,7 @@ export default function Home() {
             No messages yet. Start by typing a message in the input field below.
           </div>
         )}
-        <div className="fixed bottom-0 flex w-[85%] dark:bg-black bg-white flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
+        <div className="fixed bottom-0 flex w-[85%]   flex-col items-center space-y-3 p-5 pb-3 sm:px-0">
           <div className="flex ">
             {sallyLoad && (
               <div className="w-screen pl-60 text-start italic font-thin text-white/60">
@@ -452,7 +452,7 @@ export default function Home() {
               // console.log(allMessages);
               handleSubmit(e);
             }}
-            className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex"
+            className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex bg-[#09090b]"
           >
             <Input
               ref={inputRef}

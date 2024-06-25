@@ -614,7 +614,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
           const data = response.data;
           console.log("filters to audience: ", data);
           toast.success("Audience created successfully");
-          router.push(`/dashboard/campaign/create/${params.campaignId}`);
+          router.push(`/dashboard/campaign/${params.campaignId}`);
         })
         .catch((error: any) => {
           console.log(error);
@@ -640,7 +640,13 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
     tagStateSetter: React.Dispatch<React.SetStateAction<Tag[]>>,
     fieldName: FieldName
   ) => {
-    if (fieldName in allFiltersFromDB && filterData.length > 0) {
+    if (
+      allFiltersFromDB &&
+      typeof allFiltersFromDB === "object" &&
+      fieldName in allFiltersFromDB &&
+      Array.isArray(filterData) &&
+      filterData.length > 0
+    ) {
       const tags = filterData.map((value: string, index: number) => {
         return {
           id: String(index),
@@ -651,6 +657,10 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       tagStateSetter(tags);
 
       form.setValue(fieldName, allFiltersFromDB[filterName]);
+    } else {
+      console.error(
+        "One of the required variables is undefined or has an unexpected type."
+      );
     }
   };
 

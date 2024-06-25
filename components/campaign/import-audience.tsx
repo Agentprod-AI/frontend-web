@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable no-console */
 import { useState, useEffect } from "react";
 import Papa from "papaparse";
 import { LoadingCircle } from "@/app/icons";
@@ -59,33 +57,15 @@ export const ImportAudience = () => {
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+
   const { setPageCompletion } = useButtonStatus();
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    console.log("analyzing filez");
     if (event.target.files) {
       setIsLoading(true);
       setFile(event.target.files[0]);
-      console.log(event.target.files);
     }
-
-    if (file) {
-      const config = {
-        header: true,
-        complete: (results: Papa.ParseResult<CSVData>) => {
-          console.log(results.data);
-          setCsvData(results.data);
-          setIsLoading(false);
-        },
-      };
-
-      Papa.parse(file, config);
-    }
-  };
-
-  const handleRemoveFile = () => {
-    setFile(undefined);
-    // inputFileRef.current.value = "No file selected";
   };
 
   useEffect(() => {
@@ -93,7 +73,6 @@ export const ImportAudience = () => {
       const config = {
         header: true,
         complete: (results: Papa.ParseResult<CSVData>) => {
-          console.log(results.data);
           setCsvData(results.data);
           setIsLoading(false);
         },
@@ -101,6 +80,11 @@ export const ImportAudience = () => {
       Papa.parse(file, config);
     }
   }, [file]);
+
+  const handleRemoveFile = () => {
+    setFile(undefined);
+    setCsvData(undefined);
+  };
 
   const [selectedValue, setSelectedValue] = useState<
     {
@@ -120,22 +104,9 @@ export const ImportAudience = () => {
         { presetValue: modifiedValue[0], csvColumnName: modifiedValue[1] },
       ]);
     }
-    console.log(selectedValue);
   };
 
-  // const extractData = () => {
-  //   const values: string[] = selectedValue.map((value) => {
-  //     return value.toLowerCase().split(" ").join("_");
-  //   });
-  //   return values;
-  // };
-
   const enrichmentHandler = async () => {
-    const csvDataKeys = Object.keys(csvData ? csvData[0] : {});
-    const csvModifiedDataKeys = csvDataKeys.map((value, index) => {
-      return value.toLowerCase().split(" ").join("_");
-    });
-
     const leadsToEnrich = csvData?.map((row) => {
       const mappedRow: { [key: string]: string } = {};
 
@@ -152,28 +123,25 @@ export const ImportAudience = () => {
       return mappedRow;
     });
 
-    console.log(leadsToEnrich);
-
-    const enrichedLeads = axiosInstance
-      .post(`v2/apollo/leads/bulk_enrich`, leadsToEnrich)
-      .then((response) => {
-        const data = response.data;
-        data.map((person: Lead): void => {
-          person.type = "prospective";
-          person.campaign_id = params.campaignId;
-          person.id = uuid();
-        });
-        setLeads(data);
-        setIsAudienceLoading(false);
-        setIsLeadsTableActive(true);
-      })
-      .catch((error) => {
-        console.log(error);
-        setError(error.message || "Failed to enrich leads.");
-        setIsAudienceLoading(false);
+    try {
+      const response = await axiosInstance.post(
+        `v2/apollo/leads/bulk_enrich`,
+        leadsToEnrich
+      );
+      const data = response.data;
+      data.map((person: Lead): void => {
+        person.type = "prospective";
+        person.campaign_id = params.campaignId;
+        person.id = uuid();
       });
-
-    console.log("enriched leads: ", enrichedLeads);
+      setLeads(data);
+      setIsAudienceLoading(false);
+      setIsLeadsTableActive(true);
+    } catch (error) {
+      console.error(error);
+      setError("Failed to enrich leads.");
+      setIsAudienceLoading(false);
+    }
   };
 
   function mapLeadsToBodies(leads: Lead[]): Contact[] {
@@ -210,10 +178,10 @@ export const ImportAudience = () => {
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
       company_linkedin_url: lead.company_linkedin_url,
-      pain_points: lead.pain_points || [], // Assuming optional or provide default
-      value: lead.value || [], // Assuming optional or provide default
-      metrics: lead.metrics || [], // Assuming optional or provide default
-      compliments: lead.compliments || [], // Assuming optional or provide default
+      pain_points: lead.pain_points || [],
+      value: lead.value || [],
+      metrics: lead.metrics || [],
+      compliments: lead.compliments || [],
       lead_information: lead.lead_information || String,
       isb2b: lead.isb2b,
       score: lead.score,
@@ -222,158 +190,174 @@ export const ImportAudience = () => {
 
   const createAudience = async () => {
     const audienceBody = mapLeadsToBodies(leads as Lead[]);
-    console.log(audienceBody);
-
     setIsCreateBtnLoading(true);
-    const response = axiosInstance
-      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
-      .then((response: any) => {
-        const data = response.data;
-        console.log("DATA from contacts: ", data);
-        if (data.isArray) {
-          setLeads(data);
-        } else {
-          setLeads([data]);
-        }
-        setIsCreateBtnLoading(false);
-        setPageCompletion("audience", true); // Set the page completion to true
-        toast.success("Audience created successfully");
-        router.push(`/dashboard/campaign/${params.campaignId}`);
-      })
-      .catch((error: any) => {
-        console.log(error);
-        setError(error instanceof Error ? error.toString() : String(error));
-        setIsCreateBtnLoading(false);
-      });
-
-    console.log("response from creating contact", response);
+    try {
+      const response = await axiosInstance.post<Contact[]>(
+        `v2/lead/bulk/`,
+        audienceBody
+      );
+      const data = response.data;
+      setLeads(Array.isArray(data) ? data : [data]);
+      setIsCreateBtnLoading(false);
+      setPageCompletion("audience", true);
+      toast.success("Audience created successfully");
+      router.push(`/dashboard/campaign/${params.campaignId}`);
+    } catch (error) {
+      console.error(error);
+      setError(error instanceof Error ? error.toString() : String(error));
+      setIsCreateBtnLoading(false);
+    }
   };
+
+  const [searchText, setSearchText] = useState("");
+
+  const filteredOptions = [
+    "First Name",
+    "Last Name",
+    "Email",
+    "Hashed Email",
+    "Full Name",
+    "Phone Number",
+    "Apollo ID",
+    "LinkedIn URL",
+    "Bio",
+    "Avatar URL",
+    "Website URL",
+    "Location",
+    "Time Zone",
+    "City",
+    "State",
+    "Country Code",
+    "Latitude",
+    "Longitude",
+    "Employment Title",
+    "Employment Seniority",
+    "Twitter URL",
+    "Facebook URL",
+    "GitHub URL",
+    "Company Name",
+    "Company Domain",
+    "Company Nickname",
+    "Company Bio",
+    "Company Avatar URL",
+    "Company Website URL",
+    "Company Street",
+    "Company City",
+    "Company State",
+    "Company Postal Code",
+    "Company Country",
+    "Company Raw Address",
+    "Company Founded Year",
+    "Company Employees Count",
+    "Company Alexa Global Rank",
+    "Company Retail Locations Count",
+    "Company Annual Revenue",
+    "Company Funding Total",
+    "Company Funding Stage",
+    "Company Ticker",
+    "Company Primary Industry",
+    "Company Secondary Industries",
+    "Company Tags",
+    "Company Languages",
+    "Company Tech Stack",
+    "Company Phone",
+    "Company Blog URL",
+    "Company AngelList URL",
+    "Company LinkedIn URL",
+    "Company Twitter URL",
+    "Company Facebook URL",
+    "Company Crunchbase URL",
+  ].filter((option) => option.toLowerCase().includes(searchText.toLowerCase()));
 
   return (
     <>
-      {!isLeadsTableActive ? (
-        <div>
-          <Dialog defaultOpen={true}>
-            <DialogTrigger asChild>
-              <Button variant="outline" className="my-4">
-                View Leads
+      <div className="my-4">
+        <div className="py-3"> Add you CSV or XLSX file here.</div>
+        <Input
+          type="file"
+          className="w-full cursor-pointer"
+          onChange={handleFileChange}
+        />
+        {file && (
+          <Trash2Icon className="cursor-pointer" onClick={handleRemoveFile} />
+        )}
+      </div>
+      {csvData && (
+        <Dialog defaultOpen={true}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Map CSV Columns</DialogTitle>
+              <DialogDescription>
+                Map the CSV columns to appropriate fields.
+              </DialogDescription>
+            </DialogHeader>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[150px]">Column Name</TableHead>
+                  <TableHead className="w-[150px]">Select Type</TableHead>
+                  <TableHead className="w-[150px]">Samples</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Object.keys(csvData[0]).map((column, index) => (
+                  <TableRow key={index}>
+                    <TableCell className="font-medium">{column}</TableCell>
+                    <TableCell>
+                      <Select onValueChange={handleSelectChange}>
+                        <SelectTrigger className="w-[180px]">
+                          <SelectValue placeholder="Type" />
+                        </SelectTrigger>
+                        <SelectContent className="h-60">
+                          <SelectGroup>
+                            <SelectLabel>Options</SelectLabel>
+                            <Input
+                              placeholder="Search..."
+                              value={searchText}
+                              onChange={(e) => setSearchText(e.target.value)}
+                              className="mb-2 sticky "
+                            />
+                            {filteredOptions.map((option, index) => (
+                              <SelectItem
+                                key={index}
+                                value={`${option
+                                  .toLowerCase()
+                                  .replace(/ /g, "_")}~${column}`}
+                              >
+                                {option}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
+                    </TableCell>
+                    <TableCell className="text-muted-foreground">
+                      {csvData[0][column]}
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+            <DialogFooter className="flex sm:justify-start">
+              <Button onClick={enrichmentHandler} className="w-1/3">
+                Confirm
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Upload files</DialogTitle>
-                <DialogDescription>
-                  Add you CSV or XLSX file here.
-                </DialogDescription>
-              </DialogHeader>
-              <div className="flex items-center space-x-2">
-                <Input
-                  // ref={inputFileRef}
-                  type="file"
-                  className="w-full"
-                  onChange={handleFileChange}
-                />
-                {file && (
-                  <Trash2Icon
-                    className="cursor-pointer"
-                    onClick={handleRemoveFile}
-                  />
-                )}
-              </div>
-              {isLoading ? (
-                <LoadingCircle />
-              ) : (
-                csvData && (
-                  <>
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead className="w-[150px]">
-                            Column Name
-                          </TableHead>
-                          <TableHead className="w-[150px]">
-                            Select Type
-                          </TableHead>
-                          <TableHead className="w-[150px]">Samples</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {Object.keys(csvData[0]).map((column, index) => (
-                          <TableRow key={index}>
-                            <TableCell className="font-medium">
-                              {column}
-                            </TableCell>
-                            <TableCell>
-                              <Select onValueChange={handleSelectChange}>
-                                <SelectTrigger className="w-[180px]">
-                                  <SelectValue placeholder="Type" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectGroup>
-                                    <SelectLabel>Options</SelectLabel>
-                                    <SelectItem value={`first_name~${column}`}>
-                                      First Name
-                                    </SelectItem>
-                                    <SelectItem value={`last_name~${column}`}>
-                                      Last Name
-                                    </SelectItem>
-                                    <SelectItem value={`email~${column}`}>
-                                      Email
-                                    </SelectItem>
-                                    <SelectItem value={`domain~${column}`}>
-                                      Domain
-                                    </SelectItem>
-                                    <SelectItem
-                                      value={`organization_name~${column}`}
-                                    >
-                                      Company
-                                    </SelectItem>
-                                    <SelectItem
-                                      value={`linkedin_url~${column}`}
-                                    >
-                                      Linkedin
-                                    </SelectItem>
-                                  </SelectGroup>
-                                </SelectContent>
-                              </Select>
-                            </TableCell>
-                            <TableCell className="text-muted-foreground">
-                              {csvData[0][column]}
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    <DialogFooter className="flex sm:justify-start">
-                      <Button onClick={enrichmentHandler} className="w-1/3">
-                        Confirm
-                      </Button>
-                      <Button variant={"outline"} className="w-1/3">
-                        Cancel
-                      </Button>
-                    </DialogFooter>
-                  </>
-                )
-              )}
-            </DialogContent>
-          </Dialog>
-        </div>
-      ) : isAudienceLoading ? (
-        <LoadingCircle />
-      ) : (
+              <DialogClose asChild>
+                <Button variant="outline" className="w-1/3">
+                  Cancel
+                </Button>
+              </DialogClose>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+      {isLeadsTableActive && (
         <>
           <AudienceTableClient />
           {isCreateBtnLoading ? (
             <LoadingCircle />
           ) : (
-            <Button
-              onClick={(event) => {
-                event.preventDefault();
-                createAudience();
-              }}
-            >
-              Create Audience
-            </Button>
+            <Button onClick={createAudience}>Create Audience</Button>
           )}
         </>
       )}

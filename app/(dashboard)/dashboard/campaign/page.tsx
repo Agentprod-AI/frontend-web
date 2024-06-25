@@ -2,6 +2,8 @@
 /* eslint-disable no-console */
 "use client";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
+
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -21,10 +23,13 @@ import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
 import { useParams } from "next/navigation";
 import { v4 as uuid } from "uuid";
+
 import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
+
 
 interface CampaignEntry {
   user_id: string;
@@ -59,8 +64,7 @@ export default function Page() {
   const { user } = useUserContext();
   console.log("fromCampaignPage", campaigns);
 
-  // const params = useParams();
-  // console.log("campaign from create", params);
+  localStorage.removeItem("formsTracker");
 
   const toggleCampaignIsActive = async (
     campaignId: string,
@@ -107,7 +111,7 @@ export default function Page() {
         <CardTitle>Send Your Email Campaign</CardTitle>
         <Button className="mt-4">
           <Link
-            href={`/dashboard/campaign/create/${uuid()}`}
+            href={`/dashboard/campaign/${uuid()}`}
             className="flex items-center gap-1"
           >
             <Plus size={16} /> Create Campaign
@@ -117,77 +121,75 @@ export default function Page() {
 
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
         {!isLoading ? (
-          campaigns.map((campaignItem) => (
-            // className="hover:bg-accent" for card
-            <Card key={campaignItem.id}>
-              <CardContent className="flex flex-col items-left p-4 gap-4">
-                <div className="flex justify-between items-center">
-                  <div className="relative h-12 w-24 pt-2">
-                    {" "}
-                    {/* Adjust height and width as needed */}
-                    <UKFlag className="absolute inset-0 z-10 h-9 w-9" />
-                    <USAFlag className="absolute left-4 top-0 z-10 h-9 w-9" />{" "}
-                    {/* Adjust left value for overlap */}
+          campaigns.length > 0 ? (
+            campaigns.map((campaignItem) => (
+              <Card key={campaignItem.id}>
+                <CardContent className="flex flex-col items-left p-4 gap-4">
+                  <div className="flex justify-between items-center">
+                    <div className="relative h-12 w-24 pt-2">
+                      <UKFlag className="absolute inset-0 z-10 h-9 w-9" />
+                      <USAFlag className="absolute left-4 top-0 z-10 h-9 w-9" />
+                    </div>
+
+                    <div className="flex gap-4 items-center">
+                      <p className="text-sm text-muted-foreground">
+                        {campaignItem.daily_outreach_number || 0}/
+                        {campaignItem?.contacts || 0}
+                      </p>
+                      <CircularProgressbar
+                        value={
+                          campaignItem?.daily_outreach_number &&
+                          campaignItem?.contacts
+                            ? (campaignItem.daily_outreach_number /
+                                campaignItem.contacts) *
+                              100
+                            : 0
+                        }
+                        maxValue={100}
+                        text={`${
+                          campaignItem?.daily_outreach_number &&
+                          campaignItem?.contacts
+                            ? (campaignItem.daily_outreach_number /
+                                campaignItem.contacts) *
+                              100
+                            : 0
+                        }%`}
+                        className="w-10 h-10"
+                      />
+                    </div>
                   </div>
 
-                  <div className="flex gap-4 items-center">
-                    <p className="text-sm text-muted-foreground">
-                      {campaignItem.daily_outreach_number || 0}/
-                      {campaignItem?.contacts || 0}
+                  <div className="flex flex-col gap-2">
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <p className="text-sm font-medium leading-none truncate w-full max-w-72">
+                            {campaignItem?.campaign_name}
+                          </p>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          <p className="text-sm font-medium leading-none">
+                            {campaignItem?.campaign_name}
+                          </p>
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                    <p className="text-sm text-muted-foreground truncate">
+                      {campaignItem?.offering_details[0] || "No details"}
                     </p>
-                    <CircularProgressbar
-                      value={
-                        campaignItem?.daily_outreach_number &&
-                        campaignItem?.contacts
-                          ? (campaignItem.daily_outreach_number /
-                              campaignItem.contacts) *
-                            100
-                          : 0
-                      }
-                      maxValue={100}
-                      text={`${
-                        campaignItem?.daily_outreach_number &&
-                        campaignItem?.contacts
-                          ? (campaignItem.daily_outreach_number /
-                              campaignItem.contacts) *
-                            100
-                          : 0
-                      }%`}
-                      className="w-10 h-10"
-                    />
                   </div>
-                </div>
 
-                <div className="flex flex-col gap-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <p className="text-sm font-medium leading-none truncate w-full max-w-72">
-                          {campaignItem?.campaign_name}
-                        </p>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p className="text-sm font-medium leading-none">
-                          {campaignItem?.campaign_name}
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  <p className="text-sm text-muted-foreground truncate">
-                    {campaignItem?.offering_details[0] || "No details"}
-                  </p>
-                </div>
+                  <div className="flex space-x-4 text-sm text-muted-foreground">
+                    <div className="flex items-center">
+                      <Icons.circle className="mr-1 h-3 w-3" />
+                      Reply-{campaignItem?.replies}
+                    </div>
+                    <div className="flex items-center">
+                      <Icons.star className="mr-1 h-3 w-3" />
+                      Meetings booked-{campaignItem?.meetings_booked}
+                    </div>
+                  </div>
 
-                <div className="flex space-x-4 text-sm text-muted-foreground">
-                  <div className="flex items-center">
-                    <Icons.circle className="mr-1 h-3 w-3" />
-                    Reply-{campaignItem?.replies}
-                  </div>
-                  <div className="flex items-center">
-                    <Icons.star className="mr-1 h-3 w-3" />
-                    Mettings booked-{campaignItem?.meetings_booked}
-                  </div>
-                </div>
 
                 <div className="flex gap-4 justify-between items-center">
                   {/* <Switch
@@ -222,15 +224,53 @@ export default function Page() {
                         <Icons.pen size={16} />
                       </Link>
                     </Button>
+<!--                   <div className="flex gap-4 justify-between items-center">
+                    <Switch
+                      checked={campaignItem?.is_active}
+                      onCheckedChange={() =>
+                        campaignItem.id !== undefined &&
+                        toggleCampaignIsActive(campaignItem.id)
+                      }
+                      className="flex-none"
+                    />
+                    <div>
+                      <Button
+                        variant={"ghost"}
+                        onClick={() => deleteCampaign(campaignItem.id)}
+                      >
+                        <Icons.trash2 size={16} />
+                      </Button>
+                      <Button variant={"ghost"}>
+                        <Link href={`/dashboard/campaign/${campaignItem.id}`}>
+                          <Icons.pen size={16} />
+                        </Link>
+                      </Button>
+                    </div> -->
+
                   </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="flex flex-col w-[75rem] items-center justify-center">
+              <Image
+                src="/emptyCampaign.svg"
+                alt="empty-campaign"
+                width="300"
+                height="300"
+                className="dark:filter dark:invert mt-16"
+              />
+              <p className="flex justify-center items-center mt-10 ml-14 text-gray-500">
+                No Campaigns Available
+              </p>
+            </div>
+          )
         ) : (
-          <div className="flex flex-col items-center w-[75rem]">
-            <LoadingCircle />
-            <p>Loading Campaigns</p>
+          <div className="flex space-x-5 mt-4 justify-center items-center w-[75rem]">
+            <Skeleton className="h-[230px] w-[290px] rounded-xl" />
+            <Skeleton className="h-[230px] w-[290px] rounded-xl" />
+            <Skeleton className="h-[230px] w-[290px] rounded-xl" />
+            <Skeleton className="h-[230px] w-[290px] rounded-xl" />
           </div>
         )}
       </div>

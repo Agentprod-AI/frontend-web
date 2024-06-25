@@ -107,7 +107,7 @@ export const SelectFromExisting = () => {
         }
         setIsCreateBtnLoading(false);
         toast.success("Audience created successfully");
-        router.push(`/dashboard/campaign/create/${params.campaignId}`);
+        router.push(`/dashboard/campaign/${params.campaignId}`);
       })
       .catch((error: any) => {
         console.log(error);
