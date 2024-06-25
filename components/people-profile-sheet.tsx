@@ -11,7 +11,10 @@ import {
   Phone,
   Linkedin,
   MonitorUp,
+  Building2,
 } from "lucide-react";
+import { GrScorecard } from "react-icons/gr";
+
 import {
   Collapsible,
   CollapsibleContent,
@@ -501,6 +504,16 @@ export const PeopleProfileSheet = ({
             </Collapsible>
 
             {/* Compliments */}
+            <br />
+            <p className="flex gap-2 items-center text-sm text-muted-foreground whitespace-normal w-full">
+              <Building2 className="h-4 w-4" />
+              Company Type: {data?.isb2b ? "B2B" : "B2C"}
+            </p>
+            <br />
+            <p className="flex gap-2 items-center text-sm text-muted-foreground whitespace-normal w-full">
+              <GrScorecard className="h-4 w-4" />
+              Score: {data?.score ? data?.score + "/10" : "Score not available"}
+            </p>
             <br />
             <div className="flex space-x-2 w-full">
               <MonitorUp className="h-5 w-5 text-muted-foreground" />

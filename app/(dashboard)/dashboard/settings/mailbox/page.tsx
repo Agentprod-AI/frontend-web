@@ -100,12 +100,18 @@ export default function Page() {
   };
 
   const handleEnableWarmup = async (email: any) => {
-    setIsWarmupDialogOpen(true);
+    // setIsWarmupDialogOpen(true);
     try {
       const response = await axiosInstance.post(`/v2/google/warmup`, {
         email,
       });
-      console.log("Warmup Response:", response.data);
+      console.log("Warmup Enabled:", response.data);
+      setMailboxes((prevMailboxes) =>
+        prevMailboxes.map((mailbox) =>
+          mailbox.mailbox === email ? { ...mailbox, warmup: true } : mailbox
+        )
+      );
+      toast.success("Warmup Enabled!");
     } catch (error) {
       console.error("Failed to enable warmup:", error);
       toast.error("Failed to enable warmup.");
@@ -117,8 +123,15 @@ export default function Page() {
       const response = await axiosInstance.post(`/v2/google/pause-warmup`, {
         email,
       });
-      console.log(response);
-      toast.success("Warmup Disabled!!");
+      console.log("Warmup Disabled:", response.data);
+      toast.success("Warmup Disabled!");
+
+      // Update the mailbox state with warmup disabled
+      setMailboxes((prevMailboxes) =>
+        prevMailboxes.map((mailbox) =>
+          mailbox.mailbox === email ? { ...mailbox, warmup: false } : mailbox
+        )
+      );
     } catch (error: any) {
       console.log(error);
     }
@@ -143,6 +156,14 @@ export default function Page() {
     } catch (error) {
       console.error("Failed to setup warmup:", error);
       toast.error("Failed to setup warmup.");
+    }
+  };
+
+  const handleSwitchChange = (isChecked: boolean, email: any) => {
+    if (isChecked) {
+      handleEnableWarmup(email);
+    } else {
+      handleDisableWarmup(email);
     }
   };
 
@@ -299,110 +320,12 @@ export default function Page() {
           mailboxes.length > 0 ? "border" : ""
         }  border-collapse mt-4`}
       >
-        {/* {mailboxes.length > 0 ? (
-          <Table className="w-full text-left">
-            <TableHeader className="bg-muted/50">
-              <TableRow>
-                <TableHead className="w-1/5">MAILBOX</TableHead>
-                <TableHead>NAME ACCOUNT</TableHead>
-                <TableHead>WARM-UP</TableHead>
-                <TableHead className="text-left">DAILY LIMIT</TableHead>
-                <TableHead> </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {mailboxes.map((mailbox, index) => (
-                <TableRow key={index}>
-                  <TableCell>
-                    <div className="flex items-center gap-3">
-                      <GmailIcon />
-                      <span>{mailbox.mailbox}</span>
-                    </div>
-                  </TableCell>
-                  <TableCell>{mailbox?.sender_name}</TableCell>
-                  <TableCell>
-                    {mailbox?.platform === "Google" ? (
-                      mailbox.warmup ? (
-                        <Switch
-                          checked={mailbox.warmup}
-                          onChange={() =>
-                            mailbox.warmup
-                              ? handleDisableWarmup(mailbox.mailbox)
-                              : handleEnableWarmup(mailbox.mailbox)
-                          }
-                        />
-                      ) : (
-                        <Button
-                          variant="secondary"
-                          onClick={() => handleEnableWarmup(mailbox.mailbox)}
-                        >
-                          Setup Warmup
-                        </Button>
-                      )
-                    ) : (
-                      <Switch
-                        checked={mailbox.warmup}
-                        onChange={() =>
-                          mailbox.warmup
-                            ? handleDisableWarmup(mailbox.mailbox)
-                            : handleEnableWarmup(mailbox.mailbox)
-                        }
-                      />
-                    )}
-                  </TableCell>
-
-                  <TableCell>{mailbox.daily_limit}</TableCell>
-                  <TableCell>
-                    <Dialog>
-                      <DialogTrigger asChild>
-                        <Button variant={"destructive"}>Disconnect</Button>
-                      </DialogTrigger>
-                      <DialogContent className="sm:max-w-[425px]">
-                        <DialogHeader className="text-left flex gap-1">
-                          <Icons.alertCircle
-                            size={"40"}
-                            color="red"
-                            className="mb-4"
-                          />
-                          <DialogTitle>Disconnect Account</DialogTitle>
-                          <DialogDescription>
-                            Are you sure you want to disconnect{" "}
-                            <span className="text-blue-500">
-                              {mailbox.mailbox}
-                            </span>
-                            ? This action cannot be undone.
-                          </DialogDescription>
-                        </DialogHeader>
-                        <DialogFooter>
-                          <DialogClose asChild>
-                            <Button type="button" variant={"outline"}>
-                              Cancel
-                            </Button>
-                          </DialogClose>
-                          <Button
-                            type="submit"
-                            variant={"destructive"}
-                            onClick={() => removeMailbox(mailbox.sender_id)}
-                          >
-                            Delete
-                          </Button>
-                        </DialogFooter>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        ) : (
-          "No mailboxes connected."
-        )} */}
         {isLoadingMailboxes ? (
           <div className="border-none">
             <div>
               <Skeleton className="w-full h-[40px] rounded-none" />
             </div>
-            <Separator className="bg-gray-300" />
+            <Separator />
             <Skeleton className="w-full h-[70px] rounded-none" />
           </div>
         ) : mailboxes.length > 0 ? (
@@ -433,10 +356,8 @@ export default function Page() {
                       mailbox.warmup ? (
                         <Switch
                           checked={mailbox.warmup}
-                          onChange={() =>
-                            mailbox.warmup
-                              ? handleDisableWarmup(mailbox.mailbox)
-                              : handleEnableWarmup(mailbox.mailbox)
+                          onCheckedChange={(isChecked) =>
+                            handleSwitchChange(isChecked, mailbox.mailbox)
                           }
                         />
                       ) : (
@@ -450,10 +371,8 @@ export default function Page() {
                     ) : (
                       <Switch
                         checked={mailbox.warmup}
-                        onChange={() =>
-                          mailbox.warmup
-                            ? handleDisableWarmup(mailbox.mailbox)
-                            : handleEnableWarmup(mailbox.mailbox)
+                        onCheckedChange={(isChecked) =>
+                          handleSwitchChange(isChecked, mailbox.mailbox)
                         }
                       />
                     )}

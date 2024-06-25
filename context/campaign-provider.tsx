@@ -128,6 +128,7 @@ interface CampaignContextType {
   editGoal: (data: GoalFormData, goalId: string, campaignId: string) => void;
   toggleCampaignIsActive: (campaignId: string) => void;
   isLoading: boolean;
+  setCampaigns: React.Dispatch<React.SetStateAction<CampaignEntry[]>>;
 }
 
 const defaultCampaignState: CampaignContextType = {
@@ -141,6 +142,7 @@ const defaultCampaignState: CampaignContextType = {
   editGoal: () => {},
   toggleCampaignIsActive: () => {},
   isLoading: false,
+  setCampaigns: () => {},
 };
 
 // Use the default state when creating the context
@@ -404,6 +406,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       toggleCampaignIsActive,
       campaigns,
       isLoading,
+      setCampaigns,
     }),
     [userId, campaigns]
   );

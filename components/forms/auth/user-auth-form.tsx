@@ -150,7 +150,7 @@ export default function UserAuthForm({
         setCookie(userKey, JSON.stringify(user), { maxAge: 3600 * 24 * 7 }); // Expires in one week
       }
     } catch (error: any) {
-      toast.error(error.message || "An error occurred");
+      console.error(error.message || "An error occurred");
     } finally {
       setLoading(false);
     }

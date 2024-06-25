@@ -179,7 +179,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             />
 
             <AvatarFallback className="bg-yellow-400 text-black text-xs">
-              {leads[0]?.first_name && leads[0]?.last_name
+              {leads.length > 0 && leads[0]?.first_name && leads[0]?.last_name
                 ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
                 : ""}
             </AvatarFallback>
@@ -394,19 +394,27 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       <div>Draft is empty</div>;
     }
 
-    if (thread.length > 0) {
+    const shouldShowDraftComponent = () => {
+      const lastEmail = thread[thread.length - 1];
+      return lastEmail?.category !== "Information required";
+    };
+
+    if (thread.length > 0 && shouldShowDraftComponent()) {
       {
         return (
           <div className="flex gap-4 flex-col m-4 h-full">
-            <div className="flex items-center gap-3">
-              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                <TrendingUp className="h-4 w-4 text-gray-400" />
+            {thread?.length > 0 && thread.some((email) => !email.is_reply) && (
+              <div className="flex items-center gap-3">
+                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                  <TrendingUp className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="text-xs ml-1">
+                  Sally will draft a follow-up email when it&apos;s time to
+                  reconnect.
+                </div>
               </div>
-              <div className="text-xs ml-1">
-                Sally will draft a follow-up email when it&apos;s time to
-                reconnect.
-              </div>
-            </div>
+            )}
+
             <div className="flex gap-2 flex-col h-full">
               <div className="flex w-full">
                 <Avatar
@@ -660,6 +668,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         )}
 
         <DraftEmailComponent />
+        {/* {thread?.length >= 0 &&
+          !thread.some(
+            (email) => email.category === "Information Required"
+          ) && <DraftEmailComponent />} */}
+        {/* {shouldShowDraftComponent() && <DraftEmailComponent />} */}
       </div>
     </div>
   );

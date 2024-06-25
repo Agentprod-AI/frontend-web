@@ -94,6 +94,40 @@ export default function Page() {
                 </div>
               </CardContent>
             </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
+                <CardTitle className="text-sm font-medium">
+                  Cost Per Click
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-1/2 md:mt-2">
+                <div className="text-2xl font-bold">
+                  {dashboardData?.conversion_funnel?.["goal/click"] !==
+                  undefined
+                    ? Number(
+                        dashboardData.conversion_funnel["goal/click"]
+                      ).toFixed(2)
+                    : "0.00"}
+                </div>
+              </CardContent>
+            </Card>
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 h-1/2">
+                <CardTitle className="text-sm font-medium">
+                  Cost Per Goal
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="h-1/2 md:mt-2">
+                <div className="text-2xl font-bold">
+                  {dashboardData?.conversion_funnel?.["goal/subscription"] !==
+                  undefined
+                    ? Number(
+                        dashboardData.conversion_funnel["goal/subscription"]
+                      ).toFixed(2)
+                    : "0.00"}
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
           <Card className="col-span-2">

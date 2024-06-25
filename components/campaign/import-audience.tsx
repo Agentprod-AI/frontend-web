@@ -183,6 +183,8 @@ export const ImportAudience = () => {
       metrics: lead.metrics || [],
       compliments: lead.compliments || [],
       lead_information: lead.lead_information || String,
+      isb2b: lead.isb2b,
+      score: lead.score,
     }));
   }
 
