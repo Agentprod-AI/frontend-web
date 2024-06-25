@@ -389,9 +389,9 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
 
     fetchCampaigns(); // Fetch initially
 
-    const intervalId = setInterval(fetchCampaigns, 10000); // Fetch every 7 seconds
+    // const intervalId = setInterval(fetchCampaigns, 10000); // Fetch every 7 seconds
 
-    return () => clearInterval(intervalId); // Cleanup interval on unmount
+    // return () => clearInterval(intervalId); // Cleanup interval on unmount
   }, [userId]);
 
   const contextValue = useMemo(
