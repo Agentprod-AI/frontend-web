@@ -21,6 +21,10 @@ import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
 import { useParams } from "next/navigation";
 import { v4 as uuid } from "uuid";
+import { Skeleton } from "@/components/ui/skeleton";
+import axiosInstance from "@/utils/axiosInstance";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 interface CampaignEntry {
   user_id: string;
@@ -48,14 +52,54 @@ interface CampaignEntry {
 }
 
 export default function Page() {
-  const { campaigns, deleteCampaign, toggleCampaignIsActive, isLoading } =
+  const { campaigns, deleteCampaign, isLoading, setCampaigns } =
     useCampaignContext();
+  const [loading, setLoading] = useState<string | null>(null); // experiment
 
   const { user } = useUserContext();
-  console.log("fromCampaignPage", user);
+  console.log("fromCampaignPage", campaigns);
 
   // const params = useParams();
   // console.log("campaign from create", params);
+
+  const toggleCampaignIsActive = async (
+    campaignId: string,
+    isActive: boolean
+  ) => {
+    setLoading(campaignId);
+    const campaign = campaigns.find((campaign) => campaign.id === campaignId);
+    const campaignName = campaign ? campaign.campaign_name : "Unknown Campaign";
+    try {
+      if (campaign?.is_active) {
+        const response = await axiosInstance.put(
+          `/v2/campaigns/pause/${campaignId}`
+        );
+        setCampaigns((currentCampaigns) =>
+          currentCampaigns.map((campaign) =>
+            campaign.id === campaignId
+              ? { ...campaign, is_active: !campaign.is_active }
+              : campaign
+          )
+        );
+        toast.success(`${campaignName} has been paused successfully`);
+        console.log(response);
+      } else {
+        setCampaigns((currentCampaigns) =>
+          currentCampaigns.map((campaign) =>
+            campaign.id === campaignId
+              ? { ...campaign, is_active: !campaign.is_active }
+              : campaign
+          )
+        );
+        toast.success(`${campaignName} has been resumed successfully`);
+      }
+
+      setLoading(null);
+    } catch (error) {
+      console.error("Failed to toggle campaign activity status", error);
+      setLoading(null);
+    }
+  };
 
   return (
     <div className="space-y-2 mb-5 ">
@@ -146,11 +190,23 @@ export default function Page() {
                 </div>
 
                 <div className="flex gap-4 justify-between items-center">
-                  <Switch
+                  {/* <Switch
                     checked={campaignItem?.is_active}
                     onCheckedChange={() =>
                       campaignItem.id !== undefined &&
                       toggleCampaignIsActive(campaignItem.id)
+                    }
+                    className="flex-none"
+                  /> */}
+
+                  <Switch
+                    checked={campaignItem?.is_active}
+                    onCheckedChange={() =>
+                      campaignItem.id !== undefined &&
+                      toggleCampaignIsActive(
+                        campaignItem.id,
+                        campaignItem.is_active
+                      )
                     }
                     className="flex-none"
                   />

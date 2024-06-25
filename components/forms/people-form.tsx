@@ -571,6 +571,8 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
       metrics: lead.metrics || [], // Assuming optional or provide default
       compliments: lead.compliments || [], // Assuming optional or provide default
       lead_information: lead.lead_information || String,
+      isb2b: lead.isb2b,
+      score: lead.score,
     }));
   }
 

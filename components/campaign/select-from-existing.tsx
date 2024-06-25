@@ -81,6 +81,8 @@ export const SelectFromExisting = () => {
       metrics: lead.metrics || [], // Assuming optional or provide default
       compliments: lead.compliments || [], // Assuming optional or provide default
       lead_information: lead.lead_information || String, // Assuming optional or provide default
+      isb2b: lead.isb2b,
+      score: lead.score,
     }));
   }
 

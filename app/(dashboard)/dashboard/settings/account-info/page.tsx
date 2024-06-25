@@ -27,6 +27,7 @@ export default function Page() {
     { id: "Sender Last Name", value: "", isEditable: true },
     { id: "Sender Job", value: "", isEditable: true },
     { id: "Email", value: "", isEditable: true },
+    { id: "Phone", value: "", isEditable: true },
     { id: "Company", value: "", isEditable: true },
     { id: "Company ID", value: "", isEditable: false },
     { id: "Notifications", value: "", isEditable: true },
@@ -60,6 +61,7 @@ export default function Page() {
             },
             { id: "Sender Job", value: data.job_title, isEditable: true },
             { id: "Email", value: data.email, isEditable: true },
+            { id: "Phone", value: data.phone_number, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
             { id: "Company ID", value: data.companyId, isEditable: true },
             {
@@ -115,11 +117,12 @@ export default function Page() {
       last_name: accountInfo[2].value,
       job_title: accountInfo[3].value,
       email: accountInfo[4].value,
-      company: accountInfo[5].value,
-      company_id: accountInfo[6].value,
-      notifications: accountInfo[7].value,
-      plan: accountInfo[8].value,
-      leads_used: accountInfo[9].value,
+      phone_number: accountInfo[5].value,
+      company: accountInfo[6].value,
+      company_id: accountInfo[7].value,
+      notifications: accountInfo[8].value,
+      plan: accountInfo[9].value,
+      leads_used: accountInfo[10].value,
     };
     try {
       const response = await axiosInstance.put(`/v2/settings`, payload);

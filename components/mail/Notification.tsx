@@ -67,9 +67,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     });
   };
   const [questions, setQuestions] = React.useState([]);
+  const [loadingQuestion, setLoadingQuestions] = React.useState(false);
   const [answers, setAnswers] = React.useState<string[]>([]);
   const [answerLoading, setAnswerLoading] = React.useState(false);
-  const { setIsContextBarOpen } = useMailbox();
+  const { setIsContextBarOpen, thread } = useMailbox();
   const { leads } = useLeads();
   const { user } = useUserContext();
 
@@ -81,18 +82,41 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       axiosInstance
         .get(`v2/questions/${messageId}`)
         .then((response) => {
+          console.log("prev Questions", response.data);
           setQuestions(response.data.questions.questions);
-          console.log("Questions", response.data.questions);
+          console.log("Questions", response.data);
         })
         .catch((error) => console.error("Failed to fetch questions", error));
     }
-  }, [setQuestions]);
+  }, [email.category, email.is_reply, messageId]);
+
+  React.useEffect(() => {
+    console.log("Questions state updated:", questions);
+  }, [questions]);
 
   const handleInputChange = (index: number, value: string) => {
     const newAnswers = [...answers];
     newAnswers[index] = value;
     setAnswers(newAnswers);
   };
+
+  // const handleGenerateResponse = () => {
+  //   setAnswerLoading(true);
+  //   axiosInstance
+  //     .post("/v2/answers", {
+  //       user_id: user.id,
+  //       questions,
+  //       answers,
+  //     })
+  //     .then((response) => {
+  //       toast.success("Response submitted successfully");
+  //       console.log("Response submitted successfully", response);
+  //       setAnswerLoading(false);
+  //     })
+  //     .catch((error) => {
+  //       console.error("Failed to submit response", error);
+  //     });
+  // };
 
   const handleGenerateResponse = () => {
     setAnswerLoading(true);
@@ -103,12 +127,24 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         answers,
       })
       .then((response) => {
-        toast.success("Response submitted successfully");
         console.log("Response submitted successfully", response);
-        setAnswerLoading(false);
+        return axiosInstance.post("/v2/send-info", {
+          messageId,
+          to: email.category === "Information Required" && email.recipient,
+          from: email.category === "Information Required" && email.sender,
+          subject: email.category === "Information Required" && email.subject,
+          content: email.category === "Information Required" && email.body,
+        });
+      })
+      .then((response) => {
+        toast.success("Response submitted successfully");
+        console.log("Info sent successfully", response);
       })
       .catch((error) => {
-        console.error("Failed to submit response", error);
+        console.error("Failed to submit response or send info", error);
+      })
+      .finally(() => {
+        setAnswerLoading(false);
       });
   };
 
@@ -136,7 +172,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
 
   return (
     <div className="flex flex-col gap-3 w-full">
-      {email.is_reply && (
+      {email.is_reply && email.category !== "Information Required" && (
         <div className="flex flex-col gap-3">
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
@@ -200,7 +236,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   className="gap-1 items-center rounded-full"
                 >
                   <ThumbsDown className="-scale-x-100 h-[14px] w-[14px]" />
-                  Destructive
+                  Negative
                 </Badge>
               )}
               {cleanedCategory === "Forwarded" && (
@@ -349,7 +385,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   </span>
                   <div className="flex gap-3 items-center">
                     <span className="text-gray-500 text-sm  ">
-                      2 minutes ago
+                      {formatDate(email.received_datetime)}
                     </span>
 
                     <span>

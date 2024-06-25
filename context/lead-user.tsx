@@ -80,6 +80,8 @@ export interface Lead {
   metrics: any[];
   compliments: any[];
   lead_information: any;
+  isb2b: boolean;
+  score: any;
 }
 
 export interface Contact {
@@ -120,6 +122,8 @@ export interface Contact {
   metrics: any[];
   compliments: any[];
   lead_information: any;
+  isb2b: boolean;
+  score: any;
 }
 
 // Define the state structure for our context

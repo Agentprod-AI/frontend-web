@@ -32,6 +32,7 @@ import { useMailbox } from "@/context/mailbox-provider";
 import { Contact, useLeads } from "@/context/lead-user";
 import { PeopleProfileSheet } from "../people-profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 
 interface MailProps {
   accounts: {
@@ -129,9 +130,9 @@ export function Mail({
       const response = await axiosInstance.get<{ mails: Conversations[] }>(
         `v2/mailbox/${user?.id}`
       );
-      console.log("Mail Responses", response.data.mails[0].campaign_id);
+      // console.log("Mail Responses", response.data.mails[0].campaign_id);
       setMails(response.data.mails as Conversations[]);
-      console.log("Mails to check", response.data.mails);
+      // console.log("Mails to check", response.data.mails);
       setLoading(false);
     } catch (err: any) {
       console.error("Error fetching mails:", err);
@@ -173,9 +174,9 @@ export function Mail({
     }
   }, [filteredMails, setSenderEmail, currentMail]);
 
-  console.log("Mail.tsx -> Recipent", filteredMails[0]?.recipient); // fixin bugs
-  console.log("Mail.tsx -> ConvoID", conversationId); // fixin bugs
-  console.log("Filter mails", filteredMails);
+  // console.log("Mail.tsx -> Recipent", filteredMails[0]?.recipient); // fixin bugs
+  // console.log("Mail.tsx -> ConvoID", conversationId); // fixin bugs
+  // console.log("Filter mails", filteredMails);
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -304,9 +305,18 @@ export function Mail({
               ) : filteredMails.length > 0 ? (
                 <MailList items={filteredMails} />
               ) : (
-                <p className="flex justify-center items-center mt-10 text-gray-500">
-                  No Mails Available
-                </p>
+                <div className="flex flex-col gap-3 items-center justify-center mt-36">
+                  <Image
+                    src="/empty.svg"
+                    alt="empty-inbox"
+                    width="200"
+                    height="200"
+                    className="dark:filter dark:invert"
+                  />
+                  <p className="flex justify-center items-center mt-10 ml-14 text-gray-500">
+                    No Mails Available
+                  </p>
+                </div>
               )}
             </TabsContent>
           </Tabs>
@@ -331,9 +341,18 @@ export function Mail({
                 updateMailStatus={updateMailStatus}
               />
             ) : (
-              <p className="flex justify-center items-center mt-10 text-gray-500">
-                No Draft Available
-              </p>
+              <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">
+                <Image
+                  src="/emptydraft.svg"
+                  alt="empty-inbox"
+                  width="200"
+                  height="200"
+                  className="dark:filter dark:invert"
+                />
+                <p className="flex justify-center items-center mt-10 ml-6  text-gray-500">
+                  No Draft Available
+                </p>
+              </div>
             )}
           </ScrollArea>
         </ResizablePanel>

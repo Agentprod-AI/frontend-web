@@ -2,6 +2,8 @@
 /* eslint-disable no-console */
 "use client";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Separator } from "@/components/ui/separator";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,7 +20,6 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useUserContext } from "@/context/user-context";
-import { LoadingCircle } from "@/app/icons";
 
 export default function Page() {
   const { leads, setLeads } = useLeads();
@@ -78,10 +79,27 @@ export default function Page() {
 
   if (loading)
     return (
-      <div className="w-full flex flex-col items-center">
-        <LoadingCircle />
-        <span>Loading Leads</span>
-      </div>
+      <>
+        <div className="flex gap-8">
+          <div className="flex gap-2">
+            <div>
+              <Skeleton className="w-[76rem] h-[50px] rounded-lg " />
+            </div>
+          </div>
+          <DropdownMenu>
+            <DropdownMenuContent className="w-80">
+              <DropdownMenuGroup>
+                <DropdownMenuSeparator />
+                <ScrollArea className="h-[400px] w-full rounded-md border p-2"></ScrollArea>
+              </DropdownMenuGroup>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+        <Separator className="mt-2" />
+        <main className="mt-2">
+          <Skeleton className="w-[76rem] h-[30rem] rounded-lg " />
+        </main>
+      </>
     );
 
   return (
