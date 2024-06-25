@@ -84,7 +84,7 @@ export function OfferingForm() {
       if (id) {
         try {
           const response = await fetch(
-            `https://agentprod-backend-framework-zahq.onrender.com/v2/offerings/${params.campaignId}`
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/offerings/${params.campaignId}`
           );
           const data = await response.json();
           if (data.detail === "Offering not found") {
