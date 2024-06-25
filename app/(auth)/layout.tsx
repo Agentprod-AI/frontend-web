@@ -6,7 +6,7 @@ import React from "react";
 import Image from "next/image";
 
 export const metadata: Metadata = {
-  title: "Next Shadcn Dashboard Starter",
+  title: "Agentprod",
   description: "Basic dashboard with Next.js and Shadcn",
 };
 
