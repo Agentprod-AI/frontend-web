@@ -2,8 +2,6 @@
 /* eslint-disable no-console */
 "use client";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-
 import { Switch } from "@/components/ui/switch";
 import {
   Tooltip,
@@ -29,7 +27,6 @@ import axiosInstance from "@/utils/axiosInstance";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import Image from "next/image";
-
 
 interface CampaignEntry {
   user_id: string;
@@ -190,9 +187,8 @@ export default function Page() {
                     </div>
                   </div>
 
-
-                <div className="flex gap-4 justify-between items-center">
-                  {/* <Switch
+                  <div className="flex gap-4 justify-between items-center">
+                    {/* <Switch
                     checked={campaignItem?.is_active}
                     onCheckedChange={() =>
                       campaignItem.id !== undefined &&
@@ -201,31 +197,31 @@ export default function Page() {
                     className="flex-none"
                   /> */}
 
-                  <Switch
-                    checked={campaignItem?.is_active}
-                    onCheckedChange={() =>
-                      campaignItem.id !== undefined &&
-                      toggleCampaignIsActive(
-                        campaignItem.id,
-                        campaignItem.is_active
-                      )
-                    }
-                    className="flex-none"
-                  />
-                  <div>
-                    <Button
-                      variant={"ghost"}
-                      onClick={() => deleteCampaign(campaignItem.id)}
-                    >
-                      <Icons.trash2 size={16} />
-                    </Button>
-                    <Button variant={"ghost"}>
-                      <Link href={`/dashboard/campaign/${campaignItem.id}`}>
-                        <Icons.pen size={16} />
-                      </Link>
-                    </Button>
-<!--                   <div className="flex gap-4 justify-between items-center">
                     <Switch
+                      checked={campaignItem?.is_active}
+                      onCheckedChange={() =>
+                        campaignItem.id !== undefined &&
+                        toggleCampaignIsActive(
+                          campaignItem.id,
+                          campaignItem.is_active
+                        )
+                      }
+                      className="flex-none"
+                    />
+                    <div>
+                      <Button
+                        variant={"ghost"}
+                        onClick={() => deleteCampaign(campaignItem.id)}
+                      >
+                        <Icons.trash2 size={16} />
+                      </Button>
+                      <Button variant={"ghost"}>
+                        <Link href={`/dashboard/campaign/${campaignItem.id}`}>
+                          <Icons.pen size={16} />
+                        </Link>
+                      </Button>
+                      <div className="flex gap-4 justify-between items-center">
+                        {/* <Switch
                       checked={campaignItem?.is_active}
                       onCheckedChange={() =>
                         campaignItem.id !== undefined &&
@@ -245,8 +241,9 @@ export default function Page() {
                           <Icons.pen size={16} />
                         </Link>
                       </Button>
-                    </div> -->
-
+                    </div> --> */}
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
