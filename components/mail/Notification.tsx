@@ -5,6 +5,7 @@ import {
   Archive,
   Bell,
   CalendarCheck,
+  CalendarPlus,
   // CalendarClock,
   Clock3,
   Forward,
@@ -61,11 +62,33 @@ interface NotificationProps {
 
 const Notification: React.FC<NotificationProps> = ({ email }) => {
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleTimeString("en-US", {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const timeOptions: Intl.DateTimeFormatOptions = {
       hour: "2-digit",
       minute: "2-digit",
-    });
+      hour12: true,
+    };
+
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "short",
+    };
+
+    // Check if the year is different from the current year
+    if (date.getFullYear() !== now.getFullYear()) {
+      dateOptions.year = "numeric";
+    }
+
+    const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+    const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+      date
+    );
+
+    return `${time}, ${formattedDate}`;
   };
+
   const [questions, setQuestions] = React.useState([]);
   const [loadingQuestion, setLoadingQuestions] = React.useState(false);
   const [answers, setAnswers] = React.useState<string[]>([]);
@@ -180,7 +203,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 <UserX className="h-4 w-4 text-gray-400" />
               )}
               {cleanedCategory === "Positive" && (
-                <ThumbsUp className="h-4 w-4 text-gray-400 -scale-x-100" />
+                <ThumbsUp className="h-4 w-4 text-gray-400" />
               )}
               {cleanedCategory === "Negative" && (
                 <MailWarning className="h-4 w-4 text-gray-400" />
@@ -192,7 +215,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 <MailQuestion className="h-4 w-4 text-gray-400" />
               )}
               {cleanedCategory === "Demo" && (
-                <MailQuestion className="h-4 w-4 text-gray-400" />
+                <CalendarPlus className="h-4 w-4 text-gray-400" />
               )}
               {cleanedCategory === "Neutral" && (
                 <Mail className="h-4 w-4 text-gray-400" />
@@ -336,13 +359,17 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           {cleanedCategory === "Demo" && (
             <div className="flex items-center gap-3">
               <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                {email.category === "Demo" && (
+                {cleanedCategory === "Demo" && (
                   <CalendarCheck className="h-4 w-4 text-gray-400" />
                 )}
               </div>
               <p className="ml-1 text-xs">
                 {cleanedCategory === "Demo" &&
-                  `Meeting successfully scheduled.`}
+                  ` Sally is scheduling meeting with ${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : ""
+                  } .`}
               </p>
               <span className="text-gray-600 text-sm">
                 {formatDate(email.received_datetime)}

@@ -35,6 +35,8 @@ export default function Page() {
     { id: "Leads used", value: "", isEditable: false },
   ]);
 
+  console.log(user);
+
   const fetchDataInfo = () => {
     if (user?.id) {
       axiosInstance
@@ -60,7 +62,7 @@ export default function Page() {
               isEditable: true,
             },
             { id: "Sender Job", value: data.job_title, isEditable: true },
-            { id: "Email", value: data.email, isEditable: true },
+            { id: "Email", value: data.email || user.email, isEditable: true },
             { id: "Phone", value: data.phone_number, isEditable: true },
             { id: "Company", value: data.company, isEditable: true },
             { id: "Company ID", value: data.companyId, isEditable: true },

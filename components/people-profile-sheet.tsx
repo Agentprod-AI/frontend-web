@@ -507,7 +507,7 @@ export const PeopleProfileSheet = ({
             <br />
             <p className="flex gap-2 items-center text-sm text-muted-foreground whitespace-normal w-full">
               <Building2 className="h-4 w-4" />
-              Company Type: {data?.isb2b ? "B2B" : "B2C"}
+              Company Type: {data?.is_b2b ? "B2B" : "B2C"}
             </p>
             <br />
             <p className="flex gap-2 items-center text-sm text-muted-foreground whitespace-normal w-full">

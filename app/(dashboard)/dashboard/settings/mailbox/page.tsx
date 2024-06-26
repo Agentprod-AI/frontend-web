@@ -579,7 +579,7 @@ export default function Page() {
               ) : fetchSuccess ? (
                 <Check />
               ) : (
-                "Get Domain"
+                "Verify Domain"
               )}
             </Button>
           </div>

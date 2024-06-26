@@ -157,12 +157,34 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
-
+    
     const formatDate = (dateString: string) => {
-      return new Date(dateString).toLocaleTimeString("en-US", {
+      const date = new Date(dateString);
+      const now = new Date();
+
+      const timeOptions: Intl.DateTimeFormatOptions = {
         hour: "2-digit",
         minute: "2-digit",
-      });
+        hour12: true,
+      };
+
+      const dateOptions: Intl.DateTimeFormatOptions = {
+        day: "2-digit",
+        month: "short",
+      };
+
+      // Check if the year is different from the current year
+      if (date.getFullYear() !== now.getFullYear()) {
+        dateOptions.year = "numeric";
+      }
+
+      const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+      const formattedDate = new Intl.DateTimeFormat(
+        "en-US",
+        dateOptions
+      ).format(date);
+
+      return `${time}, ${formattedDate}`;
     };
 
     return (
@@ -197,7 +219,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">
                   {email?.received_datetime &&
-                    formatDate(email.received_datetime.toString())}
+                    formatDate(email?.received_datetime.toString())}
                 </span>
               </div>
             </div>
@@ -395,16 +417,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       <div>Draft is empty</div>;
     }
 
-    const shouldShowDraftComponent = () => {
-      const lastEmail = thread[thread.length - 1];
-      return lastEmail?.category !== "Information required";
-    };
+    const lastEmail = thread[thread.length - 1];
 
-    if (thread.length > 0 && shouldShowDraftComponent()) {
+    if (thread.length > 0 && lastEmail?.category !== "Information Required") {
       {
         return (
           <div className="flex gap-4 flex-col m-4 h-full">
-            {thread?.length > 0 && thread.some((email) => !email.is_reply) && (
+            {thread?.length > 0 && !lastEmail.category && (
               <div className="flex items-center gap-3">
                 <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                   <TrendingUp className="h-4 w-4 text-gray-400" />
@@ -637,6 +656,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   };
 
   const matchingCampaign = campaigns.find((campaign) => campaign.id === leadId);
+  const lastEmail = thread[thread.length - 1];
 
   return (
     <div className="relative">
@@ -668,12 +688,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </div>
         )}
 
-        <DraftEmailComponent />
+        {/* <DraftEmailComponent /> */}
         {/* {thread?.length >= 0 &&
           !thread.some(
             (email) => email.category === "Information Required"
           ) && <DraftEmailComponent />} */}
-        {/* {shouldShowDraftComponent() && <DraftEmailComponent />} */}
+        {lastEmail?.category !== "Information Required" && (
+          <DraftEmailComponent />
+        )}
       </div>
     </div>
   );
