@@ -130,7 +130,7 @@ export function GoalForm() {
       if (id) {
         try {
           const response = await fetch(
-            `https://agentprod-backend-framework-zahq.onrender.com/v2/goals/${params.campaignId}`
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/goals/${params.campaignId}`
           );
           const data = await response.json();
           if (data.detail === "Goal not found") {

@@ -119,7 +119,7 @@ export function SchedulingForm() {
       if (id) {
         try {
           const response = await fetch(
-            `https://agentprod-backend-framework-zahq.onrender.com/v2/campaigns/${params.campaignId}`
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
           );
           const data = await response.json();
           if (data.detail === "Campaign not found") {

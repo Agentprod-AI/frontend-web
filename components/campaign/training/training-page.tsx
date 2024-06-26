@@ -18,6 +18,15 @@ import {
   getFollowUpOne,
   getFollowUpTwo,
 } from "./training.api";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+
 import { useUserContext } from "@/context/user-context";
 import { useRouter } from "next/navigation";
 import { useParams } from "next/navigation";
@@ -58,6 +67,7 @@ export default function Training() {
     null
   );
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [showEditCamp, setShowEditCamp] = useState(true);
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const {
@@ -288,6 +298,10 @@ export default function Training() {
     setActiveTab("editor");
   };
 
+  const handleEditCampaign = () => {
+    setShowEditCamp(!showEditCamp);
+  };
+
   return (
     <>
       <div className="w-full h-14 px-4 flex flex-row justify-between items-center rounded-lg border">
@@ -342,6 +356,7 @@ export default function Training() {
       ) : (
         <PreviewContent />
       )}
+      {/* {showEditCamp && <div>jwnd</div>} */}
     </>
   );
 }

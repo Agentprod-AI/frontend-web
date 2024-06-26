@@ -101,6 +101,18 @@ export default function Page() {
       setLoading(null);
     }
   };
+  useEffect(() => {
+    async function fetchCampaigns() {
+      try {
+        const response = await axiosInstance.get(`v2/campaigns/all/${user.id}`);
+        setCampaigns(response.data);
+        console.log("campaign called effect");
+      } catch (error) {
+        console.error("Failed to fetch campaigns", error);
+      }
+    }
+    fetchCampaigns();
+  }, [setCampaigns]);
 
   return (
     <div className="space-y-2 mb-5 ">

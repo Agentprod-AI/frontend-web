@@ -56,13 +56,13 @@ export default function Page() {
         const [campaignResponse, goalResponse, offeringResponse] =
           await Promise.all([
             fetch(
-              `https://agentprod-backend-framework-zahq.onrender.com/v2/campaigns/${params.campaignId}`
+              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
             ),
             fetch(
-              `https://agentprod-backend-framework-zahq.onrender.com/v2/goals/${params.campaignId}`
+              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/goals/${params.campaignId}`
             ),
             fetch(
-              `https://agentprod-backend-framework-zahq.onrender.com/v2/offerings/${params.campaignId}`
+              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/offerings/${params.campaignId}`
             ),
           ]);
 

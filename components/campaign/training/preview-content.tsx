@@ -20,6 +20,7 @@ import {
   getPreviewByTemplate,
 } from "./training.api";
 import { toast } from "sonner";
+import axiosInstance from "@/utils/axiosInstance";
 
 function PreviewContent() {
   const { user } = useUserContext();
@@ -52,8 +53,8 @@ function PreviewContent() {
   const fetchFollowUpData = async () => {
     try {
       setLoad1(true);
-      const response1 = await axios.post(
-        "https://agentprod-backend-framework-zahq.onrender.com/v2/training/autogenerate/followup",
+      const response1 = await axiosInstance.post(
+        "/v2/training/autogenerate/followup",
         {
           user_id: user.id,
           follow_up_number: 1,
@@ -69,8 +70,8 @@ function PreviewContent() {
       setLoad1(false);
       setLoad2(true);
 
-      const response2 = await axios.post(
-        "https://agentprod-backend-framework-zahq.onrender.com/v2/training/autogenerate/followup",
+      const response2 = await axiosInstance.post(
+        "/v2/training/autogenerate/followup",
         {
           user_id: user.id,
           follow_up_number: 2,

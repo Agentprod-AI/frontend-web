@@ -311,12 +311,12 @@ export const ImportAudience = () => {
                         <SelectContent className="h-60">
                           <SelectGroup>
                             <SelectLabel>Options</SelectLabel>
-                            <Input
+                            {/* <Input
                               placeholder="Search..."
                               value={searchText}
                               onChange={(e) => setSearchText(e.target.value)}
                               className="mb-2 sticky "
-                            />
+                            /> */}
                             {filteredOptions.map((option, index) => (
                               <SelectItem
                                 key={index}
