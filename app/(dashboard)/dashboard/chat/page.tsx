@@ -328,9 +328,9 @@ export default function Home() {
                           ? recentDate
                           : formatDate(message?.createdAt)}
                       </span>
-                      <div className="flex flex-col px-4 py-3 bg-[#212121] rounded-xl max-w-3xl">
+                      <div className="flex flex-col px-4 py-3 dark:bg-[#212121] bg-[#efefef] rounded-xl max-w-3xl">
                         <ReactMarkdown
-                          className="prose mt-1 text-base text-[#ECECEC] leading-loose w-full break-words prose-p:leading-relaxed "
+                          className="prose mt-1 text-base dark:text-[#ECECEC] leading-loose w-full break-words prose-p:leading-relaxed "
                           remarkPlugins={[remarkGfm]}
                           components={{
                             // open links in new tab
@@ -453,7 +453,7 @@ export default function Home() {
               // console.log(allMessages);
               handleSubmit(e);
             }}
-            className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex dark:bg-[#09090b]"
+            className="relative w-full max-w-screen-md rounded-xl border px-4 pb-2 pt-3 shadow-lg sm:pb-3 sm:pt-4 flex dark:bg-[#09090b] bg-white"
           >
             <Input
               ref={inputRef}

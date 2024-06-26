@@ -3,19 +3,23 @@ import Link from "next/link";
 import UserAuthForm from "@/components/forms/auth/user-auth-form";
 import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
-// import { SignIn, SignUp, SignedIn, useAuth } from "@clerk/nextjs";
-// import { auth } from "@clerk/nextjs/server";
-
-// export const metadata: Metadata = {
-//   title: "Authentication",
-//   description: "Authentication forms built using the components.",
-// };
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
 
 export default function AuthenticationPage() {
   const { user } = useAuth();
   if (user) {
     redirect("/dashboard");
   }
+
   return (
     <div className="p-4 lg:p-8 h-full flex items-center">
       <div className="mx-auto flex w-full flex-col justify-center space-y-6 sm:w-[350px]">
@@ -28,12 +32,24 @@ export default function AuthenticationPage() {
           </p>
         </div>
         <UserAuthForm formType="signin" />
-        {/* <SignIn
-          routing="hash"
-          afterSignInUrl={"/dashboard"}
-          afterSignUpUrl={"/dashboard"}
-          redirectUrl={"/dashboard"}
-        /> */}
+
+        <Dialog>
+          <DialogTrigger asChild>
+            <p className="text-sm text-white/50 text-end cursor-pointer">
+              Forgot Password
+            </p>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Enter your Email to reset Your Password</DialogTitle>
+              <DialogDescription>
+                <div className="text-start text-lg py-2">Email</div>
+                <Input placeholder="Enter Email" />
+                <Button className="my-2 mt-4 flex">Send Email</Button>
+              </DialogDescription>
+            </DialogHeader>
+          </DialogContent>
+        </Dialog>
         <Link href={"/signup"}>Create an account</Link>
         <p className="px-8 text-center text-sm text-muted-foreground">
           By clicking continue, you agree to our{" "}

@@ -265,6 +265,37 @@ export default function Page() {
               </Button>
             </CardFooter>
           </Card>
+
+          <Card
+            className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
+              isTrainingDisabled ? "bg-gray-100/10 cursor-not-allowed" : ""
+            }`}
+          >
+            <CardHeader>
+              <CardTitle>Autopilot</CardTitle>
+              <CardDescription>
+                How do you want to automate this campaign?
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="flex py-0 justify-between">
+              <Button
+                asChild
+                variant={"outline"}
+                disabled={isTrainingDisabled}
+                className={
+                  isTrainingDisabled ? "text-gray-400 cursor-not-allowed" : ""
+                }
+              >
+                <Link
+                  href={
+                    isTrainingDisabled ? "#" : `${params.campaignId}/autopilot`
+                  }
+                >
+                  {isTrainingDisabled === true ? "Add" : "Edit"}
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
         </>
       )}
     </div>
