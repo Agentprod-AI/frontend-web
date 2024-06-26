@@ -140,7 +140,7 @@ export const DashboardProvider: React.FunctionComponent<Props> = ({
     //   setError(error.message || "Failed to load data.");
     //   setIsLoading(false);
     // });
-  },[]); // chnage to user only if any error
+  }, [user]); // chnage to user only if any error
 
   const contextValue = useMemo(
     () => ({

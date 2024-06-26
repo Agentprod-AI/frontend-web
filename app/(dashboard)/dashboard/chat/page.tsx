@@ -1,3 +1,4 @@
+/* eslint-disable no-console */
 /* eslint-disable react-hooks/exhaustive-deps */
 "use client";
 
@@ -327,9 +328,9 @@ export default function Home() {
                           ? recentDate
                           : formatDate(message?.createdAt)}
                       </span>
-                      <div className="flex flex-col px-4 py-3 bg-accent rounded-xl max-w-3xl">
+                      <div className="flex flex-col px-4 py-3 bg-[#212121] rounded-xl max-w-3xl">
                         <ReactMarkdown
-                          className="prose mt-1 text-sm w-full break-words prose-p:leading-relaxed"
+                          className="prose mt-1 text-base text-[#ECECEC] leading-loose w-full break-words prose-p:leading-relaxed "
                           remarkPlugins={[remarkGfm]}
                           components={{
                             // open links in new tab
@@ -461,7 +462,7 @@ export default function Home() {
               autoFocus
               placeholder="Send a message"
               value={input}
-              disabled={userEmail === "" || loading}
+              disabled={userEmail === "" || loading || isLoading}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
@@ -496,7 +497,7 @@ export default function Home() {
               type="submit"
               variant={"outline"}
               className="ml-3"
-              disabled={disabled}
+              disabled={isLoading}
               onClick={() => {
                 setSallyLoad(true);
               }}

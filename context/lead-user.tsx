@@ -80,7 +80,7 @@ export interface Lead {
   metrics: any[];
   compliments: any[];
   lead_information: any;
-  isb2b: boolean;
+  is_b2b: boolean;
   score: any;
 }
 
@@ -122,7 +122,7 @@ export interface Contact {
   metrics: any[];
   compliments: any[];
   lead_information: any;
-  isb2b: boolean;
+  is_b2b: boolean;
   score: any;
 }
 
