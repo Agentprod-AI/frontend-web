@@ -157,7 +157,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
-    
+
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       const now = new Date();
@@ -310,8 +310,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       setLoadingSmartSchedule(true);
       const payload = {
         conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
+        sender:
+          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
+            ? "muskaan@agenptrodai.com"
+            : senderEmail,
+        recipient:
+          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
+            ? "info.agentprod@gmail.com"
+            : recipientEmail,
         subject: title,
         body: body,
       };
@@ -336,8 +342,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
+        sender:
+          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
+            ? "muskaan@agenptrodai.com"
+            : senderEmail,
+        recipient:
+          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
+            ? "info.agentprod@gmail.com"
+            : recipientEmail,
         subject: title,
         body: body,
       };
