@@ -283,7 +283,7 @@ export function MailList({ items }: MailListProps) {
                               ? "bg-green-600"
                               : item.category.trim() === "Negative"
                               ? "bg-red-600"
-                              : item.category.trim() === "Out of office"
+                              : item.category.trim() === "OOO"
                               ? "bg-yellow-600"
                               : item.category.trim() === "Forwarded"
                               ? "bg-blue-600"
@@ -302,7 +302,7 @@ export function MailList({ items }: MailListProps) {
                           {item.category.trim() === "Negative" && (
                             <ThumbsDown className="h-[14px] w-[14px] -scale-x-100" />
                           )}
-                          {item.category.trim() === "Out of office" && (
+                          {item.category.trim() === "OOO" && (
                             <UserX className="h-[14px] w-[14px] scale-x-100" />
                           )}
                           {item.category.trim() === "Forwarded" && (
