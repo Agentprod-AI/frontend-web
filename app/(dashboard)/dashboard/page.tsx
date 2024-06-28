@@ -364,7 +364,8 @@ export default function Page() {
                           <Avatar className="h-9 w-9">
                             <AvatarImage src={lead.photo_url} alt="Avatar" />
                             <AvatarFallback>
-                              {lead.fallback || lead.name.charAt(0)}
+                              {lead.fallback ||
+                                (lead.name ? lead.name.charAt(0) : "")}
                             </AvatarFallback>
                           </Avatar>
                           <p className="text-sm font-medium leading-none ml-4">{`${lead.name}`}</p>
