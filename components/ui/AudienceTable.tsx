@@ -87,7 +87,7 @@ function AudienceTable() {
                 <TableCell>
                   <Avatar>
                     <AvatarImage src={lead.photo_url} alt={lead.name} />
-                    <AvatarFallback>{lead.name[0]}</AvatarFallback>
+                    <AvatarFallback>{lead.name}</AvatarFallback>
                   </Avatar>
                 </TableCell>
                 <TableCell className="font-medium">{lead.name}</TableCell>
