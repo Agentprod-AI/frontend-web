@@ -1090,7 +1090,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                     {cleanedCategory === "Later" && (
                       <Badge className="gap-1 items-center rounded-full bg-orange-600">
                         <TimerReset className="h-[14px] w-[14px]" />
-                        Later
+                        Maybe Later
                       </Badge>
                     )}
                     {cleanedCategory === "Demo" && (

@@ -162,6 +162,7 @@ import {
   Bell,
   CalendarCheck,
   Forward,
+  MailPlus,
   ThumbsDown,
   ThumbsUp,
   TimerReset,
@@ -275,11 +276,13 @@ export function MailList({ items }: MailListProps) {
                     {/* {item.read === false && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )} */}
-                    <span className="text-xs text-gray-400">
+                    <span className="text-xs">
                       {item && item.category ? (
                         <Badge
                           className={`gap-1 items-center rounded-full ${
                             item.category.trim() === "Positive"
+                              ? "bg-green-600"
+                              : item.category.trim() === "Information Required"
                               ? "bg-green-600"
                               : item.category.trim() === "Negative"
                               ? "bg-red-600"
@@ -317,7 +320,14 @@ export function MailList({ items }: MailListProps) {
                           {item.category.trim() === "Later" && (
                             <TimerReset className="h-[14px] w-[14px] scale-x-100" />
                           )}
-                          {item.category}
+                          {item.category.trim() === "Information Required" && (
+                            <MailPlus className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category.trim() === "Later"
+                            ? "Maybe Later"
+                            : item.category.trim() === "Information Required"
+                            ? "Info Req"
+                            : item.category}
                         </Badge>
                       ) : null}
                     </span>
