@@ -109,6 +109,7 @@ export function DataTable<TData, TValue>({
       .get(`v2/lead/campaign/${campaignId}`)
       .then((response) => {
         setFilteredData(response.data);
+        console.log("my data " + response.data);
         setLoading(false);
       })
       .catch((error) => {
