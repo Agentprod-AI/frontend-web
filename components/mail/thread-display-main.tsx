@@ -730,14 +730,21 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import {
+  Bell,
+  CalendarCheck,
   Check,
   ChevronsUpDown,
   Edit3,
+  Forward,
   ListTodo,
   MailPlus,
   RefreshCw,
+  ThumbsDown,
+  ThumbsUp,
+  TimerReset,
   Trash2,
   TrendingUp,
+  UserX,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Input } from "../ui/input";
@@ -1041,6 +1048,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                         Information requested
                       </Badge>
                     )}
+                  {email.is_reply && email.category === "Positive" && (
+                    <Badge className="gap-1 items-center rounded-full bg-green-600">
+                      <MailPlus className="h-[14px] w-[14px] scale-x-100" />
+                      Postive
+                    </Badge>
+                  )}
                 </span>
               </div>
               <CardHeader>
@@ -1138,6 +1151,67 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <span className="text-gray-500 text-sm  ">
                   {email?.received_datetime &&
                     formatDate(email?.received_datetime.toString())}
+                </span>
+                <span>
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Positive" && (
+                      <Badge className="gap-1 items-center rounded-full bg-green-600">
+                        <ThumbsUp className="h-[14px] w-[14px] scale-x-100" />
+                        Positive
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "OOO" && (
+                      <Badge className="gap-1 items-center rounded-full bg-yellow-600">
+                        <UserX className="h-[14px] w-[14px] scale-x-100" />
+                        Out of office
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Negative" && (
+                      <Badge
+                        variant="destructive"
+                        className="gap-1 items-center rounded-full"
+                      >
+                        <ThumbsDown className="-scale-x-100 h-[14px] w-[14px]" />
+                        Negative
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Forwarded" && (
+                      <Badge className="gap-1 items-center rounded-full bg-blue-600">
+                        <Forward className="h-[14px] w-[14px]" />
+                        Forwarded
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Later" && (
+                      <Badge className="gap-1 items-center rounded-full bg-orange-600">
+                        <TimerReset className="h-[14px] w-[14px]" />
+                        Maybe Later
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Demo" && (
+                      <Badge className="gap-1 items-center rounded-full bg-purple-600">
+                        <CalendarCheck className="h-[14px] w-[14px]" />
+                        Demo
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Neutral" && (
+                      <Badge className="gap-1 items-center rounded-full bg-gray-600">
+                        <Bell className="h-[14px] w-[14px]" />
+                        Neutral
+                      </Badge>
+                    )}
                 </span>
               </div>
 

@@ -338,7 +338,7 @@
 //               {cleanedCategory === "Neutral" && "Neutral response received."}
 //             </p>
 //             <span className="text-gray-600 text-sm">
-//               {formatDate(email.received_datetime)}
+//               {formatDate(email.received_datetime) || null}
 //             </span>
 //             <p className="ml-1 text-xs">
 //               {cleanedCategory === "OOO" && (
@@ -406,7 +406,7 @@
 //                       : ""}
 //                   </span>
 //                   <span className="text-gray-600 text-sm ">
-//                     {formatDate(email.received_datetime)}
+//                     {formatDate(email.received_datetime) || null}
 //                   </span>
 //                 </div>
 //                 <CardHeader className="-mt-8 -ml-3">
@@ -1030,7 +1030,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               {cleanedCategory === "Neutral" && "Neutral response received."}
             </p>
             <span className="text-gray-600 text-sm">
-              {formatDate(email.received_datetime)}
+              {formatDate(email.received_datetime) || null}
             </span>
           </div>
 
@@ -1051,7 +1051,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                       : ""}
                   </span>
                   <span className="text-gray-600 text-sm ">
-                    {formatDate(email.received_datetime)}
+                    {formatDate(email.received_datetime) || null}
                   </span>
                   <div className="flex gap-3">
                     {!email.approved ? (
@@ -1059,7 +1059,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                     ) : null}
                   </div>
 
-                  <p className="ml-1 text-xs">
+                  {/* <p className="ml-1 text-xs">
                     {cleanedCategory === "OOO" && (
                       <Badge className="gap-1 items-center rounded-full bg-yellow-600">
                         <UserX className="h-[14px] w-[14px] scale-x-100" />
@@ -1105,7 +1105,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                         Neutral
                       </Badge>
                     )}
-                  </p>
+                  </p> */}
                 </div>
                 <CardHeader className="-mt-8 -ml-3">
                   <CardTitle className="text-sm flex flex-col ">
@@ -1190,7 +1190,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   } was blocked because of a negative reply.`}
               </p>
               <span className="text-gray-600 text-sm">
-                {formatDate(email.received_datetime)}
+                {formatDate(email.received_datetime) || null}
               </span>
             </div>
           )}
@@ -1210,7 +1210,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   } .`}
               </p>
               <span className="text-gray-600 text-sm">
-                {formatDate(email.received_datetime)}
+                {formatDate(email.received_datetime) || null}
               </span>
             </div>
           )}
@@ -1332,7 +1332,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           <span className="text-gray-400 text-xs">
             {email.received_datetime && (
               <span className="text-gray-400 text-xs">
-                {formatDate(email.received_datetime)}
+                {formatDate(email.received_datetime) || null}
               </span>
             )}
           </span>

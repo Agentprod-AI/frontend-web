@@ -259,17 +259,19 @@ export function MailList({ items }: MailListProps) {
                       <AvatarImage src={item.photo_url} alt="avatar" />
                       <AvatarFallback className="bg-yellow-400 text-black text-xs">
                         {item.name
-                          .split(" ")
-                          .map((namePart, index, arr) => {
-                            if (
-                              index === 0 ||
-                              (index === 1 && arr.length > 1)
-                            ) {
-                              return namePart[0];
-                            }
-                            return "";
-                          })
-                          .join("")}
+                          ? item.name
+                              .split(" ")
+                              .map((namePart, index, arr) => {
+                                if (
+                                  index === 0 ||
+                                  (index === 1 && arr.length > 1)
+                                ) {
+                                  return namePart[0];
+                                }
+                                return "";
+                              })
+                              .join("")
+                          : ""}
                       </AvatarFallback>
                     </Avatar>
                     <div className="font-semibold w-72 truncate">{`${item.name} from ${item.company_name} `}</div>
