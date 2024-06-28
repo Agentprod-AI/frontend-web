@@ -118,12 +118,13 @@ export default function Page() {
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
         </div>
       ) : (
         <>
           <Card className="w-[95%] min-w-[330px] m-2 flex justify-between">
             <CardHeader>
-              <CardTitle>Scheduling and budget</CardTitle>
+              <CardTitle>Scheduling</CardTitle>
               <CardDescription>
                 How do you want to schedule this campaign?
               </CardDescription>
@@ -139,7 +140,7 @@ export default function Page() {
                   href={
                     isSchedulingBudgetDisabled
                       ? "#"
-                      : `${params.campaignId}/scheduling-budget`
+                      : `${params.campaignId}/scheduling`
                   }
                 >
                   {isCampaignFound === false ? "Add" : "Edit"}
@@ -258,6 +259,37 @@ export default function Page() {
                 <Link
                   href={
                     isTrainingDisabled ? "#" : `${params.campaignId}/training`
+                  }
+                >
+                  {isTrainingDisabled === true ? "Add" : "Edit"}
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card
+            className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
+              isTrainingDisabled ? "bg-gray-100/10 cursor-not-allowed" : ""
+            }`}
+          >
+            <CardHeader>
+              <CardTitle>Autopilot</CardTitle>
+              <CardDescription>
+                How do you want to automate this campaign?
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="flex py-0 justify-between">
+              <Button
+                asChild
+                variant={"outline"}
+                disabled={isTrainingDisabled}
+                className={
+                  isTrainingDisabled ? "text-gray-400 cursor-not-allowed" : ""
+                }
+              >
+                <Link
+                  href={
+                    isTrainingDisabled ? "#" : `${params.campaignId}/autopilot`
                   }
                 >
                   {isTrainingDisabled === true ? "Add" : "Edit"}

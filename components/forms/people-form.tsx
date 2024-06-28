@@ -35,6 +35,7 @@ import { getAudienceFiltersById } from "../campaign/camapign.api";
 import { keywords } from "./formUtils";
 import { ScrollArea } from "../ui/scroll-area";
 import { useButtonStatus } from "@/context/button-status";
+import AudienceTable from "../ui/AudienceTable";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -129,7 +130,7 @@ const FormSchema = z.object({
     .optional(),
 });
 
-export default function PeopleForm({ type }: { type: string }): JSX.Element {
+export default function PeopleForm(): JSX.Element {
   const params = useParams<{ campaignId: string }>();
   const { user } = useUserContext();
 
@@ -222,6 +223,37 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
 
   const [audienceId, setAudienceId] = React.useState<string>();
   const { setPageCompletion } = useButtonStatus();
+  const [type, setType] = useState<"create" | "edit">("create");
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/audience/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Audience not found") {
+            setType("create");
+          } else {
+            // setGoalData(data);
+            // setAllFiltersFromDB(data.filters_applied);
+            console.log("data ==>", data);
+            setType("edit");
+            const audienceFilters = await getAudienceFiltersById(id);
+            console.log("response from audience filters", audienceFilters);
+            setAllFiltersFromDB(audienceFilters.filters_applied);
+            setAudienceId(audienceFilters.id);
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
 
   React.useEffect(() => {
     const fetchAudienceFilters = async () => {
@@ -453,7 +485,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
             setIsTableLoading(false);
           });
 
-        console.log(leads);
+        console.log("this is my leads" + leads);
         toast.success("api called");
 
         console.log("BODY: ", body);
@@ -462,6 +494,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
         toast.error("Error fetching data");
       } finally {
         setTab("tab2");
+        console.log("this is my leads" + leads);
         setAllFilters({ ...body, ...extraFilters });
         shouldCallAPI = false;
       }
@@ -578,7 +611,7 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
 
   const createAudience = async () => {
     const audienceBody = mapLeadsToBodies(leads as Lead[], params.campaignId);
-    console.log(audienceBody);
+    console.log("data = " + audienceBody);
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
@@ -1583,7 +1616,14 @@ export default function PeopleForm({ type }: { type: string }): JSX.Element {
             )}
           </TabsContent>
           <TabsContent value="tab2">
-            {isTableLoading ? <LoadingCircle /> : <AudienceTableClient />}
+            {isTableLoading ? (
+              <LoadingCircle />
+            ) : (
+              <div>
+                {/* <AudienceTableClient checkboxes={true} /> */}
+                <AudienceTable />
+              </div>
+            )}
             {/* {isCreateBtnLoading ? (
               <LoadingCircle />
             ) : type === "create" ? (
