@@ -590,17 +590,17 @@ export default function EditorContent() {
                   <div className="font-semibold text-base text-white">
                     Subject:{" "}
                     <span className="font-normal text-white/40">
-                      Connecting with AgentProd founders
+                      Connecting with GenAi founders
                     </span>{" "}
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
                     <div className="text-white/40 space-y-4">
                       <div>
-                        Hi Samrah, I came across Koxa and saw that you’re
-                        selling an accounting-to-banking API. We can help you
-                        find the right CFOs at the right software companies and
-                        scale up sales without increasing your headcount.
+                        Hi Alex, I came across Koxa and saw that you’re selling
+                        an accounting-to-banking API. We can help you find the
+                        right CFOs at the right software companies and scale up
+                        sales without increasing your headcount.
                       </div>
                       <div>
                         I’m the co-founder of AgentProd. An AI sales automation
@@ -619,7 +619,7 @@ export default function EditorContent() {
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
                     <div className="text-white/40 space-y-4">
-                      Hi Samrah, just bumping this up since I haven’t heard back
+                      Hi Alex, just bumping this up since I haven’t heard back
                       from you yet. Other API-first companies like Svix have
                       already increased their sales by 30% through us. Happy to
                       jump on a call and discuss how we can help you guys out
