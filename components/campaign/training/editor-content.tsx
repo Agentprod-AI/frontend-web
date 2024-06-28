@@ -130,6 +130,43 @@ export default function EditorContent() {
   //   fetchTrainingData();
   // }, [params.campaignId]);
 
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/training/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Training information not found") {
+          } else {
+            const template = data.template;
+            const subjectStart =
+              template.indexOf("Subject: ") + "Subject: ".length;
+            const subjectEnd = template.indexOf("\n", subjectStart);
+            const subject = template.slice(subjectStart, subjectEnd).trim();
+            const body = template.slice(subjectEnd).trim();
+
+            setLocalSubject(subject);
+            setSubject(subject);
+            setLocalBody(body);
+            setBody(body);
+
+            setFollowUp(data.follow_up_template_1.body);
+            setLocalFollowUp(data.follow_up_template_1.body);
+            setFollowUpOne(data.follow_up_template_2.body);
+            setLocalFollowUpTwo(data.follow_up_template_2.body);
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
+
   const toggleFollowUp = () => {
     setShowAdditionalTextArea(!showAdditionalTextArea);
     setButton1(!button1);
@@ -182,13 +219,13 @@ export default function EditorContent() {
   const handleSubjectChange = (text: string) => {
     setLocalSubject(text);
     setSubject(text);
-    handleTextChange(`${text} ${localBody}`, setSubject);
+    handleTextChange(`${text}`, setSubject);
   };
 
   const handleBodyChange = (text: string, cursorPos?: number) => {
     setLocalBody(text);
     setBody(text);
-    handleTextChange(`${localSubject} ${text}`, setBody);
+    handleTextChange(`${text}`, setBody);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }

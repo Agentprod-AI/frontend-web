@@ -68,6 +68,8 @@ export default function Training() {
   );
   const [previewLoading, setPreviewLoading] = useState(false);
   const [showEditCamp, setShowEditCamp] = useState(true);
+  const [type, setType] = useState<"create" | "edit">("create");
+
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const {
@@ -109,6 +111,31 @@ export default function Training() {
   //     console.error("Failed to fetch training data:", error);
   //   }
   // };
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/training/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Training information not found") {
+            setType("create");
+          } else {
+            console.log("data =>" + data);
+            // setGoalData(data);
+            setType("edit");
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
 
   const handleStartCampaign = async () => {
     setStartCampaignIsLoading(true);
@@ -223,7 +250,7 @@ export default function Training() {
       const response = await getPreviewByTemplate({
         campaign_id: params.campaignId,
         user_id: user.id,
-        template: `Subject: ${subject}
+        template: `
         Body: ${body}`,
         variables: fieldsList.variables,
         offering_variables: fieldsList.offering_variables,
@@ -338,8 +365,10 @@ export default function Training() {
           </Tabs>
           {startCampaignIsLoading ? (
             <LoadingCircle />
-          ) : (
+          ) : type === "create" ? (
             <Button onClick={handleStartCampaign}>Start campaign</Button>
+          ) : (
+            <Button onClick={handleStartCampaign}>Edit campaign</Button>
           )}
         </div>
       </div>
