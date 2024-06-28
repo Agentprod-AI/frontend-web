@@ -56,6 +56,10 @@ export interface Conversations {
   campaign_id: string;
   updated_at: string;
   status: string;
+  name: string;
+  photo_url: string;
+  company_name: string;
+  category: string;
 }
 
 export function Mail({

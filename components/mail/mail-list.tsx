@@ -156,6 +156,17 @@ import { Conversations } from "./mail";
 import { useMailbox } from "@/context/mailbox-provider";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
+import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { Badge } from "../ui/badge";
+import {
+  Bell,
+  CalendarCheck,
+  Forward,
+  ThumbsDown,
+  ThumbsUp,
+  TimerReset,
+  UserX,
+} from "lucide-react";
 
 interface MailListProps {
   items: Conversations[]; // Accepts mails array as props
@@ -194,6 +205,34 @@ export function MailList({ items }: MailListProps) {
       });
   }, [user?.id]);
 
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    const now = new Date();
+
+    const timeOptions: Intl.DateTimeFormatOptions = {
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: true,
+    };
+
+    const dateOptions: Intl.DateTimeFormatOptions = {
+      day: "2-digit",
+      month: "short",
+    };
+
+    // Check if the year is different from the current year
+    if (date.getFullYear() !== now.getFullYear()) {
+      dateOptions.year = "numeric";
+    }
+
+    const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+    const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+      date
+    );
+
+    return `${time},${formattedDate}`;
+  };
+
   return (
     <ScrollArea className="h-screen pb-44">
       <div className="flex flex-col gap-2 p-4 pt-0">
@@ -215,10 +254,73 @@ export function MailList({ items }: MailListProps) {
               <div className="flex w-full flex-col gap-1">
                 <div className="flex items-center">
                   <div className="flex items-center gap-2">
-                    <div className="font-semibold">{item.recipient}</div>
+                    <Avatar className="flex h-8 w-8 items-center justify-center space-y-0 border bg-white">
+                      <AvatarImage src={item.photo_url} alt="avatar" />
+                      <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                        {item.name
+                          .split(" ")
+                          .map((namePart, index, arr) => {
+                            if (
+                              index === 0 ||
+                              (index === 1 && arr.length > 1)
+                            ) {
+                              return namePart[0];
+                            }
+                            return "";
+                          })
+                          .join("")}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="font-semibold w-72 truncate">{`${item.name} from ${item.company_name} `}</div>
                     {/* {item.read === false && (
                     <span className="flex h-2 w-2 rounded-full bg-blue-600" />
                   )} */}
+                    <span className="text-xs text-gray-400">
+                      {item && item.category ? (
+                        <Badge
+                          className={`gap-1 items-center rounded-full ${
+                            item.category.trim() === "Positive"
+                              ? "bg-green-600"
+                              : item.category.trim() === "Negative"
+                              ? "bg-red-600"
+                              : item.category.trim() === "Out of office"
+                              ? "bg-yellow-600"
+                              : item.category.trim() === "Forwarded"
+                              ? "bg-blue-600"
+                              : item.category.trim() === "Neutral"
+                              ? "bg-gray-600"
+                              : item.category.trim() === "Demo"
+                              ? "bg-purple-600"
+                              : item.category.trim() === "Later"
+                              ? "bg-orange-600"
+                              : ""
+                          }`}
+                        >
+                          {item.category.trim() === "Positive" && (
+                            <ThumbsUp className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category.trim() === "Negative" && (
+                            <ThumbsDown className="h-[14px] w-[14px] -scale-x-100" />
+                          )}
+                          {item.category.trim() === "Out of office" && (
+                            <UserX className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category.trim() === "Forwarded" && (
+                            <Forward className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category.trim() === "Neutral" && (
+                            <Bell className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category.trim() === "Demo" && (
+                            <CalendarCheck className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category.trim() === "Later" && (
+                            <TimerReset className="h-[14px] w-[14px] scale-x-100" />
+                          )}
+                          {item.category}
+                        </Badge>
+                      ) : null}
+                    </span>
                   </div>
                   <div
                     className={cn(
@@ -237,19 +339,22 @@ export function MailList({ items }: MailListProps) {
                         </Badge>
                       ))}
                     </div>
-                  )} */}
+                  )} 
                     {/* Displaying the date if available */}
                     {/* {item.date && isValidDate(item.date)
                     ? formatDistanceToNow(new Date(item.date), {
                         addSuffix: true,
                       })
                     : "No date available"} */}
+                    <span className="text-xs text-gray-400">
+                      {item.updated_at && formatDate(item.updated_at)}
+                    </span>
                   </div>
                 </div>
-                <div className="text-xs font-medium">{item.subject}</div>
+                <div className="text-xs font-medium ml-10">{item.subject}</div>
                 {/* Using body_substr for the email body preview */}
-                <div className="line-clamp-2 text-xs text-muted-foreground">
-                  {(item.body_substr as string)?.substring(0, 100)}{" "}
+                <div className="line-clamp-2 text-xs text-muted-foreground ml-10">
+                  {(item.body_substr as string)?.substring(0, 80)}{" "}
                   {/* Adjust substring as needed */}
                 </div>
               </div>

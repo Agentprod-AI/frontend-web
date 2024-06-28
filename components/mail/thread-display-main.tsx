@@ -810,6 +810,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const leadId = leads[0]?.campaign_id;
 
+  console.log("Thread Display main", conversationId);
+
   React.useEffect(() => {
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
@@ -864,6 +866,15 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
 
+    const [title, setTitle] = React.useState("");
+    const [body, setBody] = React.useState("");
+    const [editable, setEditable] = React.useState(false);
+    const [isLoadingButton, SetIsLoadingButton] = React.useState(false);
+    const [loadingSmartSchedule, setLoadingSmartSchedule] =
+      React.useState(false);
+
+    const { user } = useUserContext();
+
     const formatDate = (dateString: string) => {
       const date = new Date(dateString);
       const now = new Date();
@@ -894,7 +905,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     const handleSendNow = () => {
-      // SetIsLoadingButton(true);
+      SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
         sender: senderEmail,
@@ -910,8 +921,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           // console.log("Send Data", response.data);
           setThread(response.data);
           // updateMailStatus(conversationId, "sent"); // Update mail status
-          // SetIsLoadingButton(false);
-          // setEditable(false);
+          SetIsLoadingButton(false);
+          setEditable(false);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
@@ -920,7 +931,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     const handleApproveEmail = () => {
-      // setLoadingSmartSchedule(true);
+      setLoadingSmartSchedule(true);
       const payload = {
         conversation_id: conversationId,
         sender: senderEmail,
@@ -936,12 +947,52 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           setThread(response.data);
           // console.log("Approve Data", response.data);
           // updateMailStatus(conversationId, "scheduled"); // Update mail status
-          // setLoadingSmartSchedule(false);
-          // setEditable(false);
+          setLoadingSmartSchedule(false);
+          setEditable(false);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
           toast.error("Failed to send the email. Please try again.");
+        });
+    };
+
+    const handleRegenrateDraft = () => {
+      const payload = {
+        user_id: user.id,
+        conversation_id: conversationId,
+        campaign_id: leads[0].campaign_id,
+      };
+
+      console.log("Payload for regeenerate", payload);
+
+      axiosInstance
+        .post(`/v2/mailbox/draft/regenerate`, payload)
+        .then((response) => {
+          toast.success("Your draft has been regenerated successfully!");
+          setTitle(response.data.subject);
+          setBody(response.data.body);
+          console.log(response.data);
+          setEditable(false);
+        })
+        .catch((error) => {
+          console.error("Failed to regenerate draft:", error);
+          toast.error("Failed to regenerate the draft. Please try again.");
+        });
+    };
+
+    // regenerate the draft email
+
+    const handleDeleteDraft = () => {
+      axiosInstance
+        .delete(`/v2/mailbox/draft/${conversationId}`)
+        .then((response) => {
+          toast.success("Your draft has been deleted successfully!");
+          console.log(response.data);
+          setEditable(false);
+        })
+        .catch((error) => {
+          console.error("Failed to delete draft:", error);
+          toast.error("Failed to delete the draft. Please try again.");
         });
     };
 
@@ -1011,22 +1062,40 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 />
               </CardContent>
               {/* ADD BUTTON */}
-              <CardFooter className="flex justify-between  text-xs items-center">
-                <div className="flex flex-row gap-2">
-                  <Button onClick={handleApproveEmail}>
-                    {/* {loadingSmartSchedule ? (
+              <CardFooter className="flex justify-between text-xs items-center">
+                <div>
+                  <Button disabled={editable} onClick={handleApproveEmail}>
+                    {loadingSmartSchedule ? (
                       <LoadingCircle />
                     ) : (
                       "Smart Schedule"
-                    )} */}
-                    Smart Schedule
+                    )}
                   </Button>
                   <Button
                     variant={"secondary"}
-                    className=""
+                    className="ml-2"
                     onClick={handleSendNow}
                   >
-                    Send Now
+                    {isLoadingButton ? <LoadingCircle /> : "Send Now"}
+                  </Button>
+                  {editable && (
+                    <Button
+                      variant={"ghost"}
+                      onClick={() => setEditable(false)}
+                    >
+                      <Check className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <div>
+                  <Button variant={"ghost"} onClick={() => setEditable(true)}>
+                    <Edit3 className="h-4 w-4" />
+                  </Button>
+                  <Button variant={"ghost"} onClick={handleRegenrateDraft}>
+                    <RefreshCw className="h-4 w-4" />
+                  </Button>
+                  <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
               </CardFooter>
@@ -1287,7 +1356,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       {
         return (
           <div className="flex gap-4 flex-col m-4 h-full">
-            {/* {thread?.length > 0 && !lastEmail.category && (
+            {/* {thread?.length > 0 && !lastEmail.is_reply && (
               <div className="flex items-center gap-3">
                 <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                   <TrendingUp className="h-4 w-4 text-gray-400" />
@@ -1559,18 +1628,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         ) : (
           <DraftEmailComponent />
         )}
-
-        {/* <DraftEmailComponent /> */}
       </div>
     </div>
   );
 };
 
 export default ThreadDisplayMain;
-
-// const handleNextEmail = () => {
-//   const nextIndex = (currentEmailIndex + 1) % emails.length;
-//   setCurrentEmailIndex(nextIndex);
-//   setTitle(emails[nextIndex].subject);
-//   setBody(emails[nextIndex].body);
-// };
