@@ -24,6 +24,7 @@ export interface EmailMessage {
   category: string | null;
   action_draft: string | null;
   message_id: string;
+  approved: any;
 }
 
 export interface Mailbox {
