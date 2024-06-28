@@ -118,12 +118,13 @@ export default function Page() {
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
         </div>
       ) : (
         <>
           <Card className="w-[95%] min-w-[330px] m-2 flex justify-between">
             <CardHeader>
-              <CardTitle>Scheduling and budget</CardTitle>
+              <CardTitle>Scheduling</CardTitle>
               <CardDescription>
                 How do you want to schedule this campaign?
               </CardDescription>
@@ -139,7 +140,7 @@ export default function Page() {
                   href={
                     isSchedulingBudgetDisabled
                       ? "#"
-                      : `${params.campaignId}/scheduling-budget`
+                      : `${params.campaignId}/scheduling`
                   }
                 >
                   {isCampaignFound === false ? "Add" : "Edit"}

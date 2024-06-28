@@ -8,6 +8,17 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 export const leadColumns: ColumnDef<Lead>[] = [
   {
+    accessorKey: "photo_url",
+    header: "AVATAR",
+    cell: ({ row }) => (
+      <img
+        src={row.original.photo_url}
+        alt="Avatar"
+        style={{ width: "40px", height: "40px", borderRadius: "50%" }}
+      />
+    ),
+  },
+  {
     accessorKey: "name",
     header: "NAME",
     cell: ({ row }) => <NameAction data={row.original} />,
@@ -15,6 +26,11 @@ export const leadColumns: ColumnDef<Lead>[] = [
   {
     accessorKey: "title",
     header: "ROLE",
+  },
+  {
+    accessorFn: (row) =>
+      row.employment_history?.[0]?.organization_name || "N/A",
+    header: "COMPANY",
   },
 ];
 

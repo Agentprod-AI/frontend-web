@@ -90,7 +90,7 @@ export default function Page() {
       </RadioGroup>
       {isProspectActive && (
         <div>
-          <PeopleFormComponent type="create" />
+          <PeopleFormComponent />
         </div>
       )}
       {isImportActive && <ImportAudience />}
