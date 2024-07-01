@@ -112,6 +112,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const leadId = leads[0]?.campaign_id;
 
+  console.log("Thread, from thread->", thread);
 
   React.useEffect(() => {
     axiosInstance
@@ -604,12 +605,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         user_id: user.id,
         previous_emails: [
           {
-            subject: title,
-            body: body,
+            subject: lastEmail.subject,
+            body: lastEmail.body,
           },
         ],
       };
 
+      console.log(payload);
       axiosInstance
         .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
@@ -626,6 +628,30 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         generateFollowUp();
       }
     }, [lastEmail && !lastEmail.is_reply]);
+
+    const regenrateFollowUp = React.useCallback(() => {
+      const payload = {
+        follow_up_number: 1,
+        user_id: user.id,
+        previous_emails: [
+          {
+            subject: lastEmail.subject,
+            body: lastEmail.body,
+          },
+        ],
+      };
+
+      axiosInstance
+        .post("v2/training/autogenerate/followup", payload)
+        .then((response) => {
+          setFollowUpSubject(response.data.subject);
+          setFollowUpBody(response.data.body);
+          console.log("Regenerated");
+        })
+        .catch((error) => {
+          console.error("Error fetching followup data:", error);
+        });
+    }, [user.id, title, body]);
 
     const handleApproveEmail = () => {
       setLoadingSmartSchedule(true);
@@ -843,7 +869,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       <Button
                         variant={"ghost"}
                         onClick={() => {
-                          generateFollowUp();
+                          regenrateFollowUp();
                           toast.success("Draft Regenerating!!");
                         }}
                       >
