@@ -26,7 +26,8 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { Check } from "lucide-react";
+import { Check, CheckCircle, Info } from "lucide-react";
+import { FiAlertTriangle } from "react-icons/fi";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/icons";
 import { GmailIcon, LoadingCircle } from "@/app/icons";
@@ -36,6 +37,7 @@ import { useUserContext } from "@/context/user-context";
 import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
+import { Badge } from "@/components/ui/badge";
 
 interface MailData {
   id: number;
@@ -45,6 +47,9 @@ interface MailData {
   sender_id: any;
   platform: String;
   mailbox: String;
+  issues: String;
+  dns: Array<{ Name: string; Type: string; Value: string }>;
+  domain: String;
 }
 
 const initialMailboxes = [
@@ -56,6 +61,15 @@ const initialMailboxes = [
     warmup: true,
     daily_limit: 30,
     platform: "",
+    issues: "",
+    dns: [
+      {
+        Name: "",
+        Type: "",
+        Value: "",
+      },
+    ],
+    domain: "",
   },
 ];
 
@@ -178,7 +192,7 @@ export default function Page() {
       console.log("Domain data fetched successfully:", response.data);
       setFetchSuccess(true);
       setLoading(false);
-      toast.success("Domain Data Fetched Successfully.");
+      toast.success("Domain Verified Successfully.");
     } catch (error) {
       setLoading(false);
       setFetchSuccess(false);
@@ -196,7 +210,10 @@ export default function Page() {
       const response = await axiosInstance.get(
         `/v2/settings/mailboxes/${user.id}`
       );
-      const mailboxes = response.data;
+      const mailboxes = response.data.map((mailbox: any) => ({
+        ...mailbox,
+        dns: mailbox.dns ? JSON.parse(mailbox.dns) : [],
+      }));
       setMailboxes(mailboxes);
 
       const googleMailbox = mailboxes.find(
@@ -234,7 +251,6 @@ export default function Page() {
       console.error("Failed to verify email:", error);
       toast.error("Email Already In Use.");
     }
-    setIsVerifyEmailOpen(true);
   };
 
   const handleCopy = (text: string) => {
@@ -288,14 +304,24 @@ export default function Page() {
               : 1,
           mailbox: emailInput,
           sender_name: nameInput,
-          warmup: false,
+          warmup: true,
           daily_limit: 30,
         };
-        addMailbox(newMailbox);
+        const dnsPayload = {
+          domain: domainInput,
+          data: mailData,
+          mail: emailInput,
+        };
+        await axiosInstance.post("v2/users/dns", dnsPayload);
+        await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
+        console.log(dnsPayload);
         setIsVerifyEmailOpen(false);
         setIsTableDialogOpen(true);
+        addMailbox(newMailbox);
         toast.success("Mailbox Added Successfully");
         console.log("Mailbox added successfully:", mailboxes);
+        // Fetch the updated mailboxes list
+        fetchMailboxes();
       } else {
         alert("OTP validation failed: " + "Invalid OTP entered.");
       }
@@ -330,13 +356,15 @@ export default function Page() {
             <Skeleton className="w-full h-[70px] rounded-none" />
           </div>
         ) : mailboxes.length > 0 ? (
-          <Table className="w-full text-left">
+          <Table className="w-full text-center">
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead className="w-1/5">MAILBOX</TableHead>
                 <TableHead>NAME ACCOUNT</TableHead>
                 <TableHead>WARM-UP</TableHead>
                 <TableHead className="text-left">DAILY LIMIT</TableHead>
+                <TableHead className="text-center">STATUS</TableHead>
+                <TableHead>DNS Record</TableHead>
                 <TableHead> </TableHead>
               </TableRow>
             </TableHeader>
@@ -345,7 +373,16 @@ export default function Page() {
                 <TableRow key={index}>
                   <TableCell>
                     <div className="flex items-center gap-3">
-                      <GmailIcon />
+                      {mailbox.platform === "Google" ? (
+                        <GmailIcon />
+                      ) : (
+                        <Image
+                          src="/bw-logo.png"
+                          alt="agent-prod"
+                          width="20"
+                          height="20"
+                        />
+                      )}
                       <span>{mailbox.mailbox}</span>
                     </div>
                   </TableCell>
@@ -380,6 +417,129 @@ export default function Page() {
                   </TableCell>
 
                   <TableCell>{mailbox.daily_limit}</TableCell>
+                  <TableCell>
+                    <Badge
+                      className={`gap-1 flex text-[10px] items-center rounded-full ${
+                        mailbox.issues === "Urgent Issues"
+                          ? "bg-red-300 text-red-700"
+                          : "bg-green-300 text-green-700"
+                      }`}
+                    >
+                      {mailbox.issues === "Urgent Issues" ? (
+                        <FiAlertTriangle className="h-[14px] w-[14px] scale-x-100" />
+                      ) : mailbox.issues === "Good" ? (
+                        <CheckCircle className="h-[14px] w-[14px] scale-x-100" />
+                      ) : null}
+
+                      {mailbox.issues &&
+                        mailbox.issues.toString().toUpperCase()}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Dialog>
+                      <DialogTrigger
+                        asChild
+                        className="flex gap-1 items-center"
+                      >
+                        <Button variant={"secondary"} className="p-2">
+                          <Info className="h-4 w-4" />
+                          DNS
+                        </Button>
+                      </DialogTrigger>
+                      <DialogContent className="w-full max-w-4xl">
+                        <DialogHeader>
+                          <DialogTitle>DNS Records</DialogTitle>
+                        </DialogHeader>
+                        <div className="grid items-center gap-4 w-full">
+                          <Table className="mt-4 w-full">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Value</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              {mailbox?.dns.map((dns) => (
+                                <TableRow key={dns.Value}>
+                                  <TableCell>{dns.Type}</TableCell>
+                                  <TableCell>
+                                    <div className="flex gap-2">
+                                      <Icons.copy
+                                        className="cursor-pointer "
+                                        onClick={() => handleCopy(dns.Name)}
+                                      />
+                                      <span className="w-96 overflow-x-scroll">
+                                        {dns?.Name}
+                                      </span>
+                                    </div>
+                                  </TableCell>
+                                  <TableCell>
+                                    <div className="flex items-center gap-2">
+                                      <Icons.copy
+                                        className="cursor-pointer"
+                                        onClick={() => handleCopy(dns.Value)}
+                                      />
+                                      <span>{dns.Value}</span>
+                                    </div>
+                                  </TableCell>
+                                </TableRow>
+                              ))}
+                            </TableBody>
+                          </Table>
+                        </div>
+                        <Table className="mt-4 w-full">
+                          <TableHeader>
+                            <TableRow>
+                              <TableHead>Type</TableHead>
+                              <TableHead>Name</TableHead>
+                              <TableHead>Priority</TableHead>
+                              <TableHead>Value</TableHead>
+                            </TableRow>
+                          </TableHeader>
+                          <TableBody>
+                            <TableRow>
+                              <TableCell>
+                                <input
+                                  type="text"
+                                  value={"MX"}
+                                  readOnly
+                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <input
+                                  type="text"
+                                  // value={mailData[0] ? mailData[0].Name : "No data found"}
+                                  value={mailbox.domain}
+                                  readOnly
+                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <input
+                                  type="text"
+                                  value={"1"}
+                                  readOnly
+                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                />
+                              </TableCell>
+                              <TableCell>
+                                <input
+                                  type="text"
+                                  value={
+                                    "inbound-smtp.us-east-1.amazonaws.com."
+                                  }
+                                  readOnly
+                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                />
+                              </TableCell>
+                            </TableRow>
+                          </TableBody>
+                        </Table>
+                      </DialogContent>
+                    </Dialog>
+                  </TableCell>
                   <TableCell>
                     <Dialog>
                       <DialogTrigger asChild>
@@ -572,7 +732,7 @@ export default function Page() {
               variant="secondary"
               type="submit"
               onClick={fetchDomain}
-              className="w-48"
+              className="w-56"
             >
               {loading ? (
                 <LoadingCircle />
@@ -710,7 +870,14 @@ export default function Page() {
             </TableBody>
           </Table>
           <DialogFooter>
-            <Button type="button" onClick={() => setIsTableDialogOpen(false)}>
+            <Button
+              type="button"
+              onClick={() => {
+                setIsTableDialogOpen(false);
+                setIsVerifyEmailOpen(false);
+                setIsAddMailboxOpen(false);
+              }}
+            >
               Close
             </Button>
           </DialogFooter>
