@@ -365,10 +365,22 @@ export default function Training() {
           </Tabs>
           {startCampaignIsLoading ? (
             <LoadingCircle />
-          ) : type === "create" ? (
-            <Button onClick={handleStartCampaign}>Start campaign</Button>
           ) : (
-            <Button onClick={handleStartCampaign}>Edit campaign</Button>
+            <Dialog>
+              <DialogTrigger>
+                {" "}
+                <Button>Test campaign</Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Are you absolutely sure?</DialogTitle>
+                  <DialogDescription>
+                    This action cannot be undone. This will permanently delete
+                    your account and remove your data from our servers.
+                  </DialogDescription>
+                </DialogHeader>
+              </DialogContent>
+            </Dialog>
           )}
         </div>
       </div>

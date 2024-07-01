@@ -69,8 +69,7 @@ function AudienceTable() {
           <TableHeader>
             <TableRow>
               <TableHead>SELECT</TableHead>
-              <TableHead>AVATAR</TableHead>
-              <TableHead>NAME</TableHead>
+              <TableHead className="flex justify-center">NAME</TableHead>
               <TableHead>ROLE</TableHead>
               <TableHead>COMPANY</TableHead>
             </TableRow>
@@ -78,19 +77,19 @@ function AudienceTable() {
           <TableBody>
             {allLeads.map((lead) => (
               <TableRow key={lead.id}>
-                <TableCell>
+                <TableCell className="">
                   <Checkbox
                     checked={selectedRows.has(lead.id)}
                     onCheckedChange={() => handleCheckboxChange(lead.id)}
                   />
                 </TableCell>
-                <TableCell>
+                <TableCell className="font-medium flex justify-center items-center">
                   <Avatar>
                     <AvatarImage src={lead.photo_url} alt={lead.name} />
-                    <AvatarFallback>{lead.name}</AvatarFallback>
+                    <AvatarFallback>{lead.name?.[0]}</AvatarFallback>
                   </Avatar>
+                  <span className="ml-4">{lead.name}</span>
                 </TableCell>
-                <TableCell className="font-medium">{lead.name}</TableCell>
                 <TableCell>{lead.title}</TableCell>
                 <TableCell>
                   {lead.employment_history?.[0]?.organization_name || "N/A"}
