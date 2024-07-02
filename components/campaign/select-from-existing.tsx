@@ -22,6 +22,7 @@ export const SelectFromExisting = () => {
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
+  const [type, setType] = useState<"create" | "edit">("create");
 
   useEffect(() => {
     async function fetchAllLeads() {
@@ -42,6 +43,34 @@ export const SelectFromExisting = () => {
 
     fetchAllLeads();
   }, []);
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Audience not found") {
+            setType("create");
+          } else {
+            if (existingLeads) {
+              // Assuming setLeads sets the leads only if existingLeads exist
+              setLeads(data);
+            }
+            console.log("data ==>", data);
+            setType("edit");
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
 
   function mapLeadsToBodies(leads: Contact[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
@@ -128,7 +157,7 @@ export const SelectFromExisting = () => {
         )}
         {isCreateBtnLoading ? (
           <LoadingCircle />
-        ) : (
+        ) : type === "create" ? (
           <Button
             onClick={(event) => {
               event.preventDefault();
@@ -136,6 +165,15 @@ export const SelectFromExisting = () => {
             }}
           >
             Create Audience
+          </Button>
+        ) : (
+          <Button
+            onClick={(event) => {
+              event.preventDefault();
+              createAudience();
+            }}
+          >
+            Update Audience
           </Button>
         )}
       </main>

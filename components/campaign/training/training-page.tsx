@@ -378,6 +378,7 @@ export default function Training() {
                     This action cannot be undone. This will permanently delete
                     your account and remove your data from our servers.
                   </DialogDescription>
+                  <Button onClick={handleStartCampaign}>Start campaign</Button>
                 </DialogHeader>
               </DialogContent>
             </Dialog>
