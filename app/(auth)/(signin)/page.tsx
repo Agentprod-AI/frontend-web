@@ -1,5 +1,6 @@
 "use client";
 import Link from "next/link";
+import { useState } from "react";
 import UserAuthForm from "@/components/forms/auth/user-auth-form";
 import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
@@ -13,12 +14,28 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { resetPassword } from "@/app/(auth)/actions"; // adjust the path accordingly
+import { toast } from "sonner";
 
 export default function AuthenticationPage() {
   const { user } = useAuth();
+  const [email, setEmail] = useState("");
+  const [loading, setLoading] = useState(false);
+
   if (user) {
     redirect("/dashboard");
   }
+
+  const handlePasswordReset = async () => {
+    setLoading(true);
+    try {
+      await resetPassword({ email });
+      toast.success("Password reset email sent!");
+    } catch (error) {
+      toast.error("Error sending email " + error);
+    }
+    setLoading(false);
+  };
 
   return (
     <div className="p-4 lg:p-8 h-full flex items-center">
@@ -44,8 +61,18 @@ export default function AuthenticationPage() {
               <DialogTitle>Enter your Email to reset Your Password</DialogTitle>
               <DialogDescription>
                 <div className="text-start text-lg py-2">Email</div>
-                <Input placeholder="Enter Email" />
-                <Button className="my-2 mt-4 flex">Send Email</Button>
+                <Input
+                  placeholder="Enter Email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+                <Button
+                  className="my-2 mt-4 flex"
+                  onClick={handlePasswordReset}
+                  disabled={loading}
+                >
+                  {loading ? "Sending..." : "Send Email"}
+                </Button>
               </DialogDescription>
             </DialogHeader>
           </DialogContent>

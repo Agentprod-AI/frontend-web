@@ -369,7 +369,15 @@ export default function Training() {
             <Dialog>
               <DialogTrigger>
                 {" "}
-                <Button>Test campaign</Button>
+                <Button
+                  onClick={() => {
+                    axios.post(
+                      `${process.env.NEXT_PUBLIC_SERVER_URL}v2/google/test-mail`
+                    );
+                  }}
+                >
+                  Test campaign
+                </Button>
               </DialogTrigger>
               <DialogContent>
                 <DialogHeader>

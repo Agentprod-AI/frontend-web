@@ -32,6 +32,8 @@ const autopilotFormSchema = z.object({
   maybe_later: z.boolean().default(false).optional(),
   forwarded: z.boolean().default(false).optional(),
   error: z.boolean().default(false).optional(),
+  demo: z.boolean().default(false).optional(),
+  not_interested: z.boolean().default(false).optional(),
 });
 
 type AutopilotFormValues = z.infer<typeof autopilotFormSchema>;
@@ -48,6 +50,8 @@ const defaultValues: Partial<AutopilotFormValues> = {
   maybe_later: false,
   forwarded: false,
   error: false,
+  demo: false,
+  not_interested: false,
 };
 
 export function AutopilotForm() {
@@ -278,6 +282,48 @@ export function AutopilotForm() {
                       <FormLabel className="text-base">Error</FormLabel>
                       <FormDescription>
                         Block contact and mark as lost if an email bounces.
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="demo"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg px-4 py-2">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">Demo</FormLabel>
+                      <FormDescription>
+                        {/* Block contact and mark as lost if an email bounces. */}
+                      </FormDescription>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="not_interested"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg px-4 py-2">
+                    <div className="space-y-0.5">
+                      <FormLabel className="text-base">
+                        Not Interested
+                      </FormLabel>
+                      <FormDescription>
+                        {/* Block contact and mark as lost if an email bounces. */}
                       </FormDescription>
                     </div>
                     <FormControl>

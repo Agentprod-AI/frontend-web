@@ -58,6 +58,7 @@ export const ImportAudience = () => {
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [type, setType] = useState<"create" | "edit">("create");
 
   const { setPageCompletion } = useButtonStatus();
 
@@ -80,6 +81,32 @@ export const ImportAudience = () => {
       Papa.parse(file, config);
     }
   }, [file]);
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "No Contacts found") {
+            setType("create");
+          } else {
+            setLeads(data);
+
+            console.log("data ==>", data);
+            setType("edit");
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
 
   const handleRemoveFile = () => {
     setFile(undefined);
@@ -356,8 +383,24 @@ export const ImportAudience = () => {
           <AudienceTableClient />
           {isCreateBtnLoading ? (
             <LoadingCircle />
+          ) : type === "create" ? (
+            <Button
+              onClick={(event) => {
+                event.preventDefault();
+                createAudience();
+              }}
+            >
+              Create Audience
+            </Button>
           ) : (
-            <Button onClick={createAudience}>Create Audience</Button>
+            <Button
+              onClick={(event) => {
+                event.preventDefault();
+                createAudience();
+              }}
+            >
+              Update Audience
+            </Button>
           )}
         </>
       )}
