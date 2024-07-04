@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
-import React from "react";
-
+import { nullable, z } from "zod";
+import React, { useEffect, useState } from "react";
+import { useParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
 import {
   Form,
@@ -19,7 +20,7 @@ import {
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Switch } from "@/components/ui/switch";
-import { toast } from "@/components/ui/use-toast";
+import axios from "axios";
 
 const autopilotFormSchema = z.object({
   all_messages_actions: z.boolean().default(false).optional(),
@@ -55,21 +56,121 @@ const defaultValues: Partial<AutopilotFormValues> = {
 };
 
 export function AutopilotForm() {
+  const params = useParams<{ campaignId: string }>();
+  const [type, setType] = useState<"create" | "edit">("create");
+
   const form = useForm<AutopilotFormValues>({
     resolver: zodResolver(autopilotFormSchema),
     defaultValues,
   });
+  const { setValue, watch } = form;
+  const allMessagesActions = watch("all_messages_actions");
+  const reply = watch("replies");
 
-  function onSubmit(data: AutopilotFormValues) {
-    console.log("Data: ", data);
-    toast({
-      title: "You submitted the following values:",
-      description: (
-        <pre className="mt-2 w-[340px] rounded-md bg-slate-950 p-4">
-          <code className="text-white">{JSON.stringify(data, null, 2)}</code>
-        </pre>
-      ),
-    });
+  useEffect(() => {
+    const setAllValues = (value: boolean) => {
+      setValue("outbound_sequences", value);
+      setValue("replies", value);
+      setValue("out_of_office", value);
+      setValue("positive", value);
+      setValue("negative", value);
+      setValue("neutral", value);
+      setValue("maybe_later", value);
+      setValue("forwarded", value);
+      setValue("error", value);
+      setValue("demo", value);
+      setValue("not_interested", value);
+    };
+
+    if (allMessagesActions) {
+      setAllValues(true);
+    } else {
+      setAllValues(false);
+    }
+  }, [allMessagesActions, setValue]);
+
+  useEffect(() => {
+    const setReplyValues = (value: boolean) => {
+      setValue("out_of_office", value);
+      setValue("positive", value);
+      setValue("negative", value);
+      setValue("neutral", value);
+      setValue("maybe_later", value);
+      setValue("forwarded", value);
+      setValue("error", value);
+      setValue("demo", value);
+      setValue("not_interested", value);
+    };
+
+    if (reply) {
+      setReplyValues(true);
+    } else {
+      setReplyValues(false);
+    }
+  }, [reply, setValue]);
+
+  useEffect(() => {
+    async function call() {
+      const res = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot/${params.campaignId}`
+      );
+      if (res.data === null) {
+        setType("create");
+      } else {
+        setType("edit");
+        const data = res.data;
+        setValue("outbound_sequences", data.email ?? false);
+        setValue("out_of_office", data.ooo ?? false);
+        setValue("positive", data.positive ?? false);
+        setValue("negative", data.negative ?? false);
+        setValue("neutral", data.neutral ?? false);
+        setValue("maybe_later", data.maybe_later ?? false);
+        setValue("forwarded", data.forwarded ?? false);
+        setValue("error", data.error ?? false);
+        setValue("demo", data.demo ?? false);
+        setValue("not_interested", data.not_interested ?? false);
+        toast.success("Autopilot settings loaded successfully.");
+      }
+    }
+    call();
+  }, []);
+
+  async function onSubmit(data: AutopilotFormValues) {
+    try {
+      if (type === "create") {
+        await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot`, {
+          campaign_id: params.campaignId,
+          demo: data.demo,
+          not_interested: data.not_interested,
+          email: data.outbound_sequences,
+          ooo: data.out_of_office,
+          positive: data.positive,
+          negative: data.negative,
+          neutral: data.neutral,
+          maybe_later: data.maybe_later,
+          forwarded: data.forwarded,
+          error: data.error,
+        });
+        toast.success("Autopilot settings created successfully.");
+      } else {
+        await axios.put(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot`, {
+          campaign_id: params.campaignId,
+          demo: data.demo,
+          not_interested: data.not_interested,
+          email: data.outbound_sequences,
+          ooo: data.out_of_office,
+          positive: data.positive,
+          negative: data.negative,
+          neutral: data.neutral,
+          maybe_later: data.maybe_later,
+          forwarded: data.forwarded,
+          error: data.error,
+        });
+        toast.success("Autopilot settings updated successfully.");
+      }
+    } catch (error) {
+      toast.error("An error occurred while saving the autopilot settings.");
+    }
   }
 
   return (
@@ -337,7 +438,7 @@ export function AutopilotForm() {
               />
             </div>
           </div>
-          {/* <Button type="submit">Update notifications</Button> */}
+          <Button type="submit">Update notifications</Button>
         </form>
       </Form>
     </div>
