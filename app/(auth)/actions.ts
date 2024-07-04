@@ -72,7 +72,7 @@ export async function resetPassword(formData: { email: string }) {
   };
 
   const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-    redirectTo: `http://localhost:3000/reset`,
+    redirectTo: `https://app.agentprod.com/reset`,
   });
 
   if (error) {

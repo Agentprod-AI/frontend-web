@@ -669,11 +669,11 @@ export default function EditorContent() {
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
                     <div className="text-white/40 space-y-4">
-                      Hi Samrah, since I haven’t heard back from you yet, I
-                      assume automating sales with AI is not relevant to you at
-                      this point. If there’s someone else in your team who might
-                      be the right point of contact, please connect me. Sorry if
-                      I bothered you, and wish you all the best!
+                      Hi Alex, since I haven’t heard back from you yet, I assume
+                      automating sales with AI is not relevant to you at this
+                      point. If there’s someone else in your team who might be
+                      the right point of contact, please connect me. Sorry if I
+                      bothered you, and wish you all the best!
                     </div>
                   </div>
                 </div>
