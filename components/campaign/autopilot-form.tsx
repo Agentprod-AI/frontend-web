@@ -220,8 +220,16 @@ export function AutopilotForm() {
               "Error",
               "Block contact and mark as lost if an email bounces."
             )}
-            {renderSwitchField("demo", "Demo", "")}
-            {renderSwitchField("not_interested", "Not Interested", "")}
+            {renderSwitchField(
+              "demo",
+              "Demo",
+              "Respond send them a calendar link"
+            )}
+            {renderSwitchField(
+              "not_interested",
+              "Not Interested",
+              "Respond, ask for any other help and dont send any future campaign emails."
+            )}
           </div>
 
           <Button type="submit">Update notifications</Button>
