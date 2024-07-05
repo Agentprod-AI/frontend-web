@@ -61,6 +61,8 @@ import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
 import { Badge } from "../ui/badge";
 import { last, previous } from "slate";
+import { parseActionDraft } from "./parse-draft";
+import Image from "next/image";
 
 interface ThreadDisplayMainProps {
   ownerEmail: string;
@@ -112,9 +114,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const leadId = leads[0]?.campaign_id;
 
-  console.log("Thread, from thread->", thread);
-
   React.useEffect(() => {
+    // For handleing, the thread if some error occurs
+    setError(""); // Reset error state when conversationId changes
+    setIsLoading(true); // Set loading state when conversationId changes
+    // For handleing, the thread if some error occurs
     axiosInstance
       .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
       .then((response) => {
@@ -159,8 +163,17 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   if (error) {
     return (
-      <div className="flex justify-center items-center h-screen">
-        <div className="text-lg font-medium text-red-500">Error: {error}</div>
+      <div className="flex justify-center flex-col items-center h-screen">
+        <Image
+          src="/error.svg"
+          alt="empty-inbox"
+          width="200"
+          height="200"
+          className="dark:filter dark:invert"
+        />
+        <p className="flex justify-center items-center mt-10 ml-6  text-gray-500">
+          Oops!! Something Went Wrong
+        </p>
       </div>
     );
   }
@@ -216,6 +229,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         body: email.body,
       };
 
+      console.log("Info re", payload);
+
       axiosInstance
         .post("/v2/mailbox/send/immediately", payload)
         .then((response) => {
@@ -264,8 +279,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         conversation_id: conversationId,
         campaign_id: leads[0].campaign_id,
       };
-
-      console.log("Payload for regeenerate", payload);
 
       axiosInstance
         .post(`/v2/mailbox/draft/regenerate`, payload)
@@ -354,7 +367,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               <CardHeader>
                 <CardTitle className="text-sm flex -mt-8 -ml-3">
                   <Input
-                    value={email.subject}
+                    value={parseActionDraft(email.body).subject}
                     className="text-xs"
                     placeholder="Subject"
                     readOnly
@@ -363,7 +376,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
                 <Textarea
-                  value={email.body}
+                  value={parseActionDraft(email.body).body}
                   readOnly
                   className="text-xs h-64"
                   placeholder="Enter email body"
@@ -569,12 +582,18 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [error, setError] = React.useState("");
     const { user } = useUserContext();
     const internalScrollRef = React.useRef<HTMLDivElement>(null);
+
     const lastEmail = thread[thread.length - 1];
 
     React.useEffect(() => {
+      // For handleing, the thread if some error occurs
+      setError(""); // Reset error state when conversationId changes
+      setIsLoading(true); // Set loading state when conversationId changes
+      // For handleing, the thread if some error occurs
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
+          console.log("Initial Draft", response.data);
           if (response.data.length > 0) {
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
@@ -610,8 +629,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           },
         ],
       };
-
-      console.log(payload);
       axiosInstance
         .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
@@ -657,14 +674,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       setLoadingSmartSchedule(true);
       const payload = {
         conversation_id: conversationId,
-        sender:
-          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
-            ? "muskaan@agenptrodai.com"
-            : senderEmail,
-        recipient:
-          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
-            ? "info.agentprod@gmail.com"
-            : recipientEmail,
+        sender: senderEmail,
+        recipient: recipientEmail,
         subject: title,
         body: body,
       };
@@ -689,14 +700,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
-        sender:
-          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
-            ? "muskaan@agenptrodai.com"
-            : senderEmail,
-        recipient:
-          user.id === "54d58714-1e64-46d4-8dfa-02bc24cf9a52"
-            ? "info.agentprod@gmail.com"
-            : recipientEmail,
+        sender: "srinathreddy239@gmail.com",
+        recipient: "mdanassabah@gmail.com",
         subject: title,
         body: body,
       };
@@ -890,7 +895,20 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
 
     if (error) {
-      return <div>Error: {error}</div>;
+      return (
+        <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">
+          <Image
+            src="/error.svg"
+            alt="empty-inbox"
+            width="200"
+            height="200"
+            className="dark:filter dark:invert"
+          />
+          <p className="flex justify-center items-center mt-10 ml-6  text-gray-500">
+            Oops!! Something Went Wrong
+          </p>
+        </div>
+      );
     }
 
     return (

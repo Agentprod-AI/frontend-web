@@ -311,7 +311,7 @@ export default function Page() {
             <div
               className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
               onClick={() => {
-                handleHubspotConnect();
+                setIsHubspotMailboxOpen(true);
               }}
             >
               {isConnectedToHubspot ? "Connected" : "Connect"}
@@ -411,9 +411,22 @@ export default function Page() {
                 <Button
                   className="mt-3"
                   type="submit"
-                  onClick={() => updateHubspotLeadType()}
+                  onClick={() => {
+                    if (!isConnectedToHubspot) {
+                      handleHubspotConnect();
+                      setTimeout(() => updateHubspotLeadType(), 100000);
+                    } else {
+                      updateHubspotLeadType();
+                    }
+                  }}
                 >
-                  {loading ? <LoadingCircle /> : "Update"}
+                  {loading ? (
+                    <LoadingCircle />
+                  ) : isConnectedToHubspot ? (
+                    "Update"
+                  ) : (
+                    "Login"
+                  )}
                 </Button>
               </DialogFooter>
             </DialogContent>
