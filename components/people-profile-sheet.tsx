@@ -281,7 +281,7 @@ export const PeopleProfileSheet = ({
                             className="text-muted-foreground text-sm whitespace-normal w-full"
                             key={key}
                           >
-                            {formatText(key)}: <span>(value as string)</span>
+                            {formatText(key)}: <span>{value as string}</span>
                           </div>
                         )
                       )}

@@ -44,6 +44,7 @@ import { useMailbox } from "@/context/mailbox-provider";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import { LoadingCircle } from "@/app/icons";
+// import { parseActionDraft } from "./parse-draft";
 
 interface EmailMessage {
   id: any;
@@ -154,6 +155,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
   React.useEffect(() => {
     if (email.action_draft) {
       const { subject, body } = parseActionDraft(email.action_draft);
+      // console.log(subject, body);
       setTitle(subject);
       setBody(body);
     }
@@ -214,7 +216,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
 
     return { subject, body };
   };
-
   const cleanedCategory = email?.category?.trim();
 
   const handleSendNow = () => {
@@ -378,54 +379,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                         <span className="text-green-500 text-sm ">Draft</span>
                       ) : null}
                     </div>
-
-                    {/* <p className="ml-1 text-xs">
-                    {cleanedCategory === "OOO" && (
-                      <Badge className="gap-1 items-center rounded-full bg-yellow-600">
-                        <UserX className="h-[14px] w-[14px] scale-x-100" />
-                        Out of office
-                      </Badge>
-                    )}
-                    {cleanedCategory === "Positive" && (
-                      <Badge className="gap-1 items-center rounded-full bg-green-600">
-                        <ThumbsUp className="h-[14px] w-[14px] scale-x-100" />
-                        Positive
-                      </Badge>
-                    )}
-                    {cleanedCategory === "Negative" && (
-                      <Badge
-                        variant="destructive"
-                        className="gap-1 items-center rounded-full"
-                      >
-                        <ThumbsDown className="-scale-x-100 h-[14px] w-[14px]" />
-                        Negative
-                      </Badge>
-                    )}
-                    {cleanedCategory === "Forwarded" && (
-                      <Badge className="gap-1 items-center rounded-full bg-blue-600">
-                        <Forward className="h-[14px] w-[14px]" />
-                        Forwarded
-                      </Badge>
-                    )}
-                    {cleanedCategory === "Later" && (
-                      <Badge className="gap-1 items-center rounded-full bg-orange-600">
-                        <TimerReset className="h-[14px] w-[14px]" />
-                        Maybe Later
-                      </Badge>
-                    )}
-                    {cleanedCategory === "Demo" && (
-                      <Badge className="gap-1 items-center rounded-full bg-purple-600">
-                        <CalendarCheck className="h-[14px] w-[14px]" />
-                        Demo
-                      </Badge>
-                    )}
-                    {cleanedCategory === "Neutral" && (
-                      <Badge className="gap-1 items-center rounded-full bg-gray-600">
-                        <Bell className="h-[14px] w-[14px]" />
-                        Neutral
-                      </Badge>
-                    )}
-                  </p> */}
                   </div>
                   <CardHeader className="-mt-8 -ml-3">
                     <CardTitle className="text-sm flex flex-col ">

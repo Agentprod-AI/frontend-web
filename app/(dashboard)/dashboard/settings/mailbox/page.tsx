@@ -2,10 +2,9 @@
 /* eslint-disable no-console */
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
-
 import { Button } from "@/components/ui/button";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import {
@@ -26,8 +25,14 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
-import { Check, CheckCircle, Info } from "lucide-react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Check, CheckCircle, Dot, Info, Lightbulb } from "lucide-react";
 import { FiAlertTriangle } from "react-icons/fi";
+import { BiError } from "react-icons/bi";
 import { Input } from "@/components/ui/input";
 import { Icons } from "@/components/icons";
 import { GmailIcon, LoadingCircle } from "@/app/icons";
@@ -38,6 +43,9 @@ import { toast } from "sonner";
 import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
+import axios from "axios";
+import { Progress } from "@/components/ui/progress";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MailData {
   id: number;
@@ -50,6 +58,7 @@ interface MailData {
   issues: String;
   dns: Array<{ Name: string; Type: string; Value: string }>;
   domain: String;
+  health: String;
 }
 
 const initialMailboxes = [
@@ -70,12 +79,15 @@ const initialMailboxes = [
       },
     ],
     domain: "",
+    health: 0,
   },
 ];
 
 export default function Page() {
   const [googleMail, setGoogleMail] = useState<any>("");
-  const [inputAppPassword, setInputAppPassword] = useState("");
+  const [inputAppPassword, setInputAppPassword] = useState(
+    "ljmi jnlg wglm gftv"
+  );
   const [loading, setLoading] = useState(false);
   const [fetchSuccess, setFetchSuccess] = useState(false);
   const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
@@ -93,6 +105,7 @@ export default function Page() {
   const [isSecondWarmupDialogOpen, setIsSecondWarmupDialogOpen] =
     useState(false);
   const [isLoadingMailboxes, setIsLoadingMailboxes] = useState(false); // Shimmer UI Prep
+  const [isApppasswordLoading, setIsApppassowrdLoading] = useState(false);
   const { user } = useUserContext();
 
   const handleOpenAddMailbox = () => setIsChooseServiceOpen(true);
@@ -113,12 +126,19 @@ export default function Page() {
     }
   };
 
-  const handleEnableWarmup = async (email: any) => {
-    // setIsWarmupDialogOpen(true);
+  const fetchHealthData = async (userId: any) => {
     try {
-      const response = await axiosInstance.post(`/v2/google/warmup`, {
-        email,
-      });
+      const response = await axiosInstance.get(`/v2/settings/health/${userId}`);
+      return response.data;
+    } catch (error) {
+      console.error("Failed to fetch health data:", error);
+      return {};
+    }
+  };
+
+  const handleEnableWarmup = async (email: any) => {
+    try {
+      const response = await axiosInstance.post(`/v2/google/warmup`, { email });
       console.log("Warmup Enabled:", response.data);
       setMailboxes((prevMailboxes) =>
         prevMailboxes.map((mailbox) =>
@@ -151,20 +171,50 @@ export default function Page() {
     }
   };
 
+  // const handleAppPassword = async () => {
+  //   setIsApppassowrdLoading(true);
+  //   const payload = {
+  //     email: googleMail,
+  //     appKey: inputAppPassword,
+  //   };
+  //   try {
+  //     const response = await axios.post(
+  //       `http://localhost:8080/add-email`,
+  //       payload
+  //     );
+  //     if (response.data === "Success") {
+  //       setIsApppassowrdLoading(false);
+  //       handleEnableWarmup(googleMail);
+  //       setIsSecondWarmupDialogOpen(false);
+  //       toast.success("Warmup Enabled!!");
+  //     } else {
+  //       setIsApppassowrdLoading(false);
+  //       toast.error("Failed to setup warmup.");
+  //     }
+  //   } catch (error) {
+  //     console.error("Failed to setup warmup:", error);
+  //     toast.error("Failed to setup warmup.");
+  //   }
+  // };
   const handleAppPassword = async () => {
+    setIsApppassowrdLoading(true);
     const payload = {
       email: googleMail,
-      app_password: inputAppPassword,
+      appKey: inputAppPassword,
     };
     try {
-      const response = await axiosInstance.post(
-        `/v2/google/setup-warmup`,
+      const response = await axios.post(
+        `http://localhost:8080/add-email`,
         payload
       );
-      if (response.status === 200) {
+      if (response.data === "Success") {
+        setIsApppassowrdLoading(false);
+        handleEnableWarmup(googleMail);
+        localStorage.setItem(`warmupSetup_${googleMail}`, "true");
         setIsSecondWarmupDialogOpen(false);
         toast.success("Warmup Enabled!!");
       } else {
+        setIsApppassowrdLoading(false);
         toast.error("Failed to setup warmup.");
       }
     } catch (error) {
@@ -181,7 +231,7 @@ export default function Page() {
     }
   };
 
-  const fetchDomainData = React.useCallback(async () => {
+  const fetchDomainData = useCallback(async () => {
     setLoading(true);
     setFetchSuccess(false);
     try {
@@ -205,15 +255,19 @@ export default function Page() {
   };
 
   const fetchMailboxes = async () => {
-    setIsLoadingMailboxes(true); // Shimmer UI Prep
+    setIsLoadingMailboxes(true);
     try {
-      const response = await axiosInstance.get(
-        `/v2/settings/mailboxes/${user.id}`
-      );
-      const mailboxes = response.data.map((mailbox: any) => ({
+      const [mailboxesResponse, healthData] = await Promise.all([
+        axiosInstance.get(`/v2/settings/mailboxes/${user.id}`),
+        fetchHealthData(user.id),
+      ]);
+
+      const mailboxes = mailboxesResponse.data.map((mailbox: any) => ({
         ...mailbox,
         dns: mailbox.dns ? JSON.parse(mailbox.dns) : [],
+        health: healthData[mailbox.mailbox] || 0, // Set health from the health data
       }));
+
       setMailboxes(mailboxes);
 
       const googleMailbox = mailboxes.find(
@@ -222,13 +276,14 @@ export default function Page() {
       if (googleMailbox) {
         setGoogleMail(googleMailbox.mailbox);
       }
-      console.log("Mailboxes fetched successfully:", response.data);
+      console.log("Mailboxes fetched successfully:", mailboxes);
     } catch (error) {
       console.error("Failed to fetch mailboxes:", error);
     }
-    setIsLoadingMailboxes(false); // Shimmer UI Prep
+    setIsLoadingMailboxes(false);
   };
-  React.useEffect(() => {
+
+  useEffect(() => {
     if (user?.id) {
       fetchMailboxes();
     }
@@ -243,7 +298,6 @@ export default function Page() {
     try {
       const response = await axiosInstance.post("/v2/brevo/sender", postData);
       console.log("DataMailboxing for verification: ", response.data);
-      // setOtpInput(response.data.otp);
       setSenderID(response.data._id);
       handleCloseAddMailbox();
       setIsVerifyEmailOpen(true);
@@ -345,7 +399,7 @@ export default function Page() {
       <div
         className={`rounded-md ${
           mailboxes.length > 0 ? "border" : ""
-        }  border-collapse mt-4`}
+        } border-collapse mt-4`}
       >
         {isLoadingMailboxes ? (
           <div className="border-none">
@@ -356,15 +410,16 @@ export default function Page() {
             <Skeleton className="w-full h-[70px] rounded-none" />
           </div>
         ) : mailboxes.length > 0 ? (
-          <Table className="w-full text-center">
+          <Table className="w-full text-center text-xs">
             <TableHeader className="bg-muted/50">
               <TableRow>
                 <TableHead className="w-1/5">MAILBOX</TableHead>
                 <TableHead>NAME ACCOUNT</TableHead>
-                <TableHead>WARM-UP</TableHead>
+                <TableHead className="text-center">WARM-UP</TableHead>
                 <TableHead className="text-left">DAILY LIMIT</TableHead>
+                <TableHead className="text-left">Health</TableHead>
                 <TableHead className="text-center">STATUS</TableHead>
-                <TableHead>DNS Record</TableHead>
+                <TableHead>DNS</TableHead>
                 <TableHead> </TableHead>
               </TableRow>
             </TableHeader>
@@ -389,7 +444,7 @@ export default function Page() {
                   <TableCell>
                     {mailbox?.sender_name || "No Name Provided"}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     {mailbox?.platform === "Google" ? (
                       mailbox.warmup ? (
                         <Switch
@@ -401,7 +456,34 @@ export default function Page() {
                       ) : (
                         <Button
                           variant="secondary"
-                          onClick={() => handleEnableWarmup(mailbox.mailbox)}
+                          onClick={() => setIsWarmupDialogOpen(true)}
+                        >
+                          Setup Warmup
+                        </Button>
+                      )
+                    ) : (
+                      <Switch
+                        checked={mailbox.warmup}
+                        onCheckedChange={(isChecked) =>
+                          handleSwitchChange(isChecked, mailbox.mailbox)
+                        }
+                      />
+                    )}
+                  </TableCell> */}
+                  <TableCell>
+                    {mailbox?.platform === "Google" ? (
+                      mailbox.warmup ||
+                      localStorage.getItem(`warmupSetup_${mailbox.mailbox}`) ? (
+                        <Switch
+                          checked={mailbox.warmup}
+                          onCheckedChange={(isChecked) =>
+                            handleSwitchChange(isChecked, mailbox.mailbox)
+                          }
+                        />
+                      ) : (
+                        <Button
+                          variant="secondary"
+                          onClick={() => setIsWarmupDialogOpen(true)}
                         >
                           Setup Warmup
                         </Button>
@@ -418,22 +500,187 @@ export default function Page() {
 
                   <TableCell>{mailbox.daily_limit}</TableCell>
                   <TableCell>
-                    <Badge
-                      className={`gap-1 flex text-[10px] items-center rounded-full ${
-                        mailbox.issues === "Urgent Issues"
-                          ? "bg-red-300 text-red-700"
-                          : "bg-green-300 text-green-700"
-                      }`}
-                    >
-                      {mailbox.issues === "Urgent Issues" ? (
-                        <FiAlertTriangle className="h-[14px] w-[14px] scale-x-100" />
-                      ) : mailbox.issues === "Good" ? (
-                        <CheckCircle className="h-[14px] w-[14px] scale-x-100" />
-                      ) : null}
+                    {mailbox.health > 0 ? (
+                      <Progress value={mailbox.health} className={`h-2 w-10`} />
+                    ) : (
+                      <Skeleton className="h-2 w-10 bg-gray-300"></Skeleton>
+                    )}
+                  </TableCell>
+                  <TableCell>
+                    {mailbox.issues === null ? (
+                      <Popover>
+                        <PopoverTrigger>
+                          <Badge className="gap-1 flex text-[10px] items-center w-32 justify-center hover:cursor-pointer rounded-full hover:bg-gray-400 hover:text-gray-800 bg-gray-300 text-gray-700">
+                            <FiAlertTriangle className="h-[14px] w-[14px]" />
+                            UNKNOWN
+                          </Badge>
+                        </PopoverTrigger>
+                        <PopoverContent className="sm:max-w-[425px]">
+                          <div className="text-left flex flex-col gap-1">
+                            <FiAlertTriangle
+                              size={"30"}
+                              color="gray"
+                              className="mb-4"
+                            />
+                            <div>The status of this mailbox is unknown.</div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    ) : mailbox.issues.length > 2 ? (
+                      <Popover>
+                        <PopoverTrigger>
+                          <Badge className="gap-1 flex text-[10px] w-32 justify-center hover:cursor-pointer items-center rounded-full hover:bg-red-400 hover:text-red-800 bg-red-300 text-red-700">
+                            <FiAlertTriangle className="h-[14px] w-[14px]" />
+                            URGENT ISSUE
+                          </Badge>
+                        </PopoverTrigger>
 
-                      {mailbox.issues &&
-                        mailbox.issues.toString().toUpperCase()}
-                    </Badge>
+                        <PopoverContent className="w-full p-8">
+                          <ScrollArea className="h-[20rem] max-w-[35rem]">
+                            <div className="text-left flex flex-col gap-1">
+                              <div className="flex flex-row items-center gap-4">
+                                <Icons.alertCircle
+                                  size={"30"}
+                                  color="red"
+                                  className=""
+                                />
+                                Urgent Issues Detected.
+                              </div>
+                              <div className="mt-4">
+                                Critical issues have been identified with this
+                                mailbox:
+                                <ul className="flex flex-col gap-2 mt-1">
+                                  {JSON.parse(mailbox.issues).map(
+                                    (issue: any, index: any) => (
+                                      <li
+                                        key={index}
+                                        className="flex gap-1 items-center"
+                                      >
+                                        <BiError className="h-4 w-4 text-red-700" />
+                                        {issue.Info}
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                                <Separator />
+                                <div className="mt-2">Recommended Actions:</div>
+                                <ul className="flex flex-col gap-2 mt-1">
+                                  <li className="flex gap-1 items-center">
+                                    <Lightbulb className="h-4 w-4 text-green-700" />
+                                    <span>
+                                      {
+                                        "Access domain registrar or DNS provider.(For Eg. GoDaddy)"
+                                      }
+                                    </span>
+                                  </li>
+                                  <li className="flex gap-1 items-center">
+                                    <Lightbulb className="h-4 w-4 text-green-700" />
+                                    Go to DNS Management settings.
+                                  </li>
+                                  {JSON.parse(mailbox.issues).map(
+                                    (issue: any, index: any) => (
+                                      <li
+                                        key={index}
+                                        className="flex gap-1 items-center"
+                                      >
+                                        {issue.Name ===
+                                          "DNS Record Published" && (
+                                          <div className="flex flex-col gap-1">
+                                            <div className="flex gap-1 items-center">
+                                              <Lightbulb className="h-4 w-4 text-green-700" />
+                                              DNS Records:
+                                            </div>
+                                            <div className="flex gap-1 items-center">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>A Records:</b> Connect your
+                                              domain to your server&apos;s IP
+                                              address.
+                                            </div>
+                                            <div className="flex gap-1 items-center">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>MX Records:</b> Set up your
+                                              email servers.
+                                            </div>
+                                            <div className="flex gap-1 items-center">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>CNAME Records:</b> Link an
+                                              alias to another domain.
+                                            </div>
+                                          </div>
+                                        )}
+                                        {issue.Name ===
+                                          "SPF Record Published" && (
+                                          <div className="flex flex-col gap-1">
+                                            <div className="flex gap-1 items-center">
+                                              <Lightbulb className="h-4 w-4 text-green-700 mt-1" />
+                                              SPF Record:
+                                            </div>
+                                            <div className="flex gap-1 items-center ">
+                                              <Dot className="text-green-700 ml-2" />
+                                              Add TXT Record:
+                                            </div>
+                                            <div className="flex gap-1 items-center ml-3">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>Name:</b> @
+                                            </div>
+                                            <div className="flex gap-1 items-center ml-3">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>Type:</b> TXT
+                                            </div>
+                                          </div>
+                                        )}
+                                        {issue.Name ===
+                                          "DMARC Record Published" && (
+                                          <div className="flex flex-col gap-1">
+                                            <div className="flex gap-1 items-center">
+                                              <Lightbulb className="h-4 w-4 text-green-700 mt-1" />
+                                              DMARC Record:
+                                            </div>
+                                            <div className="flex gap-1 items-center ">
+                                              <Dot className="text-green-700 ml-2" />
+                                              Add a TXT Record:
+                                            </div>
+                                            <div className="flex gap-1 items-center ml-3">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>Name:</b>_dmarc
+                                            </div>
+                                            <div className="flex gap-1 items-center ml-3">
+                                              <Dot className="text-green-700 ml-2" />
+                                              <b>Type:</b> TXT
+                                            </div>
+                                          </div>
+                                        )}
+                                      </li>
+                                    )
+                                  )}
+                                </ul>
+                              </div>
+                            </div>
+                          </ScrollArea>
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <Popover>
+                        <PopoverTrigger>
+                          <Badge className="gap-1 flex text-[10px] items-center w-32 justify-center hover:cursor-pointer rounded-full hover:bg-green-400 hover:text-green-800 bg-green-300 text-green-700">
+                            <CheckCircle className="h-[14px] w-[14px]" />
+                            GOOD
+                          </Badge>
+                        </PopoverTrigger>
+                        <PopoverContent className="sm:max-w-[425px]">
+                          <div className="text-left flex flex-col gap-1">
+                            <CheckCircle
+                              size={"30"}
+                              color="green"
+                              className="mb-4"
+                            />
+                            <div>
+                              This mailbox is healthy and has no urgent issues.
+                            </div>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Dialog>
@@ -510,7 +757,6 @@ export default function Page() {
                               <TableCell>
                                 <input
                                   type="text"
-                                  // value={mailData[0] ? mailData[0].Name : "No data found"}
                                   value={mailbox.domain}
                                   readOnly
                                   className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
@@ -604,10 +850,10 @@ export default function Page() {
             · Go to <b>Settings.</b>
           </p>
           <p>
-            · Navigate to the <b>IMAP</b> and <b>Forwarding</b> section.
+            · Navigate to the <b>Forwarding</b> and <b>POP/IMAP</b> Tab.
           </p>
           <p>
-            · Enable both <b>IMAP</b> and <b>Forwarding.</b>
+            · Enable <b>IMAP</b> and <b>Save Changes.</b>
           </p>
 
           <DialogFooter>
@@ -656,7 +902,9 @@ export default function Page() {
             </div>
           </div>
           <DialogFooter>
-            <Button onClick={handleAppPassword}>Send</Button>
+            <Button onClick={() => handleAppPassword()}>
+              {isApppasswordLoading ? <LoadingCircle /> : "Send"}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -802,7 +1050,6 @@ export default function Page() {
                           className="cursor-pointer "
                           onClick={() => handleCopy(mailbox.Name)}
                         />
-
                         <span className="w-96 overflow-x-scroll">
                           {mailbox.Name.replace("@", "")}
                         </span>
@@ -844,7 +1091,6 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    // value={mailData[0] ? mailData[0].Name : "No data found"}
                     value={domainInput}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
