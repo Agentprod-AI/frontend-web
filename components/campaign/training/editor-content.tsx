@@ -608,9 +608,9 @@ export default function EditorContent() {
               </Button>
             </div>
             {examplePopup && (
-              <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/50">
+              <div className="fixed inset-0 z-40 flex items-center justify-center bg-black/60">
                 <div className="w-1/2 h-4/5 overflow-y-scroll flex flex-col space-y-3 p-6 bg-black border rounded-lg">
-                  <div className="flex justify-between items-center">
+                  <div className="flex justify-between items-center sticky -top-6 py-4 bg-black z-10">
                     <div className="text-xl font-semibold text-white">
                       Example sequence
                     </div>
@@ -623,31 +623,106 @@ export default function EditorContent() {
                       />
                     </div>
                   </div>
-                  <div className="font-semibold text-white">First contact</div>
+                  <div className="font-semibold text-white">
+                    Reference Template
+                  </div>
+                  <div className="font-semibold text-base text-white">
+                    Subject:{" "}
+                    <span className="font-normal text-white/40">
+                      Connecting with {"{"}recievers company{"}"} founders
+                    </span>
+                  </div>
+                  <div className="flex space-x-5 py-4">
+                    <div className="w-3 h-full bg-white/20"></div>
+                    <div className="text-white/40 space-y-2">
+                      <div>
+                        Hi {"{"}lead name{"}"},
+                      </div>
+                      <div>
+                        I came across {"{"}company name{"}"} and saw that you’re
+                        selling {"{"}company offering{"}"}. I’d like to
+                        introduce you to AgentProd, an AI sales automation
+                        platform that can help scale your sales efficiently.
+                      </div>
+                      <div>
+                        I’m the co-founder of {"{"}sender company name{"}"}.
+                        We’re helping some of the fastest growing startups in{" "}
+                        {"{"}company location{"}"} to automate their sales
+                        processes with our GPT-based platform. We’re currently
+                        in private beta, but I thought you might be interested
+                        in giving AgentProd a try. {"{"}More information about
+                        the company{"}"} I’m happy to prioritize you.
+                      </div>
+                      <div>Cheers,</div>
+                      <div>
+                        {"{"}sender name{"}"}
+                      </div>
+                      <div>
+                        {"{"}phone no{"}"}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-lg font-semibold text-white">
+                    Follow-up Template 1
+                  </div>
+                  <div className="flex space-x-5 py-4">
+                    <div className="w-3 h-full bg-white/20"></div>
+                    <div className="text-white/40 space-y-2">
+                      Hi {"{"}lead name{"}"}, just bumping this up since I
+                      haven’t heard back from you yet. Other companies using our
+                      platform have already seen a significant increase in their
+                      sales. I’d be happy to jump on a call and discuss how
+                      AgentProd can benefit your company.
+                    </div>
+                  </div>
+                  <div className="text-lg font-semibold text-white">
+                    Follow-up Template 2
+                  </div>
+                  <div className="flex space-x-5 py-4">
+                    <div className="w-3 h-full bg-white/20"></div>
+                    <div className="text-white/40 space-y-4">
+                      Hi {"{"}lead name{"}"}, since I haven’t heard back from
+                      you yet, I assume our platform may not be relevant to you
+                      at this point. If there’s someone else in your team who
+                      might be the right point of contact, please connect me.
+                      Sorry if I bothered you, and I wish you all the best!
+                    </div>
+                  </div>
+                  <hr />
+                  <div className="font-semibold text-xl text-white">
+                    Reference Email
+                  </div>
                   <div className="font-semibold text-base text-white">
                     Subject:{" "}
                     <span className="font-normal text-white/40">
                       Connecting with GenAi founders
-                    </span>{" "}
+                    </span>
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
                     <div className="text-white/40 space-y-4">
                       <div>
                         Hi Alex, I came across Koxa and saw that you’re selling
-                        an accounting-to-banking API. We can help you find the
-                        right CFOs at the right software companies and scale up
-                        sales without increasing your headcount.
+                        an accounting-to-banking API. I’d like to introduce you
+                        to AgentProd, an AI sales automation platform that can
+                        help scale your sales efficiently.
                       </div>
                       <div>
-                        I’m the co-founder of AgentProd. An AI sales automation
-                        platform. We’re helping some of the fastest growing
-                        startups in Silicon Valley to scale sales on autopilot
-                        with our GPT-based platform. We’re in private beta right
-                        now but I thought you may be interested in giving 1Q a
-                        try. Happy to prioritize you.
+                        I’m the co-founder of AgentProd. We’re helping some of
+                        the fastest growing startups in Silicon Valley to
+                        automate their sales processes with our GPT-based
+                        platform. We’re currently in private beta, but I thought
+                        you might be interested in giving AgentProd a try. Our
+                        platform uses advanced machine learning algorithms to
+                        provide personalized insights and recommendations,
+                        making your sales process more efficient and effective.
+                        Additionally, we offer seamless integration with your
+                        existing CRM systems. I’m happy to prioritize you.
                       </div>
-                      <div>Cheers, Muskaan</div>
+                      <div>
+                        Cheers, <div>Muskaan</div>
+                        <div>+1-555-555-5555</div>
+                      </div>
                     </div>
                   </div>
                   <div className="text-lg font-semibold text-white">
@@ -658,9 +733,9 @@ export default function EditorContent() {
                     <div className="text-white/40 space-y-4">
                       Hi Alex, just bumping this up since I haven’t heard back
                       from you yet. Other API-first companies like Svix have
-                      already increased their sales by 30% through us. Happy to
-                      jump on a call and discuss how we can help you guys out
-                      too.
+                      already seen a significant increase in their sales through
+                      us. I’d be happy to jump on a call and discuss how
+                      AgentProd can benefit your company.
                     </div>
                   </div>
                   <div className="text-lg font-semibold text-white">
