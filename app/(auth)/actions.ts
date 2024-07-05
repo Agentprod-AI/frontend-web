@@ -62,3 +62,46 @@ export async function logout() {
     // Redirect to the homepage or login page after successful logout
   }
 }
+
+export async function resetPassword(formData: { email: string }) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  const data = {
+    email: formData.email,
+  };
+
+  const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+    redirectTo: `https://app.agentprod.com/reset`,
+  });
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+export async function resetPasswordMain(newPassword: string, accessToken: string) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  // Authenticate the user using the token
+  const { error: sessionError } = await supabase.auth.exchangeCodeForSession(
+    accessToken,
+  );
+
+  if (sessionError) {
+    console.log("Session error: " + sessionError.message);
+    throw new Error(sessionError.message);
+  }
+
+  // Update the password
+  const { data, error } = await supabase.auth.updateUser({ password: newPassword });
+
+  if (error) {
+    console.log("Update error: " + error.message);
+    throw new Error(error.message);
+  }
+
+  console.log(data);
+  return data;
+}

@@ -231,10 +231,10 @@ export default function PeopleForm(): JSX.Element {
       if (id) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/audience/${params.campaignId}`
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
           );
           const data = await response.json();
-          if (data.detail === "Audience not found") {
+          if (data.detail === "No Contacts found") {
             setType("create");
           } else {
             // setGoalData(data);

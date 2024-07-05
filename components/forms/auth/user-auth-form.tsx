@@ -116,6 +116,7 @@ export default function UserAuthForm({
         toast.success("Verification email sent!");
         console.log("User details on signup:", userData);
       }
+      console.log(userData);
 
       if (userData?.user) {
         console.log("UserData just after logged in", userData);
