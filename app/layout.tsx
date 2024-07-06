@@ -37,6 +37,19 @@ export default async function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
+        <head>
+          <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-3LG32WF4MD"
+          ></script>
+          <script id="google-analytics">
+            {` window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag('js', new Date());
+
+  gtag('config', 'G-3LG32WF4MD');`}
+          </script>
+        </head>
         <body className={`${inter.className} overflow-hidden`}>
           <Providers userAuthData={authData}>
             <Toaster />
