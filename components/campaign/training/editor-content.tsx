@@ -1,3 +1,4 @@
+/* eslint-disable-next-line padded-blocks */
 import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
