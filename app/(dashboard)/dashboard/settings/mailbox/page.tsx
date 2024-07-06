@@ -516,19 +516,21 @@ export default function Page() {
                       <CircularProgressbar
                         value={mailbox.health}
                         text={`${mailbox.health}%`}
-                        className={`h-8 w-8`}
+                        className={`h-8 w-8 font-semibold `}
                         styles={buildStyles({
                           rotation: 0.25,
+                          textSize: "25px",
                           strokeLinecap: "butt",
                           pathTransitionDuration: 0.5,
                           pathColor: `${
                             mailbox.health === 100 ? "#3ae374" : "#f88"
                           }`,
                           textColor: `${
-                            mailbox.health === 100 ? "#3ae374" : "#f88"
+                            mailbox.health === 100 ? "#00c04b" : "#f88"
                           }`,
                           trailColor: "#d6d6d6",
                           backgroundColor: "#3e98c7",
+                          
                         })}
                       />
                     ) : (
