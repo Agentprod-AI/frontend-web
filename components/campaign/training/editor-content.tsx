@@ -158,6 +158,7 @@ export default function EditorContent() {
             setLocalFollowUp(data.follow_up_template_1.body);
             setFollowUpOne(data.follow_up_template_2.body);
             setLocalFollowUpTwo(data.follow_up_template_2.body);
+            handleTextChange(body, setBody);
           }
         } catch (error) {
           console.error("Error fetching campaign:", error);

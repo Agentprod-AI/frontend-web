@@ -47,7 +47,7 @@ export default function FieldList() {
 
   return (
     <Command className="rounded-lg border shadow-md">
-      <CommandInput placeholder="Search..." />
+      {/* <CommandInput placeholder="Search..." /> */}
       <CommandList className="max-h-full">
         {fieldsList && (
           <CommandGroup>
