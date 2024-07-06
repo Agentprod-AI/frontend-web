@@ -3,6 +3,8 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
+import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import "react-circular-progressbar/dist/styles.css";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
@@ -30,7 +32,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Check, CheckCircle, Dot, Info, Lightbulb } from "lucide-react";
+import { Check, CheckCircle, Dot, Lightbulb } from "lucide-react";
 import { FiAlertTriangle } from "react-icons/fi";
 import { BiError } from "react-icons/bi";
 import { Input } from "@/components/ui/input";
@@ -44,7 +46,7 @@ import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
-import { Progress } from "@/components/ui/progress";
+// import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MailData {
@@ -417,9 +419,9 @@ export default function Page() {
                 <TableHead>NAME ACCOUNT</TableHead>
                 <TableHead className="text-center">WARM-UP</TableHead>
                 <TableHead className="text-left">DAILY LIMIT</TableHead>
-                <TableHead className="text-left">Health</TableHead>
+                <TableHead className="text-center">Health</TableHead>
                 <TableHead className="text-center">STATUS</TableHead>
-                <TableHead>DNS</TableHead>
+                <TableHead className="text-center">DNS</TableHead>
                 <TableHead> </TableHead>
               </TableRow>
             </TableHeader>
@@ -501,7 +503,34 @@ export default function Page() {
                   <TableCell>{mailbox.daily_limit}</TableCell>
                   <TableCell>
                     {mailbox.health > 0 ? (
-                      <Progress value={mailbox.health} className={`h-2 w-10`} />
+                      // <Progress
+                      //   value={mailbox.health}
+                      //   className={`h-2 w-10 ${
+                      //     mailbox.health === 100
+                      //       ? "bg-bg-500"
+                      //       : mailbox.health === 50
+                      //       ? "bg-orange-500"
+                      //       : ""
+                      //   }`}
+                      // />
+                      <CircularProgressbar
+                        value={mailbox.health}
+                        text={`${mailbox.health}%`}
+                        className={`h-8 w-8`}
+                        styles={buildStyles({
+                          rotation: 0.25,
+                          strokeLinecap: "butt",
+                          pathTransitionDuration: 0.5,
+                          pathColor: `${
+                            mailbox.health === 100 ? "#3ae374" : "#f88"
+                          }`,
+                          textColor: `${
+                            mailbox.health === 100 ? "#3ae374" : "#f88"
+                          }`,
+                          trailColor: "#d6d6d6",
+                          backgroundColor: "#3e98c7",
+                        })}
+                      />
                     ) : (
                       <Skeleton className="h-2 w-10 bg-gray-300"></Skeleton>
                     )}
@@ -565,6 +594,11 @@ export default function Page() {
                                 <Separator />
                                 <div className="mt-2">Recommended Actions:</div>
                                 <ul className="flex flex-col gap-2 mt-1">
+                                  <li className="flex gap-1 items-center">
+                                    <Lightbulb className="h-4 w-4 text-green-700" />
+                                    Click the DNS button in the table to view
+                                    the DNS records.
+                                  </li>
                                   <li className="flex gap-1 items-center">
                                     <Lightbulb className="h-4 w-4 text-green-700" />
                                     <span>
@@ -689,7 +723,7 @@ export default function Page() {
                         className="flex gap-1 items-center"
                       >
                         <Button variant={"secondary"} className="p-2">
-                          <Info className="h-4 w-4" />
+                          {/* <Info className="h-4 w-4" /> */}
                           DNS
                         </Button>
                       </DialogTrigger>

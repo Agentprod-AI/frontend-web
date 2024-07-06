@@ -197,37 +197,69 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       });
   };
 
-  const parseActionDraft = (actionDraft: any) => {
+  // const parseActionDraft = (actionDraft: any) => {
+  //   if (!actionDraft)
+  //     return { subject: "No subject", body: "No details provided" };
+
+  //   const subjectMarker = "Subject: ";
+  //   const splitIndex = actionDraft.indexOf("\n\n");
+
+  //   let subject = "No subject";
+  //   let body = "No details provided";
+
+  //   if (splitIndex !== -1) {
+  //     subject = actionDraft.substring(subjectMarker.length, splitIndex);
+  //     body = actionDraft.substring(splitIndex + 2);
+  //   } else {
+  //     body = actionDraft.substring(subjectMarker.length);
+  //   }
+
+  //   return { subject, body };
+  // };
+
+  const parseActionDraft = (actionDraft: string) => {
     if (!actionDraft)
       return { subject: "No subject", body: "No details provided" };
-
-    const subjectMarker = "Subject: ";
-    const splitIndex = actionDraft.indexOf("\n\n");
-
-    let subject = "No subject";
-    let body = "No details provided";
-
-    if (splitIndex !== -1) {
-      subject = actionDraft.substring(subjectMarker.length, splitIndex);
-      body = actionDraft.substring(splitIndex + 2);
-    } else {
-      body = actionDraft.substring(subjectMarker.length);
+  
+    actionDraft = actionDraft.replace(/```json/g, '').replace(/```/g, '').trim();
+  
+    try {
+      const parsedData = JSON.parse(actionDraft);
+      const { subject, body } = parsedData;
+      return { subject, body };
+    } catch (e) {
+      const subjectMarker = "Subject: ";
+      const splitIndex = actionDraft.indexOf("\n\n");
+  
+      let subject = "No subject";
+      let body = "No details provided";
+  
+      if (splitIndex !== -1) {
+        subject = actionDraft.substring(subjectMarker.length, splitIndex);
+        body = actionDraft.substring(splitIndex + 2);
+      } else {
+        body = actionDraft.substring(subjectMarker.length);
+      }
+  
+      return { subject, body };
     }
-
-    return { subject, body };
   };
+  
+
   const cleanedCategory = email?.category?.trim();
 
   const handleSendNow = () => {
     SetIsLoadingButton(true);
+    const parsedDraft = parseActionDraft(email.action_draft);
     const payload = {
       conversation_id: conversationId,
       sender: senderEmail,
       recipient: recipientEmail,
-      subject: title,
-      body: body,
+      // subject: title,
+      // body: body,
+      subject: parsedDraft?.subject || "",
+      body: parsedDraft?.body || "",
     };
-
     console.log("Payload of sending", payload);
 
     axiosInstance
@@ -236,30 +268,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         toast.success("Your email has been sent successfully!");
         setThread(response.data);
         SetIsLoadingButton(false);
-        setEditable(false);
-      })
-      .catch((error) => {
-        console.error("Failed to send email:", error);
-        toast.error("Failed to send the email. Please try again.");
-      });
-  };
-
-  const handleApproveEmail = () => {
-    setLoadingSmartSchedule(true);
-    const payload = {
-      conversation_id: conversationId,
-      sender: senderEmail,
-      recipient: recipientEmail,
-      subject: parseActionDraft(email.action_draft).subject,
-      body: parseActionDraft(email.action_draft).body,
-    };
-
-    axiosInstance
-      .post("/v2/mailbox/draft/send", payload)
-      .then((response) => {
-        toast.success("Draft Approved!");
-        setThread(response.data);
-        setLoadingSmartSchedule(false);
         setEditable(false);
       })
       .catch((error) => {
@@ -331,6 +339,15 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 {cleanedCategory === "Neutral" && (
                   <Mail className="h-4 w-4 text-gray-400" />
                 )}
+
+                {/* Adding new Categories */}
+                {cleanedCategory === "Block" && (
+                  <MailWarning className="h-4 w-4 text-gray-400" />
+                )}
+                {cleanedCategory === "Not Interested" && (
+                  <MailWarning className="h-4 w-4 text-gray-400" />
+                )}
+                {/* Adding new Categories */}
               </div>
               <p className="ml-1 text-xs">
                 {cleanedCategory === "OOO" && "Currently out of office."}
@@ -349,6 +366,21 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 {cleanedCategory === "Demo" &&
                   "Demo scheduling requested by client."}
                 {cleanedCategory === "Neutral" && "Neutral response received."}
+
+                {/* Adding new Categories */}
+                {cleanedCategory === "Block" &&
+                  `${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : ""
+                  }  has been blocked.`}
+                {cleanedCategory === "Not Interested" &&
+                  `${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : ""
+                  } has expressed no interest.`}
+                {/* Adding new Categories */}
               </p>
               <span className="text-gray-600 text-sm">
                 {formatDate(email.received_datetime) || null}

@@ -165,7 +165,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     return (
       <div className="flex justify-center flex-col items-center h-screen">
         <Image
-          src="/error.svg"
+          src="/error1.svg"
           alt="empty-inbox"
           width="200"
           height="200"
@@ -520,6 +520,33 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                         Neutral
                       </Badge>
                     )}
+
+                  {/* Adding new Categories */}
+
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Not Interested" && (
+                      <Badge
+                        variant="destructive"
+                        className="gap-1 items-center rounded-full"
+                      >
+                        <ThumbsDown className="-scale-x-100 h-[14px] w-[14px]" />
+                        Not Interested
+                      </Badge>
+                    )}
+                  {email.is_reply &&
+                    email.category &&
+                    email.category.trim() === "Block" && (
+                      <Badge
+                        variant="destructive"
+                        className="gap-1 items-center rounded-full"
+                      >
+                        <ThumbsDown className="-scale-x-100 h-[14px] w-[14px]" />
+                        Block
+                      </Badge>
+                    )}
+
+                  {/* Adding new Categories */}
                 </span>
               </div>
 

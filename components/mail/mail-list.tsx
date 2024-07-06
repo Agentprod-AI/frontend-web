@@ -422,6 +422,7 @@ import { useUserContext } from "@/context/user-context";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Badge } from "../ui/badge";
 import {
+  Ban,
   Bell,
   CalendarCheck,
   Forward,
@@ -501,7 +502,6 @@ export function MailList({ items }: MailListProps) {
     return `${time},${formattedDate}`;
   };
 
-  // On experiment with wrong api
   const handleDelete = async (id: string) => {
     try {
       await axiosInstance.delete(`/v2/email/conversations/${id}`);
@@ -512,8 +512,6 @@ export function MailList({ items }: MailListProps) {
       console.error("Failed to delete mail:", error);
     }
   };
-
-  // On experiment with wrong api
 
   return (
     <ScrollArea className="h-screen pb-44">
@@ -583,6 +581,8 @@ export function MailList({ items }: MailListProps) {
                               ? "bg-orange-600"
                               : item.category.trim() === "Not Interested"
                               ? "bg-red-600"
+                              : item.category.trim() === "Block"
+                              ? "bg-red-600"
                               : ""
                           }`}
                         >
@@ -613,10 +613,15 @@ export function MailList({ items }: MailListProps) {
                           {item.category.trim() === "Information Required" && (
                             <MailPlus className="h-[14px] w-[14px] scale-x-100" />
                           )}
+                          {item.category.trim() === "Block" && (
+                            <Ban className="h-[14px] w-[14px] -scale-x-100" />
+                          )}
                           {item.category.trim() === "Later"
                             ? "Maybe Later"
                             : item.category.trim() === "Information Required"
                             ? "Info Req"
+                            : item.category.trim() === "Not Interested"
+                            ? "Disinterested"
                             : item.category}
                         </Badge>
                       ) : null}
