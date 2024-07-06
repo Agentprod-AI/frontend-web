@@ -75,7 +75,7 @@ const FormSchema = z.object({
   company_headcount: z
     .array(z.object({ id: z.string(), text: z.string() }))
     .optional(),
-  funding_rounds: z
+  organization_latest_funding_stage_cd: z
     .array(
       z.object({
         id: z.string(),
@@ -112,7 +112,7 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  job_locations: z
+  organization_job_locations: z
     .array(
       z.object({
         id: z.string(),
@@ -120,7 +120,7 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  job_offerings: z
+  q_organization_job_titles: z
     .array(
       z.object({
         id: z.string(),
@@ -196,13 +196,15 @@ export default function PeopleForm(): JSX.Element {
     person_titles: { id: string; text: string }[] | undefined;
     email_status: { id: string; text: string }[] | undefined;
     company_headcount: { id: string; text: string }[] | undefined;
-    funding_rounds: { id: string; text: string }[] | undefined;
+    organization_latest_funding_stage_cd:
+      | { id: string; text: string }[]
+      | undefined;
     minimum_company_funding: { id: string; text: number } | undefined;
     maximum_company_funding: { id: string; text: number } | undefined;
     per_page: { id: string; text: number } | undefined;
     q_keywords: { id: string; text: string } | undefined;
-    job_locations: { id: string; text: string }[] | undefined;
-    job_offerings: { id: string; text: string }[] | undefined;
+    organization_job_locations: { id: string; text: string }[] | undefined;
+    q_organization_job_titles: { id: string; text: string }[] | undefined;
   }
 
   interface TagInput {
@@ -310,24 +312,24 @@ export default function PeopleForm(): JSX.Element {
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    // convert all arrays object to array of strings
-
+    // Convert all arrays of objects to arrays of strings
     const formData = {
       q_organization_domains: data.q_organization_domains,
       q_organization_keyword_tags: data.q_organization_keyword_tags,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
-      funding_rounds: data.funding_rounds,
+      organization_latest_funding_stage_cd:
+        data.organization_latest_funding_stage_cd,
       minimum_company_funding: data.minimum_company_funding,
       maximum_company_funding: data.maximum_company_funding,
       person_titles: data.person_titles,
       per_page: data.per_page,
       email_status: data.email_status,
-      // prospected_by_current_team: data.prospected_by_current_team,
-      job_locations: data.job_locations,
-      job_offerings: data.job_offerings,
+      organization_job_locations: data.organization_job_locations,
+      q_organization_job_titles: data.q_organization_job_titles,
     };
+
     setPageCompletion("audience", true); // Set the page completion to true
     console.log("form data", formData);
 
@@ -338,18 +340,13 @@ export default function PeopleForm(): JSX.Element {
     const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
 
     const body = {
-      ...(pages && { page: pages }), // Only include if pages is truthy
+      ...(pages && { page: pages }),
       ...(formData.per_page && {
         per_page:
           formData.per_page > 10
             ? Math.ceil(formData.per_page / pages)
             : formData.per_page,
       }),
-
-      prospected_by_current_team: ["No"],
-      // ...(formData.prospected_by_current_team?.text && {
-      //   prospected_by_current_team: [formData.prospected_by_current_team.text],
-      // }),
       ...(formData.person_titles && {
         person_titles: formData.person_titles
           .map((tag) => tag.text)
@@ -360,12 +357,10 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...{
-        organization_num_employees_ranges: checkedFields(
-          checkedCompanyHeadcount,
-          true
-        ),
-      },
+      organization_num_employees_ranges: checkedFields(
+        checkedCompanyHeadcount,
+        true
+      ),
       ...(formData.person_seniorities && {
         person_seniorities: formData.person_seniorities
           .map((tag) => tag.text.toLowerCase())
@@ -387,40 +382,37 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-    };
-
-    const extraFilters = {
       ...(formData.minimum_company_funding &&
         formData.maximum_company_funding && {
-          total_funding: `${data.minimum_company_funding?.text}-${data.maximum_company_funding?.text}`,
+          revenue_range: {
+            min: formData.minimum_company_funding.text.toString(),
+            max: formData.maximum_company_funding.text.toString(),
+          },
         }),
-      ...(formData.job_locations && {
-        job_locations: formData.job_locations
+      ...(formData.organization_job_locations && {
+        organization_job_locations: formData.organization_job_locations
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...(formData.job_offerings && {
-        job_offerings: formData.job_offerings
+      ...(formData.q_organization_job_titles && {
+        q_organization_job_titles: formData.q_organization_job_titles
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...{
-        funding_rounds: checkedFields(checkedFundingRounds, false),
-      },
+      organization_latest_funding_stage_cd: checkedFields(
+        checkedFundingRounds,
+        false
+      ),
     };
+
     console.log(body);
 
     if (
       prevInputValues.current?.company_headcount?.toString() !==
         formData.company_headcount?.toString() ||
       prevInputValues.current?.per_page?.text !== body.per_page ||
-      `${prevInputValues.current?.minimum_company_funding?.text}-${prevInputValues.current?.maximum_company_funding?.text}` !==
-        extraFilters.total_funding ||
-      prevInputValues.current?.funding_rounds?.toString() !==
-        extraFilters.funding_rounds?.toString()
-      // ||
-      // prevInputValues.current?.prospected_by_current_team?.text !==
-      //   body.prospected_by_current_team?.[0]
+      prevInputValues.current?.organization_latest_funding_stage_cd?.toString() !==
+        body.organization_latest_funding_stage_cd?.toString()
     ) {
       shouldCallAPI = true;
       console.log("foo");
@@ -443,12 +435,12 @@ export default function PeopleForm(): JSX.Element {
       prevInputValues.current?.email_status
         ?.map((tag: Tag) => tag.text)
         .toString() !== body.email_status?.toString() ||
-      prevInputValues.current?.job_locations
+      prevInputValues.current?.organization_job_locations
         ?.map((tag: Tag) => tag.text)
-        .toString() !== extraFilters.job_locations?.toString() ||
-      prevInputValues.current?.job_offerings
+        .toString() !== body.organization_job_locations?.toString() ||
+      prevInputValues.current?.q_organization_job_titles
         ?.map((tag: Tag) => tag.text)
-        .toString() !== extraFilters.job_offerings?.toString()
+        .toString() !== body.q_organization_job_titles?.toString()
     ) {
       shouldCallAPI = true;
       console.log("bar");
@@ -468,9 +460,8 @@ export default function PeopleForm(): JSX.Element {
           .post<Lead[]>(`v2/apollo/leads`, body)
           .then((response: any) => {
             const data = response.data;
-            // console.log("DATA from contacts: ", data);
             console.log("DATA: ", data);
-            data.map((person: Lead): void => {
+            data.forEach((person: Lead) => {
               person.type = "prospective";
               person.campaign_id = params.campaignId;
               person.id = uuid();
@@ -495,11 +486,11 @@ export default function PeopleForm(): JSX.Element {
       } finally {
         setTab("tab2");
         console.log("this is my leads" + leads);
-        setAllFilters({ ...body, ...extraFilters });
+        setAllFilters({ ...body });
         shouldCallAPI = false;
       }
     } else {
-      toast.error("no need to call api");
+      toast.error("No need to call API");
       setIsTableLoading(false);
     }
   };
@@ -507,6 +498,7 @@ export default function PeopleForm(): JSX.Element {
   const [dropdownsOpen, setDropdownsOpen] = useState({
     currentEmployment: false,
     revenueFunding: false,
+    companyFunding: false,
     orgLocations: false,
     funding: false,
     headcount: false,
@@ -531,19 +523,20 @@ export default function PeopleForm(): JSX.Element {
   };
 
   const fundingRounds = [
-    { name: "Seed", checked: false },
-    { name: "Venture (Round not Specified)", checked: false },
-    { name: "Series A", checked: false },
-    { name: "Series B", checked: false },
-    { name: "Series C", checked: false },
-    { name: "Series D", checked: false },
-    { name: "Series E", checked: false },
-    { name: "Series F", checked: false },
-    { name: "Debt Financing", checked: false },
-    { name: "Equity Crowdfunding", checked: false },
-    { name: "Convertible Note", checked: false },
-    { name: "Private Equity", checked: false },
-    { name: "Other", checked: false },
+    { name: "Seed", checked: false, value: "0" },
+    { name: "Angel", checked: false, value: "1" },
+    { name: "Venture (Round not Specified)", checked: false, value: "10" },
+    { name: "Series A", checked: false, value: "2" },
+    { name: "Series B", checked: false, value: "3" },
+    { name: "Series C", checked: false, value: "4" },
+    { name: "Series D", checked: false, value: "5" },
+    { name: "Series E", checked: false, value: "6" },
+    { name: "Series F", checked: false, value: "7" },
+    { name: "Debt Financing", checked: false, value: "13" },
+    { name: "Equity Crowdfunding", checked: false, value: "14" },
+    { name: "Convertible Note", checked: false, value: "15" },
+    { name: "Private Equity", checked: false, value: "11" },
+    { name: "Other", checked: false, value: "12" },
   ];
 
   const companyHeadcountOptions: CheckboxOptions[] = [
@@ -752,9 +745,18 @@ export default function PeopleForm(): JSX.Element {
         "company_headcount",
         allFiltersFromDB.organization_num_employees_ranges
       );
-      form.setValue("funding_rounds", allFiltersFromDB.funding_rounds);
-      form.setValue("job_locations", allFiltersFromDB.job_locations);
-      form.setValue("job_offerings", allFiltersFromDB.job_offerings);
+      form.setValue(
+        "organization_latest_funding_stage_cd",
+        allFiltersFromDB.organization_latest_funding_stage_cd
+      );
+      form.setValue(
+        "organization_job_locations",
+        allFiltersFromDB.organization_job_locations
+      );
+      form.setValue(
+        "q_organization_job_titles",
+        allFiltersFromDB.q_organization_job_titles
+      );
       form.setValue("email_status", allFiltersFromDB.email_status);
       form.setValue(
         "per_page",
@@ -1347,13 +1349,13 @@ export default function PeopleForm(): JSX.Element {
                     </div>
                   </div>
                 </div>
-
-                {/* <div className="bg-muted px-2 rounded">
+                {/* // Revenue and funding */}
+                <div className="bg-muted px-2 rounded ">
                   <div
                     className="flex justify-between w-full py-3 cursor-pointer"
                     onClick={() => toggleDropdown("revenueFunding")}
                   >
-                    <div className="text-sm">Revenue and funding</div>
+                    <div className="text-sm">Funding Rounds</div>
                     {dropdownsOpen.revenueFunding ? (
                       <ChevronUp color="#000000" />
                     ) : (
@@ -1370,25 +1372,27 @@ export default function PeopleForm(): JSX.Element {
                   >
                     <FormField
                       control={form.control}
-                      name="funding_rounds"
+                      name="organization_latest_funding_stage_cd"
                       render={({ field }) => (
                         <FormItem className="flex flex-col items-start py-4 w-8/12">
                           <FormLabel
                             className="w-full text-left h-1 my-2 flex items-center"
                             onClick={() => toggleDropdown("funding")}
                           >
-                            <div>Funding rounds</div>
+                            <div className="bold">
+                              Funding rounds and Raises
+                            </div>
                             {dropdownsOpen.funding ? (
                               <ChevronUp
-                                width="15"
+                                width="25"
                                 color="#000000"
                                 className="ml-2"
                               />
                             ) : (
                               <ChevronUp
-                                width={15}
+                                width={25}
                                 color="#000000"
-                                className="ml-2 transition-transform duration-200 transform rotate-180"
+                                className="ml-2 transition-transform duration-200 transform rotate-180 text-white"
                               />
                             )}
                           </FormLabel>
@@ -1407,7 +1411,7 @@ export default function PeopleForm(): JSX.Element {
                                     {...field}
                                     className="mr-2"
                                     checked={checkedFundingRounds?.includes(
-                                      round.name
+                                      round.value
                                     )}
                                     onCheckedChange={(e) => {
                                       if (e.valueOf()) {
@@ -1415,18 +1419,18 @@ export default function PeopleForm(): JSX.Element {
                                           ...(checkedFundingRounds
                                             ? checkedFundingRounds
                                             : []),
-                                          round.name,
+                                          round.value,
                                         ]);
                                       } else {
                                         setCheckedFundingRounds(
                                           checkedFundingRounds?.filter(
-                                            (item) => item !== round.name
+                                            (item) => item !== round.value
                                           )
                                         );
                                       }
                                       console.log(checkedFundingRounds);
                                     }}
-                                    value={round.name}
+                                    value={round.value}
                                   />
                                   {round.name}
                                 </div>
@@ -1437,7 +1441,30 @@ export default function PeopleForm(): JSX.Element {
                         </FormItem>
                       )}
                     />
-                    <div className="w-1/2">
+                  </div>
+                </div>
+
+                <div className="bg-muted px-2 rounded ">
+                  <div
+                    className="flex justify-between w-full py-3 cursor-pointer"
+                    onClick={() => toggleDropdown("companyFunding")}
+                  >
+                    <div className="text-sm">Revenue</div>
+                    {dropdownsOpen.companyFunding ? (
+                      <ChevronUp color="#000000" />
+                    ) : (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-180"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`${
+                      dropdownsOpen.companyFunding ? "block" : "hidden"
+                    }`}
+                  >
+                    <div className="">
                       <div className="text-sm font-medium">
                         Total Company Funding
                       </div>
@@ -1447,11 +1474,10 @@ export default function PeopleForm(): JSX.Element {
                           name="minimum_company_funding"
                           render={({ field }) => (
                             <FormItem className="flex flex-col items-start mx-1 my-4">
-                              
                               <FormControl>
                                 <Input
                                   placeholder="Min"
-                                  className="sm:min-w-[300px] w-2/3 bg-white"
+                                  className="w-max bg-white text-black"
                                   value={
                                     minimumCompanyFunding.text
                                       ? minimumCompanyFunding.text
@@ -1470,7 +1496,7 @@ export default function PeopleForm(): JSX.Element {
                                   }}
                                 />
                               </FormControl>
-                              
+
                               <FormMessage />
                             </FormItem>
                           )}
@@ -1484,7 +1510,7 @@ export default function PeopleForm(): JSX.Element {
                                 <FormControl>
                                   <Input
                                     placeholder="Max"
-                                    className="sm:min-w-[300px] w-2/3 bg-white"
+                                    className=" bg-white text-black"
                                     value={
                                       maximumCompanyFunding.text
                                         ? maximumCompanyFunding.text
@@ -1503,7 +1529,7 @@ export default function PeopleForm(): JSX.Element {
                                     }}
                                   />
                                 </FormControl>
-                                
+
                                 <FormMessage />
                               </FormItem>
                             )}
@@ -1514,11 +1540,11 @@ export default function PeopleForm(): JSX.Element {
                   </div>
                 </div>
                 <div className="bg-muted px-2 rounded">
-                  <div
+                  {/* <div
                     className="flex justify-between w-full py-3 cursor-pointer"
                     onClick={() => toggleDropdown("jobPostings")}
                   >
-                    <div className="text-sm">Job postings</div>
+                    <div className="text-sm">Technology Used</div>
                     {dropdownsOpen.jobPostings ? (
                       <ChevronUp color="#000000" />
                     ) : (
@@ -1527,49 +1553,46 @@ export default function PeopleForm(): JSX.Element {
                         className="transition-transform duration-200 transform rotate-180"
                       />
                     )}
-                  </div>
+                  </div> */}
                   <div
                     className={`${
                       dropdownsOpen.jobPostings ? "block" : "hidden"
                     }`}
                   >
-                    <div className="flex items-center gap-2">
-                      <div className="mb-3 w-1/2">
+                    <div className="flex items-center  gap-2">
+                      <div className="mb-3 ">
                         <FormField
                           control={form.control}
-                          name="job_offerings"
+                          name="q_organization_job_titles"
                           render={({ field }) => (
                             <FormItem className="flex flex-col items-start mx-1 my-4">
-                              <FormLabel className="text-left font-normal">
-                                Currently hiring for
-                              </FormLabel>
                               <FormControl>
                                 <TagInput
                                   {...field}
                                   dropdown={true}
-                                  dropdownPlaceholder="Enter job titles..."
+                                  dropdownPlaceholder="Enter Technology"
                                   dropdownOptions={jobTitles}
                                   tags={jobOfferingTags}
                                   className="sm:min-w-[450px]"
                                   setTags={(newTags) => {
                                     setJobOfferingTags(newTags);
                                     setValue(
-                                      "job_offerings",
+                                      "q_organization_job_titles",
                                       newTags as [Tag, ...Tag[]]
                                     );
                                   }}
                                 />
                               </FormControl>
-                              
+
                               <FormMessage />
                             </FormItem>
                           )}
                         />
                       </div>
-                      <div className="w-1/2 mb-3">
+                      {/* <div className="w-1/2 mb-3">
                         <FormField
                           control={form.control}
-                          name="job_locations"
+                          name="organization_job_locations"
                           render={({ field }) => (
                             <FormItem className="flex flex-col items-start mx-1 my-4">
                               <FormLabel className="text-left font-normal">
@@ -1587,21 +1610,21 @@ export default function PeopleForm(): JSX.Element {
                                   setTags={(newTags) => {
                                     setJobLocationTags(newTags);
                                     setValue(
-                                      "job_locations",
+                                      "organization_job_locations",
                                       newTags as [Tag, ...Tag[]]
                                     );
                                   }}
                                 />
                               </FormControl>
-                              
+
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                      </div>
+                      </div> */}
                     </div>
                   </div>
-                </div> */}
+                </div>
               </div>
             </div>
             {type === "edit" && (

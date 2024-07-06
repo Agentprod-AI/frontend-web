@@ -30,3 +30,9 @@ jobs:
       - name: Restart the process
         if: success()
         run: pm2 reload 0
+      - name: Save the PM2
+        if: success()
+        run: pm2 save
+      - name: List PM2
+        if: success()
+        run: pm2 list

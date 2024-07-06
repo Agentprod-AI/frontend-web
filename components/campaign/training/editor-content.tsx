@@ -629,36 +629,72 @@ export default function EditorContent() {
                   <div className="font-semibold text-base text-white">
                     Subject:{" "}
                     <span className="font-normal text-white/40">
-                      Connecting with {"{"}recievers company{"}"} founders
+                      Connecting with{" "}
+                      <b className="text-white/60">
+                        {"{"}recievers company{"} "}
+                      </b>
+                      founders
                     </span>
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
-                    <div className="text-white/40 space-y-2">
+                    <div className="text-white/40 space-y-2 text-sm">
                       <div>
-                        Hi {"{"}lead name{"}"},
+                        Hi{" "}
+                        <b className="text-white/60">
+                          {"{"}lead name{"}"}
+                        </b>
+                        ,
                       </div>
                       <div>
-                        I came across {"{"}company name{"}"} and saw that you’re
-                        selling {"{"}company offering{"}"}. I’d like to
-                        introduce you to AgentProd, an AI sales automation
-                        platform that can help scale your sales efficiently.
+                        I came across{" "}
+                        <b className="text-white/60">
+                          {"{"}company name{"} "}
+                        </b>
+                        and saw that you’re selling{" "}
+                        <b className="text-white/60">
+                          {"{"}
+                          company offering{"} "}
+                        </b>
+                        . I’d like to introduce you to AgentProd, an AI sales
+                        automation platform that can help scale your sales
+                        efficiently.
                       </div>
                       <div>
-                        I’m the co-founder of {"{"}sender company name{"}"}.
-                        We’re helping some of the fastest growing startups in{" "}
-                        {"{"}company location{"}"} to automate their sales
-                        processes with our GPT-based platform. We’re currently
-                        in private beta, but I thought you might be interested
-                        in giving AgentProd a try. {"{"}More information about
-                        the company{"}"} I’m happy to prioritize you.
+                        I’m the co-founder of AgentProd. We’re helping some of
+                        the fastest growing startups in{" "}
+                        <b className="text-white/60">
+                          {" "}
+                          {"{"}company location
+                          {"} "}
+                        </b>
+                        to automate their sales processes with our GPT-based
+                        platform.{" "}
+                        <b className="text-white/60">
+                          {"{"} if sender location is same as company location
+                          say "We should meet and discuss about your product
+                          sales and it's growth in person" other wise say
+                          nothing {"}"}.
+                        </b>
+                        We’re currently in private beta, but I thought you might
+                        be interested in giving AgentProd a try.{" "}
+                        <b className="text-white/60">
+                          {"{"} if is funded company say "It's great to see that
+                          you are a funded company!" other wise say "It's great
+                          to see your interest and efforts!"{"} "}
+                        </b>
+                        I’m happy to prioritize you.
                       </div>
                       <div>Cheers,</div>
                       <div>
-                        {"{"}sender name{"}"}
+                        <b className="text-white/60">
+                          {"{"}sender name{"}"}
+                        </b>
                       </div>
                       <div>
-                        {"{"}phone no{"}"}
+                        <b className="text-white/60">
+                          {"{"}phone no{"}"}
+                        </b>
                       </div>
                     </div>
                   </div>
@@ -667,12 +703,16 @@ export default function EditorContent() {
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
-                    <div className="text-white/40 space-y-2">
-                      Hi {"{"}lead name{"}"}, just bumping this up since I
-                      haven’t heard back from you yet. Other companies using our
-                      platform have already seen a significant increase in their
-                      sales. I’d be happy to jump on a call and discuss how
-                      AgentProd can benefit your company.
+                    <div className="text-white/40 space-y-2 text-sm">
+                      Hi{" "}
+                      <b className="text-white/60">
+                        {"{"}lead name{"}"}
+                      </b>
+                      , just bumping this up since I haven’t heard back from you
+                      yet. Other companies using our platform have already seen
+                      a significant increase in their sales. I’d be happy to
+                      jump on a call and discuss how AgentProd can benefit your
+                      company.
                     </div>
                   </div>
                   <div className="text-lg font-semibold text-white">
@@ -680,12 +720,16 @@ export default function EditorContent() {
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
-                    <div className="text-white/40 space-y-4">
-                      Hi {"{"}lead name{"}"}, since I haven’t heard back from
-                      you yet, I assume our platform may not be relevant to you
-                      at this point. If there’s someone else in your team who
-                      might be the right point of contact, please connect me.
-                      Sorry if I bothered you, and I wish you all the best!
+                    <div className="text-white/40 space-y-4 text-sm">
+                      Hi{" "}
+                      <b className="text-white/60">
+                        {"{"}lead name{"}"}
+                      </b>
+                      , since I haven’t heard back from you yet, I assume our
+                      platform may not be relevant to you at this point. If
+                      there’s someone else in your team who might be the right
+                      point of contact, please connect me. Sorry if I bothered
+                      you, and I wish you all the best!
                     </div>
                   </div>
                   <hr />
@@ -700,7 +744,7 @@ export default function EditorContent() {
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
-                    <div className="text-white/40 space-y-4">
+                    <div className="text-white/40 space-y-2 text-sm">
                       <div>
                         Hi Alex, I came across Koxa and saw that you’re selling
                         an accounting-to-banking API. I’d like to introduce you
@@ -711,13 +755,11 @@ export default function EditorContent() {
                         I’m the co-founder of AgentProd. We’re helping some of
                         the fastest growing startups in Silicon Valley to
                         automate their sales processes with our GPT-based
-                        platform. We’re currently in private beta, but I thought
-                        you might be interested in giving AgentProd a try. Our
-                        platform uses advanced machine learning algorithms to
-                        provide personalized insights and recommendations,
-                        making your sales process more efficient and effective.
-                        Additionally, we offer seamless integration with your
-                        existing CRM systems. I’m happy to prioritize you.
+                        platform. We should meet and discuss about your product
+                        sales and it's growth in person. We’re currently in
+                        private beta, but I thought you might be interested in
+                        giving AgentProd a try. It's great to see that you are a
+                        funded company! I’m happy to prioritize you.
                       </div>
                       <div>
                         Cheers, <div>Muskaan</div>
@@ -730,7 +772,7 @@ export default function EditorContent() {
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
-                    <div className="text-white/40 space-y-4">
+                    <div className="text-white/40 space-y-4 text-sm">
                       Hi Alex, just bumping this up since I haven’t heard back
                       from you yet. Other API-first companies like Svix have
                       already seen a significant increase in their sales through
@@ -743,7 +785,7 @@ export default function EditorContent() {
                   </div>
                   <div className="flex space-x-5 py-4">
                     <div className="w-3 h-full bg-white/20"></div>
-                    <div className="text-white/40 space-y-4">
+                    <div className="text-white/40 space-y-4 text-sm">
                       Hi Alex, since I haven’t heard back from you yet, I assume
                       automating sales with AI is not relevant to you at this
                       point. If there’s someone else in your team who might be
