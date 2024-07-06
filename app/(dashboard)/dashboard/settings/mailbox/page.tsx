@@ -46,7 +46,6 @@ import { FcGoogle } from "react-icons/fc";
 import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
-// import { Progress } from "@/components/ui/progress";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 interface MailData {
@@ -87,9 +86,7 @@ const initialMailboxes = [
 
 export default function Page() {
   const [googleMail, setGoogleMail] = useState<any>("");
-  const [inputAppPassword, setInputAppPassword] = useState(
-    "ljmi jnlg wglm gftv"
-  );
+  const [inputAppPassword, setInputAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetchSuccess, setFetchSuccess] = useState(false);
   const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
@@ -206,7 +203,7 @@ export default function Page() {
     };
     try {
       const response = await axios.post(
-        `http://localhost:8080/add-email`,
+        `https://warmup.agentprod.com/add-email`,
         payload
       );
       if (response.data === "Success") {
@@ -503,16 +500,6 @@ export default function Page() {
                   <TableCell>{mailbox.daily_limit}</TableCell>
                   <TableCell>
                     {mailbox.health > 0 ? (
-                      // <Progress
-                      //   value={mailbox.health}
-                      //   className={`h-2 w-10 ${
-                      //     mailbox.health === 100
-                      //       ? "bg-bg-500"
-                      //       : mailbox.health === 50
-                      //       ? "bg-orange-500"
-                      //       : ""
-                      //   }`}
-                      // />
                       <CircularProgressbar
                         value={mailbox.health}
                         text={`${mailbox.health}%`}
@@ -530,11 +517,19 @@ export default function Page() {
                           }`,
                           trailColor: "#d6d6d6",
                           backgroundColor: "#3e98c7",
-                          
                         })}
                       />
                     ) : (
-                      <Skeleton className="h-2 w-10 bg-gray-300"></Skeleton>
+                      <CircularProgressbar
+                        value={mailbox.health}
+                        text={`${mailbox.health}%`}
+                        className={`h-8 w-8 font-semibold animate-pulse`}
+                        styles={buildStyles({
+                          rotation: 0.25,
+                          textSize: "25px",
+                          strokeLinecap: "butt",
+                        })}
+                      />
                     )}
                   </TableCell>
                   <TableCell>

@@ -515,7 +515,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   {email.is_reply &&
                     email.category &&
                     email.category.trim() === "Neutral" && (
-                      <Badge className="gap-1 items-center rounded-full bg-gray-600">
+                      <Badge className="gap-1 items-center rounded-full bg-yellow-300">
                         <Bell className="h-[14px] w-[14px]" />
                         Neutral
                       </Badge>
@@ -748,6 +748,33 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         });
     };
 
+    const handleFollowUoSendNow = () => {
+      SetIsLoadingButton(true);
+      const payload = {
+        conversation_id: conversationId,
+        sender: "srinathreddy239@gmail.com",
+        recipient: "mdanassabah@gmail.com",
+        subject: followUpSubject,
+        body: followUpBody,
+      };
+
+      console.log("FollowUp", payload);
+
+      axiosInstance
+        .post("/v2/mailbox/send/immediately", payload)
+        .then((response) => {
+          toast.success("Your email has been sent successfully!");
+          setThread(response.data);
+          updateMailStatus(conversationId, "sent"); // Update mail status
+          SetIsLoadingButton(false);
+          setEditable(false);
+        })
+        .catch((error) => {
+          console.error("Failed to send email:", error);
+          toast.error("Failed to send the email. Please try again.");
+        });
+    };
+
     const handleRegenrateDraft = () => {
       const payload = {
         user_id: user.id,
@@ -878,7 +905,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       <Button
                         variant={"secondary"}
                         className="ml-2"
-                        onClick={handleSendNow}
+                        onClick={handleFollowUoSendNow}
                       >
                         {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                       </Button>

@@ -24,6 +24,8 @@ import {
   UserX,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { MdOutlineScheduleSend } from "react-icons/md";
+import { GoCrossReference } from "react-icons/go";
 
 import React from "react";
 
@@ -65,6 +67,7 @@ interface EmailMessage {
   action_draft: any;
   message_id: any;
   approved: any;
+  is_special: any;
 }
 
 interface NotificationProps {
@@ -220,9 +223,12 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
   const parseActionDraft = (actionDraft: string) => {
     if (!actionDraft)
       return { subject: "No subject", body: "No details provided" };
-  
-    actionDraft = actionDraft.replace(/```json/g, '').replace(/```/g, '').trim();
-  
+
+    actionDraft = actionDraft
+      .replace(/```json/g, "")
+      .replace(/```/g, "")
+      .trim();
+
     try {
       const parsedData = JSON.parse(actionDraft);
       const { subject, body } = parsedData;
@@ -230,21 +236,20 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     } catch (e) {
       const subjectMarker = "Subject: ";
       const splitIndex = actionDraft.indexOf("\n\n");
-  
+
       let subject = "No subject";
       let body = "No details provided";
-  
+
       if (splitIndex !== -1) {
         subject = actionDraft.substring(subjectMarker.length, splitIndex);
         body = actionDraft.substring(splitIndex + 2);
       } else {
         body = actionDraft.substring(subjectMarker.length);
       }
-  
+
       return { subject, body };
     }
   };
-  
 
   const cleanedCategory = email?.category?.trim();
 
@@ -312,6 +317,39 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
 
   return (
     <div className="flex flex-col gap-3 w-full">
+      {email.is_special && email?.category?.trim() !== "Forwarded to" && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              {email.is_special === true && (
+                <MdOutlineScheduleSend className="h-5 w-5 text-gray-400" />
+              )}
+            </div>
+            <p className="ml-1 text-xs">
+              {email.is_special === true &&
+                `Sally has scheduled this message as requested by ${
+                  leads.length > 0 && leads[0].first_name
+                    ? leads[0].first_name
+                    : ""
+                }.`}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {email.category && email.category.trim() === "Forwarded to" && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <GoCrossReference className="h-4 w-4 text-gray-400" />
+            </div>
+            <p className="ml-1 text-xs">
+              Sally obtained this lead through a referral.
+            </p>
+          </div>
+        </div>
+      )}
+
       {email?.category &&
         email.is_reply &&
         email.category !== "Information Required" && (
