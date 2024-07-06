@@ -9,6 +9,7 @@ import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { AuthStateInterface } from "@/context/auth-provider";
 import { Toaster } from "sonner";
+import Script from "next/script";
 // import { getServerSession } from "next-auth";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -38,17 +39,17 @@ export default async function RootLayout({
     <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
-          <script
+          <Script
             async
             src="https://www.googletagmanager.com/gtag/js?id=G-3LG32WF4MD"
-          ></script>
-          <script id="google-analytics">
+          ></Script>
+          <Script id="google-analytics">
             {` window.dataLayer = window.dataLayer || [];
   function gtag(){dataLayer.push(arguments);}
   gtag('js', new Date());
 
   gtag('config', 'G-3LG32WF4MD');`}
-          </script>
+          </Script>
         </head>
         <body className={`${inter.className} overflow-hidden`}>
           <Providers userAuthData={authData}>
