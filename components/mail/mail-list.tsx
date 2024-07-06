@@ -433,6 +433,8 @@ import {
   Trash2Icon,
   UserX,
 } from "lucide-react";
+import { MdForwardToInbox } from "react-icons/md";
+
 import { toast } from "sonner";
 
 interface MailListProps {
@@ -564,7 +566,7 @@ export function MailList({ items }: MailListProps) {
                         <Badge
                           className={`gap-1 items-center rounded-full ${
                             item.category.trim() === "Positive"
-                              ? "bg-green-600"
+                              ? "bg-green-400"
                               : item.category.trim() === "Information Required"
                               ? "bg-green-600"
                               : item.category.trim() === "Negative"
@@ -573,8 +575,10 @@ export function MailList({ items }: MailListProps) {
                               ? "bg-yellow-600"
                               : item.category.trim() === "Forwarded"
                               ? "bg-blue-600"
+                              : item.category.trim() === "Forwarded to"
+                              ? "bg-blue-400"
                               : item.category.trim() === "Neutral"
-                              ? "bg-gray-600"
+                              ? "bg-yellow-300"
                               : item.category.trim() === "Demo"
                               ? "bg-purple-600"
                               : item.category.trim() === "Later"
@@ -601,6 +605,9 @@ export function MailList({ items }: MailListProps) {
                           {item.category.trim() === "Forwarded" && (
                             <Forward className="h-[14px] w-[14px] scale-x-100" />
                           )}
+                          {item.category.trim() === "Forwarded to" && (
+                            <MdForwardToInbox className="h-[14px] w-[14px] scale-x-100" />
+                          )}
                           {item.category.trim() === "Neutral" && (
                             <Bell className="h-[14px] w-[14px] scale-x-100" />
                           )}
@@ -622,6 +629,10 @@ export function MailList({ items }: MailListProps) {
                             ? "Info Req"
                             : item.category.trim() === "Not Interested"
                             ? "Disinterested"
+                            : item.category.trim() === "Forwarded"
+                            ? "Referral"
+                            : item.category.trim() === "Forwarded to"
+                            ? "Forwarded"
                             : item.category}
                         </Badge>
                       ) : null}

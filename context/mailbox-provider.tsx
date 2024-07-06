@@ -25,6 +25,7 @@ export interface EmailMessage {
   action_draft: string | null;
   message_id: string;
   approved: any;
+  is_special: any;
 }
 
 export interface Mailbox {
