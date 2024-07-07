@@ -1466,7 +1466,7 @@ export default function PeopleForm(): JSX.Element {
                   >
                     <div className="">
                       <div className="text-sm font-medium">
-                        Total Company Funding
+                        Total Company Revenue Range
                       </div>
                       <div className="flex items-center gap-2 mb-4">
                         <FormField
