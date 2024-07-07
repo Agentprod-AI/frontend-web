@@ -1468,7 +1468,7 @@ export default function PeopleForm(): JSX.Element {
                       <div className="text-sm font-medium">
                         Total Company Funding
                       </div>
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2 mb-4">
                         <FormField
                           control={form.control}
                           name="minimum_company_funding"
