@@ -1318,7 +1318,7 @@ export default function PeopleForm(): JSX.Element {
                     />
                     <div className="absolute inline-block text-left -my-4">
                       {keywordDropdownIsOpen && (
-                        <ScrollArea className="w-56 h-[200px] rounded-md shadow-lg bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <ScrollArea className="w-56 z-50 h-[200px] rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
                           <div
                             className="py-1"
                             role="menu"
@@ -1337,7 +1337,7 @@ export default function PeopleForm(): JSX.Element {
                                   handleDropdownSelect(option);
                                 }}
                                 className={
-                                  "text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                  "dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                                 }
                               >
                                 {option}

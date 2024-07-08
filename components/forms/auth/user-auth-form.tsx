@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
 "use client";
+
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -12,13 +13,10 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
-// import { signIn } from "next-auth/react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
-import { AppState, UserInterface } from "@/context/user-context";
 import { setCookie } from "cookies-next";
-
 import {
   login as supabaseLogin,
   signup as supabaseSignup,
@@ -43,16 +41,8 @@ export default function UserAuthForm({
   formType: "signin" | "signup";
 }) {
   const { login } = useAuth();
-
   const { user, setUser } = useUserContext();
-
-  // const callbackUrl = searchParams.get("callbackUrl");
   const [loading, setLoading] = useState(false);
-
-  // const defaultValues = {
-  //   email: "mrtechnobot02@gmail.com",
-  //   password: "naman123",
-  // };
 
   const form = useForm<UserFormValue>({
     resolver: zodResolver(formSchema),
@@ -62,46 +52,11 @@ export default function UserAuthForm({
     },
   });
 
-  // const onSubmit = async (data: UserFormValue) => {
-  //   if (formType === "signin") {
-  //     try {
-  //       const userData = await supabaseLogin({
-  //         email: data.email,
-  //         password: data.password,
-  //       });
-  //       const newState: UserInterface = {
-  //         id: userData.user.id,
-  //         email: userData.user.email,
-  //       };
-
-  //       console.log("userrrr", userData.user.id);
-  //       login(userData.user);
-  //       setUser(newState);
-  //     } catch (error: any) {
-  //       toast.error(error.message);
-  //     }
-  //   } else if (formType === "signup") {
-  //     try {
-  //       await supabaseSignup({
-  //         email: data.email,
-  //         password: data.password,
-  //       });
-  //       toast.success("Verification email sent!");
-  //       // redirect("/");
-  //     } catch (error: any) {
-  //       toast.error(error.message);
-  //     }
-  //   }
-
-  //   // signIn("credentials", {
-  //   //   email: data.email,
-  //   //   callbackUrl: callbackUrl ?? "/dashboard",
-  //   // });
-  // };
   const onSubmit = async (data: UserFormValue) => {
     setLoading(true);
     try {
       let userData;
+      console.log("button clicked");
       if (formType === "signin") {
         userData = await supabaseLogin({
           email: data.email,
@@ -123,10 +78,8 @@ export default function UserAuthForm({
         setUser({
           id: userData?.user?.id,
           email: userData?.user?.email,
-
-          // username: userData?.user?.username,
-          // firstName: userData?.user?.firstName,
         });
+
         try {
           const response = await axiosInstance.post(
             `/v2/users/initiate/${userData.user.id}`,
@@ -147,7 +100,6 @@ export default function UserAuthForm({
         login(userData.user);
 
         const userKey = "user";
-
         setCookie(userKey, JSON.stringify(user), { maxAge: 3600 * 24 * 7 }); // Expires in one week
       }
     } catch (error: any) {
@@ -208,17 +160,6 @@ export default function UserAuthForm({
           </Button>
         </form>
       </Form>
-      {/* <div className="relative">
-        <div className="absolute inset-0 flex items-center">
-          <span className="w-full border-t" />
-        </div>
-        <div className="relative flex justify-center text-xs uppercase">
-          <span className="bg-background px-2 text-muted-foreground">
-            Or continue with
-          </span>
-        </div>
-      </div>
-      <GoogleSignInButton /> */}
     </>
   );
 }

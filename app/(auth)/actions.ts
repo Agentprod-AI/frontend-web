@@ -2,6 +2,8 @@
 
 import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
+import { setCookie } from "cookies-next";
+import { redirect } from "next/navigation";
 
 export async function login(formData: { email: string; password: string }) {
   const cookieStore = cookies();
@@ -56,6 +58,7 @@ export async function logout() {
   if (error) {
     throw new Error(error.message);
   } else {
+
     // Ideally, you might want to also revalidate or clear any cache that depends on the user session
     // This step depends on your application's structure and how it handles cache
     // redirect("/");
