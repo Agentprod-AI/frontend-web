@@ -1643,7 +1643,7 @@ export default function PeopleForm(): JSX.Element {
               <LoadingCircle />
             ) : (
               <div>
-                {/* <AudienceTableClient isContacts={true} checkboxes={true}/> */}
+                {/* <AudienceTableClient/> */}
                 <AudienceTable />
               </div>
             )}
