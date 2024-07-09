@@ -1,3 +1,4 @@
+/* eslint-disable import/no-unresolved */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-console */
 "use client";
@@ -85,6 +86,8 @@ const initialMailboxes = [
 ];
 
 export default function Page() {
+  const [isPresentDomain, setIsPresentDomain] = useState();
+  const [openDisconnect, setOpenDisconnect] = useState(false);
   const [googleMail, setGoogleMail] = useState<any>("");
   const [inputAppPassword, setInputAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -170,31 +173,6 @@ export default function Page() {
     }
   };
 
-  // const handleAppPassword = async () => {
-  //   setIsApppassowrdLoading(true);
-  //   const payload = {
-  //     email: googleMail,
-  //     appKey: inputAppPassword,
-  //   };
-  //   try {
-  //     const response = await axios.post(
-  //       `http://localhost:8080/add-email`,
-  //       payload
-  //     );
-  //     if (response.data === "Success") {
-  //       setIsApppassowrdLoading(false);
-  //       handleEnableWarmup(googleMail);
-  //       setIsSecondWarmupDialogOpen(false);
-  //       toast.success("Warmup Enabled!!");
-  //     } else {
-  //       setIsApppassowrdLoading(false);
-  //       toast.error("Failed to setup warmup.");
-  //     }
-  //   } catch (error) {
-  //     console.error("Failed to setup warmup:", error);
-  //     toast.error("Failed to setup warmup.");
-  //   }
-  // };
   const handleAppPassword = async () => {
     setIsApppassowrdLoading(true);
     const payload = {
@@ -237,7 +215,8 @@ export default function Page() {
       const response = await axiosInstance.get(
         `/v2/aws/verify/domain/${domainInput}`
       );
-      setMailData(response.data);
+      setMailData(response.data.dns);
+      setIsPresentDomain(response.data.authenticate);
       console.log("Domain data fetched successfully:", response.data);
       setFetchSuccess(true);
       setLoading(false);
@@ -327,6 +306,7 @@ export default function Page() {
       setMailboxes((prevState) =>
         prevState.filter((mailbox) => mailbox.sender_id !== sender_id)
       );
+      setOpenDisconnect(false);
       toast.success("Mailbox removed successfully.");
     } catch (error: any) {
       console.error("Failed to remove mailbox.", error);
@@ -358,7 +338,7 @@ export default function Page() {
           mailbox: emailInput,
           sender_name: nameInput,
           warmup: true,
-          daily_limit: 30,
+          daily_limit: 50,
         };
         const dnsPayload = {
           domain: domainInput,
@@ -369,7 +349,10 @@ export default function Page() {
         await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
         console.log(dnsPayload);
         setIsVerifyEmailOpen(false);
-        setIsTableDialogOpen(true);
+        if (!isPresentDomain) {
+          setIsTableDialogOpen(true);
+        }
+        setIsAddMailboxOpen(false);
         addMailbox(newMailbox);
         toast.success("Mailbox Added Successfully");
         console.log("Mailbox added successfully:", mailboxes);
@@ -443,32 +426,6 @@ export default function Page() {
                   <TableCell>
                     {mailbox?.sender_name || "No Name Provided"}
                   </TableCell>
-                  {/* <TableCell>
-                    {mailbox?.platform === "Google" ? (
-                      mailbox.warmup ? (
-                        <Switch
-                          checked={mailbox.warmup}
-                          onCheckedChange={(isChecked) =>
-                            handleSwitchChange(isChecked, mailbox.mailbox)
-                          }
-                        />
-                      ) : (
-                        <Button
-                          variant="secondary"
-                          onClick={() => setIsWarmupDialogOpen(true)}
-                        >
-                          Setup Warmup
-                        </Button>
-                      )
-                    ) : (
-                      <Switch
-                        checked={mailbox.warmup}
-                        onCheckedChange={(isChecked) =>
-                          handleSwitchChange(isChecked, mailbox.mailbox)
-                        }
-                      />
-                    )}
-                  </TableCell> */}
                   <TableCell>
                     {mailbox?.platform === "Google" ? (
                       mailbox.warmup ||
@@ -818,7 +775,10 @@ export default function Page() {
                     </Dialog>
                   </TableCell>
                   <TableCell>
-                    <Dialog>
+                    <Dialog
+                      open={openDisconnect}
+                      onOpenChange={setOpenDisconnect}
+                    >
                       <DialogTrigger asChild>
                         <Button variant={"destructive"}>Disconnect</Button>
                       </DialogTrigger>
@@ -1082,7 +1042,7 @@ export default function Page() {
                           onClick={() => handleCopy(mailbox.Name)}
                         />
                         <span className="w-96 overflow-x-scroll">
-                          {mailbox.Name.replace("@", "")}
+                          {mailbox.Name.replace("", "")}
                         </span>
                       </div>
                     </TableCell>

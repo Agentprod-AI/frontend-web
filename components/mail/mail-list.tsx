@@ -476,6 +476,17 @@ export function MailList({ items }: MailListProps) {
       });
   }, [user?.id]);
 
+  useEffect(() => {
+    // Update filteredItems whenever items, selectedStatus, or the selected campaign changes
+    setFilteredItems(
+      items.filter(
+        (item) =>
+          selectedStatus === "all" ||
+          item.status.toLowerCase() === selectedStatus.toLowerCase()
+      )
+    );
+  }, [items, selectedStatus]);
+
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
