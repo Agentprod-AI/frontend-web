@@ -1,35 +1,28 @@
-export const parseActionDraft = (actionDraft: any) => {
+export const parseActionDraft = (actionDraft: string) => {
   if (!actionDraft)
     return { subject: "No subject", body: "No details provided" };
 
-  try {
-    // Attempt to parse the string as JSON
-    const draft = JSON.parse(actionDraft);
-    const subject = draft.subject || "No subject";
-    const body = draft.body || "No details provided";
-    return { subject, body };
-  } catch (error) {
-    // If JSON parsing fails, fallback to string parsing
-    const subjectMarker = '"subject": ';
-    const bodyMarker = '"body": ';
+  actionDraft = actionDraft
+    .replace(/```json/g, "")
+    .replace(/```/g, "")
+    .trim();
 
-    const subjectStartIndex = actionDraft.indexOf(subjectMarker);
-    const bodyStartIndex = actionDraft.indexOf(bodyMarker);
+  try {
+    const parsedData = JSON.parse(actionDraft);
+    const { subject, body } = parsedData;
+    return { subject, body };
+  } catch (e) {
+    const subjectMarker = "Subject: ";
+    const splitIndex = actionDraft.indexOf("\n\n");
 
     let subject = "No subject";
     let body = "No details provided";
 
-    if (subjectStartIndex !== -1 && bodyStartIndex !== -1) {
-      const subjectEndIndex = actionDraft.indexOf(",", subjectStartIndex);
-      subject = actionDraft
-        .substring(subjectStartIndex + subjectMarker.length, subjectEndIndex)
-        .replace(/"/g, "")
-        .trim();
-
-      body = actionDraft
-        .substring(bodyStartIndex + bodyMarker.length)
-        .replace(/"}`/g, "")
-        .trim();
+    if (splitIndex !== -1) {
+      subject = actionDraft.substring(subjectMarker.length, splitIndex);
+      body = actionDraft.substring(splitIndex + 2);
+    } else {
+      body = actionDraft.substring(subjectMarker.length);
     }
 
     return { subject, body };

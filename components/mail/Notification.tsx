@@ -46,6 +46,7 @@ import { useMailbox } from "@/context/mailbox-provider";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import { LoadingCircle } from "@/app/icons";
+import { parseActionDraft } from "./parse-draft";
 // import { parseActionDraft } from "./parse-draft";
 
 interface EmailMessage {
@@ -68,6 +69,7 @@ interface EmailMessage {
   message_id: any;
   approved: any;
   is_special: any;
+  scheduled_datetime: string;
 }
 
 interface NotificationProps {
@@ -200,56 +202,29 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       });
   };
 
-  // const parseActionDraft = (actionDraft: any) => {
-  //   if (!actionDraft)
-  //     return { subject: "No subject", body: "No details provided" };
+  const regenrate = React.useCallback(() => {
+    const payload = {
+      follow_up_number: 3,
+      user_id: user.id,
+      previous_emails: [
+        {
+          subject: title,
+          body: body,
+        },
+      ],
+    };
 
-  //   const subjectMarker = "Subject: ";
-  //   const splitIndex = actionDraft.indexOf("\n\n");
-
-  //   let subject = "No subject";
-  //   let body = "No details provided";
-
-  //   if (splitIndex !== -1) {
-  //     subject = actionDraft.substring(subjectMarker.length, splitIndex);
-  //     body = actionDraft.substring(splitIndex + 2);
-  //   } else {
-  //     body = actionDraft.substring(subjectMarker.length);
-  //   }
-
-  //   return { subject, body };
-  // };
-
-  const parseActionDraft = (actionDraft: string) => {
-    if (!actionDraft)
-      return { subject: "No subject", body: "No details provided" };
-
-    actionDraft = actionDraft
-      .replace(/```json/g, "")
-      .replace(/```/g, "")
-      .trim();
-
-    try {
-      const parsedData = JSON.parse(actionDraft);
-      const { subject, body } = parsedData;
-      return { subject, body };
-    } catch (e) {
-      const subjectMarker = "Subject: ";
-      const splitIndex = actionDraft.indexOf("\n\n");
-
-      let subject = "No subject";
-      let body = "No details provided";
-
-      if (splitIndex !== -1) {
-        subject = actionDraft.substring(subjectMarker.length, splitIndex);
-        body = actionDraft.substring(splitIndex + 2);
-      } else {
-        body = actionDraft.substring(subjectMarker.length);
-      }
-
-      return { subject, body };
-    }
-  };
+    axiosInstance
+      .post("v2/training/autogenerate/followup", payload)
+      .then((response) => {
+        setTitle(response.data.subject);
+        setBody(response.data.body);
+        toast.success("Draft Regenerated!!");
+      })
+      .catch((error) => {
+        console.error("Error fetching followup data:", error);
+      });
+  }, [user.id, title, body]);
 
   const cleanedCategory = email?.category?.trim();
 
@@ -260,8 +235,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       conversation_id: conversationId,
       sender: senderEmail,
       recipient: recipientEmail,
-      // subject: title,
-      // body: body,
       subject: parsedDraft?.subject || "",
       body: parsedDraft?.body || "",
     };
@@ -281,27 +254,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       });
   };
 
-  const handleRegenrateDraft = () => {
-    const payload = {
-      user_id: user.id,
-      conversation_id: conversationId,
-      campaign_id: leads[0].campaign_id,
-    };
-
-    axiosInstance
-      .post(`/v2/mailbox/draft/regenerate`, payload)
-      .then((response) => {
-        toast.success("Your draft has been regenerated successfully!");
-        setTitle(response.data.subject);
-        setBody(response.data.body);
-        setEditable(false);
-      })
-      .catch((error) => {
-        console.error("Failed to regenerate draft:", error);
-        toast.error("Failed to regenerate the draft. Please try again.");
-      });
-  };
-
   const handleDeleteDraft = () => {
     axiosInstance
       .delete(`/v2/mailbox/draft/${conversationId}`)
@@ -314,6 +266,28 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         toast.error("Failed to delete the draft. Please try again.");
       });
   };
+
+  function getTimeDifference(utcTimestamp: any) {
+    const utcDate = new Date(utcTimestamp);
+    const istOffset = 5.5 * 60 * 60 * 1000; // IST is UTC+5:30
+    const istDate: any = new Date(utcDate.getTime() + istOffset);
+
+    const currentDate: any = new Date();
+    const currentDateInIST: any = new Date(currentDate.getTime() + istOffset);
+    const deltaDays = Math.ceil(
+      (istDate - currentDateInIST) / (1000 * 60 * 60 * 24)
+    );
+
+    const deltaYears = istDate.getFullYear() - currentDateInIST.getFullYear();
+    const deltaMonths =
+      deltaYears * 12 + (istDate.getMonth() - currentDateInIST.getMonth());
+
+    if (deltaDays < 30) {
+      return `${deltaDays} days later`;
+    } else {
+      return `${deltaMonths} months later`;
+    }
+  }
 
   return (
     <div className="flex flex-col gap-3 w-full">
@@ -395,12 +369,35 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   "Negative feedback received."}
                 {cleanedCategory === "Forwarded" &&
                   "This message has been forwarded."}
-                {cleanedCategory === "Later" &&
+                {/* {cleanedCategory === "Later" &&
                   `Follow up with ${
                     leads.length > 0 && leads[0].first_name
                       ? leads[0].first_name
                       : ""
-                  } in a few day as requested.`}
+                  } in ${getTimeDifference(
+                    email?.scheduled_datetime
+                  )} as requested.`} */}
+
+                {/* Need to change */}
+                {cleanedCategory === "Later" &&
+                  email.is_special &&
+                  `Follow up with ${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : ""
+                  } in ${getTimeDifference(
+                    email?.scheduled_datetime
+                  )} as requested.`}
+
+                {cleanedCategory === "Later" &&
+                  !email.is_special &&
+                  `Follow up with ${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : ""
+                  } in a days as requested.`}
+
+                {/* Need to change */}
                 {cleanedCategory === "Demo" &&
                   "Demo scheduling requested by client."}
                 {cleanedCategory === "Neutral" && "Neutral response received."}
@@ -507,10 +504,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                         >
                           <Edit3 className="h-4 w-4" />
                         </Button>
-                        <Button
-                          variant={"ghost"}
-                          onClick={handleRegenrateDraft}
-                        >
+                        <Button variant={"ghost"} onClick={regenrate}>
                           <RefreshCw className="h-4 w-4" />
                         </Button>
                         <Button variant={"ghost"} onClick={handleDeleteDraft}>

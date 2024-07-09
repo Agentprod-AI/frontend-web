@@ -4,6 +4,7 @@
 "use client";
 
 import React from "react";
+import { BsStars } from "react-icons/bs";
 import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "../../utils/axiosInstance";
 import {
@@ -273,29 +274,31 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         });
     };
 
-    const handleRegenrateDraft = () => {
+    const regenrateFollowUp = React.useCallback(() => {
       const payload = {
+        follow_up_number: 3,
         user_id: user.id,
-        conversation_id: conversationId,
-        campaign_id: leads[0].campaign_id,
+        previous_emails: [
+          {
+            subject: lastEmail.subject,
+            body: lastEmail.body,
+          },
+        ],
       };
 
+      console.log(payload);
+
       axiosInstance
-        .post(`/v2/mailbox/draft/regenerate`, payload)
+        .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
-          toast.success("Your draft has been regenerated successfully!");
           setTitle(response.data.subject);
           setBody(response.data.body);
-          console.log(response.data);
-          setEditable(false);
+          console.log("Regenerated");
         })
         .catch((error) => {
-          console.error("Failed to regenerate draft:", error);
-          toast.error("Failed to regenerate the draft. Please try again.");
+          console.error("Error fetching followup data:", error);
         });
-    };
-
-    // regenerate the draft email
+    }, [user.id, title, body]);
 
     const handleDeleteDraft = () => {
       axiosInstance
@@ -412,7 +415,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   <Button variant={"ghost"} onClick={() => setEditable(true)}>
                     <Edit3 className="h-4 w-4" />
                   </Button>
-                  <Button variant={"ghost"} onClick={handleRegenrateDraft}>
+                  <Button variant={"ghost"} onClick={regenrateFollowUp}>
                     <RefreshCw className="h-4 w-4" />
                   </Button>
                   <Button variant={"ghost"} onClick={handleDeleteDraft}>
@@ -586,6 +589,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   };
 
   const DraftEmailComponent = () => {
+    const [isSuggestionOpen, setIsSuggestionOpen] = React.useState(false);
     const [followUpSubject, setFollowUpSubject] = React.useState("");
     const [followUpBody, setFollowUpBody] = React.useState("");
     const [editable, setEditable] = React.useState(false);
@@ -614,8 +618,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     React.useEffect(() => {
       // For handleing, the thread if some error occurs
-      setError(""); // Reset error state when conversationId changes
-      setIsLoading(true); // Set loading state when conversationId changes
+      setError("");
+      setIsLoading(true);
       // For handleing, the thread if some error occurs
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
@@ -661,6 +665,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .then((response) => {
           setFollowUpSubject(response.data.subject);
           setFollowUpBody(response.data.body);
+
+          console.log("FollowUp", response);
         })
         .catch((error) => {
           console.error("Error fetching followup data:", error);
@@ -727,12 +733,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
-        sender: "srinathreddy239@gmail.com",
-        recipient: "mdanassabah@gmail.com",
+        sender: senderEmail,
+        recipient: recipientEmail,
         subject: title,
         body: body,
       };
 
+      console.log("Sending pyaload", payload);
       axiosInstance
         .post("/v2/mailbox/send/immediately", payload)
         .then((response) => {
@@ -752,8 +759,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       SetIsLoadingButton(true);
       const payload = {
         conversation_id: conversationId,
-        sender: "srinathreddy239@gmail.com",
-        recipient: "mdanassabah@gmail.com",
+        sender: senderEmail,
+        recipient: recipientEmail,
         subject: followUpSubject,
         body: followUpBody,
       };
@@ -767,6 +774,32 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           setThread(response.data);
           updateMailStatus(conversationId, "sent"); // Update mail status
           SetIsLoadingButton(false);
+          setEditable(false);
+        })
+        .catch((error) => {
+          console.error("Failed to send email:", error);
+          toast.error("Failed to send the email. Please try again.");
+        });
+    };
+
+    const handleFollowUpApproval = () => {
+      setLoadingSmartSchedule(true);
+      const payload = {
+        conversation_id: conversationId,
+        sender: senderEmail,
+        recipient: recipientEmail,
+        subject: followUpSubject,
+        body: followUpBody,
+      };
+
+      axiosInstance
+        .post("/v2/mailbox/draft/send", payload)
+        .then((response) => {
+          toast.success("Draft Approved!");
+          setThread(response.data);
+          // console.log("Approve Data", response.data);
+          updateMailStatus(conversationId, "scheduled"); // Update mail status
+          setLoadingSmartSchedule(false);
           setEditable(false);
         })
         .catch((error) => {
@@ -895,7 +928,10 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   </CardContent>
                   <CardFooter className="flex justify-between text-xs items-center">
                     <div>
-                      <Button disabled={editable} onClick={handleApproveEmail}>
+                      <Button
+                        disabled={editable}
+                        onClick={handleFollowUpApproval}
+                      >
                         {loadingSmartSchedule ? (
                           <LoadingCircle />
                         ) : (
@@ -1048,6 +1084,38 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <div ref={internalScrollRef} />
           </Card>
         </div>
+        {/* <div>
+          {matchingCampaign && (
+            <div className="flex items-center gap-3">
+              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                <BsStars className="h-4 w-4 text-gray-400" />
+              </div>
+              <div className="text-xs ml-1">
+                <button onClick={() => setIsSuggestionOpen(!isSuggestionOpen)}>
+                  {isSuggestionOpen
+                    ? "Hide Suggestions"
+                    : "Sally couldn't complete the proof-reading. Please click to review the following suggestions."}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+        {isSuggestionOpen && (
+          <div className="flex w-full mt-2 mr-4">
+            <Card className="w-full mr-5 ml-10 border-none outline outline-cyan-950 outline-offset-4">
+             
+              <CardHeader>
+              
+              </CardHeader>
+              <CardContent className="text-xs -ml-3 -mt-4">
+                
+              </CardContent>
+              <CardFooter className="flex justify-between text-xs items-center">
+                
+              </CardFooter>
+            </Card>
+          </div>
+        )} */}
       </div>
     );
   };
@@ -1140,7 +1208,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <DraftEmailComponent />
           ) : null
         ) : (
-          <DraftEmailComponent />
+          <div>
+            <DraftEmailComponent />
+          </div>
         )}
       </div>
     </div>
