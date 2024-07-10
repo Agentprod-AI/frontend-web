@@ -173,13 +173,14 @@ export async function getFollowUpTwo(
 export async function startCampaign(
   campaignId: string,
   userId: string,
+  type: boolean
 ): Promise<any> {
   const postData = {
     campaign_id: campaignId,
     user_id: userId,
   };
   await axiosInstance
-    .post(`/v2/send/contacts?without_template=true`, postData)
+    .post(`/v2/send/contacts?without_template=${type}`, postData)
     .then((response) => {
       const data = response.data;
       console.log(data);
