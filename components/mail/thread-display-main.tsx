@@ -724,8 +724,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           setEditable(false);
         })
         .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
+          console.error("Failed to approve email:", error);
+          toast.error("Failed to approve the email. Please try again.");
         });
     };
 
@@ -912,6 +912,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                     <CardTitle className="text-sm flex -mt-8 -ml-3">
                       <Input
                         value={followUpSubject}
+                        disabled={!editable}
                         className="text-xs"
                         placeholder="Subject"
                         onChange={(e) => setFollowUpSubject(e.target.value)}
@@ -921,6 +922,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   <CardContent className="text-xs -ml-3 -mt-4">
                     <Textarea
                       value={followUpBody}
+                      disabled={!editable}
                       className="text-xs h-64"
                       placeholder="Enter email body"
                       onChange={(e) => setFollowUpBody(e.target.value)}
@@ -1103,15 +1105,15 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         {isSuggestionOpen && (
           <div className="flex w-full mt-2 mr-4">
             <Card className="w-full mr-5 ml-10 border-none outline outline-cyan-950 outline-offset-4">
-             
+
               <CardHeader>
-              
+
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
-                
+
               </CardContent>
               <CardFooter className="flex justify-between text-xs items-center">
-                
+
               </CardFooter>
             </Card>
           </div>
