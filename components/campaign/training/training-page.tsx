@@ -416,7 +416,7 @@ export default function Training() {
                 </Button>
               </DialogTrigger>
               {testCampLoading ? null : (
-                <DialogContent className="">
+                <DialogContent className="max-w-4xl">
                   <DialogHeader>
                     <DialogTitle>Test Campaign Details</DialogTitle>
                   </DialogHeader>
@@ -427,6 +427,7 @@ export default function Training() {
                           <TableHead>Emails</TableHead>
                           <TableHead>Email Placement</TableHead>
                           <TableHead>Spam Score</TableHead>
+                          <TableHead>Sender</TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -437,6 +438,7 @@ export default function Training() {
                             <TableCell className="text-green-400 ">
                               {data.spam_score}
                             </TableCell>
+                            <TableCell>{data.sender}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>
