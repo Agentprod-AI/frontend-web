@@ -244,7 +244,7 @@ export default function EditorContent() {
   const handleFollowUpChangeTwo = (text: string, cursorPos?: number) => {
     setLocalFollowUpTwo(text);
     setFollowUpOne(text);
-    handleTextChange(`${localFollowUp} ${text}`, setFollowUp);
+    handleTextChange(`${localFollowUp} ${text}`, setFollowUpOne);
     if (cursorPos !== undefined) {
       setCursorPosition(cursorPos);
     }

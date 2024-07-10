@@ -131,8 +131,9 @@ export const PeopleProfileSheet = ({
               <div className="flex space-x-2 w-full">
                 <Briefcase className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground whitespace-normal w-full">
-                  {data.employment_history &&
-                    data.employment_history[0].organization_name}
+                  {data?.employment_history
+                    ? data?.employment_history[0]?.organization_name
+                    : null}
                 </span>
               </div>
               {data.phone_numbers && (
@@ -315,7 +316,7 @@ export const PeopleProfileSheet = ({
                       - present
                     </span>
                     <span className="w-full whitespace-normal">
-                      {data.employment_history[0].title}
+                      {data?.employment_history[0]?.title}
                     </span>
                   </div>
                   <CollapsibleContent className="space-y-2 w-full">
@@ -526,8 +527,8 @@ export const PeopleProfileSheet = ({
             <br />
             <div>
               <p className="text-sm font-medium leading-none whitespace-normal w-full">
-                {data.employment_history &&
-                  data.employment_history[0].organization_name}
+                {data?.employment_history &&
+                  data?.employment_history[0]?.organization_name}
               </p>
             </div>
 

@@ -17,6 +17,7 @@ const defaultFormsTracker = {
   goal: false,
   audience: false,
   training: false,
+  autoPilot: false,
 };
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -53,27 +54,42 @@ export default function Page() {
   useEffect(() => {
     async function fetchCampaign() {
       try {
-        const [campaignResponse, goalResponse, offeringResponse] =
-          await Promise.all([
-            fetch(
-              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
-            ),
-            fetch(
-              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/goals/${params.campaignId}`
-            ),
-            fetch(
-              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/offerings/${params.campaignId}`
-            ),
-          ]);
+        const [
+          campaignResponse,
+          goalResponse,
+          offeringResponse,
+          audienceResponse,
+          AutopilotResponse,
+        ] = await Promise.all([
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
+          ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/goals/${params.campaignId}`
+          ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/offerings/${params.campaignId}`
+          ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
+          ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot/${params.campaignId}`
+          ),
+        ]);
 
         const campaignData = await campaignResponse.json();
         const goalData = await goalResponse.json();
         const offeringData = await offeringResponse.json();
+        const audienceData = await audienceResponse.json();
+        const AutopilotData = await AutopilotResponse.json();
 
         if (
           campaignData.detail === "Campaign not found" &&
           goalData.detail === "Goal not found" &&
-          offeringData.detail === "Offering not found"
+          offeringData.detail === "Offering not found" &&
+          audienceData.detail === "No Contacts found" &&
+          AutopilotData === null
         ) {
           setIsCampaignFound(false);
         } else {
@@ -83,7 +99,8 @@ export default function Page() {
             offering: campaignData.detail !== "Campaign not found",
             goal: offeringData.detail !== "Offering not found",
             audience: goalData.detail !== "Goal not found",
-            training: goalData.detail !== "Goal not found",
+            autoPilot: audienceData.detail !== "No Contacts found",
+            training: AutopilotData !== null,
           };
           localStorage.setItem(
             "formsTracker",
@@ -108,6 +125,7 @@ export default function Page() {
   const isGoalDisabled = !formsTracker.goal;
   const isAudienceDisabled = !formsTracker.audience;
   const isTrainingDisabled = !formsTracker.training;
+  const isAutoPilotDisabled = !formsTracker.autoPilot;
 
   return (
     <div>
@@ -238,6 +256,37 @@ export default function Page() {
 
           <Card
             className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
+              isAutoPilotDisabled ? "bg-gray-100/10 cursor-not-allowed" : ""
+            }`}
+          >
+            <CardHeader>
+              <CardTitle>Autopilot</CardTitle>
+              <CardDescription>
+                How do you want to automate this campaign?
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="flex py-0 justify-between">
+              <Button
+                asChild
+                variant={"outline"}
+                disabled={isAutoPilotDisabled}
+                className={
+                  isAutoPilotDisabled ? "text-gray-400 cursor-not-allowed" : ""
+                }
+              >
+                <Link
+                  href={
+                    isAutoPilotDisabled ? "#" : `${params.campaignId}/autopilot`
+                  }
+                >
+                  {isAutoPilotDisabled === true ? "Add" : "Edit"}
+                </Link>
+              </Button>
+            </CardFooter>
+          </Card>
+
+          <Card
+            className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
               isTrainingDisabled ? "bg-gray-100/10 cursor-not-allowed" : ""
             }`}
           >
@@ -259,37 +308,6 @@ export default function Page() {
                 <Link
                   href={
                     isTrainingDisabled ? "#" : `${params.campaignId}/training`
-                  }
-                >
-                  {isTrainingDisabled === true ? "Add" : "Edit"}
-                </Link>
-              </Button>
-            </CardFooter>
-          </Card>
-
-          <Card
-            className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
-              isTrainingDisabled ? "bg-gray-100/10 cursor-not-allowed" : ""
-            }`}
-          >
-            <CardHeader>
-              <CardTitle>Autopilot</CardTitle>
-              <CardDescription>
-                How do you want to automate this campaign?
-              </CardDescription>
-            </CardHeader>
-            <CardFooter className="flex py-0 justify-between">
-              <Button
-                asChild
-                variant={"outline"}
-                disabled={isTrainingDisabled}
-                className={
-                  isTrainingDisabled ? "text-gray-400 cursor-not-allowed" : ""
-                }
-              >
-                <Link
-                  href={
-                    isTrainingDisabled ? "#" : `${params.campaignId}/autopilot`
                   }
                 >
                   {isTrainingDisabled === true ? "Add" : "Edit"}

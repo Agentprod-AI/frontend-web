@@ -640,7 +640,11 @@ export default function PeopleForm(): JSX.Element {
           const data = response.data;
           console.log("filters to audience: ", data);
           toast.success("Audience created successfully");
-          router.push(`/dashboard/campaign/${params.campaignId}`);
+
+          toast.info("Updating user details, please wait...");
+          setTimeout(() => {
+            router.push(`/dashboard/campaign/${params.campaignId}`);
+          }, 20000);
         })
         .catch((error: any) => {
           console.log(error);

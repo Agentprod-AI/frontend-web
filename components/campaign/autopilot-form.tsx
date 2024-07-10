@@ -5,7 +5,8 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
+import { redirect, useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -21,7 +22,7 @@ import {
 
 const autopilotFormSchema = z.object({
   all_messages_actions: z.boolean().optional(),
-  outbound_sequences: z.boolean().optional(),
+  email: z.boolean().optional(),
   replies: z.boolean().optional(),
   out_of_office: z.boolean().optional(),
   positive: z.boolean().optional(),
@@ -38,7 +39,7 @@ type AutopilotFormValues = z.infer<typeof autopilotFormSchema>;
 
 const defaultValues: Partial<AutopilotFormValues> = {
   all_messages_actions: false,
-  outbound_sequences: false,
+  email: false,
   replies: false,
   out_of_office: false,
   positive: false,
@@ -60,6 +61,7 @@ const setFormValues = (setValue: any, values: Partial<AutopilotFormValues>) => {
 export function AutopilotForm() {
   const params = useParams<{ campaignId: string }>();
   const [type, setType] = useState<"create" | "edit">("create");
+  const router = useRouter();
 
   const form = useForm<AutopilotFormValues>({
     resolver: zodResolver(autopilotFormSchema),
@@ -72,7 +74,7 @@ export function AutopilotForm() {
 
   useEffect(() => {
     setFormValues(setValue, {
-      outbound_sequences: allMessagesActions,
+      email: allMessagesActions,
       replies: allMessagesActions,
       out_of_office: allMessagesActions,
       positive: allMessagesActions,
@@ -109,7 +111,7 @@ export function AutopilotForm() {
       if (data) {
         setType("edit");
         setFormValues(setValue, {
-          outbound_sequences: data.email,
+          email: data.email,
           out_of_office: data.ooo,
           positive: data.positive,
           negative: data.negative,
@@ -137,6 +139,9 @@ export function AutopilotForm() {
         await axios.put(url, payload);
         toast.success("Autopilot settings updated successfully.");
       }
+      setTimeout(() => {
+        router.push(`/dashboard/campaign/${params.campaignId}`);
+      }, 2000);
     } catch {
       toast.error("An error occurred while saving the autopilot settings.");
     }
@@ -174,7 +179,7 @@ export function AutopilotForm() {
             "Turn on autopilot for all messages and actions."
           )}
           {renderSwitchField(
-            "outbound_sequences",
+            "email",
             "Outbound sequences",
             "First contact and follow-ups as part of a campaign sequence."
           )}

@@ -130,7 +130,7 @@ export default function Training() {
         `${process.env.NEXT_PUBLIC_SERVER_URL}v2/goals/${params.campaignId}`
       );
       console.log("res data" + res.data.emails[0]);
-      setTestEmail(res.data.emails[0]);
+      setTestEmail(res.data.emails);
     }
 
     call();
@@ -407,7 +407,7 @@ export default function Training() {
                       }
                     );
 
-                    setTestCamp(res.data);
+                    setTestCamp(res.data[0]);
                     toast.success("Testing campaign complete.");
                     setTestCampLoading(false);
                   }}
@@ -430,7 +430,7 @@ export default function Training() {
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {testCamp.map((data, index) => (
+                        {testCamp.map((data: any, index: any) => (
                           <TableRow key={index}>
                             <TableCell>{data.seed_mail}</TableCell>
                             <TableCell>{data.receivedAt[2]}</TableCell>
