@@ -261,6 +261,7 @@ export async function getPreviewByTemplate({
       personalized_fields: mapFields(personalized_fields),
       enriched_fields:
         enriched_fields?.map((field) => field.description) || null,
+      no_of_follow_ups: 2
     };
 
     console.log(postData);
