@@ -18,7 +18,7 @@ function Policy() {
               our Terms of Service in full.
             </div>
           </div>
-          <div className="my-8">
+          <div className="my-8 leading-6 	">
             <div className="text-xl font-semibold">1. Data Collection</div>
             <div>
               <div>We collect the following types of personal information:</div>
@@ -36,7 +36,7 @@ function Policy() {
               </ul>
             </div>
           </div>
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">2. How We Collect Data</div>
             <div>
               <div>We collect data:</div>
@@ -62,7 +62,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">3. Use of Data</div>
             <div>
               <div>We use the data we collect to:</div>
@@ -78,7 +78,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">4. Data Protection</div>
             <div>
               <div>
@@ -91,7 +91,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">5. Data Sharing</div>
             <div>
               <div>
@@ -118,7 +118,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">6. Data Retention</div>
             <div>
               <div>
@@ -130,7 +130,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">
               7. International Data Transfers
             </div>
@@ -144,7 +144,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">8. Rights</div>
             <div>
               <div>
@@ -164,7 +164,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">9. Minors</div>
             <div>
               <div>
@@ -178,7 +178,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">10. Data Breaches</div>
             <div>
               <div>
@@ -194,7 +194,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">
               11. Do Not Track Headers
             </div>
@@ -212,7 +212,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">
               12. California Civil Code Section 1798.83
             </div>
@@ -237,7 +237,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">13. Partners</div>
             <div>
               <div>
@@ -312,7 +312,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">14. Updates</div>
             <div>
               <div>
@@ -323,7 +323,7 @@ function Policy() {
             </div>
           </div>
 
-          <div className="my-8">
+          <div className="my-8 leading-6">
             <div className="text-xl font-semibold">15. Questions</div>
             <div>
               <div>
