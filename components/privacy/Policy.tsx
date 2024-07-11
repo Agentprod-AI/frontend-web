@@ -6,10 +6,10 @@ function Policy() {
   return (
     <div className="h-screen overflow-y-scroll">
       <div className="flex flex-col items-center  py-20 px-4">
-        <div className="md:text-7xl text-4xl font-semibold bg-gradient-to-b from-foreground to-transparent bg-clip-text leading-none text-transparent">
+        <div className="text-6xl  font-semibold bg-gradient-to-b from-foreground to-transparent bg-clip-text leading-none text-transparent">
           Privacy Policy
         </div>
-        <div className="mt-16 text-white/80 max-w-4xl text-sm">
+        <div className="mt-16 text-white/80 max-w-4xl text-xs">
           <div>
             <div className="font-medium">Effective Date: April 9, 2024</div>
             <div>
@@ -19,7 +19,7 @@ function Policy() {
             </div>
           </div>
           <div className="my-8">
-            <div className="text-2xl font-semibold">1. Data Collection</div>
+            <div className="text-xl font-semibold">1. Data Collection</div>
             <div>
               <div>We collect the following types of personal information:</div>
               <ul className="list-disc ml-5">
@@ -37,7 +37,7 @@ function Policy() {
             </div>
           </div>
           <div className="my-8">
-            <div className="text-2xl font-semibold">2. How We Collect Data</div>
+            <div className="text-xl font-semibold">2. How We Collect Data</div>
             <div>
               <div>We collect data:</div>
               <ul className="list-disc ml-5">
@@ -63,7 +63,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">3. Use of Data</div>
+            <div className="text-xl font-semibold">3. Use of Data</div>
             <div>
               <div>We use the data we collect to:</div>
               <ul className="list-disc ml-5">
@@ -79,7 +79,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">4. Data Protection</div>
+            <div className="text-xl font-semibold">4. Data Protection</div>
             <div>
               <div>
                 We have taken steps to protect any personal information we
@@ -92,7 +92,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">5. Data Sharing</div>
+            <div className="text-xl font-semibold">5. Data Sharing</div>
             <div>
               <div>
                 We do not sell your personal information. We may share your
@@ -119,7 +119,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">6. Data Retention</div>
+            <div className="text-xl font-semibold">6. Data Retention</div>
             <div>
               <div>
                 We retain personal data for as long as necessary to provide our
@@ -131,7 +131,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">
+            <div className="text-xl font-semibold">
               7. International Data Transfers
             </div>
             <div>
@@ -145,7 +145,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">8. Rights</div>
+            <div className="text-xl font-semibold">8. Rights</div>
             <div>
               <div>
                 If you live in the European Economic Area (EEA), you have
@@ -165,7 +165,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">9. Minors</div>
+            <div className="text-xl font-semibold">9. Minors</div>
             <div>
               <div>
                 We do not ask for or market to children under 18. If you are 18
@@ -179,7 +179,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">10. Data Breaches</div>
+            <div className="text-xl font-semibold">10. Data Breaches</div>
             <div>
               <div>
                 If someone gets unauthorized access to, collects, uses,
@@ -195,7 +195,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">
+            <div className="text-xl font-semibold">
               11. Do Not Track Headers
             </div>
             <div>
@@ -213,7 +213,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">
+            <div className="text-xl font-semibold">
               12. California Civil Code Section 1798.83
             </div>
             <div>
@@ -238,7 +238,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">13. Partners</div>
+            <div className="text-xl font-semibold">13. Partners</div>
             <div>
               <div>
                 We work with a number of partners to provide the Service. These
@@ -313,7 +313,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">14. Updates</div>
+            <div className="text-xl font-semibold">14. Updates</div>
             <div>
               <div>
                 We may update this privacy policy from time to time. We
@@ -324,7 +324,7 @@ function Policy() {
           </div>
 
           <div className="my-8">
-            <div className="text-2xl font-semibold">15. Questions</div>
+            <div className="text-xl font-semibold">15. Questions</div>
             <div>
               <div>
                 If you have questions or comments about this policy, you may
