@@ -47,7 +47,6 @@ import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import { LoadingCircle } from "@/app/icons";
 import { parseActionDraft } from "./parse-draft";
-// import { parseActionDraft } from "./parse-draft";
 
 interface EmailMessage {
   id: any;
@@ -110,34 +109,12 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     }
   }, [email]);
 
-  // const formatDate = (dateString: string) => {
-  //   const date = new Date(dateString);
-  //   const now = new Date();
-
-  //   const timeOptions: Intl.DateTimeFormatOptions = {
-  //     hour: "2-digit",
-  //     minute: "2-digit",
-  //     hour12: true,
-  //   };
-
-  //   const dateOptions: Intl.DateTimeFormatOptions = {
-  //     day: "2-digit",
-  //     month: "short",
-  //   };
-
-  //   if (date.getFullYear() !== now.getFullYear()) {
-  //     dateOptions.year = "numeric";
-  //   }
-
-  //   const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
-  //   const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
-  //     date
-  //   );
-
-  //   return `${time}, ${formattedDate}`;
-  // };
   const formatDate = (dateString: string) => {
+    if (!dateString) return "";
+
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+
     const now = new Date();
 
     const timeOptions: Intl.DateTimeFormatOptions = {
@@ -687,8 +664,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               <Bell className="h-4 w-4 text-gray-400" />
             </div>
             <p className=" ml-1 text-xs ">
-              Your draft has been scheduled to be sent at{" "}
-              {formatDate(email.scheduled_datetime)}
+              {email && email.scheduled_datetime
+                ? `Your draft has been scheduled to be sent at
+                ${formatDate(email.scheduled_datetime)}`
+                : "Your draft has been scheduled to be sent"}
             </p>
             <span className="text-gray-400 text-xs">
               {email.send_datetime && (
