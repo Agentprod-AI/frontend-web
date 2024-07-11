@@ -58,11 +58,18 @@ export default function UserAuthForm({
       let userData;
       console.log("button clicked");
       if (formType === "signin") {
-        userData = await supabaseLogin({
-          email: data.email,
-          password: data.password,
-        });
-        console.log("User details on signin:", userData.user);
+        try {
+          userData = await supabaseLogin({
+            email: data.email,
+            password: data.password,
+          });
+          toast.success("Sign-in Successful!");
+
+          console.log("User details on signin:", userData.user);
+        } catch (error) {
+          toast.error("Sign-in failed. Please try again.");
+          console.error("Error during sign-in:", error);
+        }
       } else if (formType === "signup") {
         userData = await supabaseSignup({
           email: data.email,
