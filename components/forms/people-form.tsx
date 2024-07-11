@@ -648,7 +648,7 @@ export default function PeopleForm(): JSX.Element {
         toast.info("Updating user details, please wait...");
         setTimeout(() => {
           router.push(`/dashboard/campaign/${params.campaignId}`);
-        }, 20000);
+        }, 25000);
       }
     }
 
