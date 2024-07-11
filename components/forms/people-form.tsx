@@ -634,22 +634,22 @@ export default function PeopleForm(): JSX.Element {
         filters_applied: { ...allFilters },
       };
 
-      axiosInstance
-        .post("v2/audience", postBody)
-        .then((response: any) => {
-          const data = response.data;
-          console.log("filters to audience: ", data);
-          toast.success("Audience created successfully");
+      try {
+        const response = await axiosInstance.post("v2/audience", postBody);
+        const data = response.data;
+        console.log("filters to audience: ", data);
 
-          toast.info("Updating user details, please wait...");
-          setTimeout(() => {
-            router.push(`/dashboard/campaign/${params.campaignId}`);
-          }, 20000);
-        })
-        .catch((error: any) => {
-          console.log(error);
-          setError(error instanceof Error ? error.toString() : String(error));
-        });
+        toast.success("Audience created successfully");
+        setTimeout(() => {}, 2000);
+      } catch (error) {
+        console.error(error);
+        setError(error instanceof Error ? error.toString() : String(error));
+      } finally {
+        toast.info("Updating user details, please wait...");
+        setTimeout(() => {
+          router.push(`/dashboard/campaign/${params.campaignId}`);
+        }, 20000);
+      }
     }
 
     console.log(allFilters);

@@ -188,7 +188,6 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       thursday_end: data.schedule.weekdayEndTime,
       friday_start: data.schedule.weekdayStartTime,
       friday_end: data.schedule.weekdayEndTime,
-      is_active: true,
       schedule_type: "none",
       autopilot: false,
     };
