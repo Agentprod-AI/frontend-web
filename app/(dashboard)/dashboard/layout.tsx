@@ -16,6 +16,7 @@ import { useAuth } from "@/context/auth-provider";
 import { redirect } from "next/navigation";
 import { PageHeaderProvider } from "@/context/page-header";
 import { useMailbox } from "@/context/mailbox-provider";
+import WarningBanner from "@/components/payment/WarningBanner";
 
 export default function DashboardLayout({
   children,
@@ -77,6 +78,7 @@ export default function DashboardLayout({
             <ResizablePanel minSize={70} defaultSize={85}>
               <ScrollArea className="h-screen">
                 <PageHeaderProvider>
+                  <WarningBanner />
                   <main className="px-4 pb-20">{children}</main>
                 </PageHeaderProvider>
               </ScrollArea>

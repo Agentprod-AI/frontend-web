@@ -125,7 +125,7 @@ export const SelectFromExisting = () => {
 
     setIsCreateBtnLoading(true);
     const response = axiosInstance
-      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
+      .post<Contact[]>(`v2/nurturing/leads`, audienceBody)
       .then((response: any) => {
         const data = response.data;
         console.log("DATA from contacts: ", data);
