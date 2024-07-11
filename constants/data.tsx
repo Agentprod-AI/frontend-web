@@ -196,21 +196,21 @@ export type Mail = (typeof mails)[number];
 
 export const accounts = [
   {
-    text: "AgentProd - Sales Rep",
+    label: "AgentProd - Sales Rep",
     email: "alicia@example.com",
     icon: <Image src={"/bw-logo.png"} width={24} height={24} alt="Sally" />,
   },
   {
-    text: "Mark - The Marketer",
-    label: " Coming soon",
+    label: "Mark - The Marketer",
+    text: " Coming soon",
     link: "https://agentprod.com/AIEmployees",
     email: "mark@example.com",
     disable: true,
     icon: <Image src={"/mark.png"} width={24} height={24} alt="Mark" />,
   },
   {
-    text: "Rema - The Recruiter",
-    label: " Coming soon",
+    label: "Rema - The Recruiter",
+    text: " Coming soon",
     link: "https://agentprod.com/AIEmployees",
     email: "rema@example.com",
     disable: true,

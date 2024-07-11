@@ -13,7 +13,7 @@ import {
 } from "@/components/ui/select";
 
 interface Account {
-  text: string;
+  text?: string;
   link?: string;
   label: string;
   email: string;
@@ -69,7 +69,7 @@ export function AccountSwitcher({
               selectedAccountData?.disable && "text-gray-400"
             )}
           >
-            {selectedAccountData?.text}
+            {selectedAccountData?.label}
           </span>
         </SelectValue>
       </SelectTrigger>
@@ -83,10 +83,10 @@ export function AccountSwitcher({
           >
             <div className="flex items-center gap-3 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 [&_svg]:text-foreground">
               {account.icon}
-              {account.text}
-              {account.label && (
+              {account.label}
+              {account.text && (
                 <span className="border-gray-500 border px-2 py-1 text-xs rounded-md">
-                  {account.label}
+                  {account.text}
                 </span>
               )}
             </div>
