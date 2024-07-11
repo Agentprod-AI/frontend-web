@@ -110,6 +110,32 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     }
   }, [email]);
 
+  // const formatDate = (dateString: string) => {
+  //   const date = new Date(dateString);
+  //   const now = new Date();
+
+  //   const timeOptions: Intl.DateTimeFormatOptions = {
+  //     hour: "2-digit",
+  //     minute: "2-digit",
+  //     hour12: true,
+  //   };
+
+  //   const dateOptions: Intl.DateTimeFormatOptions = {
+  //     day: "2-digit",
+  //     month: "short",
+  //   };
+
+  //   if (date.getFullYear() !== now.getFullYear()) {
+  //     dateOptions.year = "numeric";
+  //   }
+
+  //   const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+  //   const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+  //     date
+  //   );
+
+  //   return `${time}, ${formattedDate}`;
+  // };
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     const now = new Date();
@@ -120,6 +146,8 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       hour12: true,
     };
 
+    const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+
     const dateOptions: Intl.DateTimeFormatOptions = {
       day: "2-digit",
       month: "short",
@@ -129,12 +157,27 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
       dateOptions.year = "numeric";
     }
 
-    const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
-    const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+    const formattedDate = new Intl.DateTimeFormat("en-GB", dateOptions).format(
       date
     );
 
-    return `${time}, ${formattedDate}`;
+    const isToday = date.toDateString() === now.toDateString();
+    const isTomorrow =
+      date.toDateString() ===
+      new Date(now.setDate(now.getDate() + 1)).toDateString();
+    const isYesterday =
+      date.toDateString() ===
+      new Date(now.setDate(now.getDate() - 2)).toDateString();
+
+    if (isToday) {
+      return `${time}, Today`;
+    } else if (isTomorrow) {
+      return `${time}, Tomorrow`;
+    } else if (isYesterday) {
+      return `${time}, Yesterday`;
+    } else {
+      return `${time}, ${formattedDate}`;
+    }
   };
 
   const messageId =
