@@ -497,22 +497,38 @@ export function MailList({ items }: MailListProps) {
       hour12: true,
     };
 
+    const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+
     const dateOptions: Intl.DateTimeFormatOptions = {
       day: "2-digit",
       month: "short",
     };
 
-    // Check if the year is different from the current year
     if (date.getFullYear() !== now.getFullYear()) {
       dateOptions.year = "numeric";
     }
 
-    const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
-    const formattedDate = new Intl.DateTimeFormat("en-US", dateOptions).format(
+    const formattedDate = new Intl.DateTimeFormat("en-GB", dateOptions).format(
       date
     );
 
-    return `${time},${formattedDate}`;
+    const isToday = date.toDateString() === now.toDateString();
+    const isTomorrow =
+      date.toDateString() ===
+      new Date(now.setDate(now.getDate() + 1)).toDateString();
+    const isYesterday =
+      date.toDateString() ===
+      new Date(now.setDate(now.getDate() - 2)).toDateString();
+
+    if (isToday) {
+      return `${time}, Today`;
+    } else if (isTomorrow) {
+      return `${time}, Tomorrow`;
+    } else if (isYesterday) {
+      return `${time}, Yesterday`;
+    } else {
+      return `${time}, ${formattedDate}`;
+    }
   };
 
   const handleDelete = async (id: string) => {
