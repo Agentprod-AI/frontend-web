@@ -643,7 +643,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Bell className="h-4 w-4 text-gray-400" />
             </div>
-            <p className=" ml-1 text-xs ">Your draft has been scheduled.</p>
+            <p className=" ml-1 text-xs ">
+              Your draft has been scheduled to be sent at{" "}
+              {formatDate(email.scheduled_datetime)}
+            </p>
             <span className="text-gray-400 text-xs">
               {email.send_datetime && (
                 <span className="text-gray-400 text-xs">
