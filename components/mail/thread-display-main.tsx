@@ -630,7 +630,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             setBody(response.data[0].body);
             setEmails(response.data);
           }
-
+          
           setIsLoading(false);
         })
         .catch((err) => {
@@ -832,9 +832,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         });
     };
 
-    const handleDeleteDraft = () => {
+    const handleDeleteDraft = (draft_id: any) => {
       axiosInstance
-        .delete(`/v2/mailbox/draft/${conversationId}`)
+        .delete(`/v2/mailbox/draft/${draft_id}`)
         .then((response) => {
           toast.success("Your draft has been deleted successfully!");
           console.log(response.data);
@@ -972,7 +972,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       >
                         <RefreshCw className="h-4 w-4" />
                       </Button>
-                      <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                      <Button
+                        variant={"ghost"}
+                        onClick={() =>
+                          handleDeleteDraft(
+                            emails && emails[0]?.conversation_id
+                          )
+                        }
+                      >
                         <Trash2 className="h-4 w-4" />
                       </Button>
                     </div>
@@ -1078,7 +1085,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <Button variant={"ghost"} onClick={handleRegenrateDraft}>
                   <RefreshCw className="h-4 w-4" />
                 </Button>
-                <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                <Button
+                  variant={"ghost"}
+                  onClick={() => {
+                    handleDeleteDraft(emails && emails[0]?.conversation_id);
+                  }}
+                >
                   <Trash2 className="h-4 w-4" />
                 </Button>
               </div>
