@@ -87,7 +87,7 @@ const initialMailboxes = [
 
 export default function Page() {
   const [isPresentDomain, setIsPresentDomain] = useState();
-  const [openDisconnect, setOpenDisconnect] = useState<string | null>(null);
+  const [openDisconnect, setOpenDisconnect] = useState<string | number |null>(null);
   const [googleMail, setGoogleMail] = useState<any>("");
   const [inputAppPassword, setInputAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -884,9 +884,9 @@ export default function Page() {
                   </TableCell>
                   <TableCell>
                     <Dialog
-                      // open={openDisconnect === mailbox.sender_id}
+                      open={openDisconnect === mailbox.id}
                       onOpenChange={(open) =>
-                        setOpenDisconnect(open ? mailbox.sender_id : null)
+                        setOpenDisconnect(open ? mailbox.id : null)
                       }
                     >
                       <DialogTrigger asChild>
