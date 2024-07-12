@@ -198,24 +198,49 @@ export const accounts = [
   {
     label: "AgentProd - Sales Rep",
     email: "alicia@example.com",
-    icon: <Image src={"/bw-logo.png"} width={24} height={24} alt="Sally" />,
+    icon: (
+      <Image
+        src={"/bw-logo.png"}
+        width={50}
+        height={50}
+        alt="Sally"
+        className="w-6 h-6 ml-2" // Tailwind CSS classes for specific space
+      />
+    ),
   },
   {
     label: "Mark - The Marketer",
-    text: " Coming soon",
+    text: "Coming soon",
     link: "https://agentprod.com/AIEmployees",
     email: "mark@example.com",
     disable: true,
-    icon: <Image src={"/mark.png"} width={24} height={24} alt="Mark" />,
+    icon: (
+      <Image
+        src={"/mark.png"}
+        width={24}
+        height={24}
+        alt="Mark"
+        className="w-10 h-10 scale-125 " // Tailwind CSS classes for specific space
+      />
+    ),
   },
   {
     label: "Rema - The Recruiter",
-    text: " Coming soon",
+    text: "Coming soon",
     link: "https://agentprod.com/AIEmployees",
     email: "rema@example.com",
     disable: true,
-    icon: <Image src={"/rema.png"} width={24} height={24} alt="Rema" />,
+    icon: (
+      <Image
+        src={"/rema.png"}
+        width={24}
+        height={24}
+        alt="Rema"
+        className="w-10 h-10 scale-150" // Tailwind CSS classes for specific space
+      />
+    ),
   },
+
   // {
   //   label: "Alicia Koch",
   //   email: "alicia@gmail.com",

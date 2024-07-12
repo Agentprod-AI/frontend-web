@@ -10,7 +10,7 @@ import {
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select";
+} from "@/components/ui/accountSelect";
 
 interface Account {
   text?: string;
@@ -79,7 +79,7 @@ export function AccountSwitcher({
             key={account.email}
             value={account.email}
             onClick={() => handleAccountChange(account.email)}
-            disabled={account.disable}
+            // disabled={account.disable}
           >
             <div className="flex items-center gap-3 [&_svg]:h-4 [&_svg]:w-4 [&_svg]:shrink-0 [&_svg]:text-foreground">
               {account.icon}
