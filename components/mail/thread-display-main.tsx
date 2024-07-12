@@ -630,7 +630,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             setBody(response.data[0].body);
             setEmails(response.data);
           }
-          
+
           setIsLoading(false);
         })
         .catch((err) => {
@@ -905,7 +905,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       {"You to " + leads[0]?.first_name}
                     </span>
                     <div className="flex gap-3">
-                      <span className="text-green-500 text-sm ">Draft</span>
+                      <span className="text-green-500 text-sm ">Follow-up Draft</span>
                     </div>
                   </div>
                   <CardHeader>
