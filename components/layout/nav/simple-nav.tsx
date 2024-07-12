@@ -11,17 +11,10 @@ import { ChevronsUpDown } from "lucide-react";
 export default function SimpleNav({ nav }: { nav: NavItem }) {
   const Icon = Icons[nav.icon || "arrowRight"];
   const path = usePathname();
+
   return (
     <div key={nav.label}>
-      <Link
-        href={nav.href || "/"}
-        // className={cn(
-        //   buttonVariants({ variant: nav.variant, size: "sm" }),
-        //   nav.variant === "default" &&
-        //     "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-        //   "justify-start",
-        // )}
-      >
+      <Link href={nav.href || "/"}>
         <span
           className={cn(
             "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",
@@ -41,19 +34,10 @@ export default function SimpleNav({ nav }: { nav: NavItem }) {
 
       <div className="bg-accent rounded-b-md">
         {path.includes(nav.href!) && nav.isCollapsible
-          ? nav.subNavs?.map((subLink, index) => {
+          ? nav.subNavs?.map((subLink) => {
               const SubLinkIcon = Icons[subLink.icon || "arrowRight"];
               return (
-                <Link
-                  key={subLink.label}
-                  href={subLink.href || "/"}
-                  // className={cn(
-                  //   buttonVariants({ variant: nav.variant, size: "sm" }),
-                  //   nav.variant === "default" &&
-                  //     "dark:bg-muted dark:text-white dark:hover:bg-muted dark:hover:text-white",
-                  //   "justify-start",
-                  // )}
-                >
+                <Link key={subLink.label} href={subLink.href || "/"}>
                   <span
                     className={cn(
                       "group flex items-center rounded-md px-3 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground",

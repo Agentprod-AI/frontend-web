@@ -1,3 +1,4 @@
+
 "use client";
 import React from "react";
 import { Nav } from "@/components/layout/nav/nav";
@@ -12,39 +13,39 @@ const navItems: NavInterface[] = [
         href: "/dashboard/settings/account-info",
         label: "Account Info",
         isCollapsible: false,
+        icon: "user",
       },
       {
         title: "Mailboxes",
         href: "/dashboard/settings/mailbox",
         label: "Mailboxes",
         isCollapsible: false,
+        icon: "mail",
       },
       {
         title: "Integrations",
         href: "/dashboard/settings/integration",
         label: "Integrations",
         isCollapsible: false,
-      }
+        icon: "kanban",
+      },
     ],
   },
-  // ... add other categories and items if needed
 ];
 
-export default function SettingsLayout ({
+export default function SettingsLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <div className="flex"> 
-      <div className="w-52 flex-shrink-0" >
-        <Nav isCollapsed={false} links={navItems}/>
+    <div className="flex">
+      <div className="w-52 flex-shrink-0">
+        <Nav isCollapsed={false} links={navItems} />
       </div>
       <div className="flex flex-col flex-grow">
-        <main className="flex-grow px-5 py-3">
-          {children}
-        </main>
+        <main className="flex-grow px-5 py-3">{children}</main>
       </div>
     </div>
   );
-};
+}
