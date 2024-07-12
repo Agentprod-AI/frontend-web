@@ -87,7 +87,7 @@ const initialMailboxes = [
 
 export default function Page() {
   const [isPresentDomain, setIsPresentDomain] = useState();
-  const [openDisconnect, setOpenDisconnect] = useState(false);
+  const [openDisconnect, setOpenDisconnect] = useState<string | null>(null);
   const [googleMail, setGoogleMail] = useState<any>("");
   const [inputAppPassword, setInputAppPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -306,7 +306,7 @@ export default function Page() {
       setMailboxes((prevState) =>
         prevState.filter((mailbox) => mailbox.sender_id !== sender_id)
       );
-      setOpenDisconnect(false);
+      setOpenDisconnect(null);
       toast.success("Mailbox removed successfully.");
     } catch (error: any) {
       console.error("Failed to remove mailbox.", error);
@@ -493,19 +493,21 @@ export default function Page() {
                     {mailbox.issues === null ? (
                       <Popover>
                         <PopoverTrigger>
-                          <Badge className="gap-1 flex text-[10px] items-center w-32 justify-center hover:cursor-pointer rounded-full hover:bg-gray-400 hover:text-gray-800 bg-gray-300 text-gray-700">
-                            <FiAlertTriangle className="h-[14px] w-[14px]" />
-                            UNKNOWN
+                          <Badge className="gap-1 flex text-[10px] items-center w-32 justify-center hover:cursor-pointer rounded-full hover:bg-green-400 hover:text-green-800 bg-green-300 text-green-700">
+                            <CheckCircle className="h-[14px] w-[14px]" />
+                            GOOD
                           </Badge>
                         </PopoverTrigger>
                         <PopoverContent className="sm:max-w-[425px]">
                           <div className="text-left flex flex-col gap-1">
-                            <FiAlertTriangle
+                            <CheckCircle
                               size={"30"}
-                              color="gray"
+                              color="green"
                               className="mb-4"
                             />
-                            <div>The status of this mailbox is unknown.</div>
+                            <div>
+                              This mailbox is healthy and has no urgent issues.
+                            </div>
                           </div>
                         </PopoverContent>
                       </Popover>
@@ -670,14 +672,13 @@ export default function Page() {
                       </Popover>
                     )}
                   </TableCell>
-                  <TableCell>
+                  {/* <TableCell>
                     <Dialog>
                       <DialogTrigger
                         asChild
                         className="flex gap-1 items-center"
                       >
                         <Button variant={"secondary"} className="p-2">
-                          {/* <Info className="h-4 w-4" /> */}
                           DNS
                         </Button>
                       </DialogTrigger>
@@ -773,11 +774,120 @@ export default function Page() {
                         </Table>
                       </DialogContent>
                     </Dialog>
+                  </TableCell> */}
+                  <TableCell>
+                    {mailbox.platform === "Google" ? (
+                      <span className="text-gray-500 italic">No DNS</span>
+                    ) : (
+                      <Dialog>
+                        <DialogTrigger
+                          asChild
+                          className="flex gap-1 items-center"
+                        >
+                          <Button variant={"secondary"} className="p-2">
+                            DNS
+                          </Button>
+                        </DialogTrigger>
+                        <DialogContent className="w-full max-w-4xl">
+                          <DialogHeader>
+                            <DialogTitle>DNS Records</DialogTitle>
+                          </DialogHeader>
+                          <div className="grid items-center gap-4 w-full">
+                            <Table className="mt-4 w-full">
+                              <TableHeader>
+                                <TableRow>
+                                  <TableHead>Type</TableHead>
+                                  <TableHead>Name</TableHead>
+                                  <TableHead>Value</TableHead>
+                                </TableRow>
+                              </TableHeader>
+                              <TableBody>
+                                {mailbox?.dns.map((dns) => (
+                                  <TableRow key={dns.Value}>
+                                    <TableCell>{dns.Type}</TableCell>
+                                    <TableCell>
+                                      <div className="flex gap-2">
+                                        <Icons.copy
+                                          className="cursor-pointer "
+                                          onClick={() => handleCopy(dns.Name)}
+                                        />
+                                        <span className="w-96 overflow-x-scroll">
+                                          {dns?.Name}
+                                        </span>
+                                      </div>
+                                    </TableCell>
+                                    <TableCell>
+                                      <div className="flex items-center gap-2">
+                                        <Icons.copy
+                                          className="cursor-pointer"
+                                          onClick={() => handleCopy(dns.Value)}
+                                        />
+                                        <span>{dns.Value}</span>
+                                      </div>
+                                    </TableCell>
+                                  </TableRow>
+                                ))}
+                              </TableBody>
+                            </Table>
+                          </div>
+                          <Table className="mt-4 w-full">
+                            <TableHeader>
+                              <TableRow>
+                                <TableHead>Type</TableHead>
+                                <TableHead>Name</TableHead>
+                                <TableHead>Priority</TableHead>
+                                <TableHead>Value</TableHead>
+                              </TableRow>
+                            </TableHeader>
+                            <TableBody>
+                              <TableRow>
+                                <TableCell>
+                                  <input
+                                    type="text"
+                                    value={"MX"}
+                                    readOnly
+                                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <input
+                                    type="text"
+                                    value={mailbox.domain}
+                                    readOnly
+                                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <input
+                                    type="text"
+                                    value={"1"}
+                                    readOnly
+                                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                  />
+                                </TableCell>
+                                <TableCell>
+                                  <input
+                                    type="text"
+                                    value={
+                                      "inbound-smtp.us-east-1.amazonaws.com."
+                                    }
+                                    readOnly
+                                    className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
+                                  />
+                                </TableCell>
+                              </TableRow>
+                            </TableBody>
+                          </Table>
+                        </DialogContent>
+                      </Dialog>
+                    )}
                   </TableCell>
                   <TableCell>
                     <Dialog
-                      open={openDisconnect}
-                      onOpenChange={setOpenDisconnect}
+                      open={openDisconnect === mailbox.sender_id}
+                      onOpenChange={(open) =>
+                        setOpenDisconnect(open ? mailbox.sender_id : null)
+                      }
                     >
                       <DialogTrigger asChild>
                         <Button variant={"destructive"}>Disconnect</Button>
