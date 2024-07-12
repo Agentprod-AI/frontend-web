@@ -107,10 +107,12 @@ export const AudienceTableClient = ({
   const { leads } = useLeads();
 
   const sortedData = useMemo(() => {
-    if (isContacts) {
-      return [...(leads as Contact[])].sort((a, b) =>
-        a.name.localeCompare(b.name)
-      );
+    if (isContacts && Array.isArray(leads)) {
+      return [...leads].sort((a, b) => {
+        const nameA = (a as Contact).name || "";
+        const nameB = (b as Contact).name || "";
+        return nameA.localeCompare(nameB);
+      });
     }
     return leads;
   }, [leads, isContacts]);
