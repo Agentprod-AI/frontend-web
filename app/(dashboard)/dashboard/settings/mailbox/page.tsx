@@ -884,7 +884,7 @@ export default function Page() {
                   </TableCell>
                   <TableCell>
                     <Dialog
-                      open={openDisconnect === mailbox.sender_id}
+                      // open={openDisconnect === mailbox.sender_id}
                       onOpenChange={(open) =>
                         setOpenDisconnect(open ? mailbox.sender_id : null)
                       }
