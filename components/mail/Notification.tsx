@@ -669,13 +669,13 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 ${formatDate(email.scheduled_datetime)}`
                 : "Your draft has been scheduled to be sent"}
             </p>
-            <span className="text-gray-400 text-xs">
+            {/* <span className="text-gray-400 text-xs">
               {email.send_datetime && (
                 <span className="text-gray-400 text-xs">
                   {formatDate(email.send_datetime)}
                 </span>
               )}
-            </span>
+            </span> */}
           </div>
         )}
       {email?.status &&
@@ -707,9 +707,9 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               Mail was delivered to recipient&apos;s inbox
             </p>
             <span className="text-gray-400 text-xs">
-              {email.received_datetime && (
+              {email.send_datetime && (
                 <span className="text-gray-400 text-xs">
-                  {formatDate(email.received_datetime) || null}
+                  {formatDate(email.send_datetime) || null}
                 </span>
               )}
             </span>
@@ -736,7 +736,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               <Archive className="h-4 w-4 text-gray-400" />
             </div>
             <p className=" ml-1 text-xs ">
-            Recipient has unsubscribed from further communications.
+              Recipient has unsubscribed from further communications.
             </p>
           </div>
         )}
