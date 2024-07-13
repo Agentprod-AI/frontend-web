@@ -24,7 +24,7 @@ const autopilotFormSchema = z.object({
   all_messages_actions: z.boolean().optional(),
   email: z.boolean().optional(),
   replies: z.boolean().optional(),
-  out_of_office: z.boolean().optional(),
+  ooo: z.boolean().optional(),
   positive: z.boolean().optional(),
   negative: z.boolean().optional(),
   neutral: z.boolean().optional(),
@@ -41,7 +41,7 @@ const defaultValues: Partial<AutopilotFormValues> = {
   all_messages_actions: false,
   email: false,
   replies: false,
-  out_of_office: false,
+  ooo: false,
   positive: false,
   negative: false,
   neutral: false,
@@ -76,7 +76,7 @@ export function AutopilotForm() {
     setFormValues(setValue, {
       email: allMessagesActions,
       replies: allMessagesActions,
-      out_of_office: allMessagesActions,
+      ooo: allMessagesActions,
       positive: allMessagesActions,
       negative: allMessagesActions,
       neutral: allMessagesActions,
@@ -90,7 +90,7 @@ export function AutopilotForm() {
 
   useEffect(() => {
     setFormValues(setValue, {
-      out_of_office: reply,
+      ooo: reply,
       positive: reply,
       negative: reply,
       neutral: reply,
@@ -111,8 +111,10 @@ export function AutopilotForm() {
       if (data) {
         setType("edit");
         setFormValues(setValue, {
+          all_messages_actions: data.all_messages_actions,
+          replies: data.replies,
           email: data.email,
-          out_of_office: data.ooo,
+          ooo: data.ooo,
           positive: data.positive,
           negative: data.negative,
           neutral: data.neutral,
@@ -191,7 +193,7 @@ export function AutopilotForm() {
 
           <div className="pl-8 space-y-2">
             {renderSwitchField(
-              "out_of_office",
+              "ooo",
               "Out of office",
               "Follow-up when they are back at work."
             )}

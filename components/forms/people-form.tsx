@@ -468,6 +468,7 @@ export default function PeopleForm(): JSX.Element {
             });
             setLeads(data as Lead[]);
             setIsTableLoading(false);
+
             toast.success("Leads fetched successfully");
           })
           .catch((error: any) => {
@@ -477,12 +478,13 @@ export default function PeopleForm(): JSX.Element {
           });
 
         console.log("this is my leads" + leads);
-        toast.success("api called");
 
         console.log("BODY: ", body);
       } catch (err) {
         console.log("ERR: ", err);
+
         toast.error("Error fetching data");
+        setTab("tab1");
       } finally {
         setTab("tab2");
         console.log("this is my leads" + leads);
@@ -625,6 +627,7 @@ export default function PeopleForm(): JSX.Element {
         console.log(error);
         setError(error instanceof Error ? error.toString() : String(error));
         setIsCreateBtnLoading(false);
+        toast.error("Audience Creation Failer");
       });
 
     if (type === "create") {
@@ -662,13 +665,14 @@ export default function PeopleForm(): JSX.Element {
     | "q_organization_domains"
     | "organization_locations"
     | "person_titles"
+    | "revenue_range"
     | "q_organization_keyword_tags";
 
   const mapFiltersToTags = (
     filterName: string,
-    filterData: string[],
+    filterData: string | undefined,
     tagStateSetter: React.Dispatch<React.SetStateAction<Tag[]>>,
-    fieldName: FieldName
+    fieldName: any
   ) => {
     if (
       allFiltersFromDB &&
@@ -721,6 +725,12 @@ export default function PeopleForm(): JSX.Element {
         setQOrganizationDomainsTags,
         "q_organization_domains"
       );
+      mapFiltersToTags(
+        "q_organization_keyword_tags",
+        allFiltersFromDB.q_organization_keyword_tags,
+        setOrganizationKeywordTags,
+        "q_organization_keyword_tags"
+      );
 
       mapFiltersToTags(
         "organization_locations",
@@ -730,12 +740,34 @@ export default function PeopleForm(): JSX.Element {
       );
 
       mapFiltersToTags(
+        "revenue_range",
+        allFiltersFromDB.revenue_range.max,
+        (newValue) => {
+          const numericValue = Number(newValue);
+          const updatedValue = {
+            ...maximumCompanyFunding,
+            text: numericValue,
+          };
+          setMaximumCompanyFunding(updatedValue);
+        },
+        "revenue_range"
+      );
+      console.log("maximum value : ", maximumCompanyFunding.text);
+
+      mapFiltersToTags(
         "q_organization_keyword_tags",
         allFiltersFromDB.q_keywords,
         setOrganizationKeywordTags,
         "q_organization_keyword_tags"
       );
 
+      const formatFundingHeadcount =
+        allFiltersFromDB.organization_latest_funding_stage_cd.map(
+          (range: string) => {
+            return range.split(",").join("-");
+          }
+        );
+      setCheckedFundingRounds(formatFundingHeadcount);
       const formatCheckedHeadcount =
         allFiltersFromDB.organization_num_employees_ranges.map(
           (range: string) => {
