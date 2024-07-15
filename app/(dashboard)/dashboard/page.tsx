@@ -57,9 +57,23 @@ export default function Page() {
   const allWeekDays = getWeekDays();
 
   const activeDaysSet = new Set(
-    mailGraphData.map((data) => format(parseISO(data.date), "yyyy-MM-dd"))
+    mailGraphData
+      .map((data) => {
+        try {
+          const parsedDate: any = parseISO(data.date);
+          if (isNaN(parsedDate)) {
+            throw new Error(`Invalid date: ${data.date}`);
+          }
+          return format(parsedDate, "yyyy-MM-dd");
+        } catch (error) {
+          console.error(`Error parsing date: ${data.date}`, error);
+          return null;
+        }
+      })
+      .filter((date) => date !== null) // Filter out null values resulting from invalid dates
   );
 
+  console.log(activeDaysSet);
   // const calculateStreak = (data: any) => {
   //   if (data.length === 0) return 0;
 

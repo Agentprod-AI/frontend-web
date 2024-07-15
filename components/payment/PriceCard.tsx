@@ -9,7 +9,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "../ui/button";
-
+import { checkout } from "@/actions/stripe";
+import { useUserContext } from "@/context/user-context";
+import { loadStripe } from "@stripe/stripe-js";
+import { toast } from "sonner";
 const pricingData = [
   {
     title: "Launch",
@@ -22,6 +25,7 @@ const pricingData = [
     ],
     buttonText: "$190",
     additionalInfo: "$40 per additional 100 leads",
+    priceId: "price_1PaZBASFWaX9nV7G3R7LJcTx",
   },
   {
     title: "Amplify",
@@ -37,6 +41,7 @@ const pricingData = [
     heightlight: true,
     buttonText: "$380",
     additionalInfo: "$40 per additional 100 leads",
+    priceId: "price_1PaZBVSFWaX9nV7GygDdgP0n",
   },
   {
     title: "Maximize",
@@ -52,6 +57,7 @@ const pricingData = [
     ],
     buttonText: "$770",
     additionalInfo: "$40 per additional 100 leads",
+    priceId: "price_1Pc4ThSFWaX9nV7G5Zoc9aqS",
   },
   {
     title: "Custom",
@@ -71,6 +77,27 @@ const pricingData = [
 ];
 
 function PriceCard() {
+  const { user } = useUserContext();
+
+  async function handleCheckout(priceId: string) {
+    const data = JSON.parse(
+      await checkout(
+        user.email as string,
+        priceId,
+        window.location.origin as string
+      )
+    );
+
+    const stripe = await loadStripe(process.env.NEXT_PUBLIC_STRIPE_PK!);
+
+    const res = await stripe?.redirectToCheckout({
+      sessionId: JSON.parse(data).id,
+    });
+
+    if (res?.error) {
+      toast.error("Failed to process");
+    }
+  }
   return (
     <div className="flex flex-col items-center justify-center space-y-8">
       <DialogHeader>
@@ -105,7 +132,10 @@ function PriceCard() {
               </ul>
             </div>
             <div className="mt-14">
-              <Button className="bg-transparent border-2  border-white text-white hover:bg-white hover:text-black transition duration-500 py-5 px-4 rounded-full w-full">
+              <Button
+                onClick={() => handleCheckout(card.priceId as string)}
+                className="bg-transparent border-2  border-white text-white hover:bg-white hover:text-black transition duration-500 py-5 px-4 rounded-full w-full"
+              >
                 {card.buttonText}
               </Button>
 
