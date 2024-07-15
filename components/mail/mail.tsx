@@ -156,14 +156,22 @@ export function Mail({
   }, []);
 
   const filteredMails = React.useMemo(() => {
-    return mails.filter(
-      (mail) =>
-        (mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase())) &&
-        (filter === "all" || mail.status.toLowerCase() === filter) &&
-        (!campaign || mail.campaign_id === campaign.campaignId)
-    );
+    return mails.filter((mail) => {
+      const matchesSearchTerm =
+        mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase());
+
+      const matchesFilter =
+        filter === "all" ||
+        mail.status.toLowerCase() === filter ||
+        (filter === "sent" && mail.status.toLowerCase() === "delivered");
+
+      const matchesCampaign =
+        !campaign || mail.campaign_id === campaign.campaignId;
+
+      return matchesSearchTerm && matchesFilter && matchesCampaign;
+    });
   }, [mails, filter, campaign, searchTerm]);
 
   React.useEffect(() => {
