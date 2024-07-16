@@ -181,7 +181,9 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     if (email.action_draft) {
       const { subject, body } = parseActionDraft(email.action_draft);
       // console.log(subject, body);
-      setTitle(subject);
+      const newSubject = subject.startsWith("Re:") ? subject : `Re: ${subject}`;
+      setTitle(newSubject);
+      // setTitle(subject);
       setBody(body);
     }
   }, [email.action_draft]);
@@ -237,7 +239,11 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     axiosInstance
       .post("v2/training/autogenerate/followup", payload)
       .then((response) => {
-        setTitle(response.data.subject);
+        const newSubject = response.data.subject.startsWith("Re:")
+          ? response.data.subject
+          : `Re: ${title}`;
+        setTitle(newSubject);
+        // setTitle(response.data.subject);
         setBody(response.data.body);
         toast.success("Draft Regenerated!!");
       })
