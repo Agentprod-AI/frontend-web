@@ -64,6 +64,7 @@ import { Badge } from "../ui/badge";
 import { last, previous } from "slate";
 import { parseActionDraft } from "./parse-draft";
 import Image from "next/image";
+import { sanitizeSubject } from "./sanitizeSubject";
 
 interface ThreadDisplayMainProps {
   ownerEmail: string;
@@ -663,7 +664,10 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
-          setFollowUpSubject(response.data.subject);
+          const newSubject = sanitizeSubject(lastEmail.subject);
+          console.log("new SUbject: ", newSubject);
+          setFollowUpSubject(newSubject);
+          // setFollowUpSubject(response.data.subject);
           setFollowUpBody(response.data.body);
 
           console.log("FollowUp", response);
@@ -671,7 +675,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .catch((error) => {
           console.error("Error fetching followup data:", error);
         });
-    }, [user.id, title, body]);
+    }, [user.id, lastEmail?.subject, lastEmail?.body]);
 
     React.useEffect(() => {
       if (lastEmail && !lastEmail.is_reply) {
@@ -694,7 +698,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       axiosInstance
         .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
-          setFollowUpSubject(response.data.subject);
+          const newSubject = response.data.subject.startsWith("Re:")
+            ? response.data.subject
+            : `Re: ${lastEmail.subject}`;
+          setFollowUpSubject(newSubject);
+          // setFollowUpSubject(response.data.subject);
           setFollowUpBody(response.data.body);
           console.log("Regenerated");
         })
@@ -761,11 +769,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         conversation_id: conversationId,
         sender: senderEmail,
         recipient: recipientEmail,
-        subject: followUpSubject,
+        subject: sanitizeSubject(lastEmail.subject),
         body: followUpBody,
       };
 
-      console.log("FollowUp", payload);
+      console.log("Sending Followup", payload);
 
       axiosInstance
         .post("/v2/mailbox/send/immediately", payload)
@@ -788,7 +796,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         conversation_id: conversationId,
         sender: senderEmail,
         recipient: recipientEmail,
-        subject: followUpSubject,
+        subject: sanitizeSubject(lastEmail.subject),
         body: followUpBody,
       };
 
@@ -814,9 +822,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         conversation_id: conversationId,
         campaign_id: leads[0].campaign_id,
       };
-
-      console.log("Payload for regeenerate", payload);
-
       axiosInstance
         .post(`/v2/mailbox/draft/regenerate`, payload)
         .then((response) => {
@@ -905,13 +910,15 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       {"You to " + leads[0]?.first_name}
                     </span>
                     <div className="flex gap-3">
-                      <span className="text-green-500 text-sm ">Follow-up Draft</span>
+                      <span className="text-green-500 text-sm ">
+                        Follow-up Draft
+                      </span>
                     </div>
                   </div>
                   <CardHeader>
                     <CardTitle className="text-sm flex -mt-8 -ml-3">
                       <Input
-                        value={followUpSubject}
+                        value={sanitizeSubject(followUpSubject)}
                         disabled={!editable}
                         className="text-xs"
                         placeholder="Subject"
