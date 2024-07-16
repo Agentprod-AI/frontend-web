@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 // import React, { ComponentProps, ReactNode, useEffect } from "react";
 // import formatDistanceToNow from "date-fns/formatDistanceToNow";
 
@@ -535,6 +538,9 @@ export function MailList({ items }: MailListProps) {
     try {
       await axiosInstance.delete(`/v2/email/conversations/${id}`);
       toast.success("Mail Deleted");
+      setSenderEmail(filteredItems[0]?.sender);
+      setConversationId(filteredItems[0]?.id);
+      setRecipientEmail(filteredItems[0]?.recipient);
       setFilteredItems(filteredItems.filter((mail) => mail.id !== id));
     } catch (error) {
       // eslint-disable-next-line no-console
@@ -555,7 +561,6 @@ export function MailList({ items }: MailListProps) {
               )}
               onClick={() => {
                 setMail({ ...mail, selected: item.id });
-                console.log("change convo id");
                 setConversationId(item.id);
                 setRecipientEmail(item.recipient);
               }}
