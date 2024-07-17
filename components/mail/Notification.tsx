@@ -448,7 +448,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               </span>
             </div>
 
-            {email?.action_draft && (
+            {email?.action_draft && !email.approved && (
               <div className="flex w-full">
                 <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
                   <AvatarFallback className="bg-yellow-400 text-black text-xs">
@@ -497,16 +497,6 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   {!email?.approved && (
                     <CardFooter className="flex justify-between text-xs items-center">
                       <div>
-                        {/* <Button
-                          disabled={editable}
-                          onClick={handleApproveEmail}
-                        >
-                          {loadingSmartSchedule ? (
-                            <LoadingCircle />
-                          ) : (
-                            "Smart Schedule"
-                          )}
-                        </Button> */}
                         <Button
                           variant={"secondary"}
                           className="-ml-2"
