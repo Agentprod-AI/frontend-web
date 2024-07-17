@@ -434,7 +434,9 @@ export default function Training() {
                         {testCamp.map((data: any, index: any) => (
                           <TableRow key={index}>
                             <TableCell>{data.seed_mail}</TableCell>
-                            <TableCell>{data.receivedAt[2]}</TableCell>
+                            <TableCell>
+                              {data.receivedAt.includes("INBOX") ? "INBOX" : ""}
+                            </TableCell>
                             <TableCell className="text-green-400 ">
                               {data.spam_score}
                             </TableCell>
