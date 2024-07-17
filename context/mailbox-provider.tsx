@@ -27,6 +27,7 @@ export interface EmailMessage {
   approved: any;
   is_special: any;
   scheduled_datetime: string;
+  created_at: any;
 }
 
 export interface Mailbox {
