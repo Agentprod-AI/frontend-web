@@ -843,6 +843,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         .then((response) => {
           toast.success("Your draft has been deleted successfully!");
           console.log(response.data);
+          // Clear the title and body
+          setTitle("");
+          setBody("");
           setEditable(false);
         })
         .catch((error) => {
