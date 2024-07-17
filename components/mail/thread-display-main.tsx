@@ -193,7 +193,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const { user } = useUserContext();
 
     const formatDate = (dateString: string) => {
+      if (!dateString) return "";
+
       const date = new Date(dateString);
+      if (isNaN(date.getTime())) return "";
+
       const now = new Date();
 
       const timeOptions: Intl.DateTimeFormatOptions = {
@@ -202,23 +206,39 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         hour12: true,
       };
 
+      const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
+
       const dateOptions: Intl.DateTimeFormatOptions = {
         day: "2-digit",
         month: "short",
       };
 
-      // Check if the year is different from the current year
       if (date.getFullYear() !== now.getFullYear()) {
         dateOptions.year = "numeric";
       }
 
-      const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
       const formattedDate = new Intl.DateTimeFormat(
-        "en-US",
+        "en-GB",
         dateOptions
       ).format(date);
 
-      return `${time}, ${formattedDate}`;
+      const isToday = date.toDateString() === now.toDateString();
+      const isTomorrow =
+        date.toDateString() ===
+        new Date(now.setDate(now.getDate() + 1)).toDateString();
+      const isYesterday =
+        date.toDateString() ===
+        new Date(now.setDate(now.getDate() - 2)).toDateString();
+
+      if (isToday) {
+        return `${time}, Today`;
+      } else if (isTomorrow) {
+        return `${time}, Tomorrow`;
+      } else if (isYesterday) {
+        return `${time}, Yesterday`;
+      } else {
+        return `${time}, ${formattedDate}`;
+      }
     };
 
     const handleSendNow = () => {
@@ -461,8 +481,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               </span>
               <div className="flex gap-3">
                 <span className="text-gray-500 text-sm  ">
-                  {email?.received_datetime &&
-                    formatDate(email?.received_datetime.toString())}
+                  {email?.created_at &&
+                    formatDate(email?.created_at.toString())}
                 </span>
                 <span>
                   {email.is_reply &&

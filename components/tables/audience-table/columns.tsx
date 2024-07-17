@@ -64,7 +64,18 @@ export const contactsColumn: ColumnDef<Lead>[] = [
   {
     accessorKey: "name",
     header: "NAME",
-    cell: ({ row }) => <NameAction data={row.original} />,
+    cell: ({ row }) => (
+      <div className="flex items-center gap-3">
+        <Image
+          src={row.original.photo_url}
+          alt=""
+          width={30}
+          height={30}
+          style={{ borderRadius: "50%" }}
+        />
+        <NameAction data={row.original} />
+      </div>
+    ),
   },
   {
     accessorKey: "title",
