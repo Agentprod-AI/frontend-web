@@ -46,7 +46,7 @@ const FormSchema = z.object({
       })
     )
     .optional(),
-  q_organization_keyword_tags: z.array(
+  organization_industry_tag_ids: z.array(
     z.object({
       id: z.string(),
       text: z.string(),
@@ -315,7 +315,7 @@ export default function PeopleForm(): JSX.Element {
     // Convert all arrays of objects to arrays of strings
     const formData = {
       q_organization_domains: data.q_organization_domains,
-      q_organization_keyword_tags: data.q_organization_keyword_tags,
+      organization_industry_tag_ids: data.organization_industry_tag_ids,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
@@ -377,8 +377,8 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
-      ...(formData.q_organization_keyword_tags && {
-        q_organization_keyword_tags: formData.q_organization_keyword_tags
+      ...(formData.organization_industry_tag_ids && {
+        organization_industry_tag_ids: formData.organization_industry_tag_ids
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
@@ -666,7 +666,7 @@ export default function PeopleForm(): JSX.Element {
     | "organization_locations"
     | "person_titles"
     | "revenue_range"
-    | "q_organization_keyword_tags";
+    | "organization_industry_tag_ids";
 
   const mapFiltersToTags = (
     filterName: string,
@@ -726,10 +726,10 @@ export default function PeopleForm(): JSX.Element {
         "q_organization_domains"
       );
       mapFiltersToTags(
-        "q_organization_keyword_tags",
-        allFiltersFromDB.q_organization_keyword_tags,
+        "organization_industry_tag_ids",
+        allFiltersFromDB.organization_industry_tag_ids,
         setOrganizationKeywordTags,
-        "q_organization_keyword_tags"
+        "organization_industry_tag_ids"
       );
 
       mapFiltersToTags(
@@ -755,10 +755,10 @@ export default function PeopleForm(): JSX.Element {
       console.log("maximum value : ", maximumCompanyFunding.text);
 
       mapFiltersToTags(
-        "q_organization_keyword_tags",
+        "organization_industry_tag_ids",
         allFiltersFromDB.q_keywords,
         setOrganizationKeywordTags,
-        "q_organization_keyword_tags"
+        "organization_industry_tag_ids"
       );
 
       const formatFundingHeadcount =
@@ -935,7 +935,7 @@ export default function PeopleForm(): JSX.Element {
 
   React.useEffect(() => {
     setValue(
-      "q_organization_keyword_tags",
+      "organization_industry_tag_ids",
       organizationKeywordTags as [Tag, ...Tag[]]
     );
   }, [organizationKeywordTags]);
@@ -1322,7 +1322,7 @@ export default function PeopleForm(): JSX.Element {
                   >
                     <FormField
                       control={form.control}
-                      name="q_organization_keyword_tags"
+                      name="organization_industry_tag_ids"
                       render={({ field }) => (
                         <FormItem className="flex flex-col items-start pb-4 w-8/12">
                           <FormControl>
@@ -1338,7 +1338,7 @@ export default function PeopleForm(): JSX.Element {
                               setTags={(newTags) => {
                                 setOrganizationKeywordTags(newTags);
                                 setValue(
-                                  "q_organization_keyword_tags",
+                                  "organization_industry_tag_ids",
                                   newTags as [Tag, ...Tag[]]
                                 );
                               }}
