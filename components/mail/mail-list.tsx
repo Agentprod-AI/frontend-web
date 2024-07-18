@@ -81,12 +81,11 @@ export function MailList({ items }: MailListProps) {
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
-    const now = new Date();
 
     const timeOptions: Intl.DateTimeFormatOptions = {
       hour: "2-digit",
       minute: "2-digit",
-      hour12: true,
+      hour12: false,
     };
 
     const time = new Intl.DateTimeFormat("en-US", timeOptions).format(date);
@@ -96,31 +95,11 @@ export function MailList({ items }: MailListProps) {
       month: "short",
     };
 
-    if (date.getFullYear() !== now.getFullYear()) {
-      dateOptions.year = "numeric";
-    }
-
     const formattedDate = new Intl.DateTimeFormat("en-GB", dateOptions).format(
       date
     );
 
-    const isToday = date.toDateString() === now.toDateString();
-    const isTomorrow =
-      date.toDateString() ===
-      new Date(now.setDate(now.getDate() + 1)).toDateString();
-    const isYesterday =
-      date.toDateString() ===
-      new Date(now.setDate(now.getDate() - 2)).toDateString();
-
-    if (isToday) {
-      return `${time}, Today`;
-    } else if (isTomorrow) {
-      return `${time}, Tomorrow`;
-    } else if (isYesterday) {
-      return `${time}, Yesterday`;
-    } else {
-      return `${time}, ${formattedDate}`;
-    }
+    return `${time}, ${formattedDate}`;
   };
 
   // const handleDelete = async (id: string) => {
@@ -210,7 +189,7 @@ export function MailList({ items }: MailListProps) {
                     <span className="text-xs">
                       {item && item.category ? (
                         <Badge
-                          className={`gap-1 items-center rounded-full ${
+                          className={`gap-1 text-xs items-center rounded-full ${
                             item.category.trim() === "Positive"
                               ? "bg-green-400"
                               : item.category.trim() === "Information Required"
