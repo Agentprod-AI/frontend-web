@@ -6,6 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import * as z from "zod";
 import { v4 as uuidv4 } from "uuid";
 import "react-circular-progressbar/dist/styles.css";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -87,6 +88,20 @@ const initialMailboxes = [
   },
 ];
 
+const createEmailSchema = (domain: any) =>
+  z.object({
+    emailAddresses: z
+      .array(
+        z
+          .string()
+          .email()
+          .refine((email) => email.endsWith(`@${domain}`), {
+            message: `Email must end with @${domain}`,
+          })
+      )
+      .nonempty(),
+  });
+
 export default function Page() {
   const [isPresentDomain, setIsPresentDomain] = useState();
   const [isConnectDomainButtonLoading, setIsConnectDomainButtonLoading] =
@@ -100,6 +115,7 @@ export default function Page() {
   const [isVerifyEmailOpen, setIsVerifyEmailOpen] = useState(false);
   const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
   const [emailInput, setEmailInput] = useState(Array(5).fill(""));
+  const [emailErrors, setEmailErrors] = useState(Array(5).fill("")); //RealTime
   const [nameInput, setNameInput] = useState("");
   const [domainInput, setDomainInput] = useState("");
   const [mailData, setMailData] = useState<MailData[]>([]);
@@ -247,7 +263,7 @@ export default function Page() {
       const mailboxes = mailboxesResponse.data.map((mailbox: any) => ({
         ...mailbox,
         dns: mailbox.dns ? JSON.parse(mailbox.dns) : [],
-        health: healthData[mailbox.mailbox] || 0, // Set health from the health data
+        health: healthData[mailbox.mailbox] || 0,
       }));
 
       setMailboxes(mailboxes);
@@ -271,57 +287,109 @@ export default function Page() {
     }
   }, []);
 
+  useEffect(() => {
+    const newErrors = emailInput.map((email) =>
+      validateEmail(email, domainInput)
+    );
+    setEmailErrors(newErrors);
+  }, [domainInput, emailInput]);
+
+  const handleEmailChange = (index: any, value: any) => {
+    const newEmailInputs = [...emailInput];
+    newEmailInputs[index] = value;
+    setEmailInput(newEmailInputs);
+
+    const error = validateEmail(value, domainInput);
+    const newEmailErrors = [...emailErrors];
+    newEmailErrors[index] = error;
+    setEmailErrors(newEmailErrors);
+  };
+
+  const validateEmail = (email: any, domain: any) => {
+    if (!email) return "";
+    const schema = z
+      .string()
+      .email()
+      .refine(
+        (e) => e.endsWith(`@${domain}`),
+        `Email must end with @${domain}`
+      );
+    const result = schema.safeParse(email);
+    return result.success ? "" : result.error.errors[0].message;
+  };
+
   const handleConnectDomain = async () => {
     setIsConnectDomainButtonLoading(true);
-    const senders = emailInput
+    const nonEmptyEmails = emailInput
       .filter((email) => email.trim() !== "")
-      .map((email) => ({
+      .map((email) => email.toLowerCase());
+    const hasErrors = emailErrors.some((error) => error !== "");
+
+    if (hasErrors || nonEmptyEmails.length === 0) {
+      toast.error("Please correct email errors before connecting.");
+      setIsConnectDomainButtonLoading(false);
+      return;
+    }
+
+    const schema = createEmailSchema(domainInput);
+
+    try {
+      schema.parse({ emailAddresses: nonEmptyEmails });
+      const senders = nonEmptyEmails.map((email) => ({
         mailbox: email,
         id: uuidv4(),
         name: nameInput,
       }));
 
-    const postData = {
-      senders: senders,
-      user_id: user.id,
-    };
+      const postData = {
+        senders: senders,
+        user_id: user.id,
+      };
 
-    try {
-      const response = await axiosInstance.post(
-        "/v2/brevo/sender/validate",
-        postData
-      );
+      try {
+        const response = await axiosInstance.post(
+          "/v2/brevo/sender/validate",
+          postData
+        );
+        const dnsPayload = senders.map((sender) => ({
+          domain: domainInput,
+          data: mailData,
+          mail: sender.mailbox,
+        }));
+        await Promise.all(
+          dnsPayload.map((payload) =>
+            axiosInstance.post("v2/users/dns", payload)
+          )
+        );
 
-      // Modified dnsPayload
-      const dnsPayload = senders.map((sender) => ({
-        domain: domainInput,
-        data: mailData,
-        mail: sender.mailbox,
-      }));
+        await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
+        console.log("DNS Payloads:", dnsPayload);
 
-      // Sending DNS payload for each sender
-      await Promise.all(
-        dnsPayload.map((payload) => axiosInstance.post("v2/users/dns", payload))
-      );
-
-      await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
-      console.log("DNS Payloads:", dnsPayload);
-
-      setIsVerifyEmailOpen(false);
-      if (!isPresentDomain) {
-        setIsTableDialogOpen(true);
+        setIsVerifyEmailOpen(false);
+        if (!isPresentDomain) {
+          setIsTableDialogOpen(true);
+        }
+        setIsAddMailboxOpen(false);
+        toast.success("Mailbox Added Successfully");
+        setDomainInput("");
+        setNameInput("");
+        setEmailInput([""]);
+        setFetchSuccess(false);
+        fetchMailboxes();
+        handleCloseAddMailbox();
+      } catch (error) {
+        console.error("Failed to connect", error);
+        toast.error("Domain Connection Failed.");
       }
-      setIsAddMailboxOpen(false);
-      toast.success("Mailbox Added Successfully");
-      fetchMailboxes();
-      setIsConnectDomainButtonLoading(false);
-      console.log("Response Domain : ", response.data);
-
-      handleCloseAddMailbox();
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        toast.error(error.errors[0].message);
+      } else {
+        console.error("Failed to connect", error);
+        toast.error("Domain Connection Failed.");
+      }
+    } finally {
       setIsConnectDomainButtonLoading(false);
-      console.error("Failed to connec", error);
-      toast.error("Domain Connection Failed.");
     }
   };
 
@@ -987,28 +1055,35 @@ export default function Page() {
               Enter the email you want to add to the mailbox.
             </DialogDescription>
           </DialogHeader>
-          <div className="flex items-center gap-4">
-            <p className="text-sm">Domain</p>
-            <Input
-              value={domainInput}
-              onChange={(e) => setDomainInput(e.target.value)}
-              placeholder="Enter domain"
-              className="flex-grow"
-            />
-            <Button
-              variant="secondary"
-              type="submit"
-              onClick={fetchDomain}
-              className="w-56"
-            >
-              {loading ? (
-                <LoadingCircle />
-              ) : fetchSuccess ? (
-                <Check />
-              ) : (
-                "Verify Domain"
-              )}
-            </Button>
+          <div className="flex flex-col gap-2">
+            <div className="flex items-center gap-4">
+              <p className="text-sm">Domain</p>
+              <Input
+                value={domainInput}
+                onChange={(e) => setDomainInput(e.target.value)}
+                placeholder="Enter domain"
+                className="flex-grow"
+              />
+              <Button
+                variant="secondary"
+                type="submit"
+                onClick={fetchDomain}
+                className="w-56"
+              >
+                {loading ? (
+                  <LoadingCircle />
+                ) : fetchSuccess ? (
+                  <Check />
+                ) : (
+                  "Verify Domain"
+                )}
+              </Button>
+            </div>
+
+            <p className="text-xs text-muted-foreground italic">
+              *Please ensure you have purchased this domain from a DNS provider
+              (e.g., GoDaddy) before proceeding.
+            </p>
           </div>
           <div className="grid items-center gap-4">
             <p className="text-sm">Name</p>
@@ -1022,17 +1097,24 @@ export default function Page() {
             <div className="grid items-center gap-4">
               <p className="text-sm">Email Addresses</p>
               {[...Array(5)].map((_, index) => (
-                <Input
-                  key={index}
-                  value={emailInput[index] || ""}
-                  onChange={(e) => {
-                    const newEmailInputs = [...emailInput];
-                    newEmailInputs[index] = e.target.value;
-                    setEmailInput(newEmailInputs);
-                  }}
-                  placeholder={`Enter email address`}
-                />
+                <div key={index}>
+                  <Input
+                    value={emailInput[index]}
+                    onChange={(e) => handleEmailChange(index, e.target.value)}
+                    placeholder={`Enter email address ${index + 1}`}
+                    className={emailErrors[index] ? "border-red-500" : ""}
+                  />
+                  {emailErrors[index] && (
+                    <p className="text-red-500 text-sm mt-1">
+                      {emailErrors[index]}
+                    </p>
+                  )}
+                </div>
               ))}
+              <p className="text-xs text-muted-foreground italic">
+                *The email addresses entered should be registered and associated
+                with the specified DNS.
+              </p>
             </div>
           </div>
           <DialogFooter>
@@ -1043,7 +1125,11 @@ export default function Page() {
                 !emailInput.some((email) => email.trim() !== "")
               }
             >
-             {isConnectDomainButtonLoading ? <LoadingCircle /> : "Connect Domain"}  
+              {isConnectDomainButtonLoading ? (
+                <LoadingCircle />
+              ) : (
+                "Connect Domain"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
