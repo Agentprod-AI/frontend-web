@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable import/no-unresolved */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-console */
@@ -5,6 +6,7 @@
 
 import React, { useState, useEffect, useCallback } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
+import { v4 as uuidv4 } from "uuid";
 import "react-circular-progressbar/dist/styles.css";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Separator } from "@/components/ui/separator";
@@ -87,6 +89,8 @@ const initialMailboxes = [
 
 export default function Page() {
   const [isPresentDomain, setIsPresentDomain] = useState();
+  const [isConnectDomainButtonLoading, setIsConnectDomainButtonLoading] =
+    useState(false);
   const [openDisconnect, setOpenDisconnect] = useState<string | null>(null);
   const [googleMail, setGoogleMail] = useState<any>("");
   const [inputAppPassword, setInputAppPassword] = useState("");
@@ -95,7 +99,7 @@ export default function Page() {
   const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
   const [isVerifyEmailOpen, setIsVerifyEmailOpen] = useState(false);
   const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
-  const [emailInput, setEmailInput] = useState("");
+  const [emailInput, setEmailInput] = useState(Array(5).fill(""));
   const [nameInput, setNameInput] = useState("");
   const [domainInput, setDomainInput] = useState("");
   const [mailData, setMailData] = useState<MailData[]>([]);
@@ -267,21 +271,57 @@ export default function Page() {
     }
   }, []);
 
-  const handleEmailVerification = async () => {
+  const handleConnectDomain = async () => {
+    setIsConnectDomainButtonLoading(true);
+    const senders = emailInput
+      .filter((email) => email.trim() !== "")
+      .map((email) => ({
+        mailbox: email,
+        id: uuidv4(),
+        name: nameInput,
+      }));
+
     const postData = {
-      name: nameInput,
-      email: emailInput,
-      domain: domainInput,
+      senders: senders,
+      user_id: user.id,
     };
+
     try {
-      const response = await axiosInstance.post("/v2/brevo/sender", postData);
-      console.log("DataMailboxing for verification: ", response.data);
-      setSenderID(response.data._id);
+      const response = await axiosInstance.post(
+        "/v2/brevo/sender/validate",
+        postData
+      );
+
+      // Modified dnsPayload
+      const dnsPayload = senders.map((sender) => ({
+        domain: domainInput,
+        data: mailData,
+        mail: sender.mailbox,
+      }));
+
+      // Sending DNS payload for each sender
+      await Promise.all(
+        dnsPayload.map((payload) => axiosInstance.post("v2/users/dns", payload))
+      );
+
+      await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
+      console.log("DNS Payloads:", dnsPayload);
+
+      setIsVerifyEmailOpen(false);
+      if (!isPresentDomain) {
+        setIsTableDialogOpen(true);
+      }
+      setIsAddMailboxOpen(false);
+      toast.success("Mailbox Added Successfully");
+      fetchMailboxes();
+      setIsConnectDomainButtonLoading(false);
+      console.log("Response Domain : ", response.data);
+
       handleCloseAddMailbox();
-      setIsVerifyEmailOpen(true);
     } catch (error) {
-      console.error("Failed to verify email:", error);
-      toast.error("Email Already In Use.");
+      setIsConnectDomainButtonLoading(false);
+      console.error("Failed to connec", error);
+      toast.error("Domain Connection Failed.");
     }
   };
 
@@ -672,109 +712,7 @@ export default function Page() {
                       </Popover>
                     )}
                   </TableCell>
-                  {/* <TableCell>
-                    <Dialog>
-                      <DialogTrigger
-                        asChild
-                        className="flex gap-1 items-center"
-                      >
-                        <Button variant={"secondary"} className="p-2">
-                          DNS
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent className="w-full max-w-4xl">
-                        <DialogHeader>
-                          <DialogTitle>DNS Records</DialogTitle>
-                        </DialogHeader>
-                        <div className="grid items-center gap-4 w-full">
-                          <Table className="mt-4 w-full">
-                            <TableHeader>
-                              <TableRow>
-                                <TableHead>Type</TableHead>
-                                <TableHead>Name</TableHead>
-                                <TableHead>Value</TableHead>
-                              </TableRow>
-                            </TableHeader>
-                            <TableBody>
-                              {mailbox?.dns.map((dns) => (
-                                <TableRow key={dns.Value}>
-                                  <TableCell>{dns.Type}</TableCell>
-                                  <TableCell>
-                                    <div className="flex gap-2">
-                                      <Icons.copy
-                                        className="cursor-pointer "
-                                        onClick={() => handleCopy(dns.Name)}
-                                      />
-                                      <span className="w-96 overflow-x-scroll">
-                                        {dns?.Name}
-                                      </span>
-                                    </div>
-                                  </TableCell>
-                                  <TableCell>
-                                    <div className="flex items-center gap-2">
-                                      <Icons.copy
-                                        className="cursor-pointer"
-                                        onClick={() => handleCopy(dns.Value)}
-                                      />
-                                      <span>{dns.Value}</span>
-                                    </div>
-                                  </TableCell>
-                                </TableRow>
-                              ))}
-                            </TableBody>
-                          </Table>
-                        </div>
-                        <Table className="mt-4 w-full">
-                          <TableHeader>
-                            <TableRow>
-                              <TableHead>Type</TableHead>
-                              <TableHead>Name</TableHead>
-                              <TableHead>Priority</TableHead>
-                              <TableHead>Value</TableHead>
-                            </TableRow>
-                          </TableHeader>
-                          <TableBody>
-                            <TableRow>
-                              <TableCell>
-                                <input
-                                  type="text"
-                                  value={"MX"}
-                                  readOnly
-                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <input
-                                  type="text"
-                                  value={mailbox.domain}
-                                  readOnly
-                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <input
-                                  type="text"
-                                  value={"1"}
-                                  readOnly
-                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
-                                />
-                              </TableCell>
-                              <TableCell>
-                                <input
-                                  type="text"
-                                  value={
-                                    "inbound-smtp.us-east-1.amazonaws.com."
-                                  }
-                                  readOnly
-                                  className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
-                                />
-                              </TableCell>
-                            </TableRow>
-                          </TableBody>
-                        </Table>
-                      </DialogContent>
-                    </Dialog>
-                  </TableCell> */}
+
                   <TableCell>
                     {mailbox.platform === "Google" ? (
                       <span className="text-gray-500 italic">No DNS</span>
@@ -1049,26 +987,6 @@ export default function Page() {
               Enter the email you want to add to the mailbox.
             </DialogDescription>
           </DialogHeader>
-          <div className="grid gap-4 py-4">
-            <div className="grid items-center gap-4">
-              <p className="text-sm">Name</p>
-              <Input
-                value={nameInput}
-                onChange={(e) => setNameInput(e.target.value)}
-                placeholder="Enter name"
-              />
-            </div>
-          </div>
-          <div className="grid gap-4 py-4 -mt-8">
-            <div className="grid items-center gap-4">
-              <p className="text-sm">Email Address</p>
-              <Input
-                value={emailInput}
-                onChange={(e) => setEmailInput(e.target.value)}
-                placeholder="Enter email address"
-              />
-            </div>
-          </div>
           <div className="flex items-center gap-4">
             <p className="text-sm">Domain</p>
             <Input
@@ -1092,12 +1010,40 @@ export default function Page() {
               )}
             </Button>
           </div>
+          <div className="grid items-center gap-4">
+            <p className="text-sm">Name</p>
+            <Input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Enter name"
+            />
+          </div>
+          <div className="grid gap-4 py-4 -mt-4">
+            <div className="grid items-center gap-4">
+              <p className="text-sm">Email Addresses</p>
+              {[...Array(5)].map((_, index) => (
+                <Input
+                  key={index}
+                  value={emailInput[index] || ""}
+                  onChange={(e) => {
+                    const newEmailInputs = [...emailInput];
+                    newEmailInputs[index] = e.target.value;
+                    setEmailInput(newEmailInputs);
+                  }}
+                  placeholder={`Enter email address`}
+                />
+              ))}
+            </div>
+          </div>
           <DialogFooter>
             <Button
-              onClick={handleEmailVerification}
-              disabled={emailInput === "" || domainInput === ""}
+              onClick={handleConnectDomain}
+              disabled={
+                domainInput === "" ||
+                !emailInput.some((email) => email.trim() !== "")
+              }
             >
-              Verify email
+             {isConnectDomainButtonLoading ? <LoadingCircle /> : "Connect Domain"}  
             </Button>
           </DialogFooter>
         </DialogContent>
