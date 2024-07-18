@@ -171,18 +171,8 @@ export function GoalForm() {
 
   const onSubmit: SubmitHandler<GoalFormValues> = async (data) => {
     if (type === "create") {
+      console.log("Link " + data.scheduling_link);
       createGoal(data, params.campaignId);
-      const updatedFormsTracker = {
-        schedulingBudget: true,
-        offering: true,
-        goal: true,
-        audience: true,
-      };
-      localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
-      setFormsTracker((prevFormsTracker) => ({
-        ...prevFormsTracker,
-        ...updatedFormsTracker,
-      }));
     }
     if (type === "edit") {
       console.log(watchAllFields);
@@ -362,7 +352,6 @@ export function GoalForm() {
             </FormItem>
           )}
         />
-
         <FormField
           control={form.control}
           name="emails"
