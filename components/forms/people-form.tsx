@@ -739,20 +739,20 @@ export default function PeopleForm(): JSX.Element {
         "organization_locations"
       );
 
-      mapFiltersToTags(
-        "revenue_range",
-        allFiltersFromDB.revenue_range.max,
-        (newValue) => {
-          const numericValue = Number(newValue);
-          const updatedValue = {
-            ...maximumCompanyFunding,
-            text: numericValue,
-          };
-          setMaximumCompanyFunding(updatedValue);
-        },
-        "revenue_range"
-      );
-      console.log("maximum value : ", maximumCompanyFunding.text);
+      // mapFiltersToTags(
+      //   "revenue_range",
+      //   allFiltersFromDB.revenue_range.max,
+      //   (newValue) => {
+      //     const numericValue = Number(newValue);
+      //     const updatedValue = {
+      //       ...maximumCompanyFunding,
+      //       text: numericValue,
+      //     };
+      //     setMaximumCompanyFunding(updatedValue);
+      //   },
+      //   "revenue_range"
+      // );
+      // console.log("maximum value : ", maximumCompanyFunding.text);
 
       mapFiltersToTags(
         "organization_industry_tag_ids",
