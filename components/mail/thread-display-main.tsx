@@ -517,7 +517,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                     email.category.trim() === "Forwarded" && (
                       <Badge className="gap-1 items-center rounded-full bg-blue-600">
                         <Forward className="h-[14px] w-[14px]" />
-                        Forwarded
+                        Referral
                       </Badge>
                     )}
                   {email.is_reply &&
