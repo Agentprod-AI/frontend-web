@@ -35,15 +35,12 @@ export default function Page() {
     { id: "Leads used", value: "", isEditable: false },
   ]);
 
-  console.log(user);
-
   const fetchDataInfo = () => {
     if (user?.id) {
       axiosInstance
         .get(`/v2/settings/${user.id}`)
         .then((response) => {
           const data = response.data;
-          console.log("Data in settings", data);
 
           const initialAccountInfo = [
             {
@@ -102,7 +99,6 @@ export default function Page() {
       return item;
     });
     setAccountInfo(newAccountInfo);
-    console.log("Updated Info:", newAccountInfo); // Check what the new state looks like
   };
 
   const handleUpdateClick = async () => {
@@ -128,7 +124,6 @@ export default function Page() {
     };
     try {
       const response = await axiosInstance.put(`/v2/settings`, payload);
-      console.log("Update Successful", response.data);
       setAccountInfo(
         accountInfo.map((info) => {
           const newInfo =

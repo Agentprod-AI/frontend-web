@@ -59,10 +59,12 @@ export default function Page() {
   const activeDaysSet = new Set(
     mailGraphData
       .map((data) => {
+        if (!data.date) return null; // Skip null or undefined dates
         try {
-          const parsedDate: any = parseISO(data.date);
-          if (isNaN(parsedDate)) {
-            throw new Error(`Invalid date: ${data.date}`);
+          const parsedDate = parseISO(data.date);
+          if (isNaN(parsedDate.getTime())) {
+            console.warn(`Invalid date: ${data.date}`);
+            return null;
           }
           return format(parsedDate, "yyyy-MM-dd");
         } catch (error) {
@@ -70,7 +72,7 @@ export default function Page() {
           return null;
         }
       })
-      .filter((date) => date !== null) // Filter out null values resulting from invalid dates
+      .filter(Boolean) // Remove null values
   );
 
   console.log(activeDaysSet);
