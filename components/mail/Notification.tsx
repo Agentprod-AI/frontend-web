@@ -395,17 +395,16 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                   "Negative feedback received."}
                 {cleanedCategory === "Forwarded" &&
                   "This message has been forwarded."}
-                {/* {cleanedCategory === "Later" &&
+                {cleanedCategory === "Later" &&
                   `Follow up with ${
                     leads.length > 0 && leads[0].first_name
                       ? leads[0].first_name
                       : ""
                   } in ${getTimeDifference(
                     email?.scheduled_datetime
-                  )} as requested.`} */}
+                  )} as requested.`}
 
-                {/* Need to change */}
-                {cleanedCategory === "Later" &&
+                {/* {cleanedCategory === "Later" &&
                   email.is_special &&
                   `Follow up with ${
                     leads.length > 0 && leads[0].first_name
@@ -421,9 +420,8 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                     leads.length > 0 && leads[0].first_name
                       ? leads[0].first_name
                       : ""
-                  } in a days as requested.`}
+                  } in a days as requested.`} */}
 
-                {/* Need to change */}
                 {cleanedCategory === "Demo" &&
                   "Demo scheduling requested by client."}
                 {cleanedCategory === "Neutral" && "Neutral response received."}
