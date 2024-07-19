@@ -156,9 +156,10 @@ import { ColumnDef } from "@tanstack/react-table";
 import { NameAction } from "./name-action";
 import { Lead } from "@/context/lead-user";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Trash } from "lucide-react";
+import { Trash, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 export const DeleteAction = ({
   leadId,
@@ -178,7 +179,9 @@ export const DeleteAction = ({
   );
 };
 
-const DEFAULT_AVATAR = "/path/to/default/avatar.png";
+// const DEFAULT_AVATAR = "/path/to/default/avatar.png";
+const DEFAULT_AVATAR =
+  "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+";
 
 export const leadColumns: ColumnDef<Lead>[] = [
   {
@@ -191,9 +194,9 @@ export const leadColumns: ColumnDef<Lead>[] = [
         width={40}
         height={40}
         style={{ borderRadius: "50%" }}
-        onError={(e) => {
-          e.currentTarget.src = DEFAULT_AVATAR;
-        }}
+        // onError={(e) => {
+        //   e.currentTarget.src = DEFAULT_AVATAR;
+        // }}
       />
     ),
   },
@@ -224,17 +227,29 @@ export const contactsColumn: ColumnDef<Lead>[] = [
     header: "NAME",
     cell: ({ row }) => (
       <div key={row.id} className="flex items-center gap-3">
-        <Image
+        {/* <Image
           src={row.original.photo_url ?? DEFAULT_AVATAR}
           alt={`Avatar for ${row.original.name}`}
           width={30}
           height={30}
           style={{ borderRadius: "50%" }}
-          onError={(e) => {
-            e.currentTarget.src = DEFAULT_AVATAR;
-          }}
+          // onError={(e) => {
+          //   e.currentTarget.src = DEFAULT_AVATAR;
+          // }}
         />
-        <NameAction data={row.original} />
+        <NameAction data={row.original} /> */}
+        <div key={row.id} className="flex items-center gap-3">
+          <Avatar className="h-6 w-6">
+            <AvatarImage
+              src={row.original.photo_url}
+              alt={`Avatar for ${row.original.name}`}
+            />
+            <AvatarFallback>
+              <User className="h-4 w-4" />
+            </AvatarFallback>
+          </Avatar>
+          <NameAction data={row.original} />
+        </div>
       </div>
     ),
   },
