@@ -190,7 +190,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       friday_end: data.schedule.weekdayEndTime,
       schedule_type: "none",
       autopilot: false,
-      isActive: false,
+      is_active: false,
     };
 
     if (postData)
