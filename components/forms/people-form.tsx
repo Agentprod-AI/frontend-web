@@ -651,7 +651,7 @@ export default function PeopleForm(): JSX.Element {
         toast.info("Updating user details, please wait...");
         setTimeout(() => {
           router.push(`/dashboard/campaign/${params.campaignId}`);
-        }, 25000);
+        }, 30000);
       }
     }
 
@@ -1367,16 +1367,16 @@ export default function PeopleForm(): JSX.Element {
                           >
                             {keywords.map((option) => (
                               <button
-                                key={option}
+                                key={option.value}
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handleDropdownSelect(option);
+                                  handleDropdownSelect(option.name);
                                 }}
                                 className={
                                   "dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                                 }
                               >
-                                {option}
+                                {option.name}
                               </button>
                             ))}
                           </div>
