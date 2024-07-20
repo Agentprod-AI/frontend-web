@@ -1345,9 +1345,9 @@ export default function PeopleForm(): JSX.Element {
                             />
                           </FormControl>
                           {/* <FormDescription>
-                        These are the company domains that you&apos;re
-                        interested in.
-                      </FormDescription> */}
+            These are the company domains that you&apos;re
+            interested in.
+          </FormDescription> */}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1367,16 +1367,14 @@ export default function PeopleForm(): JSX.Element {
                           >
                             {keywords.map((option) => (
                               <button
-                                key={option}
+                                key={option.value}
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handleDropdownSelect(option);
+                                  handleDropdownSelect(option.value);
                                 }}
-                                className={
-                                  "dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
-                                }
+                                className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                               >
-                                {option}
+                                {option.name}
                               </button>
                             ))}
                           </div>
@@ -1385,6 +1383,7 @@ export default function PeopleForm(): JSX.Element {
                     </div>
                   </div>
                 </div>
+
                 {/* // Revenue and funding */}
                 <div className="bg-muted px-2 rounded ">
                   <div
