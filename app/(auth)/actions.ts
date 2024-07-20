@@ -54,7 +54,9 @@ export async function logout() {
   const cookieStore = cookies();
   const supabase = createClient(cookieStore);
 
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut({ scope: 'local' })
+
+
 
   if (error) {
     throw new Error(error.message);
