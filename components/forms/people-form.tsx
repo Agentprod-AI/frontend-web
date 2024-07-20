@@ -1367,16 +1367,16 @@ export default function PeopleForm(): JSX.Element {
                           >
                             {keywords.map((option) => (
                               <button
-                                key={option.value}
+                                key={option}
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handleDropdownSelect(option.name);
+                                  handleDropdownSelect(option);
                                 }}
                                 className={
                                   "dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                                 }
                               >
-                                {option.name}
+                                {option}
                               </button>
                             ))}
                           </div>

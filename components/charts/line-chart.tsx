@@ -7,19 +7,10 @@
 //   CartesianGrid,
 //   XAxis,
 //   YAxis,
-//   Tooltip,
 //   Legend,
 //   ResponsiveContainer,
 // } from "recharts";
-// import { TrendingUp } from "lucide-react";
-// import {
-//   Card,
-//   CardContent,
-//   CardDescription,
-//   CardFooter,
-//   CardHeader,
-//   CardTitle,
-// } from "@/components/ui/card";
+
 // import {
 //   ChartConfig,
 //   ChartContainer,
@@ -62,11 +53,11 @@
 //             tickLine={false}
 //             axisLine={false}
 //             tickMargin={8}
-//             tickFormatter={(value) => {
-//               // Parse the ISO date string and format it
-//               const parsedDate = parseISO(value);
-//               return format(parsedDate, "yyyy-MM-dd");
-//             }}
+//             // tickFormatter={(value) => {
+//             //   // Parse the ISO date string and format it
+//             //   const parsedDate = parseISO(value);
+//             //   return format(value, "yyyy-MM-dd");
+//             // }}
 //           />
 //           <YAxis />
 //           <ChartTooltip
@@ -109,84 +100,6 @@ import {
   Legend,
   ResponsiveContainer,
 } from "recharts";
-
-// const data = [
-//   {
-//     name: "18 Apr",
-//     lew: 35,
-//     le: 20,
-//   },
-//   {
-//     name: "17 Apr",
-//     lew: 36,
-//     le: 23,
-//   },
-//   {
-//     name: "16 Apr",
-//     lew: 40,
-//     le: 24,
-//   },
-//   {
-//     name: "15 Apr",
-//     lew: 38,
-//     le: 20,
-//   },
-//   {
-//     name: "14 Apr",
-//     lew: 0,
-//     le: 0,
-//   },
-//   {
-//     name: "13 Apr",
-//     lew: 0,
-//     le: 0,
-//   },
-//   {
-//     name: "12 Apr",
-//     lew: 40,
-//     le: 22,
-//   },
-//   {
-//     name: "11 Apr",
-//     lew: 38,
-//     le: 21,
-//   },
-//   {
-//     name: "10 Apr",
-//     lew: 35,
-//     le: 24,
-//   },
-//   {
-//     name: "9 Apr",
-//     lew: 36,
-//     le: 20,
-//   },
-//   {
-//     name: "8 Apr",
-//     lew: 36,
-//     le: 21,
-//   },
-//   {
-//     name: "7 Apr",
-//     lew: 0,
-//     le: 0,
-//   },
-//   {
-//     name: "6 Apr",
-//     lew: 0,
-//     le: 0,
-//   },
-//   {
-//     name: "5 Apr",
-//     lew: 40,
-//     le: 25,
-//   },
-//   {
-//     name: "4 Apr",
-//     lew: 38,
-//     le: 20,
-//   },
-// ];
 
 export function LineChartComponent({
   mailGraphData,
