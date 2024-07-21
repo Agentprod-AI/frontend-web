@@ -388,31 +388,34 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 {/* Adding new Categories */}
               </div>
               <p className="ml-1 text-xs">
-                {cleanedCategory === "OOO" && "Currently out of office."}
+                {cleanedCategory === "OOO" &&
+                  `Currently out of office until ${getTimeDifference(
+                    email?.scheduled_datetime
+                  )}.`}
                 {cleanedCategory === "Positive" &&
                   "Positive response received."}
                 {cleanedCategory === "Negative" &&
                   "Negative feedback received."}
                 {cleanedCategory === "Forwarded" &&
                   "This message has been forwarded."}
-                {cleanedCategory === "Later" &&
-                  `Follow up with ${
-                    leads.length > 0 && leads[0].first_name
-                      ? leads[0].first_name
-                      : ""
-                  } in ${getTimeDifference(
-                    email?.scheduled_datetime
-                  )} as requested.`}
-
                 {/* {cleanedCategory === "Later" &&
-                  email.is_special &&
                   `Follow up with ${
                     leads.length > 0 && leads[0].first_name
                       ? leads[0].first_name
                       : ""
                   } in ${getTimeDifference(
                     email?.scheduled_datetime
-                  )} as requested.`}
+                  )} as requested.`} */}
+
+                {cleanedCategory === "Later" &&
+                  email.is_special &&
+                  `A follow-up interaction with ${
+                    leads.length > 0 && leads[0].first_name
+                      ? leads[0].first_name
+                      : "the lead"
+                  } has been scheduled for ${getTimeDifference(
+                    email?.scheduled_datetime
+                  )}`}
 
                 {cleanedCategory === "Later" &&
                   !email.is_special &&
@@ -420,7 +423,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                     leads.length > 0 && leads[0].first_name
                       ? leads[0].first_name
                       : ""
-                  } in a days as requested.`} */}
+                  }  as requested.`}
 
                 {cleanedCategory === "Demo" &&
                   "Demo scheduling requested by client."}
