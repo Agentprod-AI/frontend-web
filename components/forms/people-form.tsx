@@ -50,6 +50,7 @@ const FormSchema = z.object({
     z.object({
       id: z.string(),
       text: z.string(),
+      value: z.string(),
     })
   ),
   q_organization_keyword_tags: z.array(
@@ -392,8 +393,8 @@ export default function PeopleForm(): JSX.Element {
       }),
       ...(formData.organization_industry_tag_ids && {
         organization_industry_tag_ids: formData.organization_industry_tag_ids
-          .map((tag) => tag.text)
-          .filter((text) => text),
+          .map((tag) => tag.value)
+          .filter((value) => value),
       }),
 
       ...(formData.q_organization_keyword_tags && {
@@ -493,6 +494,18 @@ export default function PeopleForm(): JSX.Element {
           })
           .catch((error: any) => {
             console.log(error);
+            if (error.response) {
+              if (error.response.status === 400) {
+                toast.error("Bad request. Please check your input.");
+              } else if (error.response.status === 422) {
+                toast.error("Validation error. Please correct the input data.");
+              } else {
+                toast.error("An error occurred while fetching data.");
+              }
+            } else {
+              toast.error("Network error. Please try again later.");
+            }
+
             setError(error instanceof Error ? error.toString() : String(error));
             setIsTableLoading(false);
           });
@@ -962,25 +975,27 @@ export default function PeopleForm(): JSX.Element {
     setCompanyDropdownIsOpen(isOpen);
   }
 
-  function handleDropdownSelect(value: string) {
-    const keywordTag: Tag = {
+  function handleDropdownSelect(option: any) {
+    const keywordTag = {
       id: uuid(),
-      text: value,
+      text: option.name,
+      value: option.value,
     };
-    if (!organizationKeywordTags.some((tag) => tag.text === value)) {
-      setOrganizationKeywordTags((prevState) => {
-        const updatedTags = [...prevState, keywordTag];
-        return updatedTags;
-      });
+
+    if (
+      !organizationKeywordTags.some((tag: any) => tag.value === option.value)
+    ) {
+      setOrganizationKeywordTags((prevState) => [...prevState, keywordTag]);
     }
   }
 
-  React.useEffect(() => {
-    setValue(
-      "organization_industry_tag_ids",
-      organizationKeywordTags as [Tag, ...Tag[]]
-    );
-  }, [organizationKeywordTags]);
+  useEffect(() => {
+    if (organizationKeywordTags.length > 0) {
+      setValue("organization_industry_tag_ids", organizationKeywordTags as any);
+    } else {
+      setValue("organization_industry_tag_ids", []); // Handle the case when there are no tags
+    }
+  }, [organizationKeywordTags, setValue]);
 
   React.useEffect(() => {
     setValue(
@@ -1404,7 +1419,7 @@ export default function PeopleForm(): JSX.Element {
                                 setOrganizationKeywordTags(newTags);
                                 setValue(
                                   "organization_industry_tag_ids",
-                                  newTags as [Tag, ...Tag[]]
+                                  newTags as any
                                 );
                               }}
                             />
@@ -1429,7 +1444,7 @@ export default function PeopleForm(): JSX.Element {
                                 key={option.value}
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  handleDropdownSelect(option.value);
+                                  handleDropdownSelect(option);
                                 }}
                                 className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                               >
