@@ -52,6 +52,12 @@ const FormSchema = z.object({
       text: z.string(),
     })
   ),
+  q_organization_keyword_tags: z.array(
+    z.object({
+      id: z.string(),
+      text: z.string(),
+    })
+  ),
   organization_locations: z.array(
     z.object({
       id: z.string(),
@@ -185,7 +191,13 @@ export default function PeopleForm(): JSX.Element {
     Tag[]
   >([]);
 
+  const [organizationCompanyTags, setOrganizationCompanyTags] = React.useState<
+    Tag[]
+  >([]);
+
   const keywordDropdownRef = useRef<HTMLDivElement>(null);
+
+  const companyDropdownRef = useRef<HTMLDivElement>(null);
 
   const { setValue } = form;
 
@@ -316,6 +328,7 @@ export default function PeopleForm(): JSX.Element {
     const formData = {
       q_organization_domains: data.q_organization_domains,
       organization_industry_tag_ids: data.organization_industry_tag_ids,
+      q_organization_keyword_tags: data.q_organization_keyword_tags,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
@@ -382,6 +395,13 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag.text)
           .filter((text) => text),
       }),
+
+      ...(formData.q_organization_keyword_tags && {
+        q_organization_keyword_tags: formData.q_organization_keyword_tags
+          .map((tag) => tag.text)
+          .filter((text) => text),
+      }),
+
       ...(formData.minimum_company_funding &&
         formData.maximum_company_funding && {
           revenue_range: {
@@ -506,7 +526,8 @@ export default function PeopleForm(): JSX.Element {
     headcount: false,
     jobPostings: false,
     companyDomains: false,
-    companyKeywords: false,
+    industry: false,
+    company: false,
   });
   const toggleDropdown = (id: string) => {
     setDropdownsOpen((prev) => ({
@@ -733,6 +754,13 @@ export default function PeopleForm(): JSX.Element {
       );
 
       mapFiltersToTags(
+        "q_organization_keyword_tags",
+        allFiltersFromDB.q_organization_keyword_tags,
+        setOrganizationKeywordTags,
+        "q_organization_keyword_tags"
+      );
+
+      mapFiltersToTags(
         "organization_locations",
         allFiltersFromDB.organization_locations,
         setOrganizationLocationsTags,
@@ -759,6 +787,13 @@ export default function PeopleForm(): JSX.Element {
         allFiltersFromDB.q_keywords,
         setOrganizationKeywordTags,
         "organization_industry_tag_ids"
+      );
+
+      mapFiltersToTags(
+        "q_organization_keyword_tags",
+        allFiltersFromDB.q_keywords,
+        setOrganizationCompanyTags,
+        "q_organization_keyword_tags"
       );
 
       const formatFundingHeadcount =
@@ -916,8 +951,15 @@ export default function PeopleForm(): JSX.Element {
   const [keywordDropdownIsOpen, setKeywordDropdownIsOpen] =
     React.useState(false);
 
+  const [companyDropdownIsOpen, setCompanyDropdownIsOpen] =
+    React.useState(false);
+
   function toggleKeywordsDropdown(isOpen: boolean) {
     setKeywordDropdownIsOpen(isOpen);
+  }
+
+  function toggleCompanyDropdown(isOpen: boolean) {
+    setCompanyDropdownIsOpen(isOpen);
   }
 
   function handleDropdownSelect(value: string) {
@@ -940,6 +982,13 @@ export default function PeopleForm(): JSX.Element {
     );
   }, [organizationKeywordTags]);
 
+  React.useEffect(() => {
+    setValue(
+      "q_organization_keyword_tags",
+      organizationCompanyTags as [Tag, ...Tag[]]
+    );
+  }, [organizationCompanyTags]);
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -947,6 +996,23 @@ export default function PeopleForm(): JSX.Element {
         !keywordDropdownRef.current.contains(event.target as Node)
       ) {
         setKeywordDropdownIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        companyDropdownRef.current &&
+        !companyDropdownRef.current.contains(event.target as Node)
+      ) {
+        setCompanyDropdownIsOpen(false);
       }
     };
 
@@ -1301,13 +1367,14 @@ export default function PeopleForm(): JSX.Element {
                 <div className="bg-muted px-2 rounded">
                   <div
                     className="flex justify-between w-full py-3 cursor-pointer"
-                    onClick={() => {
-                      toggleDropdown("companyKeywords");
-                    }}
+                    onClick={() => toggleDropdown("industry")}
                   >
                     <div className="text-sm">Industry and Keyword</div>
-                    {dropdownsOpen.companyKeywords ? (
-                      <ChevronUp color="#000000" />
+                    {dropdownsOpen.industry ? (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-0"
+                      />
                     ) : (
                       <ChevronUp
                         color="#000000"
@@ -1317,7 +1384,7 @@ export default function PeopleForm(): JSX.Element {
                   </div>
                   <div
                     className={`${
-                      dropdownsOpen.companyKeywords ? "block" : "hidden"
+                      dropdownsOpen.industry ? "block" : "hidden"
                     } relative`}
                   >
                     <FormField
@@ -1329,11 +1396,9 @@ export default function PeopleForm(): JSX.Element {
                             <TagInput
                               {...field}
                               tags={organizationKeywordTags}
-                              placeholder="Enter company keywords"
-                              variant={"base"}
-                              onFocus={() => {
-                                toggleKeywordsDropdown(true);
-                              }}
+                              placeholder="Enter industry keywords"
+                              variant="base"
+                              onFocus={() => toggleKeywordsDropdown(true)}
                               className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
                               setTags={(newTags) => {
                                 setOrganizationKeywordTags(newTags);
@@ -1344,10 +1409,6 @@ export default function PeopleForm(): JSX.Element {
                               }}
                             />
                           </FormControl>
-                          {/* <FormDescription>
-            These are the company domains that you&apos;re
-            interested in.
-          </FormDescription> */}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1360,9 +1421,7 @@ export default function PeopleForm(): JSX.Element {
                             role="menu"
                             aria-orientation="vertical"
                             aria-labelledby="options-menu"
-                            onClick={(e) => {
-                              toggleKeywordsDropdown(false);
-                            }}
+                            onClick={() => toggleKeywordsDropdown(false)}
                             ref={keywordDropdownRef}
                           >
                             {keywords.map((option) => (
@@ -1381,6 +1440,59 @@ export default function PeopleForm(): JSX.Element {
                         </ScrollArea>
                       )}
                     </div>
+                  </div>
+                </div>
+
+                {/* Company keyword section */}
+                <div className="bg-muted px-2 rounded">
+                  <div
+                    className="flex justify-between w-full py-3 cursor-pointer"
+                    onClick={() => toggleDropdown("company")}
+                  >
+                    <div className="text-sm">Company Keyword</div>
+                    {dropdownsOpen.company ? (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-0"
+                      />
+                    ) : (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-180"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`${
+                      dropdownsOpen.company ? "block" : "hidden"
+                    } relative`}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="q_organization_keyword_tags"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start pb-4 w-8/12">
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              tags={organizationCompanyTags}
+                              placeholder="Enter company keywords"
+                              variant="base"
+                              onFocus={() => toggleCompanyDropdown(true)}
+                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              setTags={(newTags) => {
+                                setOrganizationCompanyTags(newTags);
+                                setValue(
+                                  "q_organization_keyword_tags",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
                   </div>
                 </div>
 
@@ -1478,7 +1590,6 @@ export default function PeopleForm(): JSX.Element {
                     />
                   </div>
                 </div>
-
                 <div className="bg-muted px-2 rounded ">
                   <div
                     className="flex justify-between w-full py-3 cursor-pointer"
