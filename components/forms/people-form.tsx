@@ -653,7 +653,6 @@ export default function PeopleForm(): JSX.Element {
         } else {
           setLeads([data]);
         }
-        setIsCreateBtnLoading(false);
         toast.success("Audience created successfully");
         // router.push(`/dashboard/campaign/create/${params.campaignId}`);
       })
@@ -684,6 +683,7 @@ export default function PeopleForm(): JSX.Element {
       } finally {
         toast.info("Updating user details, please wait...");
         setTimeout(() => {
+          setIsCreateBtnLoading(false);
           router.push(`/dashboard/campaign/${params.campaignId}`);
         }, 30000);
       }
