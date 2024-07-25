@@ -1307,8 +1307,8 @@ export default function PeopleForm(): JSX.Element {
                             placeholder={"Enter the number of leads you want"}
                             className="sm:min-w-[450px] outline-none"
                             value={field.value || leadsNum}
-                            min={0} 
-  max={100}
+                            min={0}
+                            max={100}
                             onChange={(e) => {
                               const value = e.target.value;
                               const numberValue =
