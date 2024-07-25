@@ -680,7 +680,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Clock3 className="h-4 w-4 text-gray-400" />
             </div>
-            <p className=" ml-1 text-xs ">Recipient opened the email.</p>
+            <p className=" ml-1 text-xs ">
+              Recipient opened your email again on{" "}
+              {formatDate(email.open_datetime)}
+            </p>
             <span className="text-gray-400 text-xs">
               {email.click_datetime && (
                 <span className="text-gray-400 text-xs">
@@ -698,7 +701,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Clock3 className="h-4 w-4 text-gray-400" />
             </div>
-            <p className=" ml-1 text-xs ">Recipient opened the email.</p>
+            <p className=" ml-1 text-xs ">
+              Receipent opened your email for the first time on{" "}
+              {formatDate(email.open_datetime)}.
+            </p>
             <span className="text-gray-400 text-xs">
               {email.click_datetime && (
                 <span className="text-gray-400 text-xs">
