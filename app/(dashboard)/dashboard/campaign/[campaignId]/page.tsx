@@ -126,11 +126,13 @@ export default function Page() {
   const isAudienceDisabled = !formsTracker.audience;
   const isTrainingDisabled = !formsTracker.training;
   const isAutoPilotDisabled = !formsTracker.autoPilot;
+  const qualification = !true;
 
   return (
     <div>
       {isCampaignFound === null ? (
         <div className="flex justify-center flex-col space-y-4">
+          <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
           <Skeleton className="h-[90px] w-[98%] rounded-xl " />
@@ -224,6 +226,39 @@ export default function Page() {
               </Button>
             </CardFooter>
           </Card>
+
+          {/* <Card
+            className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
+              qualification ? "bg-gray-100/10 cursor-not-allowed" : ""
+            }`}
+          >
+            <CardHeader>
+              <CardTitle>Qualification</CardTitle>
+              <CardDescription>
+                How do you qualify your prospects
+              </CardDescription>
+            </CardHeader>
+            <CardFooter className="flex py-0 justify-between">
+              <Button
+                asChild
+                variant={"outline"}
+                disabled={qualification}
+                className={
+                  qualification ? "text-gray-400 cursor-not-allowed" : ""
+                }
+              >
+                <Link
+                  href={
+                    qualification ? "#" : `${params.campaignId}/qualification`
+                  }
+                >
+                  {/* {qualification === true ? "Add" :  */}
+          {/* "Edit" */}
+          {/* } */}
+          {/* </Link>
+              </Button>
+            </CardFooter>
+          </Card> */}
 
           <Card
             className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
