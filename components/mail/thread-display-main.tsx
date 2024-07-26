@@ -69,6 +69,8 @@ import { sanitizeSubject } from "./sanitizeSubject";
 interface ThreadDisplayMainProps {
   ownerEmail: string;
   updateMailStatus: (mailId: string, status: string) => void;
+  selectedMailId: string | null;
+  setSelectedMailId: (id: string | null) => void;
 }
 
 const frameworks = [
@@ -85,6 +87,8 @@ const frameworks = [
 const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   ownerEmail,
   updateMailStatus,
+  selectedMailId,
+  setSelectedMailId,
 }) => {
   const {
     conversationId,
@@ -750,6 +754,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           updateMailStatus(conversationId, "scheduled"); // Update mail status
           setLoadingSmartSchedule(false);
           setEditable(false);
+          setSelectedMailId(conversationId);
         })
         .catch((error) => {
           console.error("Failed to approve email:", error);
@@ -776,6 +781,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           updateMailStatus(conversationId, "sent"); // Update mail status
           SetIsLoadingButton(false);
           setEditable(false);
+          setSelectedMailId(conversationId);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
@@ -803,6 +809,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           updateMailStatus(conversationId, "sent"); // Update mail status
           SetIsLoadingButton(false);
           setEditable(false);
+          setSelectedMailId(conversationId);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);
@@ -829,6 +836,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           updateMailStatus(conversationId, "scheduled"); // Update mail status
           setLoadingSmartSchedule(false);
           setEditable(false);
+          setSelectedMailId(conversationId);
         })
         .catch((error) => {
           console.error("Failed to send email:", error);

@@ -69,6 +69,7 @@ interface EmailMessage {
   approved: any;
   is_special: any;
   scheduled_datetime: string;
+  referral: string
 }
 
 interface NotificationProps {
@@ -388,16 +389,13 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                 {/* Adding new Categories */}
               </div>
               <p className="ml-1 text-xs">
-                {cleanedCategory === "OOO" &&
-                  `Currently out of office until ${getTimeDifference(
-                    email?.scheduled_datetime
-                  )}.`}
+                {cleanedCategory === "OOO" && `Currently out of office.`}
                 {cleanedCategory === "Positive" &&
                   "Positive response received."}
                 {cleanedCategory === "Negative" &&
                   "Negative feedback received."}
                 {cleanedCategory === "Forwarded" &&
-                  "This message has been forwarded."}
+                  `This message has been forwarded to ${email?.referral} `}
                 {/* {cleanedCategory === "Later" &&
                   `Follow up with ${
                     leads.length > 0 && leads[0].first_name
