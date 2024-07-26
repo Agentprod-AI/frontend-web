@@ -1320,7 +1320,7 @@ export default function PeopleForm(): JSX.Element {
                       </FormControl>
                       <FormDescription>
                         These are the number of leads that you&apos;re
-                        interested in.
+                        interested in select between 1 - 100.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
