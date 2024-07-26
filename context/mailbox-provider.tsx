@@ -28,6 +28,7 @@ export interface EmailMessage {
   is_special: any;
   scheduled_datetime: string;
   created_at: any;
+  referral: string;
 }
 
 export interface Mailbox {

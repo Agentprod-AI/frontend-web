@@ -198,6 +198,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         .post("v2/campaigns/", postData)
         .then((response) => {
           console.log("Campaign created successfully:", response);
+          setCampaigns((prevCampaigns) => [...prevCampaigns, response.data]);
           let formsTracker = JSON.parse(
             localStorage.getItem("formsTracker") || "{}"
           );
@@ -393,7 +394,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
     // const intervalId = setInterval(fetchCampaigns, 10000); // Fetch every 7 seconds
 
     // return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, [userId]);
+  }, [userId, campaigns.length]); //chaning for the new stuff.
 
   const contextValue = useMemo(
     () => ({

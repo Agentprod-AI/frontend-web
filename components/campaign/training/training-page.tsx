@@ -177,6 +177,8 @@ export default function Training() {
         const response = await startCampaign(params.campaignId, userId, true);
         console.log("trainingResponse", response);
       }
+      localStorage.setItem("newCampaignId", params.campaignId);
+      localStorage.setItem("redirectFromCampaign", "true");
 
       setStartCampaignIsLoading(false);
       router.push("/dashboard/mail");

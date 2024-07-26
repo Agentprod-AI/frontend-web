@@ -1,10 +1,782 @@
-/* eslint-disable react-hooks/exhaustive-deps */
-/* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-unused-vars */
+// "use client";
+// import * as React from "react";
+// import { ChevronDown, Search } from "lucide-react";
+// import { MailList } from "./mail-list";
+// import type { Mail } from "@/constants/data";
+// import { Input } from "@/components/ui/input";
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { TooltipProvider } from "@/components/ui/tooltip";
+// import {
+//   ResizableHandle,
+//   ResizablePanel,
+//   ResizablePanelGroup,
+// } from "@/components/ui/resizable";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+//   DropdownMenuGroup,
+// } from "@/components/ui/dropdown-menu";
+// import ThreadDisplayMain from "./thread-display-main";
+// import { ScrollArea } from "../ui/scroll-area";
+// import axiosInstance from "@/utils/axiosInstance";
+// import { useUserContext } from "@/context/user-context";
+// import { Button } from "../ui/button";
+// import { useCampaignContext } from "@/context/campaign-provider";
+// import { useMailbox } from "@/context/mailbox-provider";
+// import { Contact, useLeads } from "@/context/lead-user";
+// import { PeopleProfileSheet } from "../people-profile-sheet";
+// import { Skeleton } from "@/components/ui/skeleton";
+// import Image from "next/image";
+
+// interface MailProps {
+//   accounts: {
+//     label: string;
+//     email: string;
+//     icon: React.ReactNode;
+//   }[];
+//   mails: Mail[];
+//   defaultLayout: number[] | undefined;
+//   defaultCollapsed?: boolean;
+//   navCollapsedSize: number;
+// }
+
+// export interface Conversations {
+//   id: string;
+//   user_id: string;
+//   sender: string;
+//   recipient: string;
+//   subject: string;
+//   body_substr: string;
+//   campaign_id: string;
+//   updated_at: string;
+//   status: string;
+//   name: string;
+//   photo_url: string;
+//   company_name: string;
+//   category: string;
+// }
+
+// export function Mail({
+//   defaultLayout = [265, 440, 655],
+//   defaultCollapsed = false,
+//   navCollapsedSize,
+// }: MailProps) {
+//   const [mails, setMails] = React.useState<Conversations[]>([]);
+//   const [loading, setLoading] = React.useState(true);
+//   const [error, setError] = React.useState<string | null>(null);
+//   const [filter, setFilter] = React.useState("all");
+//   const { campaigns } = useCampaignContext();
+//   const [campaign, setCampaign] = React.useState<{
+//     campaignName: string;
+//     campaignId: string;
+//   } | null>(null);
+//   const [searchTerm, setSearchTerm] = React.useState("");
+
+//   const [currentMail, setCurrentMail] = React.useState<Conversations | null>(
+//     null
+//   );
+
+//   const { user } = useUserContext();
+
+//   const {
+//     setSenderEmail,
+//     isContextBarOpen,
+//     conversationId,
+//     setConversationId,
+//     setRecipientEmail,
+//   } = useMailbox();
+//   const { leads } = useLeads();
+
+//   const [localIsContextBarOpen, setLocalIsContextBarOpen] =
+//     React.useState(false);
+
+//   React.useEffect(() => {
+//     setLocalIsContextBarOpen(isContextBarOpen);
+//   }, [isContextBarOpen]);
+
+//   const fetchConversations = React.useCallback(
+//     async (campaignId?: string) => {
+//       setLoading(true);
+//       try {
+//         let url = `v2/mailbox/${user?.id}`;
+//         if (campaignId) {
+//           url += `?campaign_id=${campaignId}`;
+//         }
+//         const response = await axiosInstance.get<{ mails: Conversations[] }>(
+//           url
+//         );
+//         setMails(response.data.mails);
+//         setLoading(false);
+//       } catch (err: any) {
+//         console.error("Error fetching mails:", err);
+//         setError(err.message || "Failed to load mails.");
+//         setLoading(false);
+//       }
+//     },
+//     [user?.id]
+//   );
+
+//   React.useEffect(() => {
+//     const newCampaignId = localStorage.getItem("newCampaignId");
+//     if (newCampaignId && campaigns.length > 0) {
+//       const newCampaign = campaigns.find((c) => c.id === newCampaignId);
+//       if (newCampaign) {
+//         setCampaign({
+//           campaignName: newCampaign.campaign_name,
+//           campaignId: newCampaign.id,
+//         });
+//         fetchConversations(newCampaign.id);
+//         localStorage.removeItem("newCampaignId");
+//       }
+//     } else {
+//       fetchConversations();
+//     }
+//   }, [campaigns, fetchConversations]);
+
+//   React.useEffect(() => {
+//     if (campaign) {
+//       fetchConversations(campaign.campaignId);
+//     } else {
+//       fetchConversations();
+//     }
+//   }, [campaign, fetchConversations]);
+
+//   const updateMailStatus = React.useCallback(
+//     (mailId: string, status: string) => {
+//       setMails((prevMails) =>
+//         prevMails.map((mail) =>
+//           mail.id === mailId ? { ...mail, status } : mail
+//         )
+//       );
+//     },
+//     []
+//   );
+
+//   const filteredMails = React.useMemo(() => {
+//     return mails.filter((mail) => {
+//       const matchesSearchTerm =
+//         mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase());
+
+//       const matchesFilter =
+//         filter === "all" ||
+//         mail.status.toLowerCase() === filter ||
+//         (filter === "sent" && mail.status.toLowerCase() === "delivered");
+
+//       const matchesCampaign =
+//         !campaign || mail.campaign_id === campaign.campaignId;
+
+//       return matchesSearchTerm && matchesFilter && matchesCampaign;
+//     });
+//   }, [mails, filter, campaign, searchTerm]);
+
+//   React.useEffect(() => {
+//     if (
+//       filteredMails.length > 0 &&
+//       (!currentMail || currentMail.id !== filteredMails[0]?.id)
+//     ) {
+//       setSenderEmail(filteredMails[0]?.sender);
+//       setConversationId(filteredMails[0]?.id);
+//       setRecipientEmail(filteredMails[0]?.recipient);
+//       setCurrentMail(filteredMails[0]);
+//     }
+//   }, [
+//     filteredMails,
+//     setSenderEmail,
+//     setConversationId,
+//     setRecipientEmail,
+//     currentMail,
+//   ]);
+
+//   return (
+//     <TooltipProvider delayDuration={0}>
+//       <ResizablePanelGroup
+//         direction="horizontal"
+//         onLayout={(sizes: number[]) => {
+//           document.cookie = `react-resizable-panels:layout=${JSON.stringify(
+//             sizes
+//           )}`;
+//         }}
+//         className="h-full items-stretch"
+//         style={{ height: "calc(100vh - 80px)" }}
+//       >
+//         <ResizablePanel defaultSize={localIsContextBarOpen ? 40 : 20}>
+//           <Tabs defaultValue="all">
+//             <div className="flex items-center px-4 pt-2 pb-0">
+//               <h1 className="text-xl font-bold">Inbox</h1>
+//               <TabsList className="ml-auto flex relative">
+//                 <TabsTrigger
+//                   value="all"
+//                   onClick={() => setFilter("all")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   All
+//                 </TabsTrigger>
+//                 <TabsTrigger
+//                   value="to-approve"
+//                   onClick={() => setFilter("to-approve")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   To do
+//                 </TabsTrigger>
+//                 <TabsTrigger
+//                   value="scheduled"
+//                   onClick={() => setFilter("scheduled")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   Scheduled
+//                 </TabsTrigger>
+//                 <TabsTrigger
+//                   value="sent"
+//                   onClick={() => setFilter("sent")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   Sent
+//                 </TabsTrigger>
+//                 <DropdownMenu>
+//                   <DropdownMenuTrigger asChild>
+//                     <Button
+//                       variant="outline"
+//                       className="flex items-center justify-center space-x-2"
+//                     >
+//                       <span>
+//                         {campaign ? campaign.campaignName : "All Campaigns"}
+//                       </span>
+//                       <ChevronDown size={20} />
+//                     </Button>
+//                   </DropdownMenuTrigger>
+//                   <DropdownMenuContent className="w-80">
+//                     <DropdownMenuGroup>
+//                       <DropdownMenuSeparator />
+//                       <ScrollArea className="h-[400px] w-full rounded-md">
+//                         <DropdownMenuItem onClick={() => setCampaign(null)}>
+//                           <p className="cursor-pointer">All Campaigns</p>
+//                         </DropdownMenuItem>
+//                         {campaigns && campaigns.length > 0 ? (
+//                           campaigns.map((campaignItem) => (
+//                             <DropdownMenuItem
+//                               key={campaignItem.id}
+//                               onClick={() =>
+//                                 setCampaign({
+//                                   campaignName: campaignItem.campaign_name,
+//                                   campaignId: campaignItem.id,
+//                                 })
+//                               }
+//                             >
+//                               <p className="cursor-pointer">
+//                                 {campaignItem.campaign_name}{" "}
+//                                 {campaignItem.additional_details &&
+//                                   `- ${campaignItem.additional_details}`}
+//                               </p>
+//                             </DropdownMenuItem>
+//                           ))
+//                         ) : (
+//                           <p className="text-center mt-10">
+//                             No campaign available.
+//                           </p>
+//                         )}
+//                       </ScrollArea>
+//                     </DropdownMenuGroup>
+//                   </DropdownMenuContent>
+//                 </DropdownMenu>
+//               </TabsList>
+//             </div>
+//             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+//               <form>
+//                 <div className="relative">
+//                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+//                   <Input
+//                     placeholder="Search"
+//                     className="pl-8"
+//                     value={searchTerm}
+//                     onChange={(e) => setSearchTerm(e.target.value)}
+//                   />
+//                 </div>
+//               </form>
+//             </div>
+//             <TabsContent value={filter} className="m-0">
+//               {loading ? (
+//                 <div className="flex flex-col space-y-3 p-4 pt-0">
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                 </div>
+//               ) : filteredMails.length > 0 ? (
+//                 <MailList items={filteredMails} />
+//               ) : (
+//                 <div className="flex flex-col gap-3 items-center justify-center mt-36">
+//                   <Image
+//                     src="/empty.svg"
+//                     alt="empty-inbox"
+//                     width="200"
+//                     height="200"
+//                     className="dark:filter dark:invert"
+//                   />
+//                   <p className="flex justify-center items-center mt-10 ml-14 text-gray-500">
+//                     No Mails Available
+//                   </p>
+//                 </div>
+//               )}
+//             </TabsContent>
+//           </Tabs>
+//         </ResizablePanel>
+//         <ResizableHandle withHandle />
+//         <ResizablePanel
+//           defaultSize={localIsContextBarOpen ? 40 : 20}
+//           minSize={20}
+//         >
+//           <ScrollArea className="h-full">
+//             {loading ? (
+//               <div className="m-4 flex flex-row ">
+//                 <Skeleton className="h-7 w-7 rounded-full" />
+//                 <div className="flex flex-col space-y-3 ml-5">
+//                   <Skeleton className="h-[25px] w-[30rem] rounded-lg" />
+//                   <Skeleton className="h-[325px] w-[30rem] rounded-xl" />
+//                 </div>
+//               </div>
+//             ) : filteredMails.length > 0 ? (
+//               <ThreadDisplayMain
+//                 ownerEmail={filteredMails[0].recipient}
+//                 updateMailStatus={updateMailStatus}
+//               />
+//             ) : (
+//               <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">
+//                 <Image
+//                   src="/emptydraft.svg"
+//                   alt="empty-inbox"
+//                   width="200"
+//                   height="200"
+//                   className="dark:filter dark:invert"
+//                 />
+//                 <p className="flex justify-center items-center mt-10 ml-6  text-gray-500">
+//                   No Draft Available
+//                 </p>
+//               </div>
+//             )}
+//           </ScrollArea>
+//         </ResizablePanel>
+//         {localIsContextBarOpen && leads.length > 0 && (
+//           <>
+//             <ResizableHandle withHandle />
+//             <ResizablePanel defaultSize={20}>
+//               <PeopleProfileSheet data={leads[0] as Contact} />
+//             </ResizablePanel>
+//           </>
+//         )}
+//       </ResizablePanelGroup>
+//     </TooltipProvider>
+//   );
+// }
+
+// // The code we are keeping right now
+// "use client";
+// import * as React from "react";
+// import { ChevronDown, Search } from "lucide-react";
+// import { MailList } from "./mail-list";
+// import type { Mail } from "@/constants/data";
+// import { Input } from "@/components/ui/input";
+// import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+// import { TooltipProvider } from "@/components/ui/tooltip";
+// import {
+//   ResizableHandle,
+//   ResizablePanel,
+//   ResizablePanelGroup,
+// } from "@/components/ui/resizable";
+// import {
+//   DropdownMenu,
+//   DropdownMenuContent,
+//   DropdownMenuItem,
+//   DropdownMenuSeparator,
+//   DropdownMenuTrigger,
+//   DropdownMenuGroup,
+// } from "@/components/ui/dropdown-menu";
+// import ThreadDisplayMain from "./thread-display-main";
+// import { ScrollArea } from "../ui/scroll-area";
+// import axiosInstance from "@/utils/axiosInstance";
+// import { useUserContext } from "@/context/user-context";
+// import { Button } from "../ui/button";
+// import { useCampaignContext } from "@/context/campaign-provider";
+// import { useMailbox } from "@/context/mailbox-provider";
+// import { Contact, useLeads } from "@/context/lead-user";
+// import { PeopleProfileSheet } from "../people-profile-sheet";
+// import { Skeleton } from "@/components/ui/skeleton";
+// import Image from "next/image";
+
+// interface MailProps {
+//   accounts: {
+//     label: string;
+//     email: string;
+//     icon: React.ReactNode;
+//   }[];
+//   mails: Mail[];
+//   defaultLayout: number[] | undefined;
+//   defaultCollapsed?: boolean;
+//   navCollapsedSize: number;
+// }
+
+// export interface Conversations {
+//   id: string;
+//   user_id: string;
+//   sender: string;
+//   recipient: string;
+//   subject: string;
+//   body_substr: string;
+//   campaign_id: string;
+//   updated_at: string;
+//   status: string;
+//   name: string;
+//   photo_url: string;
+//   company_name: string;
+//   category: string;
+// }
+
+// export function Mail({
+//   defaultLayout = [265, 440, 655],
+//   defaultCollapsed = false,
+//   navCollapsedSize,
+// }: MailProps) {
+//   const [mails, setMails] = React.useState<Conversations[]>([]);
+//   const [loading, setLoading] = React.useState(true);
+//   const [error, setError] = React.useState<string | null>(null);
+//   const [filter, setFilter] = React.useState("all");
+//   const { campaigns } = useCampaignContext();
+//   const [campaign, setCampaign] = React.useState<{
+//     campaignName: string;
+//     campaignId: string;
+//   } | null>(null);
+//   const [searchTerm, setSearchTerm] = React.useState("");
+
+//   const [currentMail, setCurrentMail] = React.useState<Conversations | null>(
+//     null
+//   );
+
+//   const { user } = useUserContext();
+
+//   const {
+//     setSenderEmail,
+//     isContextBarOpen,
+//     setConversationId,
+//     setRecipientEmail,
+//   } = useMailbox();
+//   const { leads, setLeads } = useLeads();
+
+//   const [localIsContextBarOpen, setLocalIsContextBarOpen] =
+//     React.useState(false);
+
+//   React.useEffect(() => {
+//     setLocalIsContextBarOpen(isContextBarOpen);
+//   }, [isContextBarOpen]);
+
+//   const fetchConversations = React.useCallback(
+//     async (campaignId?: string) => {
+//       setLoading(true);
+//       try {
+//         let url = `v2/mailbox/${user?.id}`;
+//         if (campaignId) {
+//           url += `?campaign_id=${campaignId}`;
+//         }
+//         const response = await axiosInstance.get<{ mails: Conversations[] }>(
+//           url
+//         );
+//         setMails(response.data.mails);
+//         setLoading(false);
+//       } catch (err: any) {
+//         console.error("Error fetching mails:", err);
+//         setError(err.message || "Failed to load mails.");
+//         setLoading(false);
+//       }
+//     },
+//     [user?.id]
+//   );
+
+//   React.useEffect(() => {
+//     const newCampaignId = localStorage.getItem("newCampaignId");
+//     if (newCampaignId && campaigns.length > 0) {
+//       const newCampaign = campaigns.find((c) => c.id === newCampaignId);
+//       if (newCampaign) {
+//         setCampaign({
+//           campaignName: newCampaign.campaign_name,
+//           campaignId: newCampaign.id,
+//         });
+//         fetchConversations(newCampaign.id);
+//         localStorage.removeItem("newCampaignId");
+//       }
+//     } else {
+//       fetchConversations();
+//     }
+//   }, [campaigns, fetchConversations]);
+
+//   React.useEffect(() => {
+//     if (campaign) {
+//       fetchConversations(campaign.campaignId);
+//     } else {
+//       fetchConversations();
+//     }
+//   }, [campaign, fetchConversations]);
+
+//   const updateMailStatus = React.useCallback(
+//     (mailId: string, status: string) => {
+//       setMails((prevMails) =>
+//         prevMails.map((mail) =>
+//           mail.id === mailId ? { ...mail, status } : mail
+//         )
+//       );
+//     },
+//     []
+//   );
+
+//   const filteredMails = React.useMemo(() => {
+//     return mails.filter((mail) => {
+//       const matchesSearchTerm =
+//         mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
+//         mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase());
+
+//       const matchesFilter =
+//         filter === "all" ||
+//         mail.status.toLowerCase() === filter ||
+//         (filter === "sent" && mail.status.toLowerCase() === "delivered");
+
+//       const matchesCampaign =
+//         !campaign || mail.campaign_id === campaign.campaignId;
+
+//       return matchesSearchTerm && matchesFilter && matchesCampaign;
+//     });
+//   }, [mails, filter, campaign, searchTerm]);
+
+//   React.useEffect(() => {
+//     if (filteredMails.length > 0) {
+//       const newCurrentMail = filteredMails[0];
+//       setCurrentMail(newCurrentMail);
+//       setSenderEmail(newCurrentMail.sender);
+//       setConversationId(newCurrentMail.id);
+//       setRecipientEmail(newCurrentMail.recipient);
+
+//       // Fetch and update lead information
+//       axiosInstance
+//         .get(`v2/lead/info/${newCurrentMail.recipient}`)
+//         .then((response) => {
+//           setLeads([response.data]);
+//         })
+//         .catch((error) => {
+//           console.error("Error fetching lead data:", error);
+//         });
+//     } else {
+//       setCurrentMail(null);
+//       setSenderEmail("");
+//       setConversationId("");
+//       setRecipientEmail("");
+//       setLeads([]);
+//     }
+//   }, [
+//     filteredMails,
+//     setSenderEmail,
+//     setConversationId,
+//     setRecipientEmail,
+//     setLeads,
+//   ]);
+
+//   return (
+//     <TooltipProvider delayDuration={0}>
+//       <ResizablePanelGroup
+//         direction="horizontal"
+//         onLayout={(sizes: number[]) => {
+//           document.cookie = `react-resizable-panels:layout=${JSON.stringify(
+//             sizes
+//           )}`;
+//         }}
+//         className="h-full items-stretch"
+//         style={{ height: "calc(100vh - 80px)" }}
+//       >
+//         <ResizablePanel defaultSize={localIsContextBarOpen ? 40 : 20}>
+//           <Tabs defaultValue="all">
+//             <div className="flex items-center px-4 pt-2 pb-0">
+//               <h1 className="text-xl font-bold">Inbox</h1>
+//               <TabsList className="ml-auto flex relative">
+//                 <TabsTrigger
+//                   value="all"
+//                   onClick={() => setFilter("all")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   All
+//                 </TabsTrigger>
+//                 <TabsTrigger
+//                   value="to-approve"
+//                   onClick={() => setFilter("to-approve")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   To do
+//                 </TabsTrigger>
+//                 <TabsTrigger
+//                   value="scheduled"
+//                   onClick={() => setFilter("scheduled")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   Scheduled
+//                 </TabsTrigger>
+//                 <TabsTrigger
+//                   value="sent"
+//                   onClick={() => setFilter("sent")}
+//                   className="text-zinc-800 dark:text-zinc-200"
+//                 >
+//                   Sent
+//                 </TabsTrigger>
+//                 <DropdownMenu>
+//                   <DropdownMenuTrigger asChild>
+//                     <Button
+//                       variant="outline"
+//                       className="flex items-center justify-center space-x-2"
+//                     >
+//                       <span>
+//                         {campaign ? campaign.campaignName : "All Campaigns"}
+//                       </span>
+//                       <ChevronDown size={20} />
+//                     </Button>
+//                   </DropdownMenuTrigger>
+//                   <DropdownMenuContent className="w-80">
+//                     <DropdownMenuGroup>
+//                       <DropdownMenuSeparator />
+//                       <ScrollArea className="h-[400px] w-full rounded-md">
+//                         <DropdownMenuItem onClick={() => setCampaign(null)}>
+//                           <p className="cursor-pointer">All Campaigns</p>
+//                         </DropdownMenuItem>
+//                         {campaigns && campaigns.length > 0 ? (
+//                           campaigns.map((campaignItem) => (
+//                             <DropdownMenuItem
+//                               key={campaignItem.id}
+//                               onClick={() =>
+//                                 setCampaign({
+//                                   campaignName: campaignItem.campaign_name,
+//                                   campaignId: campaignItem.id,
+//                                 })
+//                               }
+//                             >
+//                               <p className="cursor-pointer">
+//                                 {campaignItem.campaign_name}{" "}
+//                                 {campaignItem.additional_details &&
+//                                   `- ${campaignItem.additional_details}`}
+//                               </p>
+//                             </DropdownMenuItem>
+//                           ))
+//                         ) : (
+//                           <p className="text-center mt-10">
+//                             No campaign available.
+//                           </p>
+//                         )}
+//                       </ScrollArea>
+//                     </DropdownMenuGroup>
+//                   </DropdownMenuContent>
+//                 </DropdownMenu>
+//               </TabsList>
+//             </div>
+//             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+//               <form>
+//                 <div className="relative">
+//                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+//                   <Input
+//                     placeholder="Search"
+//                     className="pl-8"
+//                     value={searchTerm}
+//                     onChange={(e) => setSearchTerm(e.target.value)}
+//                   />
+//                 </div>
+//               </form>
+//             </div>
+//             <TabsContent value={filter} className="m-0">
+//               {loading ? (
+//                 <div className="flex flex-col space-y-3 p-4 pt-0">
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                   <Skeleton className="h-[90px] w-full rounded-xl" />
+//                 </div>
+//               ) : filteredMails.length > 0 ? (
+//                 <MailList items={filteredMails} />
+//               ) : (
+//                 <div className="flex flex-col gap-3 items-center justify-center mt-36">
+//                   <Image
+//                     src="/empty.svg"
+//                     alt="empty-inbox"
+//                     width="200"
+//                     height="200"
+//                     className="dark:filter dark:invert"
+//                   />
+//                   <p className="flex justify-center items-center mt-10 ml-14 text-gray-500">
+//                     No Mails Available
+//                   </p>
+//                 </div>
+//               )}
+//             </TabsContent>
+//           </Tabs>
+//         </ResizablePanel>
+//         <ResizableHandle withHandle />
+//         <ResizablePanel
+//           defaultSize={localIsContextBarOpen ? 40 : 20}
+//           minSize={20}
+//         >
+//           <ScrollArea className="h-full">
+//             {loading ? (
+//               <div className="m-4 flex flex-row ">
+//                 <Skeleton className="h-7 w-7 rounded-full" />
+//                 <div className="flex flex-col space-y-3 ml-5">
+//                   <Skeleton className="h-[25px] w-[30rem] rounded-lg" />
+//                   <Skeleton className="h-[325px] w-[30rem] rounded-xl" />
+//                 </div>
+//               </div>
+//             ) : currentMail ? (
+//               <ThreadDisplayMain
+//                 ownerEmail={currentMail.recipient}
+//                 updateMailStatus={updateMailStatus}
+//               />
+//             ) : (
+//               <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">
+//                 <Image
+//                   src="/emptydraft.svg"
+//                   alt="empty-inbox"
+//                   width="200"
+//                   height="200"
+//                   className="dark:filter dark:invert"
+//                 />
+//                 <p className="flex justify-center items-center mt-10 ml-6  text-gray-500">
+//                   No Draft Available
+//                 </p>
+//               </div>
+//             )}
+//           </ScrollArea>
+//         </ResizablePanel>
+//         {localIsContextBarOpen && leads.length > 0 && (
+//           <>
+//             <ResizableHandle withHandle />
+//             <ResizablePanel defaultSize={20}>
+//               <PeopleProfileSheet data={leads[0] as Contact} />
+//             </ResizablePanel>
+//           </>
+//         )}
+//       </ResizablePanelGroup>
+//     </TooltipProvider>
+//   );
+// }
+
+//mailWorking has code having just these two issue.
+
+// problem remaining: Re-rendering thread 3 to 4 times -> Wokring
+// when send or approve, ->state change to first mail -> Problem solved
+
 "use client";
 import * as React from "react";
 import { ChevronDown, Search } from "lucide-react";
-import { MailList } from "./mail-list";
+import MailList from "./mail-list";
 import type { Mail } from "@/constants/data";
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -34,6 +806,8 @@ import { PeopleProfileSheet } from "../people-profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 
+const MIN_LOADING_TIME = 5000; 
+
 interface MailProps {
   accounts: {
     label: string;
@@ -62,6 +836,42 @@ export interface Conversations {
   category: string;
 }
 
+const LoadingOverlay = () => {
+  const [showWaitMessage, setShowWaitMessage] = React.useState(false);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowWaitMessage(true);
+    }, 4000);
+
+    return () => clearTimeout(timer);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
+      <div className="text-center">
+        <Image
+          src="/bw-logo.png"
+          alt="agent-prod"
+          width="40"
+          height="40"
+          className="rounded-full mx-auto mb-4"
+        />
+        <p className="text-lg font-semibold">Generating Drafts</p>
+        <p
+          className={`mt-2 transition-opacity duration-1000 ${
+            showWaitMessage ? "opacity-100" : "opacity-0"
+          }`}
+        >
+          Please wait
+        </p>
+      </div>
+    </div>
+  );
+};
+
+export default LoadingOverlay;
+
 export function Mail({
   defaultLayout = [265, 440, 655],
   defaultCollapsed = false,
@@ -69,91 +879,124 @@ export function Mail({
 }: MailProps) {
   const [mails, setMails] = React.useState<Conversations[]>([]);
   const [loading, setLoading] = React.useState(true);
+  const [showLoadingOverlay, setShowLoadingOverlay] = React.useState(false);
   const [error, setError] = React.useState<string | null>(null);
   const [filter, setFilter] = React.useState("all");
   const { campaigns } = useCampaignContext();
   const [campaign, setCampaign] = React.useState<{
     campaignName: string;
     campaignId: string;
-  }>();
+  } | null>(null);
   const [searchTerm, setSearchTerm] = React.useState("");
-
-  const [currentMail, setCurrentMail] = React.useState<Conversations | null>(
+  const [selectedMailId, setSelectedMailId] = React.useState<string | null>(
     null
-  ); //Tracking current mail
+  );
 
   const { user } = useUserContext();
-
   const {
     setSenderEmail,
     isContextBarOpen,
-    conversationId,
     setConversationId,
     setRecipientEmail,
   } = useMailbox();
-  const { leads } = useLeads();
+  const { leads, setLeads } = useLeads();
 
   const [localIsContextBarOpen, setLocalIsContextBarOpen] =
     React.useState(false);
+  const loadingStartTimeRef = React.useRef<number | null>(null);
 
   React.useEffect(() => {
     setLocalIsContextBarOpen(isContextBarOpen);
   }, [isContextBarOpen]);
 
-  const allCampaigns =
-    campaigns.map((campaign) => ({
-      campaignName: campaign.campaign_name,
-      campaignId: campaign.id,
-      additionalInfo: campaign.additional_details,
-    })) || null;
+  const fetchConversations = React.useCallback(
+    async (campaignId?: string) => {
+      setLoading(true);
+      if (showLoadingOverlay) {
+        loadingStartTimeRef.current = Date.now();
+      }
+      try {
+        let url = `v2/mailbox/${user?.id}`;
+        if (campaignId) {
+          url += `?campaign_id=${campaignId}`;
+        }
+        const response = await axiosInstance.get<{ mails: Conversations[] }>(
+          url
+        );
+        setMails(response.data.mails);
 
-  // React.useEffect(() => {
-  //   async function fetchConversations() {
-  //     setLoading(true);
-  //     try {
-  //       const response = await axiosInstance.get<{ mails: Conversations[] }>(
-  //         `v2/mailbox/${user?.id}`
-  //       );
-  //       console.log("Mail Responses", response.data.mails[0].campaign_id);
-  //       setMails(response.data.mails as Conversations[]);
-  //       console.log("Mails to check", response.data.mails);
-  //       setLoading(false);
-  //     } catch (err: any) {
-  //       console.error("Error fetching mails:", err);
-  //       setError(err.message || "Failed to load mails.");
-  //       setLoading(false);
-  //     }
-  //   }
-
-  //   fetchConversations();
-  // }, []); // Dependency array remains empty to run once on mount
-
-  const fetchConversations = React.useCallback(async () => {
-    setLoading(true);
-    try {
-      const response = await axiosInstance.get<{ mails: Conversations[] }>(
-        `v2/mailbox/${user?.id}`
-      );
-      // console.log("Mail Responses", response.data.mails[0].campaign_id);
-      setMails(response.data.mails as Conversations[]);
-      // console.log("Mails to check", response.data.mails);
-      setLoading(false);
-    } catch (err: any) {
-      console.error("Error fetching mails:", err);
-      setError(err.message || "Failed to load mails.");
-      setLoading(false);
-    }
-  }, []);
-
-  const updateMailStatus = React.useCallback((mailId: any, status: any) => {
-    setMails((prevMails) =>
-      prevMails.map((mail) => (mail.id === mailId ? { ...mail, status } : mail))
-    );
-  }, []);
+        if (showLoadingOverlay) {
+          const elapsedTime = Date.now() - (loadingStartTimeRef.current || 0);
+          if (elapsedTime < MIN_LOADING_TIME) {
+            setTimeout(() => {
+              setLoading(false);
+              setShowLoadingOverlay(false);
+            }, MIN_LOADING_TIME - elapsedTime);
+          } else {
+            setLoading(false);
+            setShowLoadingOverlay(false);
+          }
+        } else {
+          setLoading(false);
+        }
+      } catch (err: any) {
+        console.error("Error fetching mails:", err);
+        setError(err.message || "Failed to load mails.");
+        setLoading(false);
+        setShowLoadingOverlay(false);
+      }
+    },
+    [user?.id, showLoadingOverlay]
+  );
 
   React.useEffect(() => {
-    fetchConversations();
-  }, []);
+    const newCampaignId = localStorage.getItem("newCampaignId");
+    const isRedirectFromCampaign = localStorage.getItem("redirectFromCampaign");
+
+    if (
+      newCampaignId &&
+      campaigns.length > 0 &&
+      isRedirectFromCampaign === "true"
+    ) {
+      setShowLoadingOverlay(true);
+      loadingStartTimeRef.current = Date.now();
+      const newCampaign = campaigns.find((c) => c.id === newCampaignId);
+      if (newCampaign) {
+        setCampaign({
+          campaignName: newCampaign.campaign_name,
+          campaignId: newCampaign.id,
+        });
+        fetchConversations(newCampaign.id);
+      }
+    } else {
+      fetchConversations();
+    }
+
+    localStorage.removeItem("newCampaignId");
+    localStorage.removeItem("redirectFromCampaign");
+  }, [campaigns, fetchConversations]);
+
+  React.useEffect(() => {
+    if (campaign) {
+      fetchConversations(campaign.campaignId);
+    } else {
+      fetchConversations();
+    }
+  }, [campaign, fetchConversations]);
+
+  const updateMailStatus = React.useCallback(
+    (mailId: string, status: string) => {
+      setMails((prevMails) =>
+        prevMails.map((mail) =>
+          mail.id === mailId ? { ...mail, status } : mail
+        )
+      );
+      if (mailId === selectedMailId) {
+        setSelectedMailId(mailId);
+      }
+    },
+    [selectedMailId]
+  );
 
   const filteredMails = React.useMemo(() => {
     return mails.filter((mail) => {
@@ -174,24 +1017,65 @@ export function Mail({
     });
   }, [mails, filter, campaign, searchTerm]);
 
-  React.useEffect(() => {
-    if (
-      filteredMails.length > 0 &&
-      (!currentMail || currentMail.id !== filteredMails[0]?.id)
-    ) {
-      setSenderEmail(filteredMails[0]?.sender);
-      setConversationId(filteredMails[0]?.id);
-      setRecipientEmail(filteredMails[0]?.recipient);
-      setCurrentMail(filteredMails[0]);
-    }
-  }, [filteredMails, setSenderEmail, currentMail]);
+  const currentMail = React.useMemo(
+    () =>
+      filteredMails.find((mail) => mail.id === selectedMailId) ||
+      filteredMails[0] ||
+      null,
+    [filteredMails, selectedMailId]
+  );
 
-  // console.log("Mail.tsx -> Recipent", filteredMails[0]?.recipient); // fixin bugs
-  // console.log("Mail.tsx -> ConvoID", conversationId); // fixin bugs
-  // console.log("Filter mails", filteredMails);
+  React.useEffect(() => {
+    if (currentMail) {
+      setSelectedMailId(currentMail.id);
+      setSenderEmail(currentMail.sender);
+      setConversationId(currentMail.id);
+      setRecipientEmail(currentMail.recipient);
+
+      axiosInstance
+        .get(`v2/lead/info/${currentMail.recipient}`)
+        .then((response) => {
+          setLeads([response.data]);
+        })
+        .catch((error) => {
+          console.error("Error fetching lead data:", error);
+        });
+    } else {
+      setSelectedMailId(null);
+      setSenderEmail("");
+      setConversationId("");
+      setRecipientEmail("");
+      setLeads([]);
+    }
+  }, [
+    currentMail,
+    setSenderEmail,
+    setConversationId,
+    setRecipientEmail,
+    setLeads,
+  ]);
+
+  const handleFilterChange = React.useCallback((newFilter: string) => {
+    setFilter(newFilter);
+  }, []);
+
+  const handleCampaignChange = React.useCallback(
+    (newCampaign: { campaignName: string; campaignId: string } | null) => {
+      setCampaign(newCampaign);
+    },
+    []
+  );
+
+  const handleSearchChange = React.useCallback(
+    (e: React.ChangeEvent<HTMLInputElement>) => {
+      setSearchTerm(e.target.value);
+    },
+    []
+  );
 
   return (
     <TooltipProvider delayDuration={0}>
+      {showLoadingOverlay && <LoadingOverlay />}
       <ResizablePanelGroup
         direction="horizontal"
         onLayout={(sizes: number[]) => {
@@ -200,7 +1084,7 @@ export function Mail({
           )}`;
         }}
         className="h-full items-stretch"
-        style={{ height: "calc(100vh - 80px)" }} // 56px is the height of the top bar
+        style={{ height: "calc(100vh - 80px)" }}
       >
         <ResizablePanel defaultSize={localIsContextBarOpen ? 40 : 20}>
           <Tabs defaultValue="all">
@@ -209,36 +1093,32 @@ export function Mail({
               <TabsList className="ml-auto flex relative">
                 <TabsTrigger
                   value="all"
-                  onClick={() => setFilter("all")}
+                  onClick={() => handleFilterChange("all")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   All
                 </TabsTrigger>
-
                 <TabsTrigger
                   value="to-approve"
-                  onClick={() => setFilter("to-approve")}
+                  onClick={() => handleFilterChange("to-approve")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   To do
                 </TabsTrigger>
-
                 <TabsTrigger
                   value="scheduled"
-                  onClick={() => setFilter("scheduled")}
+                  onClick={() => handleFilterChange("scheduled")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   Scheduled
                 </TabsTrigger>
-
                 <TabsTrigger
                   value="sent"
-                  onClick={() => setFilter("sent")}
+                  onClick={() => handleFilterChange("sent")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   Sent
                 </TabsTrigger>
-
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -246,7 +1126,7 @@ export function Mail({
                       className="flex items-center justify-center space-x-2"
                     >
                       <span>
-                        {campaign ? campaign.campaignName : "Select Campaign"}
+                        {campaign ? campaign.campaignName : "All Campaigns"}
                       </span>
                       <ChevronDown size={20} />
                     </Button>
@@ -256,29 +1136,27 @@ export function Mail({
                       <DropdownMenuSeparator />
                       <ScrollArea className="h-[400px] w-full rounded-md">
                         <DropdownMenuItem
-                          onClick={() => setCampaign(undefined)} // This clears the current campaign filter
+                          onClick={() => handleCampaignChange(null)}
                         >
                           <p className="cursor-pointer">All Campaigns</p>
                         </DropdownMenuItem>
-                        {allCampaigns && allCampaigns.length > 0 ? (
-                          allCampaigns.map((campaignItem, index) => (
-                            <div key={campaignItem.campaignId}>
-                              <DropdownMenuItem
-                                key={campaignItem.campaignId}
-                                onClick={() =>
-                                  setCampaign({
-                                    campaignName: campaignItem.campaignName,
-                                    campaignId: campaignItem.campaignId,
-                                  })
-                                }
-                              >
-                                <p className="cursor-pointer">
-                                  {campaignItem.campaignName}{" "}
-                                  {campaignItem.additionalInfo &&
-                                    `- ${campaignItem.additionalInfo}`}
-                                </p>
-                              </DropdownMenuItem>
-                            </div>
+                        {campaigns && campaigns.length > 0 ? (
+                          campaigns.map((campaignItem) => (
+                            <DropdownMenuItem
+                              key={campaignItem.id}
+                              onClick={() =>
+                                handleCampaignChange({
+                                  campaignName: campaignItem.campaign_name,
+                                  campaignId: campaignItem.id,
+                                })
+                              }
+                            >
+                              <p className="cursor-pointer">
+                                {campaignItem.campaign_name}{" "}
+                                {campaignItem.additional_details &&
+                                  `- ${campaignItem.additional_details}`}
+                              </p>
+                            </DropdownMenuItem>
                           ))
                         ) : (
                           <p className="text-center mt-10">
@@ -299,7 +1177,7 @@ export function Mail({
                     placeholder="Search"
                     className="pl-8"
                     value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
+                    onChange={handleSearchChange}
                   />
                 </div>
               </form>
@@ -307,15 +1185,19 @@ export function Mail({
             <TabsContent value={filter} className="m-0">
               {loading ? (
                 <div className="flex flex-col space-y-3 p-4 pt-0">
-                  <Skeleton className="h-[90px] w-full  rounded-xl" />
-                  <Skeleton className="h-[90px] w-full  rounded-xl" />
-                  <Skeleton className="h-[90px] w-full  rounded-xl" />
-                  <Skeleton className="h-[90px] w-full  rounded-xl" />
-                  <Skeleton className="h-[90px] w-full  rounded-xl" />
-                  <Skeleton className="h-[90px] w-full  rounded-xl" />
+                  <Skeleton className="h-[90px] w-full rounded-xl" />
+                  <Skeleton className="h-[90px] w-full rounded-xl" />
+                  <Skeleton className="h-[90px] w-full rounded-xl" />
+                  <Skeleton className="h-[90px] w-full rounded-xl" />
+                  <Skeleton className="h-[90px] w-full rounded-xl" />
+                  <Skeleton className="h-[90px] w-full rounded-xl" />
                 </div>
               ) : filteredMails.length > 0 ? (
-                <MailList items={filteredMails} />
+                <MailList
+                  items={filteredMails}
+                  selectedMailId={selectedMailId}
+                  setSelectedMailId={setSelectedMailId}
+                />
               ) : (
                 <div className="flex flex-col gap-3 items-center justify-center mt-36">
                   <Image
@@ -347,10 +1229,12 @@ export function Mail({
                   <Skeleton className="h-[325px] w-[30rem] rounded-xl" />
                 </div>
               </div>
-            ) : filteredMails.length > 0 ? (
+            ) : currentMail ? (
               <ThreadDisplayMain
-                ownerEmail={filteredMails[0].recipient}
+                ownerEmail={currentMail.recipient}
                 updateMailStatus={updateMailStatus}
+                selectedMailId={selectedMailId}
+                setSelectedMailId={setSelectedMailId}
               />
             ) : (
               <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">
