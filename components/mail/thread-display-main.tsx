@@ -71,6 +71,7 @@ interface ThreadDisplayMainProps {
   updateMailStatus: (mailId: string, status: string) => void;
   selectedMailId: string | null;
   setSelectedMailId: (id: string | null) => void;
+  mailStatus: string; // Add this line
 }
 
 const frameworks = [
@@ -89,6 +90,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   updateMailStatus,
   selectedMailId,
   setSelectedMailId,
+  mailStatus,
 }) => {
   const {
     conversationId,
@@ -641,6 +643,11 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const lastEmail = thread[thread.length - 1];
 
+    const unsubscribeLink =
+      "https://c813b042.sibforms.com/serve/MUIFACgOoNUQaUMaLeDSg4MqyII5sxJsKlTht8bu0QczloASUT1[…]zXFFdhD-z4tMlMX3wuEczUEShKd0mklk4Fyf76rLkIiQb_1toOnqLQ7eIh";
+
+    const unsubscribeText = `\n\nTo unsubscribe from future communications, please <a href="${unsubscribeLink}">click here</a>.`;
+
     React.useEffect(() => {
       // For handleing, the thread if some error occurs
       setError("");
@@ -742,7 +749,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body,
+        body: body + unsubscribeText,
       };
 
       axiosInstance
@@ -769,7 +776,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body,
+        body: body + unsubscribeText,
       };
 
       console.log("Sending pyaload", payload);
@@ -796,7 +803,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: sanitizeSubject(lastEmail.subject),
-        body: followUpBody,
+        body: followUpBody + unsubscribeText,
       };
 
       console.log("Sending Followup", payload);
@@ -824,7 +831,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: sanitizeSubject(lastEmail.subject),
-        body: followUpBody,
+        body: followUpBody + unsubscribeText,
       };
 
       axiosInstance
@@ -1255,9 +1262,35 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </div>
         )}
 
+        {/* {thread?.length > 0 ? (
+          lastEmail.is_reply === false ? (
+            mailStatus === "LOST" ? (
+              "No Message"
+            ) : (
+              <DraftEmailComponent />
+            )
+          ) : null
+        ) : (
+          <div>
+            <DraftEmailComponent />
+          </div>
+        )} */}
         {thread?.length > 0 ? (
           lastEmail.is_reply === false ? (
-            <DraftEmailComponent />
+            mailStatus === "LOST" ? (
+              <div className="absolute inset-0 bg-background/10 backdrop-blur-sm z-50 flex items-center justify-center">
+                <div className="text-center p-6 bg-background rounded-lg shadow-lg">
+                  <h2 className="text-2xl font-semibold mb-2">
+                    Conversation Lost
+                  </h2>
+                  <p className="text-muted-foreground">
+                    This lead has been marked as lost.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <DraftEmailComponent />
+            )
           ) : null
         ) : (
           <div>

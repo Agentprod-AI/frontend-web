@@ -69,7 +69,8 @@ interface EmailMessage {
   approved: any;
   is_special: any;
   scheduled_datetime: string;
-  referral: string
+  referral: string;
+  questions: any;
 }
 
 interface NotificationProps {
@@ -162,21 +163,32 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     email.category === "Information Required" && email.message_id;
 
   React.useEffect(() => {
-    if (email.is_reply && email?.category === "Information Required") {
-      setLoadingQuestions(true);
-      axiosInstance
-        .get(`v2/questions/${messageId}`)
-        .then((response) => {
-          setQuestions(response.data.questions.questions);
-          setLoadingQuestions(false);
-        })
-        .catch((error) => {
-          console.error("Failed to fetch questions", error);
-          setErrorQuestions(true);
-          setLoadingQuestions(false);
-        });
+    if (
+      email.category === "Information Required" &&
+      email.questions?.questions
+    ) {
+      setQuestions(email.questions.questions);
+    } else {
+      setQuestions([]); // Reset questions if not applicable
     }
-  }, [email.category, email.is_reply, messageId]);
+  }, [email]);
+
+  // React.useEffect(() => {
+  //   if (email.is_reply && email?.category === "Information Required") {
+  //     setLoadingQuestions(true);
+  //     axiosInstance
+  //       .get(`v2/questions/${messageId}`)
+  //       .then((response) => {
+  //         setQuestions(response.data.questions.questions);
+  //         setLoadingQuestions(false);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Failed to fetch questions", error);
+  //         setErrorQuestions(true);
+  //         setLoadingQuestions(false);
+  //       });
+  //   }
+  // }, [email.category, email.is_reply, messageId]);
 
   React.useEffect(() => {
     if (email.action_draft) {
@@ -576,64 +588,65 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           </div>
         )}
 
-      {email.is_reply && email?.category === "Information Required" && (
-        <div>
-          <div className="flex gap-2 flex-col h-full"></div>
-
-          <div className="flex items-center gap-3">
-            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <ListTodo className="h-4 w-4 text-gray-400" />
+      {email.is_reply &&
+        email?.category === "Information Required" &&
+        questions.length > 0 && (
+          <div>
+            <div className="flex items-center gap-3">
+              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                <ListTodo className="h-4 w-4 text-gray-400" />
+              </div>
+              <p className="ml-1 text-xs">
+                <span className="text-gray-500">Todo: </span> Respond to ask
+                question
+              </p>
             </div>
-            <p className=" ml-1 text-xs ">
-              <span className="text-gray-500">Todo: </span> Respond to ask
-              question
-            </p>
-          </div>
 
-          <div className="flex gap-2 flex-col h-full">
-            {loadingQuestion ? (
-              <div className="flex w-full mr-4">
-                <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
-                  <span className="text-xs w-2/3">Loading...</span>
-                </Card>
-              </div>
-            ) : errorQuestion ? (
-              <div className="flex w-full mr-4">
-                <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
-                  <span className="text-xs w-2/3">
-                    Unable to load questions. Please try again later.
-                  </span>
-                </Card>
-              </div>
-            ) : (
-              questions.map((question: any, index: any) => (
-                <div key={index} className="flex w-full mr-4">
+            <div className="flex gap-2 flex-col h-full">
+              {loadingQuestion ? (
+                <div className="flex w-full mr-4">
                   <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
-                    <span className="text-xs w-2/3">{question}</span>
-                    <Input
-                      className="w-1/3"
-                      placeholder="Answer"
-                      value={answers[index]}
-                      onChange={(e) => handleInputChange(index, e.target.value)}
-                    />
+                    <span className="text-xs w-2/3">Loading...</span>
                   </Card>
                 </div>
-              ))
-            )}
+              ) : errorQuestion ? (
+                <div className="flex w-full mr-4">
+                  <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
+                    <span className="text-xs w-2/3">
+                      Unable to load questions. Please try again later.
+                    </span>
+                  </Card>
+                </div>
+              ) : (
+                questions.map((question, index) => (
+                  <div key={index} className="flex w-full mr-4">
+                    <Card className="w-full mr-5 ml-12 p-4 flex flex-row justify-between items-center">
+                      <span className="text-xs w-2/3">{question}</span>
+                      <Input
+                        className="w-1/3"
+                        placeholder="Answer"
+                        value={answers[index] || ""}
+                        onChange={(e) =>
+                          handleInputChange(index, e.target.value)
+                        }
+                      />
+                    </Card>
+                  </div>
+                ))
+              )}
 
-            <Button
-              className="ml-12 w-48 flex gap-2 items-center"
-              variant="secondary"
-              onClick={handleGenerateResponse}
-            >
-              <span>
-                {answerLoading ? <LoadingCircle /> : "Generate response"}
-              </span>
-            </Button>
+              <Button
+                className="ml-12 w-48 flex gap-2 items-center"
+                variant="secondary"
+                onClick={handleGenerateResponse}
+              >
+                <span>
+                  {answerLoading ? <LoadingCircle /> : "Generate response"}
+                </span>
+              </Button>
+            </div>
           </div>
-        </div>
-      )}
-
+        )}
       {email?.status &&
         !email.is_reply &&
         email?.status?.toLowerCase() === "request" && (

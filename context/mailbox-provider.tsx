@@ -29,6 +29,7 @@ export interface EmailMessage {
   scheduled_datetime: string;
   created_at: any;
   referral: string;
+  questions: any;
 }
 
 export interface Mailbox {
