@@ -119,6 +119,12 @@ export function Mail({
   const [selectedMailId, setSelectedMailId] = React.useState<string | null>(
     null
   );
+  const [activeTab, setActiveTab] = React.useState("all");
+
+  const handleTabChange = (value: string) => {
+    setActiveTab(value);
+    handleFilterChange(value);
+  };
 
   const { user } = useUserContext();
   const {
@@ -337,7 +343,11 @@ export function Mail({
         style={{ height: "calc(100vh - 80px)" }}
       >
         <ResizablePanel defaultSize={localIsContextBarOpen ? 40 : 20}>
-          <Tabs defaultValue="all">
+          <Tabs
+            defaultValue="all"
+            value={activeTab}
+            onValueChange={handleTabChange}
+          >
             <div className="flex items-center px-4 pt-2 pb-0">
               <h1 className="text-xl font-bold">Inbox</h1>
               <TabsList className="ml-auto flex relative">
@@ -355,27 +365,30 @@ export function Mail({
                 >
                   To do
                 </TabsTrigger>
-                <TabsTrigger
-                  value="scheduled"
-                  onClick={() => handleFilterChange("scheduled")}
-                  className="text-zinc-800 dark:text-zinc-200"
-                >
-                  Scheduled
-                </TabsTrigger>
-                <TabsTrigger
-                  value="sent"
-                  onClick={() => handleFilterChange("sent")}
-                  className="text-zinc-800 dark:text-zinc-200"
-                >
-                  Sent
-                </TabsTrigger>
-                <TabsTrigger
-                  value="lost"
-                  onClick={() => handleFilterChange("lost")}
-                  className="text-zinc-800 dark:text-zinc-200"
-                >
-                  Lost
-                </TabsTrigger>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <span>More</span>
+                      <ChevronDown size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onSelect={() => handleTabChange("scheduled")}
+                    >
+                      Scheduled
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleTabChange("sent")}>
+                      Sent
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleTabChange("lost")}>
+                      Lost
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button

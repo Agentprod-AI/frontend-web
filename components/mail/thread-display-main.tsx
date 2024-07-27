@@ -25,6 +25,7 @@ import {
   CommandItem,
 } from "@/components/ui/command";
 import {
+  BadgeX,
   Bell,
   CalendarCheck,
   Check,
@@ -616,6 +617,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   };
 
   const DraftEmailComponent = () => {
+    const [suggestions, setSuggestions] = React.useState("");
     const [isSuggestionOpen, setIsSuggestionOpen] = React.useState(false);
     const [followUpSubject, setFollowUpSubject] = React.useState("");
     const [followUpBody, setFollowUpBody] = React.useState("");
@@ -634,6 +636,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         id: number;
         subject: string;
         updated_at: string;
+        // suggestions: any;
       }[]
     >();
     const [isLoading, setIsLoading] = React.useState(true);
@@ -661,6 +664,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             setTitle(response.data[0].subject);
             setBody(response.data[0].body);
             setEmails(response.data);
+            if (response.data[0].suggestions) {
+              setSuggestions(response.data[0].suggestions);
+            }
           }
 
           setIsLoading(false);
@@ -1143,8 +1149,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <div ref={internalScrollRef} />
           </Card>
         </div>
-        {/* <div>
-          {matchingCampaign && (
+        <div>
+          {suggestions && suggestions.trim() !== "" && (
             <div className="flex items-center gap-3">
               <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                 <BsStars className="h-4 w-4 text-gray-400" />
@@ -1159,22 +1165,17 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             </div>
           )}
         </div>
-        {isSuggestionOpen && (
+        {isSuggestionOpen && suggestions && suggestions.trim() !== "" && (
           <div className="flex w-full mt-2 mr-4">
             <Card className="w-full mr-5 ml-10 border-none outline outline-cyan-950 outline-offset-4">
-
-              <CardHeader>
-
-              </CardHeader>
+              <CardHeader></CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
-
+                {suggestions}
               </CardContent>
-              <CardFooter className="flex justify-between text-xs items-center">
-
-              </CardFooter>
+              <CardFooter className="flex justify-between text-xs items-center"></CardFooter>
             </Card>
           </div>
-        )} */}
+        )}
       </div>
     );
   };
@@ -1278,14 +1279,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         {thread?.length > 0 ? (
           lastEmail.is_reply === false ? (
             mailStatus === "LOST" ? (
-              <div className="absolute inset-0 bg-background/10 backdrop-blur-sm z-50 flex items-center justify-center">
-                <div className="text-center p-6 bg-background rounded-lg shadow-lg">
-                  <h2 className="text-2xl font-semibold mb-2">
-                    Conversation Lost
-                  </h2>
-                  <p className="text-muted-foreground">
-                    This lead has been marked as lost.
-                  </p>
+              <div className="flex items-center gap-3 ml-4">
+                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                  <BadgeX className="h-4 w-4 text-gray-400" />
+                </div>
+                <div className="text-xs ml-1">
+                  This lead has been marked as lost.
                 </div>
               </div>
             ) : (
