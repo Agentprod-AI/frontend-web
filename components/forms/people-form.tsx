@@ -146,6 +146,7 @@ export default function PeopleForm(): JSX.Element {
   const form = useForm<z.infer<typeof FormSchema>>({
     resolver: zodResolver(FormSchema),
   });
+  const [editFilters, setEditFilters] = React.useState<any>(null);
 
   const { leads, setLeads } = useLeads();
 
@@ -256,10 +257,6 @@ export default function PeopleForm(): JSX.Element {
             // setAllFiltersFromDB(data.filters_applied);
             console.log("data ==>", data);
             setType("edit");
-            const audienceFilters = await getAudienceFiltersById(id);
-            console.log("response from audience filters", audienceFilters);
-            setAllFiltersFromDB(audienceFilters.filters_applied);
-            setAudienceId(audienceFilters.id);
           }
         } catch (error) {
           console.error("Error fetching campaign:", error);
@@ -275,16 +272,21 @@ export default function PeopleForm(): JSX.Element {
       if (type === "edit") {
         const id = params.campaignId;
         if (id) {
-          const audienceFilters = await getAudienceFiltersById(id);
-          console.log("response from audience filters", audienceFilters);
-          setAllFiltersFromDB(audienceFilters.filters_applied);
-          setAudienceId(audienceFilters.id);
+          try {
+            const audienceFilters = await getAudienceFiltersById(id);
+            console.log("response from audience filters", audienceFilters);
+            setAllFiltersFromDB(audienceFilters.filters_applied);
+            setEditFilters(audienceFilters.filters_applied); // Store filters_applied in state
+            setAudienceId(audienceFilters.id);
+          } catch (error) {
+            console.error("Error fetching audience filters:", error);
+          }
         }
       }
     };
 
     fetchAudienceFilters();
-  }, [params.campaignId, getAudienceFiltersById]);
+  }, [params.campaignId, type]);
 
   // React.useEffect(() => {
   //   console.log("current form values", form.getValues());
@@ -810,7 +812,7 @@ export default function PeopleForm(): JSX.Element {
       );
 
       const formatFundingHeadcount =
-        allFiltersFromDB.organization_latest_funding_stage_cd.map(
+        allFiltersFromDB?.organization_latest_funding_stage_cd?.map(
           (range: string) => {
             return range.split(",").join("-");
           }
@@ -860,7 +862,10 @@ export default function PeopleForm(): JSX.Element {
 
     const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
 
-    const filters = {
+    let filters = editFilters ? { ...editFilters } : {};
+
+    filters = {
+      ...filters,
       ...(pages && { page: pages }),
       ...(formData.per_page && {
         per_page:
@@ -869,30 +874,71 @@ export default function PeopleForm(): JSX.Element {
             : formData.per_page,
       }),
       prospected_by_current_team: ["No"],
-      ...(formData.person_titles && {
-        person_titles: formData.person_titles.map((tag) => tag.text),
-      }),
-      ...(formData.organization_locations.length > 0 && {
-        organization_locations: formData.organization_locations.map(
-          (tag) => tag.text
-        ),
-      }),
+      ...(Array.isArray(formData.person_titles) &&
+        formData.person_titles.length > 0 && {
+          person_titles: formData.person_titles
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
+      ...(Array.isArray(formData.organization_locations) &&
+        formData.organization_locations.length > 0 && {
+          organization_locations: formData.organization_locations
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
       organization_num_employees_ranges: checkedFields(
         checkedCompanyHeadcount,
         true
       ),
-      ...(formData.person_seniorities && {
-        person_seniorities: formData.person_seniorities.map((tag) => tag.text),
-      }),
-      ...(formData.q_organization_domains && {
-        q_organization_domains: formData.q_organization_domains.map(
-          (tag) => tag.text
-        ),
-      }),
+      ...(Array.isArray(formData.person_seniorities) &&
+        formData.person_seniorities.length > 0 && {
+          person_seniorities: formData.person_seniorities
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
+      ...(Array.isArray(formData.q_organization_domains) &&
+        formData.q_organization_domains.length > 0 && {
+          q_organization_domains: formData.q_organization_domains
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
       ...(formData.email_status && { email_status: formData.email_status }),
+      ...(Array.isArray(formData.organization_industry_tag_ids) &&
+        formData.organization_industry_tag_ids.length > 0 && {
+          organization_industry_tag_ids: formData.organization_industry_tag_ids
+            .map((tag) => tag?.value)
+            .filter(Boolean),
+        }),
+      ...(Array.isArray(formData.q_organization_keyword_tags) &&
+        formData.q_organization_keyword_tags.length > 0 && {
+          q_organization_keyword_tags: formData.q_organization_keyword_tags
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
+      ...(formData.minimum_company_funding &&
+        formData.maximum_company_funding && {
+          revenue_range: {
+            min: formData.minimum_company_funding.text?.toString(),
+            max: formData.maximum_company_funding.text?.toString(),
+          },
+        }),
+      ...(Array.isArray(formData.organization_job_locations) &&
+        formData.organization_job_locations.length > 0 && {
+          organization_job_locations: formData.organization_job_locations
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
+      ...(Array.isArray(formData.q_organization_job_titles) &&
+        formData.q_organization_job_titles.length > 0 && {
+          q_organization_job_titles: formData.q_organization_job_titles
+            .map((tag) => tag?.text)
+            .filter(Boolean),
+        }),
+      organization_latest_funding_stage_cd: checkedFields(
+        checkedFundingRounds,
+        false
+      ),
     };
-
-    console.log("post body", filters);
 
     const filtersPostBody = {
       campaign_id: params.campaignId,
@@ -900,65 +946,39 @@ export default function PeopleForm(): JSX.Element {
       filters_applied: filters,
     };
 
-    console.log("filters post body", filters);
+    setIsTableLoading(true);
 
-    //   setTab("tab2");
+    try {
+      // Update audience filters
+      // await axiosInstance.put(`v2/audience/${audienceId}`, filtersPostBody);
 
-    //   try {
-    //     console.log("api called");
+      // Fetch updated leads
+      const updatedLeadsResponse = await axiosInstance.post<Lead[]>(
+        `v2/apollo/leads`,
+        filters
+      );
+      const updatedLeads = updatedLeadsResponse.data;
 
-    //     axiosInstance
-    //       .put(`v2/audience/${audienceId}`, filtersPostBody)
-    //       .then((response) => {
-    //         console.log("response from updating filters", response);
-    //         toast.success("Audience updated successfully");
-    //       })
-    //       .catch((error: any) => {
-    //         console.log(error);
-    //         toast.error("Error updating audience");
-    //       });
-    //   } catch (err) {
-    //     console.log("ERR: ", err);
-    //     toast.error("Error updating audience");
-    //   }
+      updatedLeads.forEach((person: Lead) => {
+        person.type = "prospective";
+        person.campaign_id = params.campaignId;
+        person.id = uuid();
+      });
 
-    //   setIsTableLoading(true);
-    //   const updateLeads = await axiosInstance
-    //     .post<Lead[]>(`v2/apollo/leads`, filters)
-    //     .then((response: any) => {
-    //       const data = response.data;
-    //       // console.log("DATA from contacts: ", data);
-    //       console.log("DATA: ", data);
-    //       data.map((person: Lead): void => {
-    //         person.type = "prospective";
-    //         person.campaign_id = params.campaignId;
-    //         person.id = uuid();
-    //       });
-    //       setLeads(data as Lead[]);
-    //       setIsTableLoading(false);
-    //       toast.success("Leads fetched successfully");
-    //       return data;
-    //     })
-    //     .catch((error: any) => {
-    //       console.log(error);
-    //       setError(error instanceof Error ? error.toString() : String(error));
-    //       setIsTableLoading(false);
-    //     });
+      setLeads(updatedLeads);
 
-    //   const updateLeadsBody = mapLeadsToBodies(updateLeads, params.campaignId);
-    //   await axiosInstance
-    //     .post(`v2/lead/bulk/`, updateLeadsBody)
-    //     .then((response: any) => {
-    //       console.log("response from bulk", response.data);
-    //       toast.success("Leads added successfully");
-    //     })
-    //     .catch((error: any) => {
-    //       console.log(error);
-    //       setError(error instanceof Error ? error.toString() : String(error));
-    //       setIsTableLoading(false);
-    //     });
+      // Update contacts
+      const updateLeadsBody = mapLeadsToBodies(updatedLeads, params.campaignId);
+      await axiosInstance.post(`v2/lead/bulk/`, updateLeadsBody);
 
-    //   console.log(leads);
+      toast.success("Audience updated successfully");
+      router.push(`/dashboard/campaign/${params.campaignId}`);
+    } catch (error) {
+      console.error("Error updating audience:", error);
+      toast.error("Error updating audience");
+    } finally {
+      setIsTableLoading(false);
+    }
   };
 
   const [keywordDropdownIsOpen, setKeywordDropdownIsOpen] =
@@ -1844,7 +1864,7 @@ export default function PeopleForm(): JSX.Element {
                 {isCreateBtnLoading ? <LoadingCircle /> : "Create Audience"}
               </Button>
             ) : (
-              <div className="w-1/4 flex justify-between">
+              <div className="w-1/4 space-y-4 justify-between">
                 <Button>Go Back</Button>
                 <Button
                   onClick={(event) => {
