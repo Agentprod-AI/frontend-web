@@ -24,7 +24,7 @@ import {
   UserX,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { MdOutlineScheduleSend } from "react-icons/md";
+import { MdInfoOutline, MdOutlineScheduleSend } from "react-icons/md";
 import { GoCrossReference } from "react-icons/go";
 
 import React from "react";
@@ -363,52 +363,54 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         </div>
       )}
 
-      {email?.category &&
-        email.is_reply &&
-        email.category !== "Information Required" && (
-          <div className="flex flex-col gap-3">
-            <div className="flex items-center gap-3">
-              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                {cleanedCategory === "OOO" && (
-                  <UserX className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Positive" && (
-                  <ThumbsUp className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Negative" && (
-                  <MailWarning className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Forwarded" && (
-                  <Forward className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Later" && (
-                  <MailQuestion className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Demo" && (
-                  <CalendarPlus className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Neutral" && (
-                  <Mail className="h-4 w-4 text-gray-400" />
-                )}
+      {email?.category && email.is_reply && (
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              {cleanedCategory === "OOO" && (
+                <UserX className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Information Required" && (
+                <MdInfoOutline className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Positive" && (
+                <ThumbsUp className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Negative" && (
+                <MailWarning className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Forwarded" && (
+                <Forward className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Later" && (
+                <MailQuestion className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Demo" && (
+                <CalendarPlus className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Neutral" && (
+                <Mail className="h-4 w-4 text-gray-400" />
+              )}
 
-                {/* Adding new Categories */}
-                {cleanedCategory === "Block" && (
-                  <MailWarning className="h-4 w-4 text-gray-400" />
-                )}
-                {cleanedCategory === "Not Interested" && (
-                  <MailWarning className="h-4 w-4 text-gray-400" />
-                )}
-                {/* Adding new Categories */}
-              </div>
-              <p className="ml-1 text-xs">
-                {cleanedCategory === "OOO" && `Currently out of office.`}
-                {cleanedCategory === "Positive" &&
-                  "Positive response received."}
-                {cleanedCategory === "Negative" &&
-                  "Negative feedback received."}
-                {cleanedCategory === "Forwarded" &&
-                  `This message has been forwarded to ${email?.referral} `}
-                {/* {cleanedCategory === "Later" &&
+              {/* Adding new Categories */}
+              {cleanedCategory === "Block" && (
+                <MailWarning className="h-4 w-4 text-gray-400" />
+              )}
+              {cleanedCategory === "Not Interested" && (
+                <MailWarning className="h-4 w-4 text-gray-400" />
+              )}
+              {/* Adding new Categories */}
+            </div>
+            <p className="ml-1 text-xs">
+              {cleanedCategory === "OOO" && `Currently out of office.`}
+              {cleanedCategory === "Information Required" &&
+                `Sally got the answers from your sales knowldege documents.
+`}
+              {cleanedCategory === "Positive" && "Positive response received."}
+              {cleanedCategory === "Negative" && "Negative feedback received."}
+              {cleanedCategory === "Forwarded" &&
+                `This message has been forwarded to ${email?.referral} `}
+              {/* {cleanedCategory === "Later" &&
                   `Follow up with ${
                     leads.length > 0 && leads[0].first_name
                       ? leads[0].first_name
@@ -417,135 +419,135 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                     email?.scheduled_datetime
                   )} as requested.`} */}
 
-                {cleanedCategory === "Later" &&
-                  email.is_special &&
-                  `A follow-up interaction with ${
-                    leads.length > 0 && leads[0].first_name
-                      ? leads[0].first_name
-                      : "the lead"
-                  } has been scheduled for ${getTimeDifference(
-                    email?.scheduled_datetime
-                  )}`}
+              {cleanedCategory === "Later" &&
+                email.is_special &&
+                `A follow-up interaction with ${
+                  leads.length > 0 && leads[0].first_name
+                    ? leads[0].first_name
+                    : "the lead"
+                } has been scheduled for ${getTimeDifference(
+                  email?.scheduled_datetime
+                )}`}
 
-                {cleanedCategory === "Later" &&
-                  !email.is_special &&
-                  `Follow up with ${
-                    leads.length > 0 && leads[0].first_name
-                      ? leads[0].first_name
-                      : ""
-                  }  as requested.`}
+              {cleanedCategory === "Later" &&
+                !email.is_special &&
+                `Follow up with ${
+                  leads.length > 0 && leads[0].first_name
+                    ? leads[0].first_name
+                    : ""
+                }  as requested.`}
 
-                {cleanedCategory === "Demo" &&
-                  "Demo scheduling requested by client."}
-                {cleanedCategory === "Neutral" && "Neutral response received."}
+              {cleanedCategory === "Demo" &&
+                "Demo scheduling requested by client."}
+              {cleanedCategory === "Neutral" && "Neutral response received."}
 
-                {/* Adding new Categories */}
-                {cleanedCategory === "Block" &&
-                  `${
-                    leads.length > 0 && leads[0].first_name
-                      ? leads[0].first_name
-                      : ""
-                  }  has been blocked.`}
-                {cleanedCategory === "Not Interested" &&
-                  `${
-                    leads.length > 0 && leads[0].first_name
-                      ? leads[0].first_name
-                      : ""
-                  } has expressed no interest.`}
-                {/* Adding new Categories */}
-              </p>
-              <span className="text-gray-600 text-sm">
-                {formatDate(email.received_datetime) || null}
-              </span>
-            </div>
+              {/* Adding new Categories */}
+              {cleanedCategory === "Block" &&
+                `${
+                  leads.length > 0 && leads[0].first_name
+                    ? leads[0].first_name
+                    : ""
+                }  has been blocked.`}
+              {cleanedCategory === "Not Interested" &&
+                `${
+                  leads.length > 0 && leads[0].first_name
+                    ? leads[0].first_name
+                    : ""
+                } has expressed no interest.`}
+              {/* Adding new Categories */}
+            </p>
+            <span className="text-gray-600 text-sm">
+              {formatDate(email.received_datetime) || null}
+            </span>
+          </div>
 
-            {email?.action_draft && !email.approved && (
-              <div className="flex w-full">
-                <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
-                  <AvatarFallback className="bg-yellow-400 text-black text-xs">
-                    {user?.firstName && user.lastName
-                      ? user.firstName.charAt(0) + user.lastName.charAt(0)
+          {email?.action_draft && !email.approved && (
+            <div className="flex w-full">
+              <Avatar className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4">
+                <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                  {user?.firstName && user.lastName
+                    ? user.firstName.charAt(0) + user.lastName.charAt(0)
+                    : ""}
+                </AvatarFallback>
+              </Avatar>
+              <Card className={`w-full mr-7`}>
+                <div className="flex gap-4 p-4">
+                  <span className="text-sm font-semibold">
+                    {leads.length > 0 && leads[0].first_name
+                      ? "You to " + leads[0].first_name
                       : ""}
-                  </AvatarFallback>
-                </Avatar>
-                <Card className={`w-full mr-7`}>
-                  <div className="flex gap-4 p-4">
-                    <span className="text-sm font-semibold">
-                      {leads.length > 0 && leads[0].first_name
-                        ? "You to " + leads[0].first_name
-                        : ""}
-                    </span>
-                    <span className="text-gray-600 text-sm ">
-                      {formatDate(email.received_datetime) || null}
-                    </span>
-                    <div className="flex gap-3">
-                      {!email.approved ? (
-                        <span className="text-green-500 text-sm ">Draft</span>
-                      ) : null}
-                    </div>
+                  </span>
+                  <span className="text-gray-600 text-sm ">
+                    {formatDate(email.received_datetime) || null}
+                  </span>
+                  <div className="flex gap-3">
+                    {!email.approved ? (
+                      <span className="text-green-500 text-sm ">Draft</span>
+                    ) : null}
                   </div>
-                  <CardHeader className="-mt-8 -ml-3">
-                    <CardTitle className="text-sm flex flex-col ">
-                      <Input
-                        className="text-xs"
-                        disabled={!editable}
-                        placeholder="Subject"
-                        value={title}
-                        onChange={(e) => setTitle(e.target.value)}
-                      />
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-xs -ml-3 -mt-4">
-                    <Textarea
-                      className="text-xs h-40"
+                </div>
+                <CardHeader className="-mt-8 -ml-3">
+                  <CardTitle className="text-sm flex flex-col ">
+                    <Input
+                      className="text-xs"
                       disabled={!editable}
-                      placeholder="Enter email body"
-                      value={body}
-                      onChange={(e) => setBody(e.target.value)}
+                      placeholder="Subject"
+                      value={title}
+                      onChange={(e) => setTitle(e.target.value)}
                     />
-                  </CardContent>
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs -ml-3 -mt-4">
+                  <Textarea
+                    className="text-xs h-40"
+                    disabled={!editable}
+                    placeholder="Enter email body"
+                    value={body}
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+                </CardContent>
 
-                  {!email?.approved && (
-                    <CardFooter className="flex justify-between text-xs items-center">
-                      <div>
-                        <Button
-                          variant={"secondary"}
-                          className="-ml-2"
-                          onClick={handleSendNow}
-                        >
-                          {isLoadingButton ? <LoadingCircle /> : "Send Now"}
-                        </Button>
-                        {editable && (
-                          <Button
-                            variant={"ghost"}
-                            onClick={() => setEditable(false)}
-                          >
-                            <Check className="h-4 w-4" />
-                          </Button>
-                        )}
-                      </div>
-                      <div>
+                {!email?.approved && (
+                  <CardFooter className="flex justify-between text-xs items-center">
+                    <div>
+                      <Button
+                        variant={"secondary"}
+                        className="-ml-2"
+                        onClick={handleSendNow}
+                      >
+                        {isLoadingButton ? <LoadingCircle /> : "Send Now"}
+                      </Button>
+                      {editable && (
                         <Button
                           variant={"ghost"}
-                          onClick={() => setEditable(true)}
+                          onClick={() => setEditable(false)}
                         >
-                          <Edit3 className="h-4 w-4" />
+                          <Check className="h-4 w-4" />
                         </Button>
-                        <Button variant={"ghost"} onClick={regenrate}>
-                          <RefreshCw className="h-4 w-4" />
-                        </Button>
-                        <Button variant={"ghost"} onClick={handleDeleteDraft}>
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </CardFooter>
-                  )}
-                </Card>
-                <div ref={internalScrollRef} />
-              </div>
-            )}
+                      )}
+                    </div>
+                    <div>
+                      <Button
+                        variant={"ghost"}
+                        onClick={() => setEditable(true)}
+                      >
+                        <Edit3 className="h-4 w-4" />
+                      </Button>
+                      <Button variant={"ghost"} onClick={regenrate}>
+                        <RefreshCw className="h-4 w-4" />
+                      </Button>
+                      <Button variant={"ghost"} onClick={handleDeleteDraft}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardFooter>
+                )}
+              </Card>
+              <div ref={internalScrollRef} />
+            </div>
+          )}
 
-            {/* {cleanedCategory === "Negative" && (
+          {/* {cleanedCategory === "Negative" && (
             <div className="flex items-center gap-3">
               <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                 {cleanedCategory === "Negative" && (
@@ -565,7 +567,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               </span>
             </div>
           )} */}
-            {/* {cleanedCategory === "Demo" && (
+          {/* {cleanedCategory === "Demo" && (
             <div className="flex items-center gap-3">
               <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                 {cleanedCategory === "Demo" && (
@@ -585,8 +587,8 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               </span>
             </div>
           )} */}
-          </div>
-        )}
+        </div>
+      )}
 
       {email.is_reply &&
         email?.category === "Information Required" &&

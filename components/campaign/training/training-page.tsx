@@ -179,6 +179,7 @@ export default function Training() {
       }
       localStorage.setItem("newCampaignId", params.campaignId);
       localStorage.setItem("redirectFromCampaign", "true");
+      localStorage.setItem("campaignDraftStatus", "pending"); // Add this line
 
       setStartCampaignIsLoading(false);
       router.push("/dashboard/mail");
