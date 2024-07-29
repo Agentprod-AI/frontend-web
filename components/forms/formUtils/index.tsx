@@ -1034,17 +1034,17 @@ export const jobTitles: string[] = [
   "zumba fitness instructor",
 ];
 export const seniorities: string[] = [
-  "Owner",
-  "Founder",
-  "C suite",
-  "Partner",
-  "Vp",
-  "Head",
-  "Director",
-  "Manager",
-  "Senior",
-  "Entry",
-  "Intern",
+  "owner",
+  "founder",
+  "c_suite",
+  "partner",
+  "vp",
+  "head",
+  "director",
+  "manager",
+  "senior",
+  "entry",
+  "intern",
 ];
 
 export const emailStatusOptions: string[] = [
