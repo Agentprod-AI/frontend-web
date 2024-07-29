@@ -37,6 +37,7 @@ import { toast } from "sonner";
 import { Label } from "../ui/label";
 import axiosInstance from "@/utils/axiosInstance";
 import { useButtonStatus } from "@/context/button-status";
+import { LoadingCircle } from "@/app/icons";
 
 const profileFormSchema = z.object({
   product_offering: z.string(),
@@ -60,6 +61,7 @@ export function OfferingForm() {
   };
   const { user } = useUserContext();
   const { createOffering, editOffering } = useCampaignContext();
+  const [isUploading, setIsUploading] = useState(false);
   const { setPageCompletion } = useButtonStatus();
 
   const [offeringData, setOfferingData] = useState<OfferingFormData>();
@@ -209,16 +211,44 @@ export function OfferingForm() {
     }
   };
 
+  // const handleFileChange = async (event: any) => {
+  //   const selectedFile = event.target.files[0];
+  //   if (selectedFile && selectedFile.type === "application/pdf") {
+  //     const payload = new FormData();
+  //     payload.append("file", selectedFile);
+  //     payload.append("campaign_id", params.campaignId);
+
+  //     try {
+  //       const response = await axiosInstance.post("/v2/upload-pdf/", payload);
+  //       if (response.status === 200) {
+  //         toast.success("PDF uploaded successfully.");
+  //       } else {
+  //         toast.error("Failed to upload PDF.");
+  //       }
+  //     } catch (error) {
+  //       console.error("Error uploading PDF:", error);
+  //       toast.error("Error uploading PDF.");
+  //     }
+  //   } else {
+  //     toast.error("Please select a PDF file.");
+  //   }
+  // };
   const handleFileChange = async (event: any) => {
     const selectedFile = event.target.files[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
+      setIsUploading(true);
       const payload = new FormData();
-      payload.append("file", selectedFile);
+      payload.append("file", selectedFile, selectedFile.name);
       payload.append("campaign_id", params.campaignId);
 
       try {
-        const response = await axiosInstance.post("/v2/upload-pdf/", payload);
+        const response = await axiosInstance.post("/v2/upload-pdf/", payload, {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+        });
         if (response.status === 200) {
+          console.log(response);
           toast.success("PDF uploaded successfully.");
         } else {
           toast.error("Failed to upload PDF.");
@@ -226,6 +256,8 @@ export function OfferingForm() {
       } catch (error) {
         console.error("Error uploading PDF:", error);
         toast.error("Error uploading PDF.");
+      } finally {
+        setIsUploading(false);
       }
     } else {
       toast.error("Please select a PDF file.");
@@ -355,12 +387,23 @@ export function OfferingForm() {
         <div className="flex flex-col gap-10 ">
           <div className="grid w-full max-w-sm items-center gap-1.5">
             <Label htmlFor="picture">Add your sales knowledge</Label>
-            <Input
-              id="picture"
-              type="file"
-              accept="application/pdf"
-              onChange={handleFileChange}
-            />
+            <div className="flex gap-2 flex-col">
+              <Input
+                id="picture"
+                type="file"
+                accept="application/pdf"
+                onChange={handleFileChange}
+              />
+
+              {isUploading && (
+                <div className="flex items-center gap-2">
+                  <LoadingCircle />
+                  <span className="text-sm text-gray-500">
+                    Uploading PDF, please wait...
+                  </span>
+                </div>
+              )}
+            </div>
           </div>
 
           {type === "create" && (
