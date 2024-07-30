@@ -73,13 +73,13 @@ const goalFormSchema = z.object({
     }),
   follow_up_days: z
     .number()
-    .positive({ message: "Follow-up days must be a positive number" }),
+    .min(0, { message: "Follow-up days must be a non-negative number" }),
   follow_up_times: z
     .number()
-    .positive({ message: "Follow-up times must be a positive number" }),
+    .min(0, { message: "Follow-up times must be a non-negative number" }),
   mark_as_lost: z
     .number()
-    .positive({ message: "Mark as lost must be a positive number" }),
+    .min(0, { message: "Mark as lost must be a non-negative number" }),
 });
 
 type GoalFormValues = z.infer<typeof goalFormSchema>;
@@ -450,6 +450,7 @@ export function GoalForm() {
                           value === "" ? undefined : Number(value);
                         field.onChange(numberValue);
                       }}
+                      min="0" // Ensures the minimum value is 0
                     />
                   </FormControl>
                   <FormMessage />
@@ -473,6 +474,7 @@ export function GoalForm() {
                           value === "" ? undefined : Number(value);
                         field.onChange(numberValue);
                       }}
+                      min="0" // Ensures the minimum value is 0
                     />
                   </FormControl>
                   <FormMessage />
