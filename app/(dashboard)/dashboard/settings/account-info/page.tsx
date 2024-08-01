@@ -182,9 +182,9 @@ export default function Page() {
             Cancel
           </Button>
         )}
-        {!isEditing && (
+        {/* {!isEditing && (
           <Button variant="outline">Manage your subscription</Button>
-        )}
+        )} */}
       </div>
     </div>
   );
