@@ -18,6 +18,7 @@ const defaultFormsTracker = {
   audience: false,
   training: false,
   autoPilot: false,
+  qualification: false,
 };
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -60,6 +61,7 @@ export default function Page() {
           offeringResponse,
           audienceResponse,
           AutopilotResponse,
+          qualificationResponse,
         ] = await Promise.all([
           fetch(
             `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
@@ -76,6 +78,9 @@ export default function Page() {
           fetch(
             `${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot/${params.campaignId}`
           ),
+          fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${params.campaignId}`
+          ),
         ]);
 
         const campaignData = await campaignResponse.json();
@@ -83,13 +88,15 @@ export default function Page() {
         const offeringData = await offeringResponse.json();
         const audienceData = await audienceResponse.json();
         const AutopilotData = await AutopilotResponse.json();
+        const qualificationData = await qualificationResponse.json();
 
         if (
           campaignData.detail === "Campaign not found" &&
           goalData.detail === "Goal not found" &&
           offeringData.detail === "Offering not found" &&
           audienceData.detail === "No Contacts found" &&
-          AutopilotData === null
+          AutopilotData === null &&
+          qualificationData.detail === "Qualification not found"
         ) {
           setIsCampaignFound(false);
         } else {
@@ -98,7 +105,8 @@ export default function Page() {
             schedulingBudget: true,
             offering: campaignData.detail !== "Campaign not found",
             goal: offeringData.detail !== "Offering not found",
-            audience: goalData.detail !== "Goal not found",
+            qualification: goalData.detail !== "Goal not found",
+            audience: qualificationData.detail !== "Qualification not found",
             autoPilot: audienceData.detail !== "No Contacts found",
             training: AutopilotData !== null,
           };
@@ -126,7 +134,7 @@ export default function Page() {
   const isAudienceDisabled = !formsTracker.audience;
   const isTrainingDisabled = !formsTracker.training;
   const isAutoPilotDisabled = !formsTracker.autoPilot;
-  const qualification = !true;
+  const qualification = !formsTracker.qualification;
 
   return (
     <div>
@@ -227,7 +235,7 @@ export default function Page() {
             </CardFooter>
           </Card>
 
-          {/* <Card
+          <Card
             className={`w-[95%] min-w-[330px] m-2 flex justify-between ${
               qualification ? "bg-gray-100/10 cursor-not-allowed" : ""
             }`}
@@ -252,13 +260,11 @@ export default function Page() {
                     qualification ? "#" : `${params.campaignId}/qualification`
                   }
                 >
-                  {/* {qualification === true ? "Add" :  */}
-          {/* "Edit" */}
-          {/* } */}
-          {/* </Link>
+                  {qualification === true ? "Add" : "Edit"}
+                </Link>
               </Button>
             </CardFooter>
-          </Card> */}
+          </Card>
 
           <Card
             className={`w-[95%] min-w-[330px] m-2 flex justify-between ${

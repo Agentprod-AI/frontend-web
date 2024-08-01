@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Card } from "../ui/card";
 import { Button } from "../ui/button";
 import { Info, Plus, Sparkles, Trash } from "lucide-react";
@@ -16,14 +16,45 @@ import {
 import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useParams, useRouter } from "next/navigation";
+import axios from "axios";
+import { toast } from "sonner";
 
 function Qualification() {
-  const [criteria, setCriteria] = useState<any>([]);
+  const router = useRouter();
 
+  const [criteria, setCriteria] = useState<any>([]);
+  const params = useParams<{ campaignId: string }>();
+  const [type, setType] = useState<"create" | "edit">("create");
+  const [qua_id, setQua_Id] = useState<any>("");
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${params.campaignId}`
+          );
+          const data = await response.json();
+          if (data.detail === "Qualification not found") {
+            setType("create");
+          } else {
+            setCriteria(data.details);
+            setType("edit");
+            setQua_Id(data.id);
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
   const addCriteria = () => {
     setCriteria([
       ...criteria,
-      { question: "", answer: "", addToCampaign: false },
+      { question: "", type: "", answer: "", addToCampaign: false },
     ]);
   };
 
@@ -33,17 +64,35 @@ function Qualification() {
     setCriteria(updatedCriteria);
   };
 
-  // const deleteCriterion = (index: number) => {
-  //   const updatedCriteria = criteria.filter((_: any, i: number) => i !== index);
-  //   setCriteria(updatedCriteria);
-  // };
+  async function submitButton() {
+    try {
+      if (type === "create") {
+        await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications`,
+          { campaign_id: params.campaignId, details: criteria }
+        );
+        toast.success("Qualification added successfully");
+      } else if (type === "edit") {
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${qua_id}`,
+          { details: criteria }
+        );
+        toast.success("Qualification updated successfully");
+      }
+      router.push(`/dashboard/campaign/${params.campaignId}`);
+    } catch (error) {
+      toast.error("Error submitting qualification");
+      console.error("Error submitting qualification:", error);
+    }
+  }
 
   return (
     <div>
-      {/* {JSON.stringify(criteria)} */}
       <Card className="text-xl flex justify-between py-4 items-center px-5">
         <div className="pl-10 ">Qualification</div>
-        <Button>Start Qualification</Button>
+        <Button onClick={submitButton}>
+          {type === "create" ? "Start Qualification" : "Edit Qualification"}
+        </Button>
       </Card>
       <div className="mt-10 ml-14">
         <Card className=" py-2 dark:text-white/50 light:text-black/20 max-w-4xl">
@@ -98,7 +147,7 @@ function TextInput({ criterion, onUpdate }: any) {
         <Dialog>
           <DialogTrigger className="w-full">
             <Input
-              className="pl-10 bg-transparent w-full dark:text-white/70 placeholder:dark:text-white/20"
+              className="pl-10 bg-transparent w-full dark:text-white/70 placeholder:dark:text-white/20 cursor-default "
               placeholder={`Filter Question: Ask a yes-no question, such as "Is this company remote work friendly?"`}
               value={localCriterion.question}
               onChange={(e) =>
@@ -111,7 +160,9 @@ function TextInput({ criterion, onUpdate }: any) {
           </DialogTrigger>
           <DialogContent className="max-w-md">
             <DialogHeader>
-              <DialogTitle className="text-start">Filter question</DialogTitle>
+              <DialogTitle className="text-start">
+                Qualification question
+              </DialogTitle>
               <DialogDescription className="">
                 <div className="mt-4">
                   <Input
@@ -124,13 +175,40 @@ function TextInput({ criterion, onUpdate }: any) {
                       })
                     }
                   />
-                  <div className="my-3 dark:text-white/40 text-start">
-                    Ask a yes-no question, such as "Is this company remote work
-                    friendly?"
+
+                  <div className="text-start mt-6">
+                    What type of Qualification Question is this
                   </div>
-                  <div className="text-start">
+
+                  <RadioGroup
+                    className="my-3"
+                    value={localCriterion.type}
+                    onValueChange={(value) =>
+                      setLocalCriterion({ ...localCriterion, type: value })
+                    }
+                  >
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="yes/no" id="option-one" />
+                      <Label htmlFor="option-one">Yes/No</Label>
+                    </div>
+                    <div className="ml-6 dark:text-white/40 text-start">
+                      Ask a yes-no question, such as "Is this company remote
+                      work friendly?"
+                    </div>
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="research" id="option-two" />
+                      <Label htmlFor="option-two">Research</Label>
+                    </div>
+                    <div className="ml-6 dark:text-white/40 text-start">
+                      Ask a research based question, such as "Does my lead
+                      company provide sales support?"
+                    </div>
+                  </RadioGroup>
+
+                  <div className="text-start mt-6">
                     Add to Campaign if answer is..
                   </div>
+
                   <RadioGroup
                     className="my-3"
                     value={localCriterion.answer}
