@@ -687,7 +687,7 @@ export default function PeopleForm(): JSX.Element {
         setTimeout(() => {
           setIsCreateBtnLoading(false);
           router.push(`/dashboard/campaign/${params.campaignId}`);
-        }, 30000);
+        }, 40000);
       }
     }
 
