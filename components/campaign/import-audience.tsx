@@ -212,6 +212,7 @@ export const ImportAudience = () => {
       lead_information: lead.lead_information || String,
       is_b2b: lead.is_b2b,
       score: lead.score,
+      qualification_details: lead.qualification_details || String,
     }));
   }
 
