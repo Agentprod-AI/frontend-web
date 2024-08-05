@@ -45,6 +45,8 @@ export const PeopleProfileSheet = ({
   const [affiliatedPagesCollapsibleOpen, setAffiliatedPagesCollapsibleOpen] =
     useState(false);
   const [loading, setLoading] = useState(true);
+  const [qualificationsCollapsibleOpen, setQualificationsCollapsibleOpen] =
+    useState(false);
   const { getCompanyInfo, companyInfo, setCompanyLinkedin } = useCompanyInfo();
 
   console.log("Leads Data for Indiviual User", data);
@@ -288,6 +290,75 @@ export const PeopleProfileSheet = ({
                       )}
                     </div>
                   )}
+
+                {data?.qualification_details &&
+                  data.qualification_details.length > 0 && (
+                    <div>
+                      <div className="text-sm font-semibold text-muted-foreground">
+                        Qualifications:
+                      </div>
+                      {data.qualification_details.map(
+                        (qual: any, ind: number) => (
+                          <div
+                            className="flex text-muted-foreground flex-col px-2 py-1 font-mono text-xs w-full"
+                            key={`qual_${ind}`}
+                          >
+                            <span className="font-semibold">
+                              Q: {qual.question}
+                            </span>
+                            <span>A: {qual.answer}</span>
+                            <span>
+                              Qualifies: {qual.qualifies ? "Yes" : "No"}
+                            </span>
+                          </div>
+                        )
+                      )}
+                    </div>
+                  )}
+
+                {/* Qualifications */}
+                {/* <Collapsible
+                  open={qualificationsCollapsibleOpen}
+                  onOpenChange={setQualificationsCollapsibleOpen}
+                  className="pt-4 space-y-2 text-muted-foreground w-full"
+                >
+                  <div className="flex items-center justify-between space-x-4 w-full">
+                    <h4 className="text-sm font-semibold">Qualifications</h4>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="w-9 p-0">
+                        <ChevronsUpDown className="h-4 w-4" />
+                        <span className="sr-only">Toggle</span>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  {data?.qualification_details && (
+                    <>
+                      <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                        <span>{data?.qualification_details[0]?.question}</span>
+                      </div>
+                      <CollapsibleContent className="space-y-2 w-full">
+                        {data.qualification_details.map(
+                          (qual: any, ind: number) => (
+                            <div
+                              className="flex flex-col px-2 py-1 font-mono text-xs w-full"
+                              key={`qual_${ind}`}
+                            >
+                              <span className="font-semibold">
+                                Q: {qual.question}
+                              </span>
+                              <span>A: {qual.answer}</span>
+                              <span>
+                                Qualifies: {qual.qualifies ? "Yes" : "No"}
+                              </span>
+                            </div>
+                          )
+                        )}
+                      </CollapsibleContent>
+                    </>
+                  )}
+                </Collapsible> */}
+
+                {/* Qualifications */}
               </div>
             )}
 

@@ -82,6 +82,7 @@ export interface Lead {
   lead_information: any;
   is_b2b: boolean;
   score: any;
+  qualification_details: any;
 }
 
 export interface Contact {
@@ -124,6 +125,7 @@ export interface Contact {
   lead_information: any;
   is_b2b: boolean;
   score: any;
+  qualification_details: any;
 }
 
 // Define the state structure for our context
