@@ -638,7 +638,6 @@ export default function PeopleForm(): JSX.Element {
       is_b2b: lead.is_b2b,
       score: lead.score,
       qualification_details: lead.qualification_details || String,
-
     }));
   }
 
@@ -689,7 +688,7 @@ export default function PeopleForm(): JSX.Element {
         setTimeout(() => {
           setIsCreateBtnLoading(false);
           router.push(`/dashboard/campaign/${params.campaignId}`);
-        }, 40000);
+        }, 46000);
       }
     }
 
