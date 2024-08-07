@@ -74,6 +74,14 @@ function Policy() {
                 </li>
                 <li>Analyze usage and performance of the service.</li>
                 <li>Ensure legal compliance and security.</li>
+                <li>
+                  We do not use any data collected through our services,
+                  including data from Google Workspace APIs, to develop,
+                  improve, or train generalized artificial intelligence or
+                  machine learning models. Your data is used solely for the
+                  purposes outlined above and to provide you with our specific
+                  services.
+                </li>
               </ul>
             </div>
           </div>

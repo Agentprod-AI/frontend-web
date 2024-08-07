@@ -1161,7 +1161,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <button onClick={() => setIsSuggestionOpen(!isSuggestionOpen)}>
                   {isSuggestionOpen
                     ? "Hide Suggestions"
-                    : "Sally couldn't complete the proof-reading. Please click to review the following suggestions."}
+                    : "Sally completed the proof-reading. These are the suggestions."}
                 </button>
               </div>
             </div>
