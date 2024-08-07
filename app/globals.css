@@ -94,3 +94,8 @@
   -ms-overflow-style: none; /* IE and Edge */
   scrollbar-width: none; /* Firefox */
 }
+
+:root {
+  --header-height: 80px;
+  --tabs-header-height: 120px; /* Adjust based on your actual tabs header height */
+}

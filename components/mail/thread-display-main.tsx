@@ -121,6 +121,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
   };
 
+  console.log("HEH", conversationId);
+
   const leadId = leads[0]?.campaign_id;
 
   React.useEffect(() => {
