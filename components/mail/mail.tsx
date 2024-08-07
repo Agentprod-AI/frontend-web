@@ -35,6 +35,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 
 const MIN_LOADING_TIME = 5000;
+const ITEMS_PER_PAGE = 7;
 
 interface MailProps {
   accounts: {
@@ -98,8 +99,6 @@ const LoadingOverlay = () => {
   );
 };
 
-export default LoadingOverlay;
-
 export function Mail({
   defaultLayout = [265, 440, 655],
   defaultCollapsed = false,
@@ -120,11 +119,8 @@ export function Mail({
     null
   );
   const [activeTab, setActiveTab] = React.useState("all");
-
-  const handleTabChange = (value: string) => {
-    setActiveTab(value);
-    handleFilterChange(value);
-  };
+  const [page, setPage] = React.useState(1);
+  const [hasMore, setHasMore] = React.useState(true);
 
   const { user } = useUserContext();
   const {
@@ -138,50 +134,172 @@ export function Mail({
   const [localIsContextBarOpen, setLocalIsContextBarOpen] =
     React.useState(false);
   const loadingStartTimeRef = React.useRef<number | null>(null);
+  const mailListRef = React.useRef<HTMLDivElement>(null);
 
   React.useEffect(() => {
     setLocalIsContextBarOpen(isContextBarOpen);
   }, [isContextBarOpen]);
 
+  // const fetchConversations = React.useCallback(
+  //   async (
+  //     campaignId?: string,
+  //     pageNum: number = 1,
+  //     search?: string,
+  //     status?: string
+  //   ) => {
+  //     setLoading(true);
+  //     if (showLoadingOverlay) {
+  //       loadingStartTimeRef.current = Date.now();
+  //     }
+  //     try {
+  //       let url = `v2/mailbox/${user?.id}`;
+
+  //       if (campaignId) {
+  //         url = `v2/mailbox/campaign/${campaignId}/${user?.id}`;
+  //       }
+  //       url += `?limit=${ITEMS_PER_PAGE}&offset=${
+  //         (pageNum - 1) * ITEMS_PER_PAGE
+  //       }`;
+
+  //       if (search) {
+  //         url += `&search=${encodeURIComponent(search)}`;
+  //       }
+
+  //       if (status && status !== "all") {
+  //         url += `&_filter=${status.toUpperCase()}`;
+  //       }
+
+  //       console.log("Fetching conversations with URL:", url);
+
+  //       const response = await axiosInstance.get<{ mails: Conversations[] }>(
+  //         url
+  //       );
+
+  //       console.log("Response data:", response.data.mails);
+  //       setConversationId(response.data.mails[0].id);
+
+  //       setMails((prevMails) => {
+  //         const newMails =
+  //           pageNum === 1
+  //             ? response.data.mails
+  //             : [...prevMails, ...response.data.mails];
+  //         return newMails;
+  //       });
+
+  //       setHasMore(response.data.mails.length === ITEMS_PER_PAGE);
+  //       setPage(pageNum);
+  //     } catch (err: any) {
+  //       console.error("Error fetching mails:", err);
+  //       setError(err.message || "Failed to load mails.");
+  //     } finally {
+  //       setLoading(false);
+  //       setShowLoadingOverlay(false);
+  //     }
+  //   },
+  //   [user?.id, showLoadingOverlay]
+  // );
+
   const fetchConversations = React.useCallback(
-    async (campaignId?: string) => {
+    async (
+      campaignId?: string,
+      pageNum: number = 1,
+      search?: string,
+      status?: string
+    ) => {
       setLoading(true);
       if (showLoadingOverlay) {
         loadingStartTimeRef.current = Date.now();
       }
       try {
         let url = `v2/mailbox/${user?.id}`;
+
         if (campaignId) {
-          url += `?campaign_id=${campaignId}`;
+          url = `v2/mailbox/campaign/${campaignId}/${user?.id}`;
         }
+        url += `?limit=${ITEMS_PER_PAGE}&offset=${
+          (pageNum - 1) * ITEMS_PER_PAGE
+        }`;
+
+        if (search) {
+          url += `&search=${encodeURIComponent(search)}`;
+        }
+
+        if (status && status !== "all") {
+          url += `&_filter=${status.toUpperCase()}`;
+        }
+
+        console.log("Fetching conversations with URL:", url);
+
         const response = await axiosInstance.get<{ mails: Conversations[] }>(
           url
         );
-        setMails(response.data.mails);
 
-        if (showLoadingOverlay) {
-          const elapsedTime = Date.now() - (loadingStartTimeRef.current || 0);
-          if (elapsedTime < MIN_LOADING_TIME) {
-            setTimeout(() => {
-              setLoading(false);
-              setShowLoadingOverlay(false);
-            }, MIN_LOADING_TIME - elapsedTime);
-          } else {
-            setLoading(false);
-            setShowLoadingOverlay(false);
-          }
+        console.log("Response data:", response.data.mails);
+
+        if (response.data.mails.length > 0) {
+          setConversationId(response.data.mails[0].id);
         } else {
-          setLoading(false);
+          setConversationId("");
         }
+
+        setMails((prevMails) => {
+          if (pageNum === 1) {
+            return response.data.mails;
+          } else {
+            return [...prevMails, ...response.data.mails];
+          }
+        });
+
+        setHasMore(response.data.mails.length === ITEMS_PER_PAGE);
+        setPage(pageNum);
       } catch (err: any) {
         console.error("Error fetching mails:", err);
         setError(err.message || "Failed to load mails.");
+        setMails([]); // Set mails to empty array on error
+      } finally {
         setLoading(false);
         setShowLoadingOverlay(false);
       }
     },
-    [user?.id, showLoadingOverlay]
+    [user?.id, showLoadingOverlay, setConversationId]
   );
+
+  // const loadMore = React.useCallback(() => {
+  //   if (!loading && hasMore) {
+  //     fetchConversations(campaign?.campaignId, page + 1, searchTerm, filter);
+  //     if (page === 1 && mailListRef.current) {
+  //       mailListRef.current.style.overflowY = "auto";
+  //     }
+  //   }
+  // }, [
+  //   loading,
+  //   hasMore,
+  //   campaign,
+  //   page,
+  //   searchTerm,
+  //   filter,
+  //   fetchConversations,
+  // ]);
+
+  const loadMore = React.useCallback(() => {
+    if (!loading && hasMore) {
+      fetchConversations(campaign?.campaignId, page + 1, searchTerm, filter);
+      if (page === 1 && mailListRef.current) {
+        mailListRef.current.style.overflowY = "auto";
+      }
+      // Add this line to trigger a re-render of the parent component
+      setSelectedMailId(null);
+    }
+  }, [
+    loading,
+    hasMore,
+    campaign,
+    page,
+    searchTerm,
+    filter,
+    fetchConversations,
+    setSelectedMailId,
+  ]);
 
   React.useEffect(() => {
     const newCampaignId = localStorage.getItem("newCampaignId");
@@ -200,23 +318,16 @@ export function Mail({
           campaignName: newCampaign.campaign_name,
           campaignId: newCampaign.id,
         });
-        fetchConversations(newCampaign.id);
       }
-    } else {
-      fetchConversations();
     }
 
     localStorage.removeItem("newCampaignId");
     localStorage.removeItem("redirectFromCampaign");
-  }, [campaigns, fetchConversations]);
+  }, [campaigns]);
 
   React.useEffect(() => {
-    if (campaign) {
-      fetchConversations(campaign.campaignId);
-    } else {
-      fetchConversations();
-    }
-  }, [campaign, fetchConversations]);
+    fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
+  }, [campaign, searchTerm, filter, fetchConversations]);
 
   const updateMailStatus = React.useCallback(
     (mailId: string, status: string) => {
@@ -232,62 +343,51 @@ export function Mail({
     [selectedMailId]
   );
 
-  // const filteredMails = React.useMemo(() => {
-  //   return mails.filter((mail) => {
-  //     const matchesSearchTerm =
-  //       mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-  //       mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase());
-
-  //     const matchesFilter =
-  //       filter === "all" ||
-  //       mail.status.toLowerCase() === filter ||
-  //       (filter === "sent" && mail.status.toLowerCase() === "delivered");
-
-  //     const matchesCampaign =
-  //       !campaign || mail.campaign_id === campaign.campaignId;
-
-  //     return matchesSearchTerm && matchesFilter && matchesCampaign;
-  //   });
-  // }, [mails, filter, campaign, searchTerm]);
-
-  const filteredMails = React.useMemo(() => {
-    return mails.filter((mail) => {
-      const matchesSearchTerm =
-        mail.subject.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mail.sender.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        mail.body_substr.toLowerCase().includes(searchTerm.toLowerCase());
-
-      const matchesFilter =
-        filter === "all" ||
-        mail.status.toLowerCase() === filter ||
-        (filter === "sent" && mail.status.toLowerCase() === "delivered") ||
-        (filter === "lost" && mail.status.toLowerCase() === "lost");
-
-      const matchesCampaign =
-        !campaign || mail.campaign_id === campaign.campaignId;
-
-      return matchesSearchTerm && matchesFilter && matchesCampaign;
-    });
-  }, [mails, filter, campaign, searchTerm]);
-
   const currentMail = React.useMemo(
-    () =>
-      filteredMails.find((mail) => mail.id === selectedMailId) ||
-      filteredMails[0] ||
-      null,
-    [filteredMails, selectedMailId]
+    () => mails.find((mail) => mail.id === selectedMailId) || mails[0] || null,
+    [mails, selectedMailId]
   );
 
+  // React.useEffect(() => {
+  //   if (currentMail) {
+  //     setSelectedMailId(currentMail.id);
+  //     setSenderEmail(currentMail.sender);
+  //     setConversationId(currentMail.id);
+  //     setRecipientEmail(currentMail.recipient);
+
+  //     axiosInstance
+  //       .get(`v2/lead/info/${currentMail.recipient}`)
+  //       .then((response) => {
+  //         setLeads([response.data]);
+  //       })
+  //       .catch((error) => {
+  //         console.error("Error fetching lead data:", error);
+  //       });
+  //   } else {
+  //     setSelectedMailId(null);
+  //     setSenderEmail("");
+  //     setConversationId("");
+  //     setRecipientEmail("");
+  //     setLeads([]);
+  //   }
+  // }, [
+  //   currentMail,
+  //   setSenderEmail,
+  //   setConversationId,
+  //   setRecipientEmail,
+  //   setLeads,
+  // ]);
   React.useEffect(() => {
-    if (currentMail) {
-      setSelectedMailId(currentMail.id);
-      setSenderEmail(currentMail.sender);
-      setConversationId(currentMail.id);
-      setRecipientEmail(currentMail.recipient);
+    if (mails.length > 0) {
+      const newCurrentMail =
+        mails.find((mail) => mail.id === selectedMailId) || mails[0];
+      setSelectedMailId(newCurrentMail.id);
+      setSenderEmail(newCurrentMail.sender);
+      setConversationId(newCurrentMail.id);
+      setRecipientEmail(newCurrentMail.recipient);
 
       axiosInstance
-        .get(`v2/lead/info/${currentMail.recipient}`)
+        .get(`v2/lead/info/${newCurrentMail.recipient}`)
         .then((response) => {
           setLeads([response.data]);
         })
@@ -302,7 +402,8 @@ export function Mail({
       setLeads([]);
     }
   }, [
-    currentMail,
+    mails,
+    selectedMailId,
     setSenderEmail,
     setConversationId,
     setRecipientEmail,
@@ -311,11 +412,14 @@ export function Mail({
 
   const handleFilterChange = React.useCallback((newFilter: string) => {
     setFilter(newFilter);
+    setPage(1);
   }, []);
 
   const handleCampaignChange = React.useCallback(
     (newCampaign: { campaignName: string; campaignId: string } | null) => {
       setCampaign(newCampaign);
+      setPage(1);
+      setMails([]);
     },
     []
   );
@@ -323,12 +427,16 @@ export function Mail({
   const handleSearchChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(e.target.value);
+      setPage(1);
     },
     []
   );
 
-  console.log("Current Mail", currentMail);
-
+  const handleTabChange = (value: string) => {
+    console.log("Table", value);
+    setActiveTab(value);
+    handleFilterChange(value);
+  };
   return (
     <TooltipProvider delayDuration={0}>
       {showLoadingOverlay && <LoadingOverlay />}
@@ -353,18 +461,45 @@ export function Mail({
               <TabsList className="ml-auto flex relative">
                 <TabsTrigger
                   value="all"
-                  onClick={() => handleFilterChange("all")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   All
                 </TabsTrigger>
                 <TabsTrigger
                   value="to-approve"
-                  onClick={() => handleFilterChange("to-approve")}
                   className="text-zinc-800 dark:text-zinc-200"
                 >
                   To do
                 </TabsTrigger>
+                {/* <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="flex items-center justify-center space-x-2"
+                    >
+                      <span>More</span>
+                      <ChevronDown size={20} />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent>
+                    <DropdownMenuItem
+                      onSelect={() => handleTabChange("scheduled")}
+                    >
+                      Scheduled
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => handleTabChange("scheduled")}
+                    >
+                      Responded
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleTabChange("sent")}>
+                      Sent
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onSelect={() => handleTabChange("lost")}>
+                      Lost
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu> */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
@@ -380,6 +515,11 @@ export function Mail({
                       onSelect={() => handleTabChange("scheduled")}
                     >
                       Scheduled
+                    </DropdownMenuItem>
+                    <DropdownMenuItem
+                      onSelect={() => handleTabChange("responded")}
+                    >
+                      Responded
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleTabChange("sent")}>
                       Sent
@@ -452,36 +592,42 @@ export function Mail({
                 </div>
               </form>
             </div>
-            <TabsContent value={filter} className="m-0">
-              {loading ? (
-                <div className="flex flex-col space-y-3 p-4 pt-0">
-                  <Skeleton className="h-[90px] w-full rounded-xl" />
-                  <Skeleton className="h-[90px] w-full rounded-xl" />
-                  <Skeleton className="h-[90px] w-full rounded-xl" />
-                  <Skeleton className="h-[90px] w-full rounded-xl" />
-                  <Skeleton className="h-[90px] w-full rounded-xl" />
-                  <Skeleton className="h-[90px] w-full rounded-xl" />
-                </div>
-              ) : filteredMails.length > 0 ? (
-                <MailList
-                  items={filteredMails}
-                  selectedMailId={selectedMailId}
-                  setSelectedMailId={setSelectedMailId}
-                />
-              ) : (
-                <div className="flex flex-col gap-3 items-center justify-center mt-36">
-                  <Image
-                    src="/empty.svg"
-                    alt="empty-inbox"
-                    width="200"
-                    height="200"
-                    className="dark:filter dark:invert"
+            <TabsContent
+              value={filter}
+              className="flex-grow overflow-hidden m-0"
+            >
+              <div ref={mailListRef} className="h-full flex flex-col">
+                {loading && page === 1 ? (
+                  <div className="flex flex-col space-y-3 p-4 pt-0">
+                    {[...Array(6)].map((_, index) => (
+                      <Skeleton
+                        key={index}
+                        className="h-[90px] w-full rounded-xl"
+                      />
+                    ))}
+                  </div>
+                ) : mails.length > 0 ? (
+                  <MailList
+                    items={mails}
+                    selectedMailId={selectedMailId}
+                    setSelectedMailId={setSelectedMailId}
+                    hasMore={hasMore}
+                    loading={loading}
+                    loadMore={loadMore}
                   />
-                  <p className="flex justify-center items-center mt-10 ml-14 text-gray-500">
-                    No Mails Available
-                  </p>
-                </div>
-              )}
+                ) : (
+                  <div className="flex flex-col gap-3 items-center justify-center mt-36">
+                    <Image
+                      src="/empty.svg"
+                      alt="empty-inbox"
+                      width="200"
+                      height="200"
+                      className="dark:filter dark:invert"
+                    />
+                    <p className="text-gray-500 mt-4">No Mails Available</p>
+                  </div>
+                )}
+              </div>
             </TabsContent>
           </Tabs>
         </ResizablePanel>
@@ -491,7 +637,7 @@ export function Mail({
           minSize={20}
         >
           <ScrollArea className="h-full">
-            {loading ? (
+            {loading && page === 1 ? (
               <div className="m-4 flex flex-row ">
                 <Skeleton className="h-7 w-7 rounded-full" />
                 <div className="flex flex-col space-y-3 ml-5">
@@ -501,11 +647,12 @@ export function Mail({
               </div>
             ) : currentMail ? (
               <ThreadDisplayMain
+                key={`thread-${selectedMailId}-${mails.length}`}
                 ownerEmail={currentMail.recipient}
                 updateMailStatus={updateMailStatus}
                 selectedMailId={selectedMailId}
                 setSelectedMailId={setSelectedMailId}
-                mailStatus={currentMail.status} // Add this line
+                mailStatus={currentMail.status}
               />
             ) : (
               <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">
@@ -535,3 +682,5 @@ export function Mail({
     </TooltipProvider>
   );
 }
+
+export default Mail;
