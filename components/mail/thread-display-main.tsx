@@ -66,6 +66,7 @@ import { last, previous } from "slate";
 import { parseActionDraft } from "./parse-draft";
 import Image from "next/image";
 import { sanitizeSubject } from "./sanitizeSubject";
+import SuggestionDisplay from "./suggestionsDisplay";
 
 interface ThreadDisplayMainProps {
   ownerEmail: string;
@@ -651,7 +652,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const unsubscribeLink =
       "https://c813b042.sibforms.com/serve/MUIFACgOoNUQaUMaLeDSg4MqyII5sxJsKlTht8bu0QczloASUT1[…]zXFFdhD-z4tMlMX3wuEczUEShKd0mklk4Fyf76rLkIiQb_1toOnqLQ7eIh";
 
-    const unsubscribeText = `\n\nTo unsubscribe from future communications, please <a href="${unsubscribeLink}">click here</a>.`;
+    const unsubscribeText = `\n\nTo unsubscribe from future communications, please ${(
+      <a href={unsubscribeLink}>click here</a>
+    )}.`;
 
     React.useEffect(() => {
       // For handleing, the thread if some error occurs
@@ -1151,33 +1154,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <div ref={internalScrollRef} />
           </Card>
         </div>
-        <div>
-          {suggestions && suggestions.trim() !== "" && (
-            <div className="flex items-center gap-3">
-              <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                <BsStars className="h-4 w-4 text-gray-400" />
-              </div>
-              <div className="text-xs ml-1">
-                <button onClick={() => setIsSuggestionOpen(!isSuggestionOpen)}>
-                  {isSuggestionOpen
-                    ? "Hide Suggestions"
-                    : "Sally completed the proof-reading. These are the suggestions."}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-        {isSuggestionOpen && suggestions && suggestions.trim() !== "" && (
-          <div className="flex w-full mt-2 mr-4">
-            <Card className="w-full mr-5 ml-10 border-none outline outline-cyan-950 outline-offset-4">
-              <CardHeader></CardHeader>
-              <CardContent className="text-xs -ml-3 -mt-4">
-                {suggestions}
-              </CardContent>
-              <CardFooter className="flex justify-between text-xs items-center"></CardFooter>
-            </Card>
-          </div>
-        )}
+        <SuggestionDisplay suggestions={suggestions} />
       </div>
     );
   };
