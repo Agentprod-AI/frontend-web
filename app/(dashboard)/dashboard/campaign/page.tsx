@@ -184,7 +184,8 @@ export default function Page() {
                       </Tooltip>
                     </TooltipProvider>
                     <p className="text-sm text-muted-foreground truncate">
-                      {campaignItem?.offering_details[0] || "No details"}
+                      {(campaignItem && campaignItem?.offering_details[0]) ||
+                        "No details"}
                     </p>
                   </div>
 
