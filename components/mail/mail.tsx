@@ -1,6 +1,5 @@
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
-
 "use client";
 import * as React from "react";
 import { ChevronDown, Search } from "lucide-react";
@@ -33,8 +32,8 @@ import { Contact, useLeads } from "@/context/lead-user";
 import { PeopleProfileSheet } from "../people-profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
+import { LoadingOverlay } from "./LoadingOverlay";
 
-const MIN_LOADING_TIME = 5000;
 const ITEMS_PER_PAGE = 7;
 
 interface MailProps {
@@ -65,39 +64,6 @@ export interface Conversations {
   category: string;
 }
 
-const LoadingOverlay = () => {
-  const [showWaitMessage, setShowWaitMessage] = React.useState(false);
-
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowWaitMessage(true);
-    }, 4000);
-
-    return () => clearTimeout(timer);
-  }, []);
-
-  return (
-    <div className="fixed inset-0 bg-background/80 backdrop-blur-sm z-50 flex items-center justify-center">
-      <div className="text-center">
-        <Image
-          src="/bw-logo.png"
-          alt="agent-prod"
-          width="40"
-          height="40"
-          className="rounded-full mx-auto mb-4"
-        />
-        <p className="text-lg font-semibold">Generating Drafts</p>
-        <p
-          className={`mt-2 transition-opacity duration-1000 ${
-            showWaitMessage ? "opacity-100" : "opacity-0"
-          }`}
-        >
-          Please wait
-        </p>
-      </div>
-    </div>
-  );
-};
 
 export function Mail({
   defaultLayout = [265, 440, 655],
@@ -121,6 +87,7 @@ export function Mail({
   const [activeTab, setActiveTab] = React.useState("all");
   const [page, setPage] = React.useState(1);
   const [hasMore, setHasMore] = React.useState(true);
+  const [moreOptionSelected, setMoreOptionSelected] = React.useState("");
 
   const { user } = useUserContext();
   const {
@@ -139,65 +106,6 @@ export function Mail({
   React.useEffect(() => {
     setLocalIsContextBarOpen(isContextBarOpen);
   }, [isContextBarOpen]);
-
-  // const fetchConversations = React.useCallback(
-  //   async (
-  //     campaignId?: string,
-  //     pageNum: number = 1,
-  //     search?: string,
-  //     status?: string
-  //   ) => {
-  //     setLoading(true);
-  //     if (showLoadingOverlay) {
-  //       loadingStartTimeRef.current = Date.now();
-  //     }
-  //     try {
-  //       let url = `v2/mailbox/${user?.id}`;
-
-  //       if (campaignId) {
-  //         url = `v2/mailbox/campaign/${campaignId}/${user?.id}`;
-  //       }
-  //       url += `?limit=${ITEMS_PER_PAGE}&offset=${
-  //         (pageNum - 1) * ITEMS_PER_PAGE
-  //       }`;
-
-  //       if (search) {
-  //         url += `&search=${encodeURIComponent(search)}`;
-  //       }
-
-  //       if (status && status !== "all") {
-  //         url += `&_filter=${status.toUpperCase()}`;
-  //       }
-
-  //       console.log("Fetching conversations with URL:", url);
-
-  //       const response = await axiosInstance.get<{ mails: Conversations[] }>(
-  //         url
-  //       );
-
-  //       console.log("Response data:", response.data.mails);
-  //       setConversationId(response.data.mails[0].id);
-
-  //       setMails((prevMails) => {
-  //         const newMails =
-  //           pageNum === 1
-  //             ? response.data.mails
-  //             : [...prevMails, ...response.data.mails];
-  //         return newMails;
-  //       });
-
-  //       setHasMore(response.data.mails.length === ITEMS_PER_PAGE);
-  //       setPage(pageNum);
-  //     } catch (err: any) {
-  //       console.error("Error fetching mails:", err);
-  //       setError(err.message || "Failed to load mails.");
-  //     } finally {
-  //       setLoading(false);
-  //       setShowLoadingOverlay(false);
-  //     }
-  //   },
-  //   [user?.id, showLoadingOverlay]
-  // );
 
   const fetchConversations = React.useCallback(
     async (
@@ -228,7 +136,7 @@ export function Mail({
           url += `&_filter=${status.toUpperCase()}`;
         }
 
-        console.log("Fetching conversations with URL:", url);
+        console.dir("Fetching conversations with URL:", url);
 
         const response = await axiosInstance.get<{ mails: Conversations[] }>(
           url
@@ -255,7 +163,7 @@ export function Mail({
       } catch (err: any) {
         console.error("Error fetching mails:", err);
         setError(err.message || "Failed to load mails.");
-        setMails([]); // Set mails to empty array on error
+        setMails([]);
       } finally {
         setLoading(false);
         setShowLoadingOverlay(false);
@@ -264,30 +172,12 @@ export function Mail({
     [user?.id, showLoadingOverlay, setConversationId]
   );
 
-  // const loadMore = React.useCallback(() => {
-  //   if (!loading && hasMore) {
-  //     fetchConversations(campaign?.campaignId, page + 1, searchTerm, filter);
-  //     if (page === 1 && mailListRef.current) {
-  //       mailListRef.current.style.overflowY = "auto";
-  //     }
-  //   }
-  // }, [
-  //   loading,
-  //   hasMore,
-  //   campaign,
-  //   page,
-  //   searchTerm,
-  //   filter,
-  //   fetchConversations,
-  // ]);
-
   const loadMore = React.useCallback(() => {
     if (!loading && hasMore) {
       fetchConversations(campaign?.campaignId, page + 1, searchTerm, filter);
       if (page === 1 && mailListRef.current) {
         mailListRef.current.style.overflowY = "auto";
       }
-      // Add this line to trigger a re-render of the parent component
       setSelectedMailId(null);
     }
   }, [
@@ -298,7 +188,6 @@ export function Mail({
     searchTerm,
     filter,
     fetchConversations,
-    setSelectedMailId,
   ]);
 
   React.useEffect(() => {
@@ -348,35 +237,6 @@ export function Mail({
     [mails, selectedMailId]
   );
 
-  // React.useEffect(() => {
-  //   if (currentMail) {
-  //     setSelectedMailId(currentMail.id);
-  //     setSenderEmail(currentMail.sender);
-  //     setConversationId(currentMail.id);
-  //     setRecipientEmail(currentMail.recipient);
-
-  //     axiosInstance
-  //       .get(`v2/lead/info/${currentMail.recipient}`)
-  //       .then((response) => {
-  //         setLeads([response.data]);
-  //       })
-  //       .catch((error) => {
-  //         console.error("Error fetching lead data:", error);
-  //       });
-  //   } else {
-  //     setSelectedMailId(null);
-  //     setSenderEmail("");
-  //     setConversationId("");
-  //     setRecipientEmail("");
-  //     setLeads([]);
-  //   }
-  // }, [
-  //   currentMail,
-  //   setSenderEmail,
-  //   setConversationId,
-  //   setRecipientEmail,
-  //   setLeads,
-  // ]);
   React.useEffect(() => {
     if (mails.length > 0) {
       const newCurrentMail =
@@ -433,10 +293,16 @@ export function Mail({
   );
 
   const handleTabChange = (value: string) => {
-    console.log("Table", value);
+    console.log("Tab", value);
     setActiveTab(value);
     handleFilterChange(value);
+    if (value !== "all" && value !== "to-approve") {
+      setMoreOptionSelected(value);
+    } else {
+      setMoreOptionSelected("");
+    }
   };
+
   return (
     <TooltipProvider delayDuration={0}>
       {showLoadingOverlay && <LoadingOverlay />}
@@ -471,42 +337,13 @@ export function Mail({
                 >
                   To do
                 </TabsTrigger>
-                {/* <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex items-center justify-center space-x-2"
-                    >
-                      <span>More</span>
-                      <ChevronDown size={20} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem
-                      onSelect={() => handleTabChange("scheduled")}
-                    >
-                      Scheduled
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onSelect={() => handleTabChange("scheduled")}
-                    >
-                      Responded
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleTabChange("sent")}>
-                      Sent
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleTabChange("lost")}>
-                      Lost
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu> */}
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
                       variant="outline"
                       className="flex items-center justify-center space-x-2"
                     >
-                      <span>More</span>
+                      <span>{moreOptionSelected.toLocaleUpperCase() || "More"}</span>
                       <ChevronDown size={20} />
                     </Button>
                   </DropdownMenuTrigger>
@@ -593,7 +430,7 @@ export function Mail({
               </form>
             </div>
             <TabsContent
-              value={filter}
+              value={activeTab}
               className="flex-grow overflow-hidden m-0"
             >
               <div ref={mailListRef} className="h-full flex flex-col">
