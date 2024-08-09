@@ -21,7 +21,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import axiosInstance from "@/utils/axiosInstance";
-import { signup as supabaseSignup } from "@/app/(auth)/actions";
+import { signupAppsumo as supabaseSignup } from "@/app/(auth)/actions";
 import { useUserContext } from "@/context/user-context";
 import axios from "axios";
 
@@ -67,13 +67,31 @@ function RegistrationPage() {
         `${process.env.NEXT_PUBLIC_SERVER_URL}v2/check/coupon/${data.code}`
       );
 
-      if (dataCode !== "Coupon not found") {
-        const userData: any = await supabaseSignup({
+      if (dataCode !== "Not Found") {
+        const user: any = await supabaseSignup({
           email: data.email,
           password: data.password,
         });
 
-        toast.success("Verification email sent!");
+        if (user && user.id) {
+          console.log("User ID:", user.id);
+          const res = axios.post(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/pricing-plans/`,
+            {
+              user_id: user.id,
+              subscription_mode: "AppSumo",
+              order_id: data.code,
+              payment_id: "",
+              amount: "",
+              email: data.email,
+              start_time: new Date().toISOString(),
+              subscribed: true,
+            }
+          );
+          toast.success("Verification email sent!");
+        } else {
+          toast.error("Failed to get user data after signup.");
+        }
       } else {
         toast.error("Invalid coupon code. Please try again.");
       }

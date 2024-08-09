@@ -46,6 +46,34 @@ export async function signup(formData: { email: string; password: string }) {
     throw new Error(error.message);
   }
 
+
+  // revalidatePath("/", "layout");
+  // redirect("/");
+}
+
+export async function signupAppsumo(formData: { email: string; password: string }) {
+  const cookieStore = cookies();
+  const supabase = createClient(cookieStore);
+
+  // type-casting here for convenience
+  // in practice, you should validate your inputs
+  const data = {
+    email: formData.email,
+    password: formData.password,
+  };
+
+  const { data: authData, error } = await supabase.auth.signUp(data);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (authData && authData.user) {
+    return authData.user;
+  } else {
+    throw new Error("User data not available after signup");
+  }
+
   // revalidatePath("/", "layout");
   // redirect("/");
 }

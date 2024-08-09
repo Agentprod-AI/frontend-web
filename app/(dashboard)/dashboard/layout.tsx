@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import Header from "@/components/layout/header";
 import {
   ResizableHandle,
@@ -17,6 +17,7 @@ import { redirect } from "next/navigation";
 import { PageHeaderProvider } from "@/context/page-header";
 import { useMailbox } from "@/context/mailbox-provider";
 import WarningBanner from "@/components/payment/WarningBanner";
+import axios from "axios";
 
 export default function DashboardLayout({
   children,
@@ -26,16 +27,44 @@ export default function DashboardLayout({
   const [isCollapsed, setIsCollapsed] = React.useState(false);
   const { width } = useWindowSize();
   const { user } = useAuth();
+  const [isSubscribed, setIsSubscribed] = useState<boolean | null>(null);
 
-  if (!user) {
-    redirect("/");
-  }
+  useEffect(() => {
+    if (!user) {
+      redirect("/");
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/pricing-plans/${user.id}`
+        );
+        const startTime = new Date(res.data.start_time).getTime();
+        const currentTime = new Date().getTime();
+
+        const daysPassed = (currentTime - startTime) / (1000 * 60 * 60 * 24);
+        if (daysPassed > 30 && res.data.subscription_mode === "Razorpay") {
+          const resDelete = await axios.delete(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/pricing-plans/${res.data.id}`
+          );
+          console.log(resDelete.data);
+        } else {
+          setIsSubscribed(res.data.subscribed);
+        }
+      } catch (error) {
+        console.error("Failed to fetch subscription status:", error);
+        setIsSubscribed(false);
+      }
+    };
+
+    fetchData();
+    const interval = setInterval(fetchData, 10000); // Check every 10 seconds
+
+    return () => clearInterval(interval);
+  }, [user]);
 
   const { isContextBarOpen } = useMailbox();
-
-  // useEffect(() => {
-  //   setIsCollapsed(isContextBarOpen);
-  // }, [isContextBarOpen]);
 
   return (
     <>
@@ -53,8 +82,8 @@ export default function DashboardLayout({
           >
             {width > 768 ? (
               <ResizablePanel
-                defaultSize={15} // Default size when expanded
-                collapsedSize={5} // Size when collapsed
+                defaultSize={15}
+                collapsedSize={5}
                 collapsible={true}
                 minSize={5}
                 onCollapse={() => {
@@ -78,7 +107,7 @@ export default function DashboardLayout({
             <ResizablePanel minSize={70} defaultSize={85}>
               <ScrollArea className="h-screen">
                 <PageHeaderProvider>
-                  <WarningBanner />
+                  {isSubscribed === false && <WarningBanner />}
                   <main className="px-4 pb-20">{children}</main>
                 </PageHeaderProvider>
               </ScrollArea>
