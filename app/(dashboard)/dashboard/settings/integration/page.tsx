@@ -46,7 +46,7 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 // import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { hubspotLogin, salesforceLogin } from ".";
+import { hubspotLogin, salesforceLogin, slackLogin } from ".";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
 
@@ -175,10 +175,12 @@ export default function Page() {
           <div className="flex justify-between items-center">
             <SlackIcon />
             <div
-              className={`text-sm border rounded-lg text-center p-2 cursor-not-allowed`}
-              onClick={() => {}}
+              className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
+              onClick={() => {
+                slackLogin();
+              }}
             >
-              Coming Soon
+              Connect
             </div>
           </div>
           <Dialog>
