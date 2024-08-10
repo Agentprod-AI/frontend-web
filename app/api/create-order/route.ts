@@ -2,8 +2,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 
 const razorpay = new Razorpay({
-    key_id: process.env.NEXT_PUBLIC_RAZORPAY_API_KEY!,
-    key_secret: process.env.RAZORPAY_API_SECRET_KEY!,
+    key_id: "rzp_live_v0sNIuiCIceCva",
+    key_secret: "wAvTRTV4h3Cug4whnIimfUFw",
 });
 
 export async function POST(request: NextRequest) {
@@ -14,10 +14,7 @@ export async function POST(request: NextRequest) {
             return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
         }
 
-        if (!process.env.NEXT_PUBLIC_RAZORPAY_API_KEY || !process.env.RAZORPAY_API_SECRET_KEY) {
-            console.error('Razorpay API keys are not set');
-            return NextResponse.json({ error: 'Server configuration error' }, { status: 500 });
-        }
+        
 
         const options = {
             amount: amount,

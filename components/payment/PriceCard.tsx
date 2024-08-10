@@ -140,7 +140,7 @@ function PriceCard({
       const data = await response.json();
 
       const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_API_KEY, // Use NEXT_PUBLIC_ prefix for client-side env variables
+        key: "rzp_live_v0sNIuiCIceCva", // Use NEXT_PUBLIC_ prefix for client-side env variables
         amount: price * 100,
         currency: "USD",
         name: "AGENTPROD VENTURES PRIVATE LIMITED",
