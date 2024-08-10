@@ -64,6 +64,16 @@ export interface Conversations {
   category: string;
 }
 
+const MemoizedMailList = React.memo(MailList, (prevProps, nextProps) => {
+  return (
+    prevProps.items === nextProps.items &&
+    prevProps.selectedMailId === nextProps.selectedMailId &&
+    prevProps.hasMore === nextProps.hasMore &&
+    prevProps.loading === nextProps.loading
+  );
+});
+
+const MemoizedThreadDisplayMain = React.memo(ThreadDisplayMain);
 
 export function Mail({
   defaultLayout = [265, 440, 655],
@@ -88,6 +98,7 @@ export function Mail({
   const [page, setPage] = React.useState(1);
   const [hasMore, setHasMore] = React.useState(true);
   const [moreOptionSelected, setMoreOptionSelected] = React.useState("");
+  const [initialMailIdSet, setInitialMailIdSet] = React.useState(false);
 
   const { user } = useUserContext();
   const {
@@ -136,19 +147,13 @@ export function Mail({
           url += `&_filter=${status.toUpperCase()}`;
         }
 
-        console.dir("Fetching conversations with URL:", url);
+        console.log("Fetching conversations with URL:", url);
 
         const response = await axiosInstance.get<{ mails: Conversations[] }>(
           url
         );
 
         console.log("Response data:", response.data.mails);
-
-        if (response.data.mails.length > 0) {
-          setConversationId(response.data.mails[0].id);
-        } else {
-          setConversationId("");
-        }
 
         setMails((prevMails) => {
           if (pageNum === 1) {
@@ -157,6 +162,10 @@ export function Mail({
             return [...prevMails, ...response.data.mails];
           }
         });
+
+        if (pageNum === 1) {
+          setInitialMailIdSet(false);
+        }
 
         setHasMore(response.data.mails.length === ITEMS_PER_PAGE);
         setPage(pageNum);
@@ -169,7 +178,7 @@ export function Mail({
         setShowLoadingOverlay(false);
       }
     },
-    [user?.id, showLoadingOverlay, setConversationId]
+    [user?.id, showLoadingOverlay]
   );
 
   const loadMore = React.useCallback(() => {
@@ -178,7 +187,6 @@ export function Mail({
       if (page === 1 && mailListRef.current) {
         mailListRef.current.style.overflowY = "auto";
       }
-      setSelectedMailId(null);
     }
   }, [
     loading,
@@ -218,6 +226,33 @@ export function Mail({
     fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
   }, [campaign, searchTerm, filter, fetchConversations]);
 
+  React.useEffect(() => {
+    if (mails.length > 0 && !initialMailIdSet) {
+      const initialMail = mails[0];
+      setSelectedMailId(initialMail.id);
+      setSenderEmail(initialMail.sender);
+      setConversationId(initialMail.id);
+      setRecipientEmail(initialMail.recipient);
+      setInitialMailIdSet(true);
+
+      axiosInstance
+        .get(`v2/lead/info/${initialMail.recipient}`)
+        .then((response) => {
+          setLeads([response.data]);
+        })
+        .catch((error) => {
+          console.error("Error fetching lead data:", error);
+        });
+    }
+  }, [
+    mails,
+    initialMailIdSet,
+    setSenderEmail,
+    setConversationId,
+    setRecipientEmail,
+    setLeads,
+  ]);
+
   const updateMailStatus = React.useCallback(
     (mailId: string, status: string) => {
       setMails((prevMails) =>
@@ -236,39 +271,6 @@ export function Mail({
     () => mails.find((mail) => mail.id === selectedMailId) || mails[0] || null,
     [mails, selectedMailId]
   );
-
-  React.useEffect(() => {
-    if (mails.length > 0) {
-      const newCurrentMail =
-        mails.find((mail) => mail.id === selectedMailId) || mails[0];
-      setSelectedMailId(newCurrentMail.id);
-      setSenderEmail(newCurrentMail.sender);
-      setConversationId(newCurrentMail.id);
-      setRecipientEmail(newCurrentMail.recipient);
-
-      axiosInstance
-        .get(`v2/lead/info/${newCurrentMail.recipient}`)
-        .then((response) => {
-          setLeads([response.data]);
-        })
-        .catch((error) => {
-          console.error("Error fetching lead data:", error);
-        });
-    } else {
-      setSelectedMailId(null);
-      setSenderEmail("");
-      setConversationId("");
-      setRecipientEmail("");
-      setLeads([]);
-    }
-  }, [
-    mails,
-    selectedMailId,
-    setSenderEmail,
-    setConversationId,
-    setRecipientEmail,
-    setLeads,
-  ]);
 
   const handleFilterChange = React.useCallback((newFilter: string) => {
     setFilter(newFilter);
@@ -343,7 +345,9 @@ export function Mail({
                       variant="outline"
                       className="flex items-center justify-center space-x-2"
                     >
-                      <span>{moreOptionSelected.toLocaleUpperCase() || "More"}</span>
+                      <span>
+                        {moreOptionSelected.toLocaleUpperCase() || "More"}
+                      </span>
                       <ChevronDown size={20} />
                     </Button>
                   </DropdownMenuTrigger>
@@ -444,7 +448,7 @@ export function Mail({
                     ))}
                   </div>
                 ) : mails.length > 0 ? (
-                  <MailList
+                  <MemoizedMailList
                     items={mails}
                     selectedMailId={selectedMailId}
                     setSelectedMailId={setSelectedMailId}
@@ -483,8 +487,8 @@ export function Mail({
                 </div>
               </div>
             ) : currentMail ? (
-              <ThreadDisplayMain
-                key={`thread-${selectedMailId}-${mails.length}`}
+              <MemoizedThreadDisplayMain
+                key={`thread-${selectedMailId}-${currentMail.updated_at}`}
                 ownerEmail={currentMail.recipient}
                 updateMailStatus={updateMailStatus}
                 selectedMailId={selectedMailId}
