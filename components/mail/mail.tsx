@@ -99,6 +99,8 @@ export function Mail({
   const [hasMore, setHasMore] = React.useState(true);
   const [moreOptionSelected, setMoreOptionSelected] = React.useState("");
   const [initialMailIdSet, setInitialMailIdSet] = React.useState(false);
+  const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = React.useState("");
 
   const { user } = useUserContext();
   const {
@@ -140,7 +142,7 @@ export function Mail({
         }`;
 
         if (search) {
-          url += `&search=${encodeURIComponent(search)}`;
+          url += `&search_filter=${encodeURIComponent(search)}`;
         }
 
         if (status && status !== "all") {
@@ -288,11 +290,25 @@ export function Mail({
 
   const handleSearchChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      setSearchTerm(e.target.value);
-      setPage(1);
+      const newSearchTerm = e.target.value;
+      setSearchTerm(newSearchTerm);
+
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+
+      searchTimeoutRef.current = setTimeout(() => {
+        setDebouncedSearchTerm(newSearchTerm);
+      }, 500);
     },
     []
   );
+  React.useEffect(() => {
+    if (debouncedSearchTerm !== searchTerm) {
+      setPage(1);
+      fetchConversations(campaign?.campaignId, 1, debouncedSearchTerm, filter);
+    }
+  }, [debouncedSearchTerm, campaign, filter, fetchConversations, searchTerm]);
 
   const handleTabChange = (value: string) => {
     console.log("Tab", value);
