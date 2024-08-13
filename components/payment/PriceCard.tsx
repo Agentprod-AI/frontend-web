@@ -1,4 +1,5 @@
 "use client";
+
 import React, { useEffect, useState } from "react";
 import {
   Dialog,
@@ -10,12 +11,7 @@ import {
 import { Button } from "../ui/button";
 import { useUserContext } from "@/context/user-context";
 import { toast } from "sonner";
-import Script from "next/script";
 import axios from "axios";
-
-// Remove unused imports
-// import Razorpay from "razorpay";
-// import Script from "next/script";
 
 declare global {
   interface Window {
@@ -40,39 +36,6 @@ const pricingData = [
     prices: "240",
     additionalInfo: "$40 per additional 100 leads",
   },
-  // {
-  //   title: "Amplify",
-  //   price: "$380/month",
-  //   description: "2000 Leads contacted per month\nApprox. 6000 emails",
-  //   features: [
-  //     "All Core Sally-AgentProd features",
-  //     "CRM Integrations",
-  //     "Email Warmup",
-  //     "1-1 White Glove Human Onboarding",
-  //     "Premium Support",
-  //   ],
-  //   heightlight: true,
-  //   buttonText: "$380",
-  //   prices: "380",
-
-  //   additionalInfo: "$40 per additional 100 leads",
-  // },
-  // {
-  //   title: "Maximize",
-  //   price: "$770/month",
-  //   description: "3000 Leads contacted per month\nApprox. 9000 emails",
-  //   features: [
-  //     "All Core Sally-AgentProd features",
-  //     "CRM Integrations",
-  //     "Email Warmup",
-  //     "1-1 White Glove Human Onboarding",
-  //     "Premium Support",
-  //     "Account Manager",
-  //   ],
-  //   buttonText: "$770",
-  //   prices: "770",
-  //   additionalInfo: "$40 per additional 100 leads",
-  // },
   {
     title: "Custom",
     price: "Custom",
@@ -104,7 +67,7 @@ function PriceCard({
   useEffect(() => {
     const script = document.createElement("script");
     script.src = "https://checkout.razorpay.com/v1/checkout.js";
-    script.async = true; // Add async attribute for better performance
+    script.async = true;
     script.onload = () => setIsRazorpayReady(true);
     script.onerror = () => toast.error("Failed to load Razorpay SDK");
     document.body.appendChild(script);
@@ -124,7 +87,6 @@ function PriceCard({
       const response = await fetch("/api/create-order", {
         method: "POST",
         headers: {
-          // Add headers for proper content-type
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
@@ -140,7 +102,7 @@ function PriceCard({
       const data = await response.json();
 
       const options = {
-        key: "rzp_live_v0sNIuiCIceCva", // Use NEXT_PUBLIC_ prefix for client-side env variables
+        key: "rzp_live_v0sNIuiCIceCva",
         amount: price * 100,
         currency: "USD",
         name: "AGENTPROD VENTURES PRIVATE LIMITED",
@@ -161,24 +123,42 @@ function PriceCard({
             }
           );
           toast.success("Payment Successful!");
-          console.log(response); // Log the response instead of including it in the toast message
+          console.log(response);
+          onCheckoutComplete();
         },
         prefill: {
-          name: user.firstName, // Use optional chaining and provide a fallback
+          name: user.firstName,
           email: user?.email || "",
         },
         theme: {
           color: "#3399cc",
+        },
+        modal: {
+          ondismiss: function () {
+            console.log("Checkout form closed");
+            onCheckoutComplete();
+          },
+          animation: false,
+          width: "500px",
+          height: "600px",
+        },
+        payment_methods: {
+          card: true,
+          netbanking: true,
+          wallet: true,
+          upi: true,
+        },
+        notes: {
+          plan_name: title,
         },
       };
 
       const rzp = new window.Razorpay(options);
       rzp.open();
 
-      rzp.on("payment.success", function () {
-        onCheckoutComplete();
-      });
-      rzp.on("payment.error", function () {
+      rzp.on("payment.failed", function (response: any) {
+        console.error("Payment failed:", response.error);
+        toast.error("Payment failed. Please try again.");
         onCheckoutComplete();
       });
     } catch (error) {
@@ -192,14 +172,13 @@ function PriceCard({
 
   return (
     <div className="flex flex-col items-center justify-center space-y-8">
-      {/* <Script src="https://checkout.razorpay.com/v1/checkout.js"> */}
       <DialogHeader>
         <DialogTitle className="text-3xl">Pricing Plans</DialogTitle>
         <DialogDescription>
           Select a plan that suits your needs.
         </DialogDescription>
       </DialogHeader>
-      <div className="grid grid-cols-1 md:grid-cols-2  gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {pricingData.map((card, index) => (
           <div
             key={index}
@@ -241,7 +220,6 @@ function PriceCard({
           </div>
         ))}
       </div>
-      {/* </Script> */}
     </div>
   );
 }
