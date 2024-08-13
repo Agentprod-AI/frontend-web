@@ -2,7 +2,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
 import * as React from "react";
-import { ChevronDown, Search } from "lucide-react";
+import { ChevronDown, Info, Search } from "lucide-react";
 import MailList from "./mail-list";
 import type { Mail } from "@/constants/data";
 import { Input } from "@/components/ui/input";
@@ -33,6 +33,12 @@ import { PeopleProfileSheet } from "../people-profile-sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import Image from "next/image";
 import { LoadingOverlay } from "./LoadingOverlay";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { toast } from "sonner";
 
 const ITEMS_PER_PAGE = 7;
 
@@ -62,6 +68,16 @@ export interface Conversations {
   photo_url: string;
   company_name: string;
   category: string;
+}
+
+interface CampaignStatus {
+  id: number;
+  campaign_id: string;
+  in_progress: number;
+  complete: number;
+  duplicate: number;
+  failed: number;
+  total: number;
 }
 
 const MemoizedMailList = React.memo(MailList, (prevProps, nextProps) => {
@@ -101,6 +117,11 @@ export function Mail({
   const [initialMailIdSet, setInitialMailIdSet] = React.useState(false);
   const searchTimeoutRef = React.useRef<NodeJS.Timeout | null>(null);
   const [debouncedSearchTerm, setDebouncedSearchTerm] = React.useState("");
+  const [campaignStatus, setCampaignStatus] =
+    React.useState<CampaignStatus | null>(null);
+  const [isRedirectedFromCampaign, setIsRedirectedFromCampaign] =
+    React.useState(false);
+  const [showStatus, setShowStatus] = React.useState(false);
 
   const { user } = useUserContext();
   const {
@@ -115,6 +136,68 @@ export function Mail({
     React.useState(false);
   const loadingStartTimeRef = React.useRef<number | null>(null);
   const mailListRef = React.useRef<HTMLDivElement>(null);
+
+  const fetchCampaignStatus = React.useCallback(async (campaignId: string) => {
+    setShowStatus(true);
+    try {
+      const response = await axiosInstance.get<CampaignStatus>(
+        `/v2/contacts/status/${campaignId}`
+      );
+      console.log("Response,", response.data);
+      setCampaignStatus(response.data);
+      return response.data;
+    } catch (error) {
+      console.error("Error fetching campaign status:", error);
+      setShowStatus(false);
+      return null;
+    }
+  }, []);
+
+  React.useEffect(() => {
+    setShowStatus(true);
+    const newCampaignId = localStorage.getItem("newCampaignId");
+    const isRedirectFromCampaign = localStorage.getItem("redirectFromCampaign");
+    const campaignDraftStatus = localStorage.getItem("campaignDraftStatus");
+
+    if (
+      newCampaignId &&
+      isRedirectFromCampaign === "true" &&
+      campaignDraftStatus === "pending"
+    ) {
+      setIsRedirectedFromCampaign(true);
+
+      let intervalId: NodeJS.Timeout;
+
+      const checkAndFetchStatus = async () => {
+        const status = await fetchCampaignStatus(newCampaignId);
+        if (status && status.complete === status.total) {
+          console.log("Hogaya bhai hogaya");
+          setShowStatus(false);
+          toast.success("Draft Generation Completed");
+          clearInterval(intervalId);
+        }
+      };
+
+      // Initial fetch
+      checkAndFetchStatus();
+
+      // Set up interval
+      intervalId = setInterval(checkAndFetchStatus, 5000);
+
+      // Clear localStorage items
+      localStorage.removeItem("newCampaignId");
+      localStorage.removeItem("redirectFromCampaign");
+      localStorage.removeItem("campaignDraftStatus");
+
+      // Cleanup function
+      return () => {
+        clearInterval(intervalId);
+        setIsRedirectedFromCampaign(false);
+      };
+    }
+  }, [fetchCampaignStatus]);
+
+  // ------------------
 
   React.useEffect(() => {
     setLocalIsContextBarOpen(isContextBarOpen);
@@ -288,27 +371,43 @@ export function Mail({
     []
   );
 
+  // const handleSearchChange = React.useCallback(
+  //   (e: React.ChangeEvent<HTMLInputElement>) => {
+  //     const newSearchTerm = e.target.value;
+  //     setSearchTerm(newSearchTerm);
+
+  //     if (searchTimeoutRef.current) {
+  //       clearTimeout(searchTimeoutRef.current);
+  //     }
+
+  //     searchTimeoutRef.current = setTimeout(() => {
+  //       setDebouncedSearchTerm(newSearchTerm);
+  //     }, 500);
+  //   },
+  //   []
+  // );
+  // React.useEffect(() => {
+  //   if (debouncedSearchTerm !== searchTerm) {
+  //     setPage(1);
+  //     fetchConversations(campaign?.campaignId, 1, debouncedSearchTerm, filter);
+  //   }
+  // }, [debouncedSearchTerm, campaign, filter, fetchConversations, searchTerm]);
+
+  //search ----
+
   const handleSearchChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
-      const newSearchTerm = e.target.value;
-      setSearchTerm(newSearchTerm);
-
-      if (searchTimeoutRef.current) {
-        clearTimeout(searchTimeoutRef.current);
-      }
-
-      searchTimeoutRef.current = setTimeout(() => {
-        setDebouncedSearchTerm(newSearchTerm);
-      }, 500);
+      setSearchTerm(e.target.value);
     },
     []
   );
-  React.useEffect(() => {
-    if (debouncedSearchTerm !== searchTerm) {
-      setPage(1);
-      fetchConversations(campaign?.campaignId, 1, debouncedSearchTerm, filter);
-    }
-  }, [debouncedSearchTerm, campaign, filter, fetchConversations, searchTerm]);
+
+  const handleSearchClick = React.useCallback(() => {
+    setPage(1);
+    fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
+  }, [searchTerm, campaign, filter, fetchConversations]);
+
+  //------
 
   const handleTabChange = (value: string) => {
     console.log("Tab", value);
@@ -436,8 +535,9 @@ export function Mail({
                 </DropdownMenu>
               </TabsList>
             </div>
+
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              <form>
+              {/* <form>
                 <div className="relative">
                   <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -447,8 +547,58 @@ export function Mail({
                     onChange={handleSearchChange}
                   />
                 </div>
-              </form>
+              </form> */}
+              <div className="relative flex items-center">
+                <Input
+                  placeholder="Search"
+                  className="pr-10"
+                  value={searchTerm}
+                  onChange={handleSearchChange}
+                />
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="icon"
+                  className="absolute right-0 top-0 h-full"
+                  onClick={handleSearchClick}
+                >
+                  <Search className="h-4 w-4 text-muted-foreground" />
+                </Button>
+              </div>
             </div>
+
+            {isRedirectedFromCampaign && campaignStatus && showStatus && (
+              <div className="flex justify-end mr-8">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger className="text-xs flex underline hover:text-gray-300 transition-colors ">
+                      Draft Generated <Info className="h-2 w-2" />
+                      {campaignStatus &&
+                        "-" +
+                          campaignStatus?.complete +
+                          "/" +
+                          campaignStatus?.total}
+                    </TooltipTrigger>
+                    <TooltipContent side="top" align="end">
+                      {/* <p className="">Latest Campaign Info</p> */}
+                      <p>
+                        In progress:{" "}
+                        {campaignStatus && campaignStatus?.in_progress}
+                      </p>
+                      <p>Failed: {campaignStatus && campaignStatus?.failed} </p>
+                      <p>
+                        Duplicate: {campaignStatus && campaignStatus?.duplicate}
+                      </p>
+                      <p>
+                        Complete: {campaignStatus && campaignStatus?.complete}
+                      </p>
+                      <p>Total: {campaignStatus && campaignStatus?.total} </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
+
             <TabsContent
               value={activeTab}
               className="flex-grow overflow-hidden m-0"

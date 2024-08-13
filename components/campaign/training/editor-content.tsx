@@ -1,3 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable react-hooks/exhaustive-deps */
+/* eslint-disable no-console */
 /* eslint-disable-next-line padded-blocks */
 import React, { useState, ChangeEvent, useRef, useEffect } from "react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
@@ -79,6 +82,7 @@ export default function EditorContent() {
   const [localSubject, setLocalSubject] = useState(subject);
   const [localFollowUp, setLocalFollowUp] = useState("");
   const [localFollowUpTwo, setLocalFollowUpTwo] = useState("");
+  const [campaignType, setCampaignType] = useState("");
 
   const [focusedField, setFocusedField] = useState<string | null>(null);
   const [examplePopup, setExamplePopup] = useState(false);
@@ -130,6 +134,32 @@ export default function EditorContent() {
 
   //   fetchTrainingData();
   // }, [params.campaignId]);
+
+  useEffect(() => {
+    const fetchCampaign = async () => {
+      const id = params.campaignId;
+      if (id) {
+        try {
+          const response = await fetch(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${id}`
+          );
+          
+          const data = await response.json();
+          console.log(data,"ress")
+          if (response.ok) {
+            setCampaignType(data.campaign_type);
+          } else {
+            toast.error("Failed to fetch campaign data");
+          }
+        } catch (error) {
+          console.error("Error fetching campaign:", error);
+          toast.error("An error occurred while fetching campaign data");
+        }
+      }
+    };
+
+    fetchCampaign();
+  }, [params.campaignId]);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -572,34 +602,22 @@ export default function EditorContent() {
               </div>
             )}
             <div className="mt-4 flex flex-row gap-4">
-              {!showAdditionalTextArea && (
-                <Button variant="outline" onClick={toggleFollowUp}>
-                  <Plus className="h-3 w-3 text-gray-400" />
-                  Add follow-up
-                </Button>
-              )}{" "}
-              {!button1 && !showAdditionalTextAreaTwo && (
-                <Button variant="outline" onClick={toggleFollowUpTwo}>
-                  <Plus className="h-3 w-3 text-gray-400" />
-                  Add follow-up
-                </Button>
-              )}{" "}
-              {/* {templateIsLoading ? (
-                <Button
-                  variant={"outline"}
-                  onClick={handleAutoGenerateTemplate}
-                >
-                  <LoadingCircle />
-                  <span className="ml-2">Auto Generate Template</span>
-                </Button>
-              ) : (
-                <Button
-                  variant={"outline"}
-                  onClick={handleAutoGenerateTemplate}
-                >
-                  Auto Generate Template
-                </Button>
-              )} */}
+              {campaignType && campaignType !== "Nurturing" && (
+                <>
+                  {!showAdditionalTextArea && (
+                    <Button variant="outline" onClick={toggleFollowUp}>
+                      <Plus className="h-3 w-3 text-gray-400" />
+                      Add follow-up
+                    </Button>
+                  )}{" "}
+                  {!button1 && !showAdditionalTextAreaTwo && (
+                    <Button variant="outline" onClick={toggleFollowUpTwo}>
+                      <Plus className="h-3 w-3 text-gray-400" />
+                      Add follow-up
+                    </Button>
+                  )}
+                </>
+              )}
               <Button
                 variant={"outline"}
                 onClick={() => {
