@@ -122,6 +122,8 @@ export function Mail({
   const [isRedirectedFromCampaign, setIsRedirectedFromCampaign] =
     React.useState(false);
   const [showStatus, setShowStatus] = React.useState(false);
+  const [isUserInitiatedSearch, setIsUserInitiatedSearch] =
+    React.useState(false);
 
   const { user } = useUserContext();
   const {
@@ -308,8 +310,11 @@ export function Mail({
   }, [campaigns]);
 
   React.useEffect(() => {
-    fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
-  }, [campaign, searchTerm, filter, fetchConversations]);
+    if (!isUserInitiatedSearch) {
+      fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
+    }
+    setIsUserInitiatedSearch(false);
+  }, [campaign, filter, fetchConversations, isUserInitiatedSearch]);
 
   React.useEffect(() => {
     if (mails.length > 0 && !initialMailIdSet) {
@@ -403,6 +408,7 @@ export function Mail({
   );
 
   const handleSearchClick = React.useCallback(() => {
+    setIsUserInitiatedSearch(true);
     setPage(1);
     fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
   }, [searchTerm, campaign, filter, fetchConversations]);
@@ -557,9 +563,9 @@ export function Mail({
                 />
                 <Button
                   type="button"
-                  variant="ghost"
+                  variant="secondary"
                   size="icon"
-                  className="absolute right-0 top-0 h-full"
+                  className="absolute right-0 top-0 h-full cursor-pointer "
                   onClick={handleSearchClick}
                 >
                   <Search className="h-4 w-4 text-muted-foreground" />
