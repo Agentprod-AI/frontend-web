@@ -573,7 +573,7 @@ export function Mail({
               </div>
             </div>
 
-            {isRedirectedFromCampaign && campaignStatus && showStatus && (
+            {/* {isRedirectedFromCampaign && campaignStatus && showStatus && (
               <div className="flex justify-end mr-8">
                 <TooltipProvider>
                   <Tooltip>
@@ -586,7 +586,6 @@ export function Mail({
                           campaignStatus?.total}
                     </TooltipTrigger>
                     <TooltipContent side="top" align="end">
-                      {/* <p className="">Latest Campaign Info</p> */}
                       <p>
                         In progress:{" "}
                         {campaignStatus && campaignStatus?.in_progress}
@@ -603,7 +602,7 @@ export function Mail({
                   </Tooltip>
                 </TooltipProvider>
               </div>
-            )}
+            )} */}
 
             <TabsContent
               value={activeTab}
