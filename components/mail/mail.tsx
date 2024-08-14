@@ -577,7 +577,7 @@ export function Mail({
               <div className="flex justify-end mr-8">
                 <TooltipProvider>
                   <Tooltip>
-                    <TooltipTrigger className="text-xs flex underline hover:text-gray-300 transition-colors ">
+                    <TooltipTrigger className="text-xs flex hover:text-gray-300 transition-colors ">
                       Draft Generated <Info className="h-2 w-2" />
                       {campaignStatus &&
                         "-" +
