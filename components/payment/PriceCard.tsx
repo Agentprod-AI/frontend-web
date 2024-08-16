@@ -12,6 +12,7 @@ import { Button } from "../ui/button";
 import { useUserContext } from "@/context/user-context";
 import { toast } from "sonner";
 import axios from "axios";
+import { useSubscription } from "@/hooks/userSubscription";
 
 declare global {
   interface Window {
@@ -63,6 +64,7 @@ function PriceCard({
   const { user } = useUserContext();
   const [isProcessing, setIsProcessing] = useState(false);
   const [isRazorpayReady, setIsRazorpayReady] = useState(false);
+  const { fetchSubscriptionStatus } = useSubscription();
 
   useEffect(() => {
     const script = document.createElement("script");
@@ -108,8 +110,8 @@ function PriceCard({
         name: "AGENTPROD VENTURES PRIVATE LIMITED",
         description: `Plan: ${title}`,
         order_id: data.orderId,
-        handler: function (response: any) {
-          const res = axios.post(
+        handler: async function (response: any) {
+          const res = await axios.post(
             `${process.env.NEXT_PUBLIC_SERVER_URL}v2/pricing-plans/`,
             {
               user_id: user.id,
@@ -124,6 +126,7 @@ function PriceCard({
           );
           toast.success("Payment Successful!");
           console.log(response);
+          await fetchSubscriptionStatus();
           onCheckoutComplete();
         },
         prefill: {
