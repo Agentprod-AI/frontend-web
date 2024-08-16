@@ -72,6 +72,7 @@ interface Lead {
 }
 
 export default function Training() {
+  const [loadingWriteAI, setLoadingWriteAI] = React.useState(false);
   const [activeTab, setActiveTab] = React.useState("editor");
   const [previewData, setPreviewData] = React.useState<PreviewData | null>(
     null
@@ -318,6 +319,7 @@ export default function Training() {
   };
 
   const handleLetAiWrite = async () => {
+    setLoadingWriteAI(true);
     toast.success("AI is writing your email, it might take some time.");
     try {
       const response = await getAutogenerateTrainingEmail(
@@ -345,6 +347,8 @@ export default function Training() {
       console.log("response from training page", response);
     } catch (error) {
       console.error("Failed to fetch training data:", error);
+    } finally {
+      setLoadingWriteAI(false);
     }
   };
 
@@ -465,10 +469,11 @@ export default function Training() {
       {activeTab === "editor" ? (
         <div>
           <div
-            className="mx-16 mt-3 hover:underline cursor-pointer"
+            className="mx-16 mt-3 hover:underline cursor-pointer flex flex-row gap-1 items-center"
             onClick={handleLetAiWrite}
           >
-            Let AI write email on its own <AutoAwesomeIcon />
+            Let AI write email on its own
+            {loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}
           </div>
           <EditorContent />
         </div>

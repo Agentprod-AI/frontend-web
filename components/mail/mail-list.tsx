@@ -28,6 +28,7 @@ import { MdForwardToInbox } from "react-icons/md";
 import { toast } from "sonner";
 import { LoadingCircle } from "@/app/icons";
 
+
 interface MailListProps {
   items: Conversations[];
   selectedMailId: string | null;
@@ -250,8 +251,8 @@ const MailList: React.FC<MailListProps> = ({
                   </AvatarFallback>
                 </Avatar>
                 <div className="font-semibold w-72 truncate">{`${
-                  item.name || "Punit"
-                } from ${item.company_name || "suki.ai"}`}</div>
+                  item.name || "unknown"
+                } from ${item.company_name || "unknown company"}`}</div>
                 <span className="text-xs">
                   {item.category && getCategoryBadge(item.category)}
                 </span>

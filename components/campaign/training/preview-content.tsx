@@ -44,6 +44,7 @@ function PreviewContent() {
   const [load1, setLoad1] = useState(false);
   const [load2, setLoad2] = useState(false);
   const [campaignType, setCampaignType] = useState("");
+  const [loadingNewPreview, setLoadingNewPreview] = useState(false);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -119,6 +120,7 @@ function PreviewContent() {
   };
 
   const newPreview = async () => {
+    setLoadingNewPreview(true);
     try {
       if (previewType === "previewFromTemplate") {
         toast.success("Regenerating preview");
@@ -191,6 +193,8 @@ function PreviewContent() {
       }
     } catch (error) {
       console.error("Failed to fetch training data:", error);
+    } finally {
+      setLoadingNewPreview(false);
     }
   };
 
@@ -200,7 +204,9 @@ function PreviewContent() {
         <div className="flex justify-center p-6">
           <div className="flex-col w-full">
             <div className="flex justify-end">
-              <Button onClick={newPreview}>New preview</Button>
+              <Button onClick={newPreview}>
+                {loadingNewPreview ? <LoadingCircle /> : "New preview"}
+              </Button>
             </div>
             <div className="flex mt-2 items-center">
               <Avatar className="flex h-10 w-10 items-center justify-center space-y-0 border bg-white mr-2 mt-1">
