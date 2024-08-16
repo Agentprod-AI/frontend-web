@@ -485,15 +485,15 @@ export default function PeopleForm(): JSX.Element {
         let toastIndex = 0;
         const toastInterval = setInterval(() => {
           toast.info(toastMessages[toastIndex % toastMessages.length], {
-            duration: 6000,
+            duration: 10000,
           });
           toastIndex++;
-        }, 6000);
+          clearInterval(toastInterval);
+        }, 10000);
         const response = await axiosInstance.post(
           "https://scraper.agentprod.com/scrape_apollo/",
           scraperBody
         );
-        clearInterval(toastInterval);
         const data = response.data.data;
         console.log("DATA: ", data);
 
