@@ -371,7 +371,9 @@ export function OfferingForm() {
           name="product_offering"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Product Offering</FormLabel>
+              <FormLabel>
+                {campaignType === "Nurturing" ? "Campaign Offering" : "Product Offering"}
+              </FormLabel>
               <FormControl>
                 <Input placeholder="Product" {...field} />
               </FormControl>
@@ -507,7 +509,7 @@ export function OfferingForm() {
             name="company_features"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Company Feature</FormLabel>
+                <FormLabel>Campaign Feature</FormLabel>
                 <FormControl>
                   <CompanyProfile
                     value={[
