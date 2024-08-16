@@ -82,6 +82,7 @@ export interface Lead {
   lead_information: any;
   is_b2b: boolean;
   score: any;
+  company: string;
   qualification_details: any;
 }
 
@@ -125,6 +126,7 @@ export interface Contact {
   lead_information: any;
   is_b2b: boolean;
   score: any;
+  company: string;
   qualification_details: any;
 }
 

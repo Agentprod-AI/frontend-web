@@ -90,7 +90,9 @@ function AudienceTable() {
                 </TableCell>
                 <TableCell>{lead.title}</TableCell>
                 <TableCell>
-                  {lead.employment_history?.[0]?.organization_name || "N/A"}
+                  {lead.employment_history?.[0]?.organization_name ||
+                    lead.company ||
+                    "N/A"}
                 </TableCell>
               </TableRow>
             ))}

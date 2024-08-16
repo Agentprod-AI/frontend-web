@@ -153,7 +153,7 @@ export default function PeopleForm(): JSX.Element {
   const [tab, setTab] = useState("tab1");
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
-
+  const [isLoading, setIsLoading] = useState(false);
   //   const [tags, setTags] = React.useState<Tag[]>([]);
   const [organizationLocationsTags, setOrganizationLocationsTags] =
     React.useState<Tag[]>([]);
@@ -327,7 +327,6 @@ export default function PeopleForm(): JSX.Element {
   };
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
-    // Convert all arrays of objects to arrays of strings
     const formData = {
       q_organization_domains: data.q_organization_domains,
       organization_industry_tag_ids: data.organization_industry_tag_ids,
@@ -346,188 +345,186 @@ export default function PeopleForm(): JSX.Element {
       q_organization_job_titles: data.q_organization_job_titles,
     };
 
-    setPageCompletion("audience", true); // Set the page completion to true
+    setPageCompletion("audience", true);
     console.log("form data", formData);
 
     let shouldCallAPI = false;
 
-    if (!prevInputValues) shouldCallAPI = true;
+    if (!prevInputValues.current) shouldCallAPI = true;
 
-    const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
+    // Construct the Apollo.io URL based on the selected filters
+    let apolloUrl =
+      "https://app.apollo.io/#/people?finderViewId=6674b20eecfedd000184539f&contactEmailStatusV2[]=likely_to_engage&contactEmailStatusV2[]=verified";
 
-    const body = {
-      ...(pages && { page: pages }),
-      ...(formData.per_page && {
-        per_page:
-          formData.per_page > 10
-            ? Math.ceil(formData.per_page / pages)
-            : formData.per_page,
-      }),
-      ...(formData.person_titles && {
-        person_titles: formData.person_titles
-          .map((tag) => tag.text)
-          .filter((text) => text),
-      }),
-      ...(formData.organization_locations && {
-        organization_locations: formData.organization_locations
-          .map((tag) => tag.text)
-          .filter((text) => text),
-      }),
-      organization_num_employees_ranges: checkedFields(
-        checkedCompanyHeadcount,
-        true
-      ),
-      ...(formData.person_seniorities && {
-        person_seniorities: formData.person_seniorities
-          .map((tag) => tag.text.toLowerCase())
-          .filter((text) => text),
-      }),
-      ...(formData.q_organization_domains && {
-        q_organization_domains: formData.q_organization_domains
-          .map((tag) => tag.text)
-          .join("\n")
-          .trim(),
-      }),
-      ...(formData.email_status && {
-        email_status: formData.email_status
-          .map((tag) => tag.text)
-          .filter((text) => text),
-      }),
-      ...(formData.organization_industry_tag_ids && {
-        organization_industry_tag_ids: formData.organization_industry_tag_ids
-          .map((tag) => tag.value)
-          .filter((value) => value),
-      }),
+    // Add page parameter
 
-      ...(formData.q_organization_keyword_tags && {
-        q_organization_keyword_tags: formData.q_organization_keyword_tags
-          .map((tag) => tag.text)
-          .filter((text) => text),
-      }),
+    if (
+      formData.organization_locations &&
+      formData.organization_locations.length > 0
+    ) {
+      apolloUrl += formData.organization_locations
+        .map(
+          (location) =>
+            `&personLocations[]=${encodeURIComponent(location.text)}`
+        )
+        .join("");
+    }
 
-      ...(formData.minimum_company_funding &&
-        formData.maximum_company_funding && {
-          revenue_range: {
-            min: formData.minimum_company_funding.text.toString(),
-            max: formData.maximum_company_funding.text.toString(),
-          },
-        }),
-      ...(formData.organization_job_locations && {
-        organization_job_locations: formData.organization_job_locations
-          .map((tag) => tag.text)
-          .filter((text) => text),
-      }),
-      ...(formData.q_organization_job_titles && {
-        q_organization_job_titles: formData.q_organization_job_titles
-          .map((tag) => tag.text)
-          .filter((text) => text),
-      }),
-      organization_latest_funding_stage_cd: checkedFields(
-        checkedFundingRounds,
-        false
-      ),
+    if (
+      formData.organization_industry_tag_ids &&
+      formData.organization_industry_tag_ids.length > 0
+    ) {
+      apolloUrl += formData.organization_industry_tag_ids
+        .map((industry) => `&organizationIndustryTagIds[]=${industry.value}`)
+        .join("");
+    }
+
+    if (formData.person_titles && formData.person_titles.length > 0) {
+      apolloUrl += formData.person_titles
+        .map((title) => `&personTitles[]=${encodeURIComponent(title.text)}`)
+        .join("");
+    }
+
+    if (formData.person_seniorities && formData.person_seniorities.length > 0) {
+      apolloUrl += formData.person_seniorities
+        .map(
+          (seniority) =>
+            `&personSeniorities[]=${encodeURIComponent(seniority.text)}`
+        )
+        .join("");
+    }
+
+    // Add more filter conditions here as needed
+
+    let pages = 1;
+    if (formData.per_page) {
+      if (formData.per_page <= 25) {
+        pages = 1;
+      } else if (formData.per_page <= 50) {
+        pages = 2;
+      } else if (formData.per_page <= 75) {
+        pages = 3;
+      } else {
+        pages = Math.ceil(formData.per_page / 25);
+      }
+    }
+
+    const scraperBody = {
+      base_url: apolloUrl,
+      num_pages: pages,
+      filters: {
+        person_titles: formData.person_titles?.map((title) => title.text),
+        person_seniorities: formData.person_seniorities?.map(
+          (seniority) => seniority.text
+        ),
+        // Add more filters here as needed
+      },
+      user_id: user.id, // Assuming you have access to the user object
     };
 
-    console.log(body);
+    console.log("Scraper body:", scraperBody);
 
-    if (
-      prevInputValues.current?.company_headcount?.toString() !==
-        formData.company_headcount?.toString() ||
-      prevInputValues.current?.per_page?.text !== body.per_page ||
-      prevInputValues.current?.organization_latest_funding_stage_cd?.toString() !==
-        body.organization_latest_funding_stage_cd?.toString()
-    ) {
-      shouldCallAPI = true;
-      console.log("foo");
-    }
-
-    if (
-      prevInputValues.current?.q_organization_domains
-        ?.map((tag: Tag) => tag.text)
-        .join("\n")
-        .trim() !== body.q_organization_domains?.toString() ||
-      prevInputValues.current?.organization_locations
-        ?.map((tag: Tag) => tag.text)
-        .toString() !== body.organization_locations?.toString() ||
-      prevInputValues.current?.person_seniorities
-        ?.map((tag: Tag) => tag.text.toLowerCase())
-        .toString() !== body.person_seniorities?.toString() ||
-      prevInputValues.current?.person_titles
-        ?.map((tag: Tag) => tag.text)
-        .toString() !== body.person_titles?.toString() ||
-      prevInputValues.current?.email_status
-        ?.map((tag: Tag) => tag.text)
-        .toString() !== body.email_status?.toString() ||
-      prevInputValues.current?.organization_job_locations
-        ?.map((tag: Tag) => tag.text)
-        .toString() !== body.organization_job_locations?.toString() ||
-      prevInputValues.current?.q_organization_job_titles
-        ?.map((tag: Tag) => tag.text)
-        .toString() !== body.q_organization_job_titles?.toString()
-    ) {
-      shouldCallAPI = true;
-      console.log("bar");
-    }
-
-    if (formData) {
-      prevInputValues.current = formData;
-    }
-
-    console.log(shouldCallAPI);
     if (shouldCallAPI) {
       try {
-        console.log(body);
-        console.log("api called");
+        setIsLoading(true);
         setIsTableLoading(true);
-        axiosInstance
-          .post<Lead[]>(`v2/apollo/leads`, body)
-          .then((response: any) => {
-            const data = response.data;
-            console.log("DATA: ", data);
-            data.forEach((person: Lead) => {
-              person.type = "prospective";
-              person.campaign_id = params.campaignId;
-              person.id = uuid();
-            });
-            setLeads(data as Lead[]);
-            setIsTableLoading(false);
 
-            toast.success("Leads fetched successfully");
-          })
-          .catch((error: any) => {
-            console.log(error);
-            if (error.response) {
-              if (error.response.status === 400) {
-                toast.error("Bad request. Please check your input.");
-              } else if (error.response.status === 422) {
-                toast.error("Validation error. Please correct the input data.");
-              } else {
-                toast.error("An error occurred while fetching data.");
-              }
-            } else {
-              toast.error("Network error. Please try again later.");
-            }
+        const toastMessages = [
+          "Initializing lead search engine...",
+          "Connecting to Apollo's vast database of professionals...",
+          "Analyzing your specified criteria for optimal lead matching...",
+          "Filtering prospects based on job titles and seniority levels...",
+          "Examining company sizes to match your target market...",
+          "Geo-targeting leads based on specified locations...",
+          "Applying industry-specific keyword filters...",
+          "Cross-referencing company domains for accuracy...",
+          "Evaluating funding rounds to identify high-potential leads...",
+          "Analyzing revenue data to match your ideal customer profile...",
+          "Implementing advanced filters for precision targeting...",
+          "Verifying email addresses for improved deliverability...",
+          "Assessing technological stack preferences...",
+          "Identifying decision-makers within target organizations...",
+          "Evaluating company growth trajectories...",
+          "Analyzing recent job postings for additional insights...",
+          "Cross-referencing with social media profiles for data enrichment...",
+          "Applying AI algorithms to predict lead quality...",
+          "Filtering out potential duplicates and outdated information...",
+          "Assessing company's digital footprint and online presence...",
+          "Analyzing recent press releases and news mentions...",
+          "Evaluating company's market position and competitors...",
+          "Identifying potential pain points based on industry trends...",
+          "Assessing company's adoption of emerging technologies...",
+          "Analyzing hiring patterns for growth indicators...",
+          "Evaluating potential synergies with your product/service...",
+          "Applying exclusion filters to refine the lead list...",
+          "Assessing lead's potential engagement level...",
+          "Analyzing company's sustainability and ESG initiatives...",
+          "Evaluating recent mergers, acquisitions, or partnerships...",
+          "Assessing company's innovation index and R&D focus...",
+          "Analyzing regional economic factors affecting target companies...",
+          "Evaluating company's customer base and market reach...",
+          "Assessing company culture fit based on available data...",
+          "Analyzing company's digital transformation initiatives...",
+          "Evaluating potential upsell/cross-sell opportunities...",
+          "Assessing company's compliance with industry regulations...",
+          "Analyzing seasonal trends affecting target businesses...",
+          "Evaluating company's social media engagement and influence...",
+          "Assessing lead's previous interactions with similar products/services...",
+          "Analyzing company's customer reviews and satisfaction scores...",
+          "Evaluating potential decision-making timelines...",
+          "Assessing company's adaptability to market changes...",
+          "Analyzing company's partnerships and strategic alliances...",
+          "Evaluating company's thought leadership in the industry...",
+          "Assessing company's participation in relevant events/conferences...",
+          "Performing final quality checks on gathered lead data...",
+          "Compiling comprehensive lead profiles for your review...",
+          "Generating insights and recommendations for outreach strategies...",
+          "Preparing your personalized, high-quality lead list for presentation...",
+        ];
 
-            setError(error instanceof Error ? error.toString() : String(error));
-            setIsTableLoading(false);
+        let toastIndex = 0;
+        const toastInterval = setInterval(() => {
+          toast.info(toastMessages[toastIndex % toastMessages.length], {
+            duration: 6000,
           });
+          toastIndex++;
+        }, 6000);
+        const response = await axiosInstance.post(
+          "https://scraper.agentprod.com/scrape_apollo/",
+          scraperBody
+        );
+        clearInterval(toastInterval);
+        const data = response.data.data;
+        console.log("DATA: ", data);
 
-        console.log("this is my leads" + leads);
+        // Process the received data
+        const processedLeads = data.map((person: any) => ({
+          ...person,
+          type: "prospective",
+          campaign_id: params.campaignId,
+          id: uuid(),
+        }));
+        setLeads(processedLeads);
+        console.log(leads);
 
-        console.log("BODY: ", body);
-      } catch (err) {
-        console.log("ERR: ", err);
-
-        toast.error("Error fetching data");
+        setIsTableLoading(false);
+        toast.success("Leads fetched successfully");
+      } catch (error) {
+        console.error(error);
+        toast.error("An error occurred while fetching data.");
+        setError(error instanceof Error ? error.toString() : String(error));
         setTab("tab1");
+        setIsTableLoading(false);
       } finally {
+        setIsLoading(false);
+        setIsTableLoading(false);
         setTab("tab2");
-        console.log("this is my leads" + leads);
-        setAllFilters({ ...body });
+        console.log("Fetched leads:", leads);
+        setAllFilters({ ...scraperBody });
         shouldCallAPI = false;
       }
     } else {
-      toast.error("No need to call API");
+      toast.info("No need to call API");
       setIsTableLoading(false);
     }
   };
@@ -638,6 +635,7 @@ export default function PeopleForm(): JSX.Element {
       is_b2b: lead.is_b2b,
       score: lead.score,
       qualification_details: lead.qualification_details || String,
+      company: lead.company,
     }));
   }
 
@@ -1073,7 +1071,13 @@ export default function PeopleForm(): JSX.Element {
           >
             <TabsTrigger value="tab1">Edit</TabsTrigger>
             <TabsTrigger value="tab2" type="submit">
-              Preview
+              {isLoading ? (
+                <div>
+                  <LoadingCircle />
+                </div>
+              ) : (
+                "Preview"
+              )}
             </TabsTrigger>
           </TabsList>
 
