@@ -3,9 +3,10 @@
 // import { NameAction } from "./name-action";
 // import { Lead } from "@/context/lead-user";
 // import { Checkbox } from "@/components/ui/checkbox";
-// import { Trash } from "lucide-react";
+// import { Trash, User } from "lucide-react";
 // import { Button } from "@/components/ui/button";
 // import Image from "next/image";
+// import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 // export const DeleteAction = ({
 //   leadId,
@@ -25,17 +26,23 @@
 //   );
 // };
 
+// const DEFAULT_AVATAR =
+//   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+";
+
 // export const leadColumns: ColumnDef<Lead>[] = [
 //   {
 //     accessorKey: "photo_url",
 //     header: "AVATAR",
 //     cell: ({ row }) => (
 //       <Image
-//         src={row.original.photo_url && row.original.photo_url }
-//         alt="Avatar"
+//         src={row.original.photo_url ?? DEFAULT_AVATAR}
+//         alt={`Avatar for ${row.original.name}`}
 //         width={40}
 //         height={40}
 //         style={{ borderRadius: "50%" }}
+//         // onError={(e) => {
+//         //   e.currentTarget.src = DEFAULT_AVATAR;
+//         // }}
 //       />
 //     ),
 //   },
@@ -50,11 +57,11 @@
 //   },
 //   {
 //     accessorFn: (row) =>
-//       row.employment_history?.[0]?.organization_name || "N/A",
+//       row.employment_history?.[0]?.organization_name ?? row.company,
 //     header: "COMPANY",
 //     cell: ({ row }) => {
 //       const companyName =
-//         row.original.employment_history?.[0]?.organization_name || "N/A";
+//         row.original.employment_history?.[0]?.organization_name ?? "N/A";
 //       return <span>{companyName}</span>;
 //     },
 //   },
@@ -65,15 +72,30 @@
 //     accessorKey: "name",
 //     header: "NAME",
 //     cell: ({ row }) => (
-//       <div className="flex items-center gap-3">
-//         <Image
-//           src={row.original.photo_url && row.original.photo_url}
-//           alt=""
+//       <div key={row.id} className="flex items-center gap-3">
+//         {/* <Image
+//           src={row.original.photo_url ?? DEFAULT_AVATAR}
+//           alt={`Avatar for ${row.original.name}`}
 //           width={30}
 //           height={30}
 //           style={{ borderRadius: "50%" }}
+//           // onError={(e) => {
+//           //   e.currentTarget.src = DEFAULT_AVATAR;
+//           // }}
 //         />
-//         <NameAction data={row.original} />
+//         <NameAction data={row.original} /> */}
+//         <div key={row.id} className="flex items-center gap-3">
+//           <Avatar className="h-6 w-6">
+//             <AvatarImage
+//               src={row.original.photo_url}
+//               alt={`Avatar for ${row.original.name}`}
+//             />
+//             <AvatarFallback>
+//               <User className="h-4 w-4" />
+//             </AvatarFallback>
+//           </Avatar>
+//           <NameAction data={row.original} />
+//         </div>
 //       </div>
 //     ),
 //   },
@@ -83,11 +105,11 @@
 //   },
 //   {
 //     accessorFn: (row) =>
-//       row.employment_history?.[0]?.organization_name || "N/A",
+//       row.employment_history?.[0]?.organization_name ?? "N/A",
 //     header: "COMPANY",
 //     cell: ({ row }) => {
 //       const companyName =
-//         row.original.employment_history?.[0]?.organization_name || "N/A";
+//         row.original.employment_history?.[0]?.organization_name ?? row.company;
 //       return <span>{companyName}</span>;
 //     },
 //   },
@@ -133,20 +155,20 @@
 //   },
 //   {
 //     accessorFn: (row) =>
-//       row.employment_history?.[0]?.organization_name || "N/A",
+//       row.employment_history?.[0]?.organization_name ?? "N/A",
 //     header: "COMPANY",
 //     cell: ({ row }) => {
 //       const companyName =
-//         row.original.employment_history?.[0]?.organization_name || "N/A";
+//         row.original.employment_history?.[0]?.organization_name ?? "N/A";
 //       return <span>{companyName}</span>;
 //     },
 //   },
 //   {
-//     accessorKey: "responded",
+//     accessorKey: "last_replied",
 //     header: "RESPONDED",
 //   },
 //   {
-//     accessorKey: "lastContacted",
+//     accessorKey: "last_contacted",
 //     header: "LAST CONTACTED",
 //   },
 // ];
@@ -179,7 +201,6 @@ export const DeleteAction = ({
   );
 };
 
-// const DEFAULT_AVATAR = "/path/to/default/avatar.png";
 const DEFAULT_AVATAR =
   "data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyNCIgaGVpZ2h0PSIyNCIgdmlld0JveD0iMCAwIDI0IDI0IiBmaWxsPSJub25lIiBzdHJva2U9ImN1cnJlbnRDb2xvciIgc3Ryb2tlLXdpZHRoPSIyIiBzdHJva2UtbGluZWNhcD0icm91bmQiIHN0cm9rZS1saW5lam9pbj0icm91bmQiIGNsYXNzPSJsdWNpZGUgbHVjaWRlLXVzZXIiPjxwYXRoIGQ9Ik0xOSAyMXYtMmE0IDQgMCAwIDAtNC00SDlhNCA0IDAgMCAwLTQgNHYyIi8+PGNpcmNsZSBjeD0iMTIiIGN5PSI3IiByPSI0Ii8+PC9zdmc+";
 
@@ -194,9 +215,6 @@ export const leadColumns: ColumnDef<Lead>[] = [
         width={40}
         height={40}
         style={{ borderRadius: "50%" }}
-        // onError={(e) => {
-        //   e.currentTarget.src = DEFAULT_AVATAR;
-        // }}
       />
     ),
   },
@@ -211,11 +229,12 @@ export const leadColumns: ColumnDef<Lead>[] = [
   },
   {
     accessorFn: (row) =>
-      row.employment_history?.[0]?.organization_name ?? "N/A",
+      row.employment_history?.[0]?.organization_name ?? row.company,
     header: "COMPANY",
     cell: ({ row }) => {
       const companyName =
-        row.original.employment_history?.[0]?.organization_name ?? "N/A";
+        row.original.employment_history?.[0]?.organization_name ??
+        row.original.company;
       return <span>{companyName}</span>;
     },
   },
@@ -227,44 +246,41 @@ export const contactsColumn: ColumnDef<Lead>[] = [
     header: "NAME",
     cell: ({ row }) => (
       <div key={row.id} className="flex items-center gap-3">
-        {/* <Image
-          src={row.original.photo_url ?? DEFAULT_AVATAR}
-          alt={`Avatar for ${row.original.name}`}
-          width={30}
-          height={30}
-          style={{ borderRadius: "50%" }}
-          // onError={(e) => {
-          //   e.currentTarget.src = DEFAULT_AVATAR;
-          // }}
-        />
-        <NameAction data={row.original} /> */}
-        <div key={row.id} className="flex items-center gap-3">
-          <Avatar className="h-6 w-6">
-            <AvatarImage
-              src={row.original.photo_url}
-              alt={`Avatar for ${row.original.name}`}
-            />
-            <AvatarFallback>
-              <User className="h-4 w-4" />
-            </AvatarFallback>
-          </Avatar>
-          <NameAction data={row.original} />
-        </div>
+        <Avatar className="h-6 w-6">
+          <AvatarImage
+            src={row.original.photo_url}
+            alt={`Avatar for ${row.original.name}`}
+          />
+          <AvatarFallback>
+            <User className="h-4 w-4" />
+          </AvatarFallback>
+        </Avatar>
+        <NameAction data={row.original} />
       </div>
     ),
   },
   {
     accessorKey: "title",
     header: "ROLE",
+    cell: ({ row }) => (
+      <div className="truncate max-w-[200px]" title={row.original.title}>
+        {row.original.title}
+      </div>
+    ),
   },
   {
     accessorFn: (row) =>
-      row.employment_history?.[0]?.organization_name ?? "N/A",
+      row.employment_history?.[0]?.organization_name ?? row.company,
     header: "COMPANY",
     cell: ({ row }) => {
       const companyName =
-        row.original.employment_history?.[0]?.organization_name ?? "N/A";
-      return <span>{companyName}</span>;
+        row.original.employment_history?.[0]?.organization_name ??
+        row.original.company;
+      return (
+        <div className="truncate max-w-[200px]" title={companyName}>
+          {companyName}
+        </div>
+      );
     },
   },
   {
@@ -276,7 +292,6 @@ export const contactsColumn: ColumnDef<Lead>[] = [
     header: "LAST CONTACTED",
   },
 ];
-
 export const selectContactsColumn: ColumnDef<Lead>[] = [
   {
     id: "select",
@@ -309,11 +324,12 @@ export const selectContactsColumn: ColumnDef<Lead>[] = [
   },
   {
     accessorFn: (row) =>
-      row.employment_history?.[0]?.organization_name ?? "N/A",
+      row.employment_history?.[0]?.organization_name ?? row.company,
     header: "COMPANY",
     cell: ({ row }) => {
       const companyName =
-        row.original.employment_history?.[0]?.organization_name ?? "N/A";
+        row.original.employment_history?.[0]?.organization_name ??
+        row.original.company;
       return <span>{companyName}</span>;
     },
   },

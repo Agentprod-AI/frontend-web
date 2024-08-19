@@ -636,6 +636,7 @@ export default function PeopleForm(): JSX.Element {
       score: lead.score,
       qualification_details: lead.qualification_details || String,
       company: lead.company,
+      phone: lead.phone,
     }));
   }
 

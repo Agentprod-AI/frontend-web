@@ -84,6 +84,7 @@ export interface Lead {
   score: any;
   company: string;
   qualification_details: any;
+  phone: string;
 }
 
 export interface Contact {
@@ -128,6 +129,7 @@ export interface Contact {
   score: any;
   company: string;
   qualification_details: any;
+  phone: string;
 }
 
 // Define the state structure for our context
