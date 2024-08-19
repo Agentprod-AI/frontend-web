@@ -114,7 +114,7 @@ export const PeopleProfileSheet = ({
               </div>
             </div>
             <p className="text-sm text-muted-foreground pt-4 whitespace-normal w-full">
-              {data.headline}
+              {data.headline }
             </p>
             <br />
             <div className="pt-4 space-y-3 w-full">
@@ -135,14 +135,14 @@ export const PeopleProfileSheet = ({
                 <span className="text-sm text-muted-foreground whitespace-normal w-full">
                   {data?.employment_history
                     ? data?.employment_history[0]?.organization_name
-                    : null}
+                    : data.company}
                 </span>
               </div>
               {data.phone_numbers && (
                 <div className="flex space-x-2 w-full">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground whitespace-normal w-full">
-                    {data.phone_numbers[0].sanitized_number || "N/A"}
+                    {data.phone_numbers[0].sanitized_number || data.phone}
                   </span>
                 </div>
               )}
