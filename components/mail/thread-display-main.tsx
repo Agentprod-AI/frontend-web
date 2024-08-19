@@ -192,6 +192,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
+    // console.log("jajaja", email);
 
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
@@ -485,8 +486,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               <span className="text-sm font-semibold">
                 {leads[0]?.email
                   ? email.sender !== leads[0].email
-                    ? "You to " + leads[0].first_name
-                    : leads[0].first_name + " to you"
+                    ? "You to " + leads[0].name
+                    : leads[0].name + " to you"
                   : ""}
               </span>
               <div className="flex gap-3">
@@ -956,7 +957,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <Card className="w-full mr-5 ">
                   <div className="flex gap-5 p-4 items-center">
                     <span className="text-sm font-semibold">
-                      {"You to " + leads[0]?.first_name}
+                      {"You to " + leads[0]?.name}
                     </span>
                     <div className="flex gap-3">
                       <span className="text-green-500 text-sm ">
@@ -1089,7 +1090,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                {"You to " + leads[0]?.first_name}
+                {"You to " + leads[0]?.name}
               </span>
               <div className="flex gap-3">
                 {/* <span className="text-gray-500 text-sm  ">8 hours ago</span> */}
@@ -1226,8 +1227,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   <User className="h-4 w-4 text-gray-400" />
                 </div>
                 <div className="text-xs ml-1">
-                  {leads[0].first_name} was added in{" "}
-                  {matchingCampaign.campaign_type}{" "}
+                  {leads[0].name} was added in {matchingCampaign.campaign_type}{" "}
                   {matchingCampaign.campaign_name} campaign
                 </div>
               </div>
