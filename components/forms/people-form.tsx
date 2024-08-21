@@ -36,6 +36,8 @@ import { keywords } from "./formUtils";
 import { ScrollArea } from "../ui/scroll-area";
 import { useButtonStatus } from "@/context/button-status";
 import AudienceTable from "../ui/AudienceTable";
+import axios from "axios";
+import { useSubscription } from "@/hooks/userSubscription";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -149,6 +151,7 @@ export default function PeopleForm(): JSX.Element {
   const [editFilters, setEditFilters] = React.useState<any>(null);
 
   const { leads, setLeads } = useLeads();
+  const { isSubscribed } = useSubscription();
 
   const [tab, setTab] = useState("tab1");
   const [isTableLoading, setIsTableLoading] = useState(false);
@@ -422,8 +425,16 @@ export default function PeopleForm(): JSX.Element {
       user_id: user.id, // Assuming you have access to the user object
     };
 
-    console.log("Scraper body:", scraperBody);
-
+    const leadLenResponse = await axiosInstance.get(`v2/lead/all/${user?.id}`);
+    if (
+      leadLenResponse.data.length > 300 + pages * 25 &&
+      isSubscribed === false
+    ) {
+      toast.warning("Your free account has reached the limit of 300 leads");
+      shouldCallAPI = false;
+    } else if (isSubscribed === true) {
+      shouldCallAPI = true;
+    }
     if (shouldCallAPI) {
       try {
         setIsLoading(true);
@@ -490,6 +501,7 @@ export default function PeopleForm(): JSX.Element {
           toastIndex++;
           clearInterval(toastInterval);
         }, 10000);
+
         const response = await axiosInstance.post(
           "https://scraper.agentprod.com/scrape_apollo/",
           scraperBody
@@ -506,6 +518,7 @@ export default function PeopleForm(): JSX.Element {
         }));
         setLeads(processedLeads);
         console.log(leads);
+        setTab("tab2");
 
         setIsTableLoading(false);
         toast.success("Leads fetched successfully");
@@ -518,13 +531,12 @@ export default function PeopleForm(): JSX.Element {
       } finally {
         setIsLoading(false);
         setIsTableLoading(false);
-        setTab("tab2");
         console.log("Fetched leads:", leads);
         setAllFilters({ ...scraperBody });
         shouldCallAPI = false;
       }
     } else {
-      toast.info("No need to call API");
+      // toast.info("No need to call API");
       setIsTableLoading(false);
     }
   };
