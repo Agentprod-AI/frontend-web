@@ -115,6 +115,7 @@ export const SelectFromExisting = () => {
       qualification_details: lead.qualification_details || String,
       company: lead.company,
       phone: lead.phone,
+      technologies: lead.technologies || [],
     }));
   }
 

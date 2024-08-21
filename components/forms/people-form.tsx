@@ -637,6 +637,7 @@ export default function PeopleForm(): JSX.Element {
       qualification_details: lead.qualification_details || String,
       company: lead.company,
       phone: lead.phone,
+      technologies: lead.technologies || [],
     }));
   }
 
@@ -819,7 +820,7 @@ export default function PeopleForm(): JSX.Element {
         );
       setCheckedFundingRounds(formatFundingHeadcount);
       const formatCheckedHeadcount =
-        allFiltersFromDB.organization_num_employees_ranges.map(
+        allFiltersFromDB?.organization_num_employees_ranges?.map(
           (range: string) => {
             return range.split(",").join("-");
           }
