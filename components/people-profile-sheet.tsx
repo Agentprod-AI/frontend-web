@@ -38,6 +38,8 @@ export const PeopleProfileSheet = ({
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
   const [painPointsCollapsibleOpen, setPainPointsCollapsibleOpen] =
     useState(false);
+  const [technologiesCollapsibleOpen, setTechnologiesCollapsibleOpen] =
+    useState(false);
   const [complimentsCollapsibleOpen, setComplimentsCollapsibleOpen] =
     useState(false);
   const [valueCollapsibleOpen, setValueCollapsibleOpen] = useState(false);
@@ -114,7 +116,7 @@ export const PeopleProfileSheet = ({
               </div>
             </div>
             <p className="text-sm text-muted-foreground pt-4 whitespace-normal w-full">
-              {data.headline }
+              {data.headline}
             </p>
             <br />
             <div className="pt-4 space-y-3 w-full">
@@ -410,6 +412,44 @@ export const PeopleProfileSheet = ({
                     })}
                   </CollapsibleContent>
                 </>
+              )}
+            </Collapsible>
+
+            <br />
+            <Collapsible
+              open={technologiesCollapsibleOpen}
+              onOpenChange={setTechnologiesCollapsibleOpen}
+              className="pt-4 space-y-2 text-muted-foreground w-full"
+            >
+              <div className="flex items-center justify-between space-x-4 w-full">
+                <h4 className="text-sm font-semibold">Technologies</h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
+              </div>
+              {data?.technologies && data.technologies.length > 0 ? (
+                <>
+                  <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                    <span>{data.technologies[0]}</span>
+                  </div>
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.technologies.slice(1).map((val, ind) => (
+                      <div
+                        className="flex px-2 py-1 font-mono text-xs justify-between w-full"
+                        key={`e_his${ind + 1}`}
+                      >
+                        <span className="w-full whitespace-normal">{val}</span>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </>
+              ) : (
+                <div className="flex px-2 py-1 font-mono text-xs justify-between w-full">
+                  <span>No data available</span>
+                </div>
               )}
             </Collapsible>
 
