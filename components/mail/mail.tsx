@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 "use client";
@@ -173,7 +174,7 @@ export function Mail({
       const checkAndFetchStatus = async () => {
         const status = await fetchCampaignStatus(newCampaignId);
         if (status && status.complete === status.total) {
-          console.log("Hogaya bhai hogaya");
+          console.log("status completed");
           setShowStatus(false);
           toast.success("Draft Generation Completed");
           clearInterval(intervalId);
@@ -184,7 +185,7 @@ export function Mail({
       checkAndFetchStatus();
 
       // Set up interval
-      intervalId = setInterval(checkAndFetchStatus, 5000);
+      // intervalId = setInterval(checkAndFetchStatus, 5000); <- uncomment this when you need API Polling.
 
       // Clear localStorage items
       localStorage.removeItem("newCampaignId");
@@ -369,6 +370,7 @@ export function Mail({
 
   const handleCampaignChange = React.useCallback(
     (newCampaign: { campaignName: string; campaignId: string } | null) => {
+      console.log("camp filtered");
       setCampaign(newCampaign);
       setPage(1);
       setMails([]);
