@@ -1,78 +1,6 @@
-/* eslint-disable no-console */
 // "use client";
 
-// import React, { useMemo } from "react";
-// import { DataTable } from "@/components/ui/data-table";
-// import { Heading } from "@/components/ui/heading";
-// import { Separator } from "@/components/ui/separator";
-// import { leadColumns, contactsColumn, selectContactsColumn } from "./columns";
-// import { Organization, Lead, Contact, useLeads } from "@/context/lead-user";
-
-// function isOrganization(object: any): object is Organization {
-//   return (object as Organization).type === "company";
-// }
-
-// export const AudienceTableClient = ({
-//   isContacts,
-//   contacts,
-//   checkboxes,
-// }: {
-//   isContacts?: boolean;
-//   contacts?: Contact[];
-//   checkboxes?: boolean;
-// }) => {
-//   const { leads } = useLeads();
-
-//   const sortedData = useMemo(() => {
-//     if (isContacts && Array.isArray(leads)) {
-//       return [...leads].sort((a, b) => {
-//         const nameA = (a as Contact).name || "";
-//         const nameB = (b as Contact).name || "";
-//         return nameA.localeCompare(nameB);
-//       });
-//     }
-//     return leads;
-//   }, [leads, isContacts]);
-
-//   let tableColumns: any;
-//   let tableDataComponent;
-
-//   if (isContacts) {
-//     tableColumns = checkboxes ? selectContactsColumn : contactsColumn;
-//     tableDataComponent = (
-//       <>
-//         <DataTable<Contact, (typeof sortedData)[0]>
-//           searchKey="name"
-//           columns={tableColumns}
-//           data={sortedData as Contact[]}
-//           simple={checkboxes ? false : true}
-//         />
-//       </>
-//     );
-//   } else {
-//     tableColumns = leadColumns;
-//     tableDataComponent = (
-//       <DataTable<Lead, (typeof sortedData)[0]>
-//         searchKey="name"
-//         columns={tableColumns}
-//         data={sortedData as Lead[]}
-//         simple={true}
-//       />
-//     );
-//   }
-
-//   return (
-//     <>
-//       <div className="flex items-start justify-between pb-2"></div>
-//       <Separator />
-//       {tableDataComponent}
-//     </>
-//   );
-// };
-
-// "use client";
-
-// import React, { useMemo } from "react";
+// import React from "react";
 // import { DataTable } from "@/components/ui/data-table";
 // import { Separator } from "@/components/ui/separator";
 // import {
@@ -81,97 +9,72 @@
 //   selectContactsColumn,
 //   DeleteAction,
 // } from "./columns";
-// import { Organization, Lead, Contact, useLeads } from "@/context/lead-user";
-// import axiosInstance from "@/utils/axiosInstance";
-// import { toast } from "sonner";
+// import { Lead, Contact, useLeads } from "@/context/lead-user";
 
-// function isOrganization(object: any): object is Organization {
-//   return (object as Organization).type === "company";
+// interface AudienceTableClientProps {
+//   isContacts?: boolean;
+//   checkboxes?: boolean;
+//   onDelete: (id: string) => void;
 // }
 
-// export const AudienceTableClient = ({
-//   isContacts,
-//   contacts,
-//   checkboxes,
-// }: {
-//   isContacts?: boolean;
-//   contacts?: Contact[];
-//   checkboxes?: boolean;
+// export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
+//   isContacts = true,
+//   checkboxes = false,
+//   onDelete,
 // }) => {
-//   const { leads, setLeads } = useLeads();
-
-//   const sortedData = useMemo(() => {
-//     if (isContacts && Array.isArray(leads)) {
-//       return [...leads].sort((a, b) => {
-//         const nameA = (a as Contact).name || "";
-//         const nameB = (b as Contact).name || "";
-//         return nameA.localeCompare(nameB);
-//       });
-//     }
-//     return leads;
-//   }, [leads, isContacts]);
-
-//   const handleDelete = async (id: string) => {
-//     try {
-//       const response = await axiosInstance.delete(`v2/lead/${id}`);
-//       console.log("delete", response);
-//       toast.success("Lead Deleted Successfully");
-//       setLeads(leads.filter((lead) => lead.id !== id));
-//     } catch (error) {
-//       console.error("Error deleting lead:", error);
-//       toast.warning("Unable to delete leads");
-//     }
-//   };
-
-//   let tableColumns: any;
-//   let tableDataComponent;
+//   const { leads } = useLeads();
 
 //   if (isContacts) {
-//     tableColumns = checkboxes ? selectContactsColumn : contactsColumn;
-//     tableDataComponent = (
+//     const contactColumns = checkboxes ? selectContactsColumn : contactsColumn;
+//     const columnsWithDelete = [
+//       ...contactColumns,
+//       {
+//         id: "actions",
+//         cell: ({ row }: { row: any }) => (
+//           <DeleteAction leadId={row.original.id} onDelete={onDelete} />
+//         ),
+//       },
+//     ];
+//     return (
 //       <>
-//         <DataTable<Contact, (typeof sortedData)[0]>
+//         <div className="flex items-start justify-between pb-2"></div>
+//         <Separator />
+//         <DataTable<Lead, Contact>
 //           searchKey="name"
-//           columns={tableColumns}
-//           data={sortedData as Contact[]}
-//           simple={checkboxes ? false : true}
-//           onDelete={handleDelete}
+//           columns={columnsWithDelete}
+//           data={leads as Lead[]}
+//           simple={!checkboxes}
 //         />
 //       </>
 //     );
 //   } else {
-//     tableColumns = [
+//     const leadColumnsWithDelete = [
 //       ...leadColumns,
 //       {
 //         id: "actions",
 //         cell: ({ row }: { row: any }) => (
-//           <DeleteAction leadId={row.original.id} onDelete={handleDelete} />
+//           <DeleteAction leadId={row.original.id} onDelete={onDelete} />
 //         ),
 //       },
 //     ];
-//     tableDataComponent = (
-//       <DataTable<Lead, (typeof sortedData)[0]>
-//         searchKey="name"
-//         columns={tableColumns}
-//         data={sortedData as Lead[]}
-//         simple={true}
-//         onDelete={handleDelete}
-//       />
+//     return (
+//       <>
+//         <div className="flex items-start justify-between pb-2"></div>
+//         <Separator />
+//         <DataTable<Lead, Contact>
+//           searchKey="name"
+//           columns={leadColumnsWithDelete}
+//           data={leads as Lead[]}
+//           simple={true}
+//         />
+//       </>
 //     );
 //   }
-
-//   return (
-//     <>
-//       <div className="flex items-start justify-between pb-2"></div>
-//       <Separator />
-//       {tableDataComponent}
-//     </>
-//   );
 // };
 
 "use client";
 
-import React, { useMemo } from "react";
+import React from "react";
 import { DataTable } from "@/components/ui/data-table";
 import { Separator } from "@/components/ui/separator";
 import {
@@ -181,75 +84,62 @@ import {
   DeleteAction,
 } from "./columns";
 import { Lead, Contact, useLeads } from "@/context/lead-user";
-import axiosInstance from "@/utils/axiosInstance";
-import { toast } from "sonner";
+import { ColumnDef } from "@tanstack/react-table";
 
-export const AudienceTableClient = ({
-  isContacts,
-  checkboxes,
-}: {
+interface AudienceTableClientProps {
   isContacts?: boolean;
   checkboxes?: boolean;
+  onDelete?: (id: string) => void;
+}
+
+export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
+  isContacts = true,
+  checkboxes = false,
+  onDelete,
 }) => {
-  const { leads, setLeads } = useLeads();
+  const { leads } = useLeads();
 
-  const sortedData = useMemo(() => {
-    if (isContacts) {
-      return leads
-        .filter((lead): lead is Contact => "user_id" in lead)
-        .sort((a, b) => a.name.localeCompare(b.name));
+  const addDeleteColumn = (columns: ColumnDef<Lead, any>[]) => {
+    if (onDelete) {
+      return [
+        ...columns,
+        {
+          id: "actions",
+          cell: ({ row }: { row: any }) => (
+            <DeleteAction leadId={row.original.id} onDelete={onDelete} />
+          ),
+        },
+      ];
     }
-    return leads
-      .filter((lead): lead is Lead => !("user_id" in lead))
-      .sort((a, b) => a.name.localeCompare(b.name));
-  }, [leads, isContacts]);
-
-  const handleDelete = async (id: string) => {
-    try {
-      await axiosInstance.delete(`v2/lead/${id}`);
-      toast.success("Lead Deleted Successfully");
-      setLeads(leads.filter((lead) => lead.id !== id) as (Lead[] | Contact[]));
-    } catch (error) {
-      console.error("Error deleting lead:", error);
-      toast.warning("Unable to delete lead");
-    }
+    return columns;
   };
 
   if (isContacts) {
     const contactColumns = checkboxes ? selectContactsColumn : contactsColumn;
+    const columnsWithOptionalDelete = addDeleteColumn(contactColumns);
     return (
       <>
         <div className="flex items-start justify-between pb-2"></div>
         <Separator />
-        <DataTable<Contact, (typeof sortedData)[0]>
+        <DataTable<Lead, Contact>
           searchKey="name"
-          columns={contactColumns as Contact[]}
-          data={sortedData as Contact[]}
+          columns={columnsWithOptionalDelete}
+          data={leads as Lead[]}
           simple={!checkboxes}
-          onDelete={handleDelete}
         />
       </>
     );
   } else {
-    const leadColumnsWithDelete = [
-      ...leadColumns,
-      {
-        id: "actions",
-        cell: ({ row }: { row: any }) => (
-          <DeleteAction leadId={row.original.id} onDelete={handleDelete} />
-        ),
-      },
-    ];
+    const leadColumnsWithOptionalDelete = addDeleteColumn(leadColumns);
     return (
       <>
         <div className="flex items-start justify-between pb-2"></div>
         <Separator />
-        <DataTable<Lead, (typeof sortedData)[0]>
+        <DataTable<Lead, Contact>
           searchKey="name"
-          columns={leadColumnsWithDelete}
-          data={sortedData as Lead[]}
+          columns={leadColumnsWithOptionalDelete}
+          data={leads as Lead[]}
           simple={true}
-          onDelete={handleDelete}
         />
       </>
     );
