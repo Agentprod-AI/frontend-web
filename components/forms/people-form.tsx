@@ -388,6 +388,41 @@ export default function PeopleForm(): JSX.Element {
         .join("");
     }
 
+    if (checkedCompanyHeadcount && checkedCompanyHeadcount.length > 0) {
+      checkedCompanyHeadcount.forEach((range) => {
+        const [min, max] = range.split("-");
+        apolloUrl += `&organizationNumEmployeesRanges[]=${min},${
+          max === "x" ? "" : max
+        }`;
+      });
+    }
+
+    if (
+      data.q_organization_keyword_tags &&
+      data.q_organization_keyword_tags.length > 0
+    ) {
+      data.q_organization_keyword_tags.forEach((tag) => {
+        apolloUrl += `&qOrganizationKeywordTags[]=${encodeURIComponent(
+          tag.text
+        )}`;
+      });
+      // Add included fields for keyword search
+      apolloUrl +=
+        "&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name";
+    }
+
+    if (
+      formData.organization_locations &&
+      formData.organization_locations.length > 0
+    ) {
+      apolloUrl += formData.organization_locations
+        .map(
+          (location) =>
+            `&personLocations[]=${encodeURIComponent(location.text)}`
+        )
+        .join("");
+    }
+
     if (formData.person_seniorities && formData.person_seniorities.length > 0) {
       apolloUrl += formData.person_seniorities
         .map(
