@@ -411,6 +411,12 @@ export default function PeopleForm(): JSX.Element {
         "&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name";
     }
 
+    if (checkedFundingRounds && checkedFundingRounds.length > 0) {
+      checkedFundingRounds.forEach((round) => {
+        apolloUrl += `&organizationLatestFundingStageCd[]=${round}`;
+      });
+    }
+
     if (
       formData.organization_locations &&
       formData.organization_locations.length > 0
@@ -455,9 +461,34 @@ export default function PeopleForm(): JSX.Element {
         person_seniorities: formData.person_seniorities?.map(
           (seniority) => seniority.text
         ),
-        // Add more filters here as needed
+        
+        organization_num_employees_ranges: checkedCompanyHeadcount,
+        organization_locations: formData.organization_locations?.map(
+          (location) => location.text
+        ),
+        q_organization_keyword_tags: formData.q_organization_keyword_tags?.map(
+          (tag) => tag.text
+        ),
+        organization_industry_tag_ids:
+          formData.organization_industry_tag_ids?.map((tag) => tag.value),
+        q_organization_domains: formData.q_organization_domains?.map(
+          (domain) => domain.text
+        ),
+        organization_latest_funding_stage_cd: checkedFundingRounds,
+        revenue_range: {
+          min: formData.minimum_company_funding?.text,
+          max: formData.maximum_company_funding?.text,
+        },
+        q_organization_job_titles: formData.q_organization_job_titles?.map(
+          (title) => title.text
+        ),
+        organization_job_locations: formData.organization_job_locations?.map(
+          (location) => location.text
+        ),
+        email_status: formData.email_status,
+        per_page: formData.per_page,
       },
-      user_id: user.id, // Assuming you have access to the user object
+      user_id: user.id,
     };
 
     const leadLenResponse = await axiosInstance.get(`v2/lead/all/${user?.id}`);
