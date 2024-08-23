@@ -453,43 +453,33 @@ export default function PeopleForm(): JSX.Element {
       }
     }
 
-    const scraperBody = {
-      base_url: apolloUrl,
-      num_pages: pages,
-      filters: {
-        person_titles: formData.person_titles?.map((title) => title.text),
-        person_seniorities: formData.person_seniorities?.map(
-          (seniority) => seniority.text
-        ),
-        
-        organization_num_employees_ranges: checkedCompanyHeadcount,
-        organization_locations: formData.organization_locations?.map(
-          (location) => location.text
-        ),
-        q_organization_keyword_tags: formData.q_organization_keyword_tags?.map(
-          (tag) => tag.text
-        ),
-        organization_industry_tag_ids:
-          formData.organization_industry_tag_ids?.map((tag) => tag.value),
-        q_organization_domains: formData.q_organization_domains?.map(
-          (domain) => domain.text
-        ),
-        organization_latest_funding_stage_cd: checkedFundingRounds,
-        revenue_range: {
-          min: formData.minimum_company_funding?.text,
-          max: formData.maximum_company_funding?.text,
-        },
-        q_organization_job_titles: formData.q_organization_job_titles?.map(
-          (title) => title.text
-        ),
-        organization_job_locations: formData.organization_job_locations?.map(
-          (location) => location.text
-        ),
-        email_status: formData.email_status,
-        per_page: formData.per_page,
-      },
-      user_id: user.id,
+    const getRandomEmail = () => {
+      const emailArray = [
+        "nisheet@agentprod.com",
+        "info@agentprod.com",
+        // "muskaan@agentprodapp.com",
+      ];
+      const randomIndex = Math.floor(Math.random() * emailArray.length);
+      return emailArray[randomIndex];
     };
+
+    const createScraperBody = (email: string) => ({
+      count: formData.per_page,
+      email: email,
+      getEmails: true,
+      guessedEmails: true,
+      maxDelay: 15,
+      minDelay: 8,
+      password: "Agentprod06ms",
+      searchUrl: apolloUrl,
+      startPage: 1,
+      waitForVerification: true,
+      proxy: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"],
+        apifyProxyCountry: "IN",
+      },
+    });
 
     const leadLenResponse = await axiosInstance.get(`v2/lead/all/${user?.id}`);
     if (
@@ -508,54 +498,7 @@ export default function PeopleForm(): JSX.Element {
 
         const toastMessages = [
           "Initializing lead search engine...",
-          "Connecting to Apollo's vast database of professionals...",
-          "Analyzing your specified criteria for optimal lead matching...",
-          "Filtering prospects based on job titles and seniority levels...",
-          "Examining company sizes to match your target market...",
-          "Geo-targeting leads based on specified locations...",
-          "Applying industry-specific keyword filters...",
-          "Cross-referencing company domains for accuracy...",
-          "Evaluating funding rounds to identify high-potential leads...",
-          "Analyzing revenue data to match your ideal customer profile...",
-          "Implementing advanced filters for precision targeting...",
-          "Verifying email addresses for improved deliverability...",
-          "Assessing technological stack preferences...",
-          "Identifying decision-makers within target organizations...",
-          "Evaluating company growth trajectories...",
-          "Analyzing recent job postings for additional insights...",
-          "Cross-referencing with social media profiles for data enrichment...",
-          "Applying AI algorithms to predict lead quality...",
-          "Filtering out potential duplicates and outdated information...",
-          "Assessing company's digital footprint and online presence...",
-          "Analyzing recent press releases and news mentions...",
-          "Evaluating company's market position and competitors...",
-          "Identifying potential pain points based on industry trends...",
-          "Assessing company's adoption of emerging technologies...",
-          "Analyzing hiring patterns for growth indicators...",
-          "Evaluating potential synergies with your product/service...",
-          "Applying exclusion filters to refine the lead list...",
-          "Assessing lead's potential engagement level...",
-          "Analyzing company's sustainability and ESG initiatives...",
-          "Evaluating recent mergers, acquisitions, or partnerships...",
-          "Assessing company's innovation index and R&D focus...",
-          "Analyzing regional economic factors affecting target companies...",
-          "Evaluating company's customer base and market reach...",
-          "Assessing company culture fit based on available data...",
-          "Analyzing company's digital transformation initiatives...",
-          "Evaluating potential upsell/cross-sell opportunities...",
-          "Assessing company's compliance with industry regulations...",
-          "Analyzing seasonal trends affecting target businesses...",
-          "Evaluating company's social media engagement and influence...",
-          "Assessing lead's previous interactions with similar products/services...",
-          "Analyzing company's customer reviews and satisfaction scores...",
-          "Evaluating potential decision-making timelines...",
-          "Assessing company's adaptability to market changes...",
-          "Analyzing company's partnerships and strategic alliances...",
-          "Evaluating company's thought leadership in the industry...",
-          "Assessing company's participation in relevant events/conferences...",
-          "Performing final quality checks on gathered lead data...",
-          "Compiling comprehensive lead profiles for your review...",
-          "Generating insights and recommendations for outreach strategies...",
+
           "Preparing your personalized, high-quality lead list for presentation...",
         ];
 
@@ -568,15 +511,38 @@ export default function PeopleForm(): JSX.Element {
           clearInterval(toastInterval);
         }, 10000);
 
-        const response = await axiosInstance.post(
-          "https://scraper.agentprod.com/scrape_apollo/",
-          scraperBody
-        );
-        const data = response.data.data;
-        console.log("DATA: ", data);
+        let fetchedLeads;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        while (retryCount < maxRetries) {
+          try {
+            const email = getRandomEmail();
+            const scraperBody = createScraperBody(email);
+            const response = await axios.post(
+              "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_UGj812hYaK0r5a8iXdAclU7N2LpCz32l1xV2",
+              scraperBody
+            );
+            fetchedLeads = response.data;
+            break;
+          } catch (error: any) {
+            if (
+              error.response?.data?.error?.type === "run-failed" &&
+              retryCount < maxRetries - 1
+            ) {
+              retryCount++;
+              console.log(`Retry attempt ${retryCount}`);
+              continue; // Try again with a different email
+            } else {
+              throw error; // If it's not the specific error or we've exhausted retries, rethrow
+            }
+          }
+        }
+
+        console.log("DATA: ", fetchedLeads);
 
         // Process the received data
-        const processedLeads = data.map((person: any) => ({
+        const processedLeads = fetchedLeads.map((person: any) => ({
           ...person,
           type: "prospective",
           campaign_id: params.campaignId,
@@ -598,7 +564,7 @@ export default function PeopleForm(): JSX.Element {
         setIsLoading(false);
         setIsTableLoading(false);
         console.log("Fetched leads:", leads);
-        setAllFilters({ ...scraperBody });
+        setAllFilters({ ...createScraperBody(getRandomEmail()) });
         shouldCallAPI = false;
       }
     } else {
@@ -1413,7 +1379,7 @@ export default function PeopleForm(): JSX.Element {
                             className="sm:min-w-[450px] outline-none"
                             value={field.value || leadsNum}
                             min={0}
-                            max={100}
+                            max={400}
                             onChange={(e) => {
                               const value = e.target.value;
                               const numberValue =
@@ -1425,7 +1391,7 @@ export default function PeopleForm(): JSX.Element {
                       </FormControl>
                       <FormDescription>
                         These are the number of leads that you&apos;re
-                        interested in select between 1 - 100.
+                        interested in select between 1 - 125.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>

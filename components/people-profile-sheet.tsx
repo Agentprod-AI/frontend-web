@@ -140,11 +140,11 @@ export const PeopleProfileSheet = ({
                     : data.company}
                 </span>
               </div>
-              {data.phone_numbers && (
+              {data?.phone_numbers && (
                 <div className="flex space-x-2 w-full">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground whitespace-normal w-full">
-                    {data.phone_numbers[0].sanitized_number || data.phone}
+                    {data.phone_numbers[0]?.sanitized_number || data.phone}
                   </span>
                 </div>
               )}
@@ -416,7 +416,7 @@ export const PeopleProfileSheet = ({
             </Collapsible>
 
             <br />
-            <Collapsible
+            {/* <Collapsible
               open={technologiesCollapsibleOpen}
               onOpenChange={setTechnologiesCollapsibleOpen}
               className="pt-4 space-y-2 text-muted-foreground w-full"
@@ -436,7 +436,7 @@ export const PeopleProfileSheet = ({
                     <span>{data.technologies[0]}</span>
                   </div>
                   <CollapsibleContent className="space-y-2 w-full">
-                    {data.technologies.slice(1).map((val, ind) => (
+                    {data.technologies.slice(1)?.map((val, ind) => (
                       <div
                         className="flex px-2 py-1 font-mono text-xs justify-between w-full"
                         key={`e_his${ind + 1}`}
@@ -451,7 +451,7 @@ export const PeopleProfileSheet = ({
                   <span>No data available</span>
                 </div>
               )}
-            </Collapsible>
+            </Collapsible> */}
 
             {/* Pain Points */}
             <Collapsible
