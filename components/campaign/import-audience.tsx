@@ -216,6 +216,7 @@ export const ImportAudience = () => {
       company: lead.company,
       phone: lead.phone,
       technologies: lead.technologies || [],
+      organization: lead.organization,
     }));
   }
 
