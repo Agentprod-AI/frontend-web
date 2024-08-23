@@ -12,6 +12,9 @@ import {
   Linkedin,
   MonitorUp,
   Building2,
+  Users,
+  Layers,
+  Activity,
 } from "lucide-react";
 import { GrScorecard } from "react-icons/gr";
 
@@ -50,6 +53,9 @@ export const PeopleProfileSheet = ({
   const [qualificationsCollapsibleOpen, setQualificationsCollapsibleOpen] =
     useState(false);
   const { getCompanyInfo, companyInfo, setCompanyLinkedin } = useCompanyInfo();
+  const [subdepartmentsCollapsibleOpen, setSubdepartmentsCollapsibleOpen] =
+    useState(false);
+  // const [companyCollapsibleOpen, setCompanyCollapsibleOpen] = useState(false);
 
   console.log("Leads Data for Indiviual User", data);
 
@@ -60,7 +66,12 @@ export const PeopleProfileSheet = ({
       .join("")
       .toUpperCase();
   };
-
+  const formatName = (name: string) => {
+    return name
+      .split("_")
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+      .join(" ");
+  };
   const formatText = (text: string) => {
     let spacedText = text.replace(/_+/g, " ");
     return spacedText[0].toUpperCase() + spacedText.slice(1).toLowerCase();
@@ -129,7 +140,8 @@ export const PeopleProfileSheet = ({
               <div className="flex space-x-2 w-full">
                 <MapPinIcon className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground whitespace-normal w-full">
-                  {data.state}, {data.country}
+                  {data.state && `${data.state}, `}
+                  {data.country}
                 </span>
               </div>
               <div className="flex space-x-2 w-full">
@@ -140,7 +152,7 @@ export const PeopleProfileSheet = ({
                     : data.company}
                 </span>
               </div>
-              {data?.phone_numbers && (
+              {data.phone_numbers && (
                 <div className="flex space-x-2 w-full">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground whitespace-normal w-full">
@@ -156,8 +168,134 @@ export const PeopleProfileSheet = ({
                   </a>
                 </span>
               </div>
+              {data.seniority && (
+                <div className="flex space-x-2 w-full">
+                  <Briefcase className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                    Seniority: {data.seniority.toLocaleUpperCase()}
+                  </span>
+                </div>
+              )}
+              {data.departments && data.departments.length > 0 && (
+                <div className="flex space-x-2 w-full">
+                  <Users className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                    Department: {data.departments.map(formatName).join(", ")}
+                  </span>
+                </div>
+              )}
+
+              {data.subdepartments && data.subdepartments.length > 0 && (
+                <Collapsible
+                  open={subdepartmentsCollapsibleOpen}
+                  onOpenChange={setSubdepartmentsCollapsibleOpen}
+                  className="pt-2 space-y-2 text-muted-foreground w-full"
+                >
+                  <div className="flex items-center justify-between space-x-4 w-full">
+                    <div className="flex space-x-2 w-full">
+                      <Layers className="h-5 w-5 text-muted-foreground" />
+                      <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                        Sub-departments
+                      </span>
+                    </div>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="ghost" size="sm" className="w-9 p-0">
+                        <ChevronsUpDown className="h-4 w-4" />
+                        <span className="sr-only">Toggle</span>
+                      </Button>
+                    </CollapsibleTrigger>
+                  </div>
+                  <CollapsibleContent className="space-y-2 w-full">
+                    {data.subdepartments.map((subdepartment, index) => (
+                      <div
+                        key={index}
+                        className="flex px-2 py-1 font-mono text-xs justify-between w-full"
+                      >
+                        <span className="w-full whitespace-normal">
+                          {formatName(subdepartment)}
+                        </span>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </Collapsible>
+              )}
+              {data.functions && data.functions.length > 0 && (
+                <div className="flex space-x-2 w-full">
+                  <Activity className="h-5 w-5 text-muted-foreground" />
+                  <span className="text-sm text-muted-foreground whitespace-normal w-full">
+                    Functions: {data.functions.map(formatName).join(", ")}
+                  </span>
+                </div>
+              )}
             </div>
             <br />
+
+            {data.organization && (
+              <>
+                <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                  <span className="font-semibold">Industry:</span>{" "}
+                  {data.organization.industry || "N/A"}
+                </div>
+                <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                  <span className="font-semibold">Company Size:</span>{" "}
+                  {data.organization.estimated_num_employees
+                    ? `${data.organization.estimated_num_employees} employees`
+                    : "N/A"}
+                </div>
+                <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                  <span className="font-semibold">Headquarters:</span>{" "}
+                  {`${data.organization.city || "N/A"}, ${
+                    data.organization.state || "N/A"
+                  }, ${data.organization.country || "N/A"}`}
+                </div>
+                <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                  <span className="font-semibold">Type:</span>{" "}
+                  {data.organization.publicly_traded_symbol
+                    ? "Publicly Traded"
+                    : "Privately Held"}
+                </div>
+                <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                  <span className="font-semibold">Founded:</span>{" "}
+                  {data.organization.founded_year || "N/A"}
+                </div>
+                <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                  <span className="font-semibold">Website:</span>{" "}
+                  {data.organization.website_url ? (
+                    <a
+                      href={data.organization.website_url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {data.organization.website_url}
+                    </a>
+                  ) : (
+                    "N/A"
+                  )}
+                </div>
+                {data.organization.keywords &&
+                  data.organization.keywords.length > 0 && (
+                    <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                      <span className="font-semibold">Keywords:</span>{" "}
+                      {data.organization.keywords.join(", ")}
+                    </div>
+                  )}
+                {((data.organization.industries &&
+                  data.organization.industries.length > 0) ||
+                  (data.organization.secondary_industries &&
+                    data.organization.secondary_industries.length > 0)) && (
+                  <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                    <span className="font-semibold">
+                      Industries & Specialties:
+                    </span>{" "}
+                    {[
+                      ...(data.organization.industries || []),
+                      ...(data.organization.secondary_industries || []),
+                    ].join(", ")}
+                  </div>
+                )}
+              </>
+            )}
+
             {/* Show here */}
             {companyInfo && (
               <div className="flex flex-col gap-2 w-full">
@@ -184,7 +322,7 @@ export const PeopleProfileSheet = ({
                   >
                     <div className="flex items-center justify-between space-x-4 w-full">
                       <h4 className="text-sm font-semibold">Addresses</h4>
-                      <CollapsibleTrigger asChild>
+                      <CollapsibleTrigger asChild> 
                         <Button variant="ghost" size="sm" className="w-9 p-0">
                           <ChevronsUpDown className="h-4 w-4" />
                           <span className="sr-only">Toggle</span>
@@ -416,6 +554,9 @@ export const PeopleProfileSheet = ({
             </Collapsible>
 
             <br />
+
+            {/* Technologies */}
+
             {/* <Collapsible
               open={technologiesCollapsibleOpen}
               onOpenChange={setTechnologiesCollapsibleOpen}
@@ -436,7 +577,7 @@ export const PeopleProfileSheet = ({
                     <span>{data.technologies[0]}</span>
                   </div>
                   <CollapsibleContent className="space-y-2 w-full">
-                    {data.technologies.slice(1)?.map((val, ind) => (
+                    {data.technologies.slice(1).map((val, ind) => (
                       <div
                         className="flex px-2 py-1 font-mono text-xs justify-between w-full"
                         key={`e_his${ind + 1}`}
@@ -452,6 +593,8 @@ export const PeopleProfileSheet = ({
                 </div>
               )}
             </Collapsible> */}
+
+            {/* Technologies */}
 
             {/* Pain Points */}
             <Collapsible

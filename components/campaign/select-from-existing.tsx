@@ -116,6 +116,7 @@ export const SelectFromExisting = () => {
       company: lead.company,
       phone: lead.phone,
       technologies: lead.technologies || [],
+      organization: lead.organization,
     }));
   }
 

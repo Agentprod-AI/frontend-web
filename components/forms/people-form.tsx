@@ -682,6 +682,7 @@ export default function PeopleForm(): JSX.Element {
       company: lead.company,
       phone: lead.phone,
       technologies: lead.technologies || [],
+      organization: lead.organization,
     }));
   }
 
