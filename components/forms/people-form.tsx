@@ -481,11 +481,51 @@ export default function PeopleForm(): JSX.Element {
       },
     });
 
-    const leadLenResponse = await axiosInstance.get(`v2/lead/all/${user?.id}`);
-    if (
-      leadLenResponse.data.length > 300 + pages * 25 &&
-      isSubscribed === false
-    ) {
+    let existingLeads: any[] = [];
+    let existingEmailSet: Set<string> = new Set();
+
+    try {
+      const existingLeadsResponse = await axiosInstance.get(
+        `v2/lead/all/${user?.id}`
+      );
+      console.log("Existing leads response:", existingLeadsResponse);
+
+      if (Array.isArray(existingLeadsResponse.data)) {
+        existingLeads = existingLeadsResponse.data;
+        existingEmailSet = new Set(
+          existingLeads.map((lead: any) => lead.email)
+        );
+      } else if (
+        typeof existingLeadsResponse.data === "object" &&
+        existingLeadsResponse.data !== null
+      ) {
+        // If the response is an object, it might be paginated or have a different structure
+        console.log(
+          "Existing leads response is an object:",
+          existingLeadsResponse.data
+        );
+        // Adjust the following line based on the actual structure of your response
+        existingLeads = existingLeadsResponse.data.results || [];
+        existingEmailSet = new Set(
+          existingLeads.map((lead: any) => lead.email)
+        );
+      } else {
+        console.error(
+          "Unexpected format for existing leads:",
+          existingLeadsResponse.data
+        );
+      }
+    } catch (error) {
+      console.error("Error fetching existing leads:", error);
+      toast.error(
+        "Failed to fetch existing leads. Proceeding with new lead fetch."
+      );
+    }
+
+    console.log("Existing leads count:", existingLeads.length);
+    console.log("Existing email set size:", existingEmailSet.size);
+
+    if (existingLeads.length > 300 + pages * 25 && isSubscribed === false) {
       toast.warning("Your free account has reached the limit of 300 leads");
       shouldCallAPI = false;
     } else if (isSubscribed === true) {
@@ -520,7 +560,7 @@ export default function PeopleForm(): JSX.Element {
             const email = getRandomEmail();
             const scraperBody = createScraperBody(email);
             const response = await axios.post(
-              "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_UGj812hYaK0r5a8iXdAclU7N2LpCz32l1xV2",
+              "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_Y6X1pOzX3S7os8mV9J1PMNH0Yzls8H47sPPV",
               scraperBody
             );
             fetchedLeads = response.data;
@@ -541,19 +581,27 @@ export default function PeopleForm(): JSX.Element {
 
         console.log("DATA: ", fetchedLeads);
 
+        const newLeads = fetchedLeads.filter(
+          (lead: any) => !existingEmailSet.has(lead.email)
+        );
+
+        console.log("New non-duplicate leads: ", newLeads);
+
         // Process the received data
-        const processedLeads = fetchedLeads.map((person: any) => ({
+        const processedLeads = newLeads.map((person: any) => ({
           ...person,
           type: "prospective",
           campaign_id: params.campaignId,
           id: uuid(),
         }));
         setLeads(processedLeads);
-        console.log(leads);
+        console.log("Processed new leads:", processedLeads);
         setTab("tab2");
 
         setIsTableLoading(false);
-        toast.success("Leads fetched successfully");
+        toast.success(
+          `${processedLeads.length} new leads fetched successfully`
+        );
       } catch (error) {
         console.error(error);
         toast.error("An error occurred while fetching data.");
@@ -1380,7 +1428,7 @@ export default function PeopleForm(): JSX.Element {
                             className="sm:min-w-[450px] outline-none"
                             value={field.value || leadsNum}
                             min={0}
-                            max={400}
+                            max={125}
                             onChange={(e) => {
                               const value = e.target.value;
                               const numberValue =
