@@ -457,7 +457,11 @@ export default function PeopleForm(): JSX.Element {
       const emailArray = [
         "nisheet@agentprod.com",
         "info@agentprod.com",
-        // "muskaan@agentprodapp.com",
+        "muskaan@agentprodapp.com",
+        "admin@agentprod.com",
+        "naman.barkiya@agentprod.com",
+        "siddhant.goswami@agentprod.com",
+        "muskaan@agentprod.com",
       ];
       const randomIndex = Math.floor(Math.random() * emailArray.length);
       return emailArray[randomIndex];
@@ -567,7 +571,7 @@ export default function PeopleForm(): JSX.Element {
             break;
           } catch (error: any) {
             if (
-              error.response?.data?.error?.type === "run-failed" &&
+              error.response?.data?.error?.type === "run-failed" ||
               retryCount < maxRetries - 1
             ) {
               retryCount++;
