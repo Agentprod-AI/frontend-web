@@ -29,7 +29,7 @@ import {
 } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
-import { Button } from "./button";
+import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 import { useCampaignContext } from "@/context/campaign-provider";
 
@@ -38,7 +38,9 @@ interface DataTableProps<TData, TValue> {
   data: TData[];
   searchKey: string;
   simple?: boolean;
-  onDelete?: any;
+  onDelete?: (id: string) => void;
+  onSearch?: (value: string) => void;
+  onCampaignSelect?: (campaignId: string | null) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -46,18 +48,19 @@ export function DataTable<TData, TValue>({
   data,
   searchKey,
   simple,
+  onDelete,
+  onSearch,
+  onCampaignSelect,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
-  const [campaign, setCampaign] = useState<{
+  const [selectedCampaign, setSelectedCampaign] = useState<{
     campaignName: string;
     campaignId: string;
   } | null>(null);
   const { campaigns } = useCampaignContext();
 
-  console.log("Dropdown", campaigns);
-
   const table = useReactTable({
-    data: data || [], // Provide an empty array if data is undefined
+    data: data || [],
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
@@ -74,6 +77,12 @@ export function DataTable<TData, TValue>({
     }
   }, [table]);
 
+  useEffect(() => {
+    if (onSearch) {
+      onSearch(globalFilter);
+    }
+  }, [globalFilter, onSearch]);
+
   const rows = table.getRowModel()?.rows ?? [];
 
   const allCampaigns = campaigns.map((campaign) => ({
@@ -81,6 +90,15 @@ export function DataTable<TData, TValue>({
     campaignId: campaign.id,
     additionalInfo: campaign.additional_details,
   }));
+
+  const handleCampaignSelect = (
+    campaign: { campaignName: string; campaignId: string } | null
+  ) => {
+    setSelectedCampaign(campaign);
+    if (onCampaignSelect) {
+      onCampaignSelect(campaign ? campaign.campaignId : null);
+    }
+  };
 
   return (
     <>
@@ -98,7 +116,9 @@ export function DataTable<TData, TValue>({
               className="flex items-center justify-center space-x-2"
             >
               <span>
-                {campaign ? campaign.campaignName : "Select Campaign"}
+                {selectedCampaign
+                  ? selectedCampaign.campaignName
+                  : "Select Campaign"}
               </span>
               <ChevronDown size={20} />
             </Button>
@@ -107,18 +127,13 @@ export function DataTable<TData, TValue>({
             <DropdownMenuGroup>
               <DropdownMenuSeparator />
               <ScrollArea className="h-[400px] w-full rounded-md border p-2">
-                <DropdownMenuItem onClick={() => setCampaign(null)}>
+                <DropdownMenuItem onClick={() => handleCampaignSelect(null)}>
                   <p className="cursor-pointer">All Campaigns</p>
                 </DropdownMenuItem>
                 {allCampaigns?.map((campaignItem) => (
                   <DropdownMenuItem
                     key={campaignItem.campaignId}
-                    onClick={() =>
-                      setCampaign({
-                        campaignName: campaignItem.campaignName,
-                        campaignId: campaignItem.campaignId,
-                      })
-                    }
+                    onClick={() => handleCampaignSelect(campaignItem)}
                   >
                     <p className="cursor-pointer">
                       {campaignItem.campaignName}{" "}

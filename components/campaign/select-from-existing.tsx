@@ -158,7 +158,11 @@ export const SelectFromExisting = () => {
         {isTableLoading ? (
           <LoadingCircle />
         ) : (
-          <AudienceTableClient isContacts={true} checkboxes={true} />
+          <AudienceTableClient
+            isContacts={true}
+            checkboxes={true}
+            // onCampaignSelect={}
+          />
         )}
         {isCreateBtnLoading ? (
           <LoadingCircle />
