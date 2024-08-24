@@ -91,7 +91,7 @@ interface AudienceTableClientProps {
   checkboxes?: boolean;
   onDelete?: (id: string) => void;
   onSearch?: (value: string) => void;
-  onCampaignSelect: (campaignId: string | null) => void;
+  onCampaignSelect?: (campaignId: string | null) => void;
 }
 
 export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({

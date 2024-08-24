@@ -40,7 +40,7 @@ interface DataTableProps<TData, TValue> {
   simple?: boolean;
   onDelete?: (id: string) => void;
   onSearch?: (value: string) => void;
-  onCampaignSelect: (campaignId: string | null) => void;
+  onCampaignSelect?: (campaignId: string | null) => void;
 }
 
 export function DataTable<TData, TValue>({
@@ -95,7 +95,9 @@ export function DataTable<TData, TValue>({
     campaign: { campaignName: string; campaignId: string } | null
   ) => {
     setSelectedCampaign(campaign);
-    onCampaignSelect(campaign ? campaign.campaignId : null);
+    if (onCampaignSelect) {
+      onCampaignSelect(campaign ? campaign.campaignId : null);
+    }
   };
 
   return (
