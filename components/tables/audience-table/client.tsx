@@ -90,12 +90,16 @@ interface AudienceTableClientProps {
   isContacts?: boolean;
   checkboxes?: boolean;
   onDelete?: (id: string) => void;
+  onSearch?: (value: string) => void;
+  onCampaignSelect: (campaignId: string | null) => void;
 }
 
 export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
   isContacts = true,
   checkboxes = false,
   onDelete,
+  onSearch,
+  onCampaignSelect,
 }) => {
   const { leads } = useLeads();
 
@@ -126,6 +130,9 @@ export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
           columns={columnsWithOptionalDelete}
           data={leads as Lead[]}
           simple={!checkboxes}
+          onDelete={onDelete}
+          onSearch={onSearch}
+          onCampaignSelect={onCampaignSelect}
         />
       </>
     );
@@ -140,6 +147,9 @@ export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
           columns={leadColumnsWithOptionalDelete}
           data={leads as Lead[]}
           simple={true}
+          onDelete={onDelete}
+          onSearch={onSearch}
+          onCampaignSelect={onCampaignSelect}
         />
       </>
     );
