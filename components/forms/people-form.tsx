@@ -195,6 +195,7 @@ export default function PeopleForm(): JSX.Element {
   const [organizationKeywordTags, setOrganizationKeywordTags] = React.useState<
     Tag[]
   >([]);
+  const [error, setError] = React.useState<string | null>(null);
 
   const [organizationCompanyTags, setOrganizationCompanyTags] = React.useState<
     Tag[]
@@ -467,8 +468,8 @@ export default function PeopleForm(): JSX.Element {
       return emailArray[randomIndex];
     };
 
-    const createScraperBody = (email: string) => ({
-      count: formData.per_page,
+    const createScraperBody = (email: string, count: number) => ({
+      count: Math.min(count, 50),
       email: email,
       getEmails: true,
       guessedEmails: true,
@@ -485,51 +486,48 @@ export default function PeopleForm(): JSX.Element {
       },
     });
 
-    let existingLeads: any[] = [];
-    let existingEmailSet: Set<string> = new Set();
-
-    try {
-      const existingLeadsResponse = await axiosInstance.get(
-        `v2/lead/all/${user?.id}`
-      );
-      console.log("Existing leads response:", existingLeadsResponse);
-
-      if (Array.isArray(existingLeadsResponse.data)) {
-        existingLeads = existingLeadsResponse.data;
-        existingEmailSet = new Set(
-          existingLeads.map((lead: any) => lead.email)
-        );
-      } else if (
-        typeof existingLeadsResponse.data === "object" &&
-        existingLeadsResponse.data !== null
-      ) {
-        // If the response is an object, it might be paginated or have a different structure
-        console.log(
-          "Existing leads response is an object:",
-          existingLeadsResponse.data
-        );
-        // Adjust the following line based on the actual structure of your response
-        existingLeads = existingLeadsResponse.data.results || [];
-        existingEmailSet = new Set(
-          existingLeads.map((lead: any) => lead.email)
-        );
-      } else {
-        console.error(
-          "Unexpected format for existing leads:",
-          existingLeadsResponse.data
-        );
+    const fetchLeadsRecursively = async (
+      remainingCount: number,
+      accumulatedResults: any[] = []
+    ): Promise<any[]> => {
+      if (remainingCount <= 0) {
+        return accumulatedResults;
       }
-    } catch (error) {
-      console.error("Error fetching existing leads:", error);
-      toast.error(
-        "Failed to fetch existing leads. Proceeding with new lead fetch."
-      );
-    }
 
-    console.log("Existing leads count:", existingLeads.length);
-    console.log("Existing email set size:", existingEmailSet.size);
+      const countForThisCall = Math.min(remainingCount, 50);
+      const email = getRandomEmail();
+      const scraperBody = createScraperBody(email, countForThisCall);
 
-    if (existingLeads.length > 300 + pages * 25 && isSubscribed === false) {
+      try {
+        const response = await axios.post(
+          "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_Y6X1pOzX3S7os8mV9J1PMNH0Yzls8H47sPPV",
+          scraperBody
+        );
+        console.log(response.data);
+
+        const newResults = response.data;
+        const updatedResults = [...accumulatedResults, ...newResults];
+
+        // Recursive call
+        return fetchLeadsRecursively(
+          remainingCount - countForThisCall,
+          updatedResults
+        );
+      } catch (error) {
+        console.error("Error fetching leads:", error);
+        throw error;
+      }
+    };
+
+    const existingLeadsResponse = await axiosInstance.get(
+      `v2/lead/all/${user?.id}`
+    );
+    console.log("Existing leads response:", existingLeadsResponse);
+
+    if (
+      existingLeadsResponse.data.length > 300 + pages * 25 &&
+      isSubscribed === false
+    ) {
       toast.warning("Your free account has reached the limit of 300 leads");
       shouldCallAPI = false;
     } else if (isSubscribed === true) {
@@ -555,20 +553,19 @@ export default function PeopleForm(): JSX.Element {
           clearInterval(toastInterval);
         }, 10000);
 
-        let fetchedLeads;
+        let fetchedLeads: any[] = [];
         let retryCount = 0;
         const maxRetries = 3;
 
         while (retryCount < maxRetries) {
           try {
-            const email = getRandomEmail();
-            const scraperBody = createScraperBody(email);
-            const response = await axios.post(
-              "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_Y6X1pOzX3S7os8mV9J1PMNH0Yzls8H47sPPV",
-              scraperBody
-            );
-            fetchedLeads = response.data;
-            break;
+            const results = await fetchLeadsRecursively(formData.per_page);
+            if (results && results.length > 0) {
+              fetchedLeads = results;
+              break;
+            } else {
+              throw new Error("No leads fetched");
+            }
           } catch (error: any) {
             if (
               error.response?.data?.error?.type === "run-failed" ||
@@ -585,14 +582,10 @@ export default function PeopleForm(): JSX.Element {
 
         console.log("DATA: ", fetchedLeads);
 
-        const newLeads = fetchedLeads.filter(
-          (lead: any) => !existingEmailSet.has(lead.email)
-        );
-
-        console.log("New non-duplicate leads: ", newLeads);
+        console.log("New non-duplicate leads: ", fetchedLeads);
 
         // Process the received data
-        const processedLeads = newLeads.map((person: any) => ({
+        const processedLeads = fetchedLeads.map((person: any) => ({
           ...person,
           type: "prospective",
           campaign_id: params.campaignId,
@@ -616,7 +609,9 @@ export default function PeopleForm(): JSX.Element {
         setIsLoading(false);
         setIsTableLoading(false);
         console.log("Fetched leads:", leads);
-        setAllFilters({ ...createScraperBody(getRandomEmail()) });
+        setAllFilters({
+          ...formData,
+        });
         shouldCallAPI = false;
       }
     } else {
@@ -685,7 +680,6 @@ export default function PeopleForm(): JSX.Element {
   ];
 
   // const [loading, setLoading] = React.useState(true);
-  const [error, setError] = React.useState<string | null>(null);
 
   // console.log("leadsssssss", leads);
 
