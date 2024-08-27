@@ -370,9 +370,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               {cleanedCategory === "OOO" && (
                 <UserX className="h-4 w-4 text-gray-400" />
               )}
-              {cleanedCategory === "Information Required" && (
-                <MdInfoOutline className="h-4 w-4 text-gray-400" />
-              )}
+              {cleanedCategory === "Information Required" &&
+                email.is_special && (
+                  <MdInfoOutline className="h-4 w-4 text-gray-400" />
+                )}
               {cleanedCategory === "Positive" && (
                 <ThumbsUp className="h-4 w-4 text-gray-400" />
               )}
@@ -404,6 +405,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <p className="ml-1 text-xs">
               {cleanedCategory === "OOO" && `Currently out of office.`}
               {cleanedCategory === "Information Required" &&
+                email.is_special &&
                 `Sally got the answers from your sales knowldege documents.
 `}
               {cleanedCategory === "Positive" && "Positive response received."}
