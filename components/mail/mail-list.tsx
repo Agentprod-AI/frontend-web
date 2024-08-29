@@ -36,6 +36,7 @@ interface MailListProps {
   hasMore: boolean;
   loading: boolean;
   loadMore: () => void;
+  onDeleteMail: (id: string) => Promise<void>;
 }
 
 const formatDate = (dateString: string): string => {
@@ -63,6 +64,7 @@ const MailList: React.FC<MailListProps> = ({
   hasMore,
   loading,
   loadMore,
+  onDeleteMail
 }) => {
   const [selectedStatus] = React.useState("all");
   const [mail, setMail] = useMail();
@@ -113,35 +115,13 @@ const MailList: React.FC<MailListProps> = ({
   const handleDelete = useCallback(
     async (id: string) => {
       try {
-        await axiosInstance.delete(`/v2/email/conversations/${id}`);
-        toast.success("Mail Deleted");
-
-        const updatedItems = filteredItems.filter((mail) => mail.id !== id);
-
-        if (updatedItems.length > 0) {
-          const newSelectedMail = updatedItems[0];
-          setSelectedMailId(newSelectedMail.id);
-          setSenderEmail(newSelectedMail.sender);
-          setConversationId(newSelectedMail.id);
-          setRecipientEmail(newSelectedMail.recipient);
-        } else {
-          setSelectedMailId(null);
-          setSenderEmail("");
-          setConversationId("");
-          setRecipientEmail("");
-        }
+        await onDeleteMail(id);
       } catch (error) {
         console.error("Failed to delete mail:", error);
         toast.error("Failed to delete mail");
       }
     },
-    [
-      filteredItems,
-      setSelectedMailId,
-      setSenderEmail,
-      setConversationId,
-      setRecipientEmail,
-    ]
+    [onDeleteMail]
   );
 
   const renderMailItem = useCallback(
@@ -275,12 +255,12 @@ const MailList: React.FC<MailListProps> = ({
               {(item.body_substr as string)?.substring(0, 80)}
               {hoveredMailId === item.id && (
                 <Trash2Icon
-                  className="w-4 h-4 dark:hover:text-white hover:text-black"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDelete(item.id);
-                  }}
-                />
+                className="w-4 h-4 dark:hover:text-white hover:text-black cursor-pointer"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(item.id);
+                }}
+              />
               )}
             </div>
           </div>
