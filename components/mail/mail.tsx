@@ -177,7 +177,7 @@ export function Mail({
           console.log("status completed");
           setShowStatus(false);
           toast.success("Draft Generation Completed");
-          clearInterval(intervalId);
+          // clearInterval(intervalId); // uncomment this too
         }
       };
 
@@ -194,7 +194,7 @@ export function Mail({
 
       // Cleanup function
       return () => {
-        clearInterval(intervalId);
+        // clearInterval(intervalId); // uncomment this too
         setIsRedirectedFromCampaign(false);
       };
     }
@@ -378,29 +378,6 @@ export function Mail({
     []
   );
 
-  // const handleSearchChange = React.useCallback(
-  //   (e: React.ChangeEvent<HTMLInputElement>) => {
-  //     const newSearchTerm = e.target.value;
-  //     setSearchTerm(newSearchTerm);
-
-  //     if (searchTimeoutRef.current) {
-  //       clearTimeout(searchTimeoutRef.current);
-  //     }
-
-  //     searchTimeoutRef.current = setTimeout(() => {
-  //       setDebouncedSearchTerm(newSearchTerm);
-  //     }, 500);
-  //   },
-  //   []
-  // );
-  // React.useEffect(() => {
-  //   if (debouncedSearchTerm !== searchTerm) {
-  //     setPage(1);
-  //     fetchConversations(campaign?.campaignId, 1, debouncedSearchTerm, filter);
-  //   }
-  // }, [debouncedSearchTerm, campaign, filter, fetchConversations, searchTerm]);
-
-  //search ----
 
   const handleSearchChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -415,7 +392,6 @@ export function Mail({
     fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
   }, [searchTerm, campaign, filter, fetchConversations]);
 
-  //------
 
   const handleTabChange = (value: string) => {
     console.log("Tab", value);
@@ -427,6 +403,40 @@ export function Mail({
       setMoreOptionSelected("");
     }
   };
+
+
+  const handleDeleteMail = React.useCallback(
+    async (id: string) => {
+      try {
+        await axiosInstance.delete(`/v2/email/conversations/${id}`);
+        toast.success("Mail Deleted");
+
+        setMails((prevMails) => prevMails.filter((mail) => mail.id !== id));
+
+        if (id === selectedMailId) {
+          const newMails = mails.filter((mail) => mail.id !== id);
+          if (newMails.length > 0) {
+            const newSelectedMail = newMails[0];
+            setSelectedMailId(newSelectedMail.id);
+            setSenderEmail(newSelectedMail.sender);
+            setConversationId(newSelectedMail.id);
+            setRecipientEmail(newSelectedMail.recipient);
+          } else {
+            setSelectedMailId(null);
+            setSenderEmail("");
+            setConversationId("");
+            setRecipientEmail("");
+          }
+        }
+      } catch (error) {
+        console.error("Failed to delete mail:", error);
+        toast.error("Failed to delete mail");
+      }
+    },
+    [mails, selectedMailId, setSenderEmail, setConversationId, setRecipientEmail]
+  );
+
+
 
   return (
     <TooltipProvider delayDuration={0}>
@@ -545,17 +555,6 @@ export function Mail({
             </div>
 
             <div className="bg-background/95 p-4 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-              {/* <form>
-                <div className="relative">
-                  <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Search"
-                    className="pl-8"
-                    value={searchTerm}
-                    onChange={handleSearchChange}
-                  />
-                </div>
-              </form> */}
               <div className="relative flex items-center">
                 <Input
                   placeholder="Search"
@@ -628,6 +627,7 @@ export function Mail({
                     hasMore={hasMore}
                     loading={loading}
                     loadMore={loadMore}
+                    onDeleteMail={handleDeleteMail}
                   />
                 ) : (
                   <div className="flex flex-col gap-3 items-center justify-center mt-36">
