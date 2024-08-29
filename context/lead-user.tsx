@@ -75,12 +75,13 @@ export interface Lead {
   intent_strength: null; // Assuming null, adjust if there's a specific type
   show_intent: boolean;
   revealed_for_current_team: boolean;
+  is_responded: boolean;
   pain_points: any[];
   value: any[];
   metrics: any[];
   compliments: any[];
   lead_information: any;
-  is_b2b: boolean;
+  is_b2b: any;
   score: any;
   company: string;
   qualification_details: any;
@@ -127,7 +128,7 @@ export interface Contact {
   metrics: any[];
   compliments: any[];
   lead_information: any;
-  is_b2b: boolean;
+  is_b2b: any;
   score: any;
   company: string;
   qualification_details: any;

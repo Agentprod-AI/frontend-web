@@ -64,7 +64,7 @@ function AudienceTable() {
           <TableHeader>
             <TableRow>
               <TableHead>SELECT</TableHead>
-              <TableHead className="flex justify-center">NAME</TableHead>
+              <TableHead>NAME</TableHead>
               <TableHead>ROLE</TableHead>
               <TableHead>COMPANY</TableHead>
             </TableRow>
@@ -83,16 +83,14 @@ function AudienceTable() {
                   onClick={() => handleLeadClick(lead.id)}
                 >
                   <Avatar>
-                    <AvatarImage src={lead.photo_url} alt={lead.name} />
-                    <AvatarFallback>{lead.name?.[0]}</AvatarFallback>
+                    <AvatarImage src={lead.photo_url} alt={lead.first_name} />
+                    <AvatarFallback>{lead.first_name?.[0]}</AvatarFallback>
                   </Avatar>
-                  <span className="ml-4">{lead.name}</span>
+                  <span className="ml-4">{lead.first_name}</span>
                 </TableCell>
                 <TableCell>{lead.title}</TableCell>
                 <TableCell>
-                  {lead.employment_history?.[0]?.organization_name ||
-                    lead.company ||
-                    "N/A"}
+                  {lead.employment_history?.[0]?.organization_name || "N/A"}
                 </TableCell>
               </TableRow>
             ))}
