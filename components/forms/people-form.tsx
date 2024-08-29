@@ -1426,7 +1426,7 @@ export default function PeopleForm(): JSX.Element {
                             className="sm:min-w-[450px] outline-none"
                             value={field.value || leadsNum}
                             min={0}
-                            max={125}
+                            max={1000}
                             onChange={(e) => {
                               const value = e.target.value;
                               const numberValue =
