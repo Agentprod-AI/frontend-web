@@ -152,7 +152,7 @@ export default function PeopleForm(): JSX.Element {
 
   const { leads, setLeads } = useLeads();
   const { isSubscribed } = useSubscription();
-
+  const [existLead, setExistLead] = useState([]);
   const [tab, setTab] = useState("tab1");
   const [isTableLoading, setIsTableLoading] = useState(false);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
@@ -506,8 +506,21 @@ export default function PeopleForm(): JSX.Element {
         console.log(response.data);
 
         const newResults = response.data;
-        const updatedResults = [...accumulatedResults, ...newResults];
 
+        // const uniqueNewResults = newResults.filter((newResult: any) => {
+        //   const isUniqueInExistingLeads = !existingLeadsResponse.data.includes(
+        //     newResult.email
+        //   );
+        //   const isUniqueInAccumulatedResults = !accumulatedResults.some(
+        //     (accumulatedResult: any) =>
+        //       accumulatedResult.email === newResult.email
+        //   );
+        //   return isUniqueInExistingLeads && isUniqueInAccumulatedResults;
+        // });
+
+        // const updatedResults = [...accumulatedResults, ...uniqueNewResults];
+
+        const updatedResults = [...accumulatedResults, ...newResults];
         // Recursive call
         return fetchLeadsRecursively(
           remainingCount - countForThisCall,
@@ -520,10 +533,10 @@ export default function PeopleForm(): JSX.Element {
     };
 
     const existingLeadsResponse = await axiosInstance.get(
-      `v2/lead/all/${user?.id}`
+      `v2/leads/${user?.id}`
     );
-    console.log("Existing leads response:", existingLeadsResponse);
-
+    setExistLead(existingLeadsResponse.data);
+    console.log("Existing leads:", existingLeadsResponse.data);
     if (
       existingLeadsResponse.data.length > 300 + pages * 25 &&
       isSubscribed === false
