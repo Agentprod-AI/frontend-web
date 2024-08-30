@@ -538,13 +538,15 @@ export default function PeopleForm(): JSX.Element {
     );
     setExistLead(existingLeadsResponse.data);
     console.log("Existing leads:", existingLeadsResponse.data);
-    if (
+    if (existingLeadsResponse.data === null) {
+      shouldCallAPI = true;
+    } else if (
       existingLeadsResponse.data.length > 300 + pages * 25 &&
       isSubscribed === false
     ) {
       toast.warning("Your free account has reached the limit of 300 leads");
       shouldCallAPI = false;
-    } else if (isSubscribed === true || existingLeadsResponse.data === null) {
+    } else if (isSubscribed === true) {
       shouldCallAPI = true;
     }
     if (shouldCallAPI) {
