@@ -521,6 +521,7 @@ export default function PeopleForm(): JSX.Element {
         // const updatedResults = [...accumulatedResults, ...uniqueNewResults];
 
         const updatedResults = [...accumulatedResults, ...newResults];
+
         // Recursive call
         return fetchLeadsRecursively(
           remainingCount - countForThisCall,
@@ -543,7 +544,7 @@ export default function PeopleForm(): JSX.Element {
     ) {
       toast.warning("Your free account has reached the limit of 300 leads");
       shouldCallAPI = false;
-    } else if (isSubscribed === true) {
+    } else if (isSubscribed === true || existingLeadsResponse.data === null) {
       shouldCallAPI = true;
     }
     if (shouldCallAPI) {
