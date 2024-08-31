@@ -378,7 +378,14 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
           .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
           .then((response) => {
             console.log("response from all campaigns api", response);
-            setCampaigns(response.data);
+            // Sort campaigns based on created_at field
+            const sortedCampaigns = response.data.sort((a: any, b: any) => {
+              const dateA = new Date(a.created_at).getTime();
+              const dateB = new Date(b.created_at).getTime();
+              return dateB - dateA; // Sort in descending order (newest first)
+            });
+
+            setCampaigns(sortedCampaigns);
             setIsLoading(false);
           })
           .catch((error) => {
