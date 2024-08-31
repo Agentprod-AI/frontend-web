@@ -118,7 +118,7 @@ export default function CampaignPage() {
 
   const displayedCampaigns = showAllCampaigns
     ? campaigns
-    : campaigns.slice(0, 5);
+    : campaigns.slice(0, 4);
 
   const renderCampaignCard = (campaignItem: CampaignEntry) => (
     <Card key={campaignItem.id}>
@@ -258,11 +258,11 @@ export default function CampaignPage() {
         )}
       </div>
 
-      {!isLoading && campaigns.length > 5 && (
+      {!isLoading && campaigns.length > 4 && (
         <div className="flex justify-center mt-4">
           <Button
             onClick={() => setShowAllCampaigns(!showAllCampaigns)}
-            className="bg-primary text-primary-foreground hover:bg-primary/90"
+            className="bg-primary text-primary-foreground hover:bg-primary/90 mt-20"
           >
             {showAllCampaigns ? "Show Less" : "Show All Campaigns"}
           </Button>
