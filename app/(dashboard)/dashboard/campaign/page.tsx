@@ -107,7 +107,12 @@ export default function CampaignPage() {
     async function fetchCampaigns() {
       try {
         const response = await axiosInstance.get(`v2/campaigns/all/${user.id}`);
-        setCampaigns(response.data);
+        const sortedCampaigns = response.data.sort((a: any, b: any) => {
+          const dateA = new Date(a.created_at).getTime();
+          const dateB = new Date(b.created_at).getTime();
+          return dateB - dateA; // Sort in descending order (newest first)
+        });
+        setCampaigns(sortedCampaigns);
         console.log("campaign called effect");
       } catch (error) {
         console.error("Failed to fetch campaigns", error);

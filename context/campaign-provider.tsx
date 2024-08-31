@@ -13,6 +13,7 @@ import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "./user-context";
 
+// Existing interfaces and type definitions remain unchanged
 export interface CampaignFormData {
   [key: string]: any;
   campaignName: string;
@@ -22,6 +23,7 @@ export interface CampaignFormData {
     weekdayEndTime?: string;
   };
 }
+
 export interface OfferingFormData {
   name: string;
   details: string;
@@ -36,17 +38,7 @@ export interface GoalFormData {
   mark_as_lost: number;
 }
 
-export interface GoalData {
-  success_metric: string;
-  scheduling_link: string;
-  emails: string[];
-  follow_up_days: number;
-  follow_up_times: number;
-  mark_as_lost: number;
-}
-
 export interface CampaignEntry {
-  detail: string;
   id: string;
   user_id: string;
   campaign_name: string;
@@ -72,50 +64,9 @@ export interface CampaignEntry {
   offering_details: any[];
   replies: any;
   meetings_booked: any;
+  created_at: string; // Add this field
+  detail: string;
 }
-
-export const defaultCampaignEntry: CampaignEntry = {
-  id: "",
-  user_id: "",
-  campaign_name: "",
-  is_active: false,
-  campaign_type: "",
-  daily_outreach_number: 0,
-  start_date: "",
-  end_date: "",
-  schedule_type: "",
-  description: "",
-  additional_details: "",
-  monday_start: "",
-  monday_end: "",
-  tuesday_start: "",
-  tuesday_end: "",
-  wednesday_start: "",
-  wednesday_end: "",
-  thursday_start: "",
-  thursday_end: "",
-  friday_start: "",
-  friday_end: "",
-  contacts: "",
-  offering_details: [],
-  replies: "",
-  meetings_booked: "",
-  detail: "",
-};
-
-export const defaultGoalEntry: GoalFormData = {
-  success_metric: "",
-  scheduling_link: "",
-  emails: [],
-  follow_up_days: 0,
-  follow_up_times: 0,
-  mark_as_lost: 0,
-};
-
-export const defaultOfferingEntry: OfferingFormData = {
-  name: "",
-  details: "",
-};
 
 interface CampaignContextType {
   campaigns: CampaignEntry[];
@@ -131,23 +82,9 @@ interface CampaignContextType {
   setCampaigns: React.Dispatch<React.SetStateAction<CampaignEntry[]>>;
 }
 
-const defaultCampaignState: CampaignContextType = {
-  campaigns: [],
-  createCampaign: () => {},
-  editCampaign: () => {},
-  deleteCampaign: () => {},
-  createOffering: () => {},
-  editOffering: () => {},
-  createGoal: () => {},
-  editGoal: () => {},
-  toggleCampaignIsActive: () => {},
-  isLoading: false,
-  setCampaigns: () => {},
-};
-
-// Use the default state when creating the context
-const CampaignContext =
-  createContext<CampaignContextType>(defaultCampaignState);
+const CampaignContext = createContext<CampaignContextType | undefined>(
+  undefined
+);
 
 interface Props {
   children: ReactNode;
@@ -157,23 +94,20 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   children,
 }) => {
   const router = useRouter();
-  // const { user } = useAuth();
   const { user } = useUserContext();
 
-  // const [campaignId, setCampaignId] = useState<string | null>(null);
-  const [campaigns, setCampaigns] = useState<any[]>([]);
-  const [isLoading, setIsLoading] = React.useState(true);
-  const [error, setError] = React.useState("");
-  const [userId, setUserId] = React.useState<string>();
+  const [campaigns, setCampaigns] = useState<CampaignEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [userId, setUserId] = useState<string | undefined>();
 
-  React.useEffect(() => {
+  useEffect(() => {
     if (user && user.id) {
       setUserId(user.id);
     }
   }, [user]);
 
   const createCampaign = (data: CampaignFormData) => {
-    console.log("user from camapgin", user);
     const postData = {
       user_id: userId,
       campaign_name: data.campaignName,
@@ -198,7 +132,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
         .post("v2/campaigns/", postData)
         .then((response) => {
           console.log("Campaign created successfully:", response);
-          setCampaigns((prevCampaigns) => [...prevCampaigns, response.data]);
+          setCampaigns((prevCampaigns) => [response.data, ...prevCampaigns]);
           let formsTracker = JSON.parse(
             localStorage.getItem("formsTracker") || "{}"
           );
@@ -345,26 +279,10 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       });
   };
 
-  // const getCampaignById = (campaignId: string): Promise<any> => {
-  //   return axiosInstance
-  //     .get(`v2/campaigns/${campaignId}`)
-  //     .then((response) => {
-  //       console.log("Campaign fetched successfully:", response.data);
-  //       return response.data;
-  //     })
-  //     .catch((error) => {
-  //       console.error("Error fetching campaign:", error);
-  //       toast({
-  //         title: "Error fetching campaign",
-  //         description: error.message || "Failed to fetch campaign.",
-  //       });
-  //     });
-  // };
-
   const toggleCampaignIsActive = (id: string) => {
     setCampaigns((currentCampaigns) =>
       currentCampaigns.map((campaign) =>
-        campaign.campaignId === id
+        campaign.id === id
           ? { ...campaign, is_active: !campaign.is_active }
           : campaign
       )
@@ -378,7 +296,15 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
           .get<CampaignEntry[]>(`v2/campaigns/all/${userId}`)
           .then((response) => {
             console.log("response from all campaigns api", response);
-            setCampaigns(response.data);
+
+            // Sort campaigns based on created_at field
+            const sortedCampaigns = response.data.sort((a, b) => {
+              const dateA = new Date(a.created_at).getTime();
+              const dateB = new Date(b.created_at).getTime();
+              return dateB - dateA; // Sort in descending order (newest first)
+            });
+
+            setCampaigns(sortedCampaigns);
             setIsLoading(false);
           })
           .catch((error) => {
@@ -391,10 +317,10 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
 
     fetchCampaigns(); // Fetch initially
 
-    // const intervalId = setInterval(fetchCampaigns, 10000); // Fetch every 7 seconds
+    // const intervalId = setInterval(fetchCampaigns, 10000); // Fetch every 10 seconds
 
     // return () => clearInterval(intervalId); // Cleanup interval on unmount
-  }, [userId, campaigns.length]); //chaning for the new stuff.
+  }, [userId, campaigns.length]);
 
   const contextValue = useMemo(
     () => ({
@@ -410,7 +336,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       isLoading,
       setCampaigns,
     }),
-    [userId, campaigns]
+    [campaigns, isLoading]
   );
 
   return (
@@ -420,4 +346,12 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
   );
 };
 
-export const useCampaignContext = () => useContext(CampaignContext);
+export const useCampaignContext = () => {
+  const context = useContext(CampaignContext);
+  if (context === undefined) {
+    throw new Error(
+      "useCampaignContext must be used within a CampaignProvider"
+    );
+  }
+  return context;
+};
