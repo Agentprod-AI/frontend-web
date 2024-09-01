@@ -332,7 +332,7 @@ export default function PeopleForm(): JSX.Element {
 
   const constructApolloUrl = (formData: any) => {
     let url =
-      "https://app.apollo.io/#/people?finderViewId=6674b20eecfedd000184539f&contactEmailStatusV2[]=likely_to_engage&contactEmailStatusV2[]=verified";
+      "https://app.apollo.io/#/people?finderViewId=6674b20eecfedd000184539f&contactEmailStatusV2[]=likely_to_engage&contactEmailStatusV2[]=verified&sortByField=person_title_normalized&sortAscending=true";
 
     if (
       formData.organization_locations &&
