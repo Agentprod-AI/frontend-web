@@ -196,7 +196,7 @@ export default function PeopleForm(): JSX.Element {
     Tag[]
   >([]);
   const [error, setError] = React.useState<string | null>(null);
-
+  const [apolloUrl, setApolloUrl] = useState("");
   const [organizationCompanyTags, setOrganizationCompanyTags] = React.useState<
     Tag[]
   >([]);
@@ -330,6 +330,111 @@ export default function PeopleForm(): JSX.Element {
     return checked;
   };
 
+  const constructApolloUrl = (formData: any) => {
+    let url =
+      "https://app.apollo.io/#/people?finderViewId=6674b20eecfedd000184539f&contactEmailStatusV2[]=likely_to_engage&contactEmailStatusV2[]=verified";
+
+    if (
+      formData.organization_locations &&
+      formData.organization_locations.length > 0
+    ) {
+      url += formData.organization_locations
+        .map(
+          (location: any) =>
+            `&personLocations[]=${encodeURIComponent(location.text)}`
+        )
+        .join("");
+    }
+
+    if (
+      formData.organization_industry_tag_ids &&
+      formData.organization_industry_tag_ids.length > 0
+    ) {
+      url += formData.organization_industry_tag_ids
+        .map(
+          (industry: any) =>
+            `&organizationIndustryTagIds[]=${encodeURIComponent(
+              industry.value
+            )}`
+        )
+        .join("");
+    }
+
+    if (formData.person_titles && formData.person_titles.length > 0) {
+      url += formData.person_titles
+        .map(
+          (title: any) => `&personTitles[]=${encodeURIComponent(title.text)}`
+        )
+        .join("");
+    }
+
+    if (checkedCompanyHeadcount && checkedCompanyHeadcount.length > 0) {
+      url += checkedCompanyHeadcount
+        .map((range: string) => {
+          const [min, max] = range.split("-");
+          return `&organizationNumEmployeesRanges[]=${encodeURIComponent(
+            min
+          )},${max === "x" ? "" : encodeURIComponent(max)}`;
+        })
+        .join("");
+    }
+
+    if (
+      formData.q_organization_keyword_tags &&
+      formData.q_organization_keyword_tags.length > 0
+    ) {
+      url += formData.q_organization_keyword_tags
+        .map(
+          (tag: any) =>
+            `&qOrganizationKeywordTags[]=${encodeURIComponent(tag.text)}`
+        )
+        .join("");
+      url +=
+        "&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name";
+    }
+
+    if (checkedFundingRounds && checkedFundingRounds.length > 0) {
+      url += checkedFundingRounds
+        .map(
+          (round: string) =>
+            `&organizationLatestFundingStageCd[]=${encodeURIComponent(round)}`
+        )
+        .join("");
+    }
+
+    if (formData.person_seniorities && formData.person_seniorities.length > 0) {
+      url += formData.person_seniorities
+        .map(
+          (seniority: any) =>
+            `&personSeniorities[]=${encodeURIComponent(seniority.text)}`
+        )
+        .join("");
+    }
+
+    if (formData.minimum_company_funding && formData.maximum_company_funding) {
+      url += `&organizationRevenueRanges[]=${encodeURIComponent(
+        formData.minimum_company_funding.text
+      )},${encodeURIComponent(formData.maximum_company_funding.text)}`;
+    }
+
+    if (formData.email_status && formData.email_status.length > 0) {
+      url += formData.email_status
+        .map(
+          (status: any) =>
+            `&contactEmailStatusV2[]=${encodeURIComponent(status.text)}`
+        )
+        .join("");
+    }
+
+    return url;
+  };
+
+  // Inside your component or a useEffect hook:
+  useEffect(() => {
+    const newApolloUrl = constructApolloUrl(form.getValues());
+    setApolloUrl(newApolloUrl);
+  }, [form, checkedCompanyHeadcount, checkedFundingRounds]);
+
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     const formData = {
       q_organization_domains: data.q_organization_domains,
@@ -357,87 +462,6 @@ export default function PeopleForm(): JSX.Element {
     if (!prevInputValues.current) shouldCallAPI = true;
 
     // Construct the Apollo.io URL based on the selected filters
-    let apolloUrl =
-      "https://app.apollo.io/#/people?finderViewId=6674b20eecfedd000184539f&contactEmailStatusV2[]=likely_to_engage&contactEmailStatusV2[]=verified";
-
-    // Add page parameter
-
-    if (
-      formData.organization_locations &&
-      formData.organization_locations.length > 0
-    ) {
-      apolloUrl += formData.organization_locations
-        .map(
-          (location) =>
-            `&personLocations[]=${encodeURIComponent(location.text)}`
-        )
-        .join("");
-    }
-
-    if (
-      formData.organization_industry_tag_ids &&
-      formData.organization_industry_tag_ids.length > 0
-    ) {
-      apolloUrl += formData.organization_industry_tag_ids
-        .map((industry) => `&organizationIndustryTagIds[]=${industry.value}`)
-        .join("");
-    }
-
-    if (formData.person_titles && formData.person_titles.length > 0) {
-      apolloUrl += formData.person_titles
-        .map((title) => `&personTitles[]=${encodeURIComponent(title.text)}`)
-        .join("");
-    }
-
-    if (checkedCompanyHeadcount && checkedCompanyHeadcount.length > 0) {
-      checkedCompanyHeadcount.forEach((range) => {
-        const [min, max] = range.split("-");
-        apolloUrl += `&organizationNumEmployeesRanges[]=${min},${
-          max === "x" ? "" : max
-        }`;
-      });
-    }
-
-    if (
-      data.q_organization_keyword_tags &&
-      data.q_organization_keyword_tags.length > 0
-    ) {
-      data.q_organization_keyword_tags.forEach((tag) => {
-        apolloUrl += `&qOrganizationKeywordTags[]=${encodeURIComponent(
-          tag.text
-        )}`;
-      });
-      // Add included fields for keyword search
-      apolloUrl +=
-        "&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name";
-    }
-
-    if (checkedFundingRounds && checkedFundingRounds.length > 0) {
-      checkedFundingRounds.forEach((round) => {
-        apolloUrl += `&organizationLatestFundingStageCd[]=${round}`;
-      });
-    }
-
-    if (
-      formData.organization_locations &&
-      formData.organization_locations.length > 0
-    ) {
-      apolloUrl += formData.organization_locations
-        .map(
-          (location) =>
-            `&personLocations[]=${encodeURIComponent(location.text)}`
-        )
-        .join("");
-    }
-
-    if (formData.person_seniorities && formData.person_seniorities.length > 0) {
-      apolloUrl += formData.person_seniorities
-        .map(
-          (seniority) =>
-            `&personSeniorities[]=${encodeURIComponent(seniority.text)}`
-        )
-        .join("");
-    }
 
     // Add more filter conditions here as needed
 
@@ -469,7 +493,7 @@ export default function PeopleForm(): JSX.Element {
     };
 
     const createScraperBody = (email: string, count: number) => ({
-      count: Math.min(count, 50),
+      count: Math.min(count, 25),
       email: email,
       getEmails: true,
       guessedEmails: true,
@@ -506,19 +530,6 @@ export default function PeopleForm(): JSX.Element {
         console.log(response.data);
 
         const newResults = response.data;
-
-        // const uniqueNewResults = newResults.filter((newResult: any) => {
-        //   const isUniqueInExistingLeads = !existingLeadsResponse.data.includes(
-        //     newResult.email
-        //   );
-        //   const isUniqueInAccumulatedResults = !accumulatedResults.some(
-        //     (accumulatedResult: any) =>
-        //       accumulatedResult.email === newResult.email
-        //   );
-        //   return isUniqueInExistingLeads && isUniqueInAccumulatedResults;
-        // });
-
-        // const updatedResults = [...accumulatedResults, ...uniqueNewResults];
 
         const updatedResults = [...accumulatedResults, ...newResults];
 
@@ -784,6 +795,15 @@ export default function PeopleForm(): JSX.Element {
         const response = await axiosInstance.post("v2/audience", postBody);
         const data = response.data;
         console.log("filters to audience: ", data);
+
+        const resp = await axiosInstance.post("v2/recurring_campaign_request", {
+          campaign_id: params.campaignId,
+          user_id: user.id,
+          apollo_url: apolloUrl,
+          page: 2,
+        });
+        const data1 = resp.data;
+        console.log(" audience: ", data1);
 
         toast.success("Audience created successfully");
         setTimeout(() => {}, 2000);
