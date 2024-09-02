@@ -115,7 +115,7 @@ function Qualification() {
 
         <div className="my-3">
           <Button
-            className="bg-transparent dark:text-white border dark:border-white dark:hover:bg-white dark:hover:text-black"
+            className="bg-transparent hover:bg-black hover:text-white text-black dark:text-white border dark:border-white dark:hover:bg-white dark:hover:text-black"
             onClick={addCriteria}
           >
             <Plus width={17} height={17} className="mr-2" /> Add qualification
