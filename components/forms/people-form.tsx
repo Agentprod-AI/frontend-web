@@ -188,6 +188,8 @@ export default function PeopleForm(): JSX.Element {
       text: 0,
     });
 
+  const [calculatedPages, setCalculatedPages] = useState(1);
+
   const [jobLocationTags, setJobLocationTags] = React.useState<Tag[]>([]);
 
   const [jobOfferingTags, setJobOfferingTags] = React.useState<Tag[]>([]);
@@ -478,6 +480,8 @@ export default function PeopleForm(): JSX.Element {
       }
     }
 
+    setCalculatedPages(pages);
+
     const getRandomEmail = () => {
       const emailArray = [
         "nisheet@agentprod.com",
@@ -518,7 +522,7 @@ export default function PeopleForm(): JSX.Element {
         return accumulatedResults;
       }
 
-      const countForThisCall = Math.min(remainingCount, 50);
+      const countForThisCall = 25;
       const email = getRandomEmail();
       const scraperBody = createScraperBody(email, countForThisCall);
 
@@ -532,7 +536,7 @@ export default function PeopleForm(): JSX.Element {
         const newResults = response.data;
 
         const updatedResults = [...accumulatedResults, ...newResults];
-
+        console.log("remaining count", remainingCount);
         // Recursive call
         return fetchLeadsRecursively(
           remainingCount - countForThisCall,
@@ -586,7 +590,7 @@ export default function PeopleForm(): JSX.Element {
 
         while (retryCount < maxRetries) {
           try {
-            const results = await fetchLeadsRecursively(formData.per_page);
+            const results = await fetchLeadsRecursively(data.per_page);
             if (results && results.length > 0) {
               fetchedLeads = results;
               break;
@@ -800,7 +804,7 @@ export default function PeopleForm(): JSX.Element {
           campaign_id: params.campaignId,
           user_id: user.id,
           apollo_url: apolloUrl,
-          page: 2,
+          page: calculatedPages + 1,
         });
         const data1 = resp.data;
         console.log(" audience: ", data1);
@@ -1462,7 +1466,7 @@ export default function PeopleForm(): JSX.Element {
                             className="sm:min-w-[450px] outline-none"
                             value={field.value || leadsNum}
                             min={0}
-                            max={1000}
+                            max={125}
                             onChange={(e) => {
                               const value = e.target.value;
                               const numberValue =
