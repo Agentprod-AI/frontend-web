@@ -59,7 +59,7 @@ export default function Page() {
   const activeDaysSet = new Set(
     mailGraphData
       .map((data) => {
-        if (!data.date) return null; // Skip null or undefined dates
+        if (!data.date) return null;
         try {
           const parsedDate = parseISO(data.date);
           if (isNaN(parsedDate.getTime())) {
@@ -72,28 +72,9 @@ export default function Page() {
           return null;
         }
       })
-      .filter(Boolean) // Remove null values
+      .filter(Boolean)
   );
 
-  console.log(activeDaysSet);
-  // const calculateStreak = (data: any) => {
-  //   if (data.length === 0) return 0;
-
-  //   let streak = 1;
-  //   let lastDate = parseISO(data[0].date);
-
-  //   for (let i = 1; i < data.length; i++) {
-  //     const currentDate = parseISO(data[i].date);
-  //     if (differenceInCalendarDays(currentDate, lastDate) === 1) {
-  //       streak++;
-  //     } else if (differenceInCalendarDays(currentDate, lastDate) > 1) {
-  //       break;
-  //     }
-  //     lastDate = currentDate;
-  //   }
-
-  //   return streak;
-  // };
 
   return (
     <>
@@ -332,20 +313,20 @@ export default function Page() {
                             <TableRow key={index}>
                               <TableCell>{campaign.campaign_name}</TableCell>
                               <TableCell className="hidden sm:table-cell text-center">
-                                {campaign.engaged_leads}
+                                {Math.round(campaign.engaged_leads)}
                               </TableCell>
                               <TableCell className="hidden sm:table-cell text-center">
-                                {campaign.response_rate}
+                                {Math.round(campaign.response_rate)}
                               </TableCell>
                               <TableCell className="hidden md:table-cell text-center">
                                 {campaign.bounce_rate === null
                                   ? "0%"
-                                  : `${campaign.bounce_rate}%`}
+                                  : `${Math.round(campaign.bounce_rate)}%`}
                               </TableCell>
                               <TableCell className="text-center">
                                 {campaign.open_rate === null
                                   ? "0%"
-                                  : `${campaign.open_rate}%`}
+                                  : `${Math.round(campaign.open_rate)}%`}
                               </TableCell>
                             </TableRow>
                           )
