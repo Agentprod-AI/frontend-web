@@ -263,6 +263,18 @@ export default function PeopleForm(): JSX.Element {
             // setAllFiltersFromDB(data.filters_applied);
             console.log("data ==>", data);
             setType("edit");
+            try {
+              const audienceFilters = await getAudienceFiltersById(id);
+              console.log("response from audience filters", audienceFilters);
+              setAllFiltersFromDB(audienceFilters.data.filters_applied);
+              setEditFilters(audienceFilters.data.filters_applied); // Store filters_applied in state
+              setAudienceId(audienceFilters.id);
+              populateFormWithExistingFilters(
+                audienceFilters.data.filters_applied
+              );
+            } catch (error) {
+              console.error("Error fetching audience filters:", error);
+            }
           }
         } catch (error) {
           console.error("Error fetching campaign:", error);
@@ -272,27 +284,6 @@ export default function PeopleForm(): JSX.Element {
 
     fetchCampaign();
   }, [params.campaignId]);
-
-  React.useEffect(() => {
-    const fetchAudienceFilters = async () => {
-      if (type === "edit") {
-        const id = params.campaignId;
-        if (id) {
-          try {
-            const audienceFilters = await getAudienceFiltersById(id);
-            console.log("response from audience filters", audienceFilters);
-            setAllFiltersFromDB(audienceFilters.filters_applied);
-            setEditFilters(audienceFilters.filters_applied); // Store filters_applied in state
-            setAudienceId(audienceFilters.id);
-          } catch (error) {
-            console.error("Error fetching audience filters:", error);
-          }
-        }
-      }
-    };
-
-    fetchAudienceFilters();
-  }, [params.campaignId, type]);
 
   // React.useEffect(() => {
   //   console.log("current form values", form.getValues());
@@ -866,27 +857,25 @@ export default function PeopleForm(): JSX.Element {
     }
   };
 
-  React.useEffect(() => {
+  function populateFormWithExistingFilters(allFiltersFromDB: any) {
+    console.log("allFiltersFromDB", allFiltersFromDB);
     if (allFiltersFromDB) {
       // setPersonSenioritiesTags(
       //   mapFiltersToTags(allFiltersFromDB.person_seniorities)
       // );
       // form.setValue("person_seniorities", allFiltersFromDB.person_seniorities);
-
       mapFiltersToTags(
         "person_seniorities",
         allFiltersFromDB.person_seniorities,
         setPersonSenioritiesTags,
         "person_seniorities"
       );
-
       mapFiltersToTags(
         "person_titles",
         allFiltersFromDB.person_titles,
         setPersonTitlesTags,
         "person_titles"
       );
-
       mapFiltersToTags(
         "q_organization_domains",
         allFiltersFromDB.q_organization_domains,
@@ -899,21 +888,18 @@ export default function PeopleForm(): JSX.Element {
         setOrganizationKeywordTags,
         "organization_industry_tag_ids"
       );
-
       mapFiltersToTags(
         "q_organization_keyword_tags",
         allFiltersFromDB.q_organization_keyword_tags,
         setOrganizationKeywordTags,
         "q_organization_keyword_tags"
       );
-
       mapFiltersToTags(
         "organization_locations",
         allFiltersFromDB.organization_locations,
         setOrganizationLocationsTags,
         "organization_locations"
       );
-
       // mapFiltersToTags(
       //   "revenue_range",
       //   allFiltersFromDB.revenue_range.max,
@@ -928,21 +914,18 @@ export default function PeopleForm(): JSX.Element {
       //   "revenue_range"
       // );
       // console.log("maximum value : ", maximumCompanyFunding.text);
-
       mapFiltersToTags(
         "organization_industry_tag_ids",
         allFiltersFromDB.q_keywords,
         setOrganizationKeywordTags,
         "organization_industry_tag_ids"
       );
-
       mapFiltersToTags(
         "q_organization_keyword_tags",
         allFiltersFromDB.q_keywords,
         setOrganizationCompanyTags,
         "q_organization_keyword_tags"
       );
-
       const formatFundingHeadcount =
         allFiltersFromDB?.organization_latest_funding_stage_cd?.map(
           (range: string) => {
@@ -956,9 +939,7 @@ export default function PeopleForm(): JSX.Element {
             return range.split(",").join("-");
           }
         );
-
       setCheckedCompanyHeadcount(formatCheckedHeadcount);
-
       form.setValue(
         "company_headcount",
         allFiltersFromDB.organization_num_employees_ranges
@@ -980,10 +961,9 @@ export default function PeopleForm(): JSX.Element {
         "per_page",
         allFiltersFromDB.per_page * allFiltersFromDB.page
       );
-
       console.log("form values updated, current values", form.getValues());
     }
-  }, [allFiltersFromDB]);
+  }
 
   React.useEffect(() => {
     console.log("checked company headcount", checkedCompanyHeadcount);
