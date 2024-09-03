@@ -787,16 +787,19 @@ export default function PeopleForm(): JSX.Element {
       };
 
       try {
-        const response = await axiosInstance.post("v2/audience", postBody);
+        const response = await axiosInstance.post("v2/audience/", postBody);
         const data = response.data;
         console.log("filters to audience: ", data);
 
-        const resp = await axiosInstance.post("v2/recurring_campaign_request", {
-          campaign_id: params.campaignId,
-          user_id: user.id,
-          apollo_url: apolloUrl,
-          page: calculatedPages + 1,
-        });
+        const resp = await axiosInstance.post(
+          "v2/recurring_campaign_request/",
+          {
+            campaign_id: params.campaignId,
+            user_id: user.id,
+            apollo_url: apolloUrl,
+            page: calculatedPages + 1,
+          }
+        );
         const data1 = resp.data;
         console.log(" audience: ", data1);
 
