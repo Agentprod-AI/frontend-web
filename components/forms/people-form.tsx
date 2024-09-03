@@ -188,6 +188,8 @@ export default function PeopleForm(): JSX.Element {
       text: 0,
     });
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const [calculatedPages, setCalculatedPages] = useState(1);
 
   const [jobLocationTags, setJobLocationTags] = React.useState<Tag[]>([]);
@@ -290,6 +292,9 @@ export default function PeopleForm(): JSX.Element {
   // }, [form]);
 
   const onTabChange = async (value: any) => {
+    if (isSubmitting) {
+      return; // Don't allow tab changes while submitting
+    }
     //TODO: only change the value if form is correct
     if (value === "tab1") {
       setTab(value);
@@ -459,7 +464,7 @@ export default function PeopleForm(): JSX.Element {
       organization_job_locations: data.organization_job_locations,
       q_organization_job_titles: data.q_organization_job_titles,
     };
-
+    setIsSubmitting(true);
     setPageCompletion("audience", true);
     console.log("form data", formData);
 
@@ -643,6 +648,7 @@ export default function PeopleForm(): JSX.Element {
         setTab("tab1");
         setIsTableLoading(false);
       } finally {
+        setIsSubmitting(false);
         setIsLoading(false);
         setIsTableLoading(false);
         console.log("Fetched leads:", leads);
@@ -1197,8 +1203,10 @@ export default function PeopleForm(): JSX.Element {
               type === "edit" && "hidden"
             }`}
           >
-            <TabsTrigger value="tab1">Edit</TabsTrigger>
-            <TabsTrigger value="tab2" type="submit">
+            <TabsTrigger value="tab1" disabled={isSubmitting}>
+              Edit
+            </TabsTrigger>
+            <TabsTrigger value="tab2" type="submit" disabled={isSubmitting}>
               {isLoading ? (
                 <div>
                   <LoadingCircle />
@@ -1993,6 +2001,7 @@ export default function PeopleForm(): JSX.Element {
                   event.preventDefault();
                   createAudience();
                 }}
+                disabled={isSubmitting}
               >
                 {isCreateBtnLoading ? <LoadingCircle /> : "Create Audience"}
               </Button>
@@ -2004,6 +2013,7 @@ export default function PeopleForm(): JSX.Element {
                     event.preventDefault();
                     createAudience();
                   }}
+                  disabled={isSubmitting}
                 >
                   Update Audience
                 </Button>
