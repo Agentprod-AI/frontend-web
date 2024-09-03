@@ -33,7 +33,7 @@ function Qualification() {
       if (id) {
         try {
           const response = await fetch(
-            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${params.campaignId}`
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${params.campaignId}/`
           );
           const data = await response.json();
           if (data.detail === "Qualification not found") {
@@ -68,13 +68,13 @@ function Qualification() {
     try {
       if (type === "create") {
         await axios.post(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/`,
           { campaign_id: params.campaignId, details: criteria }
         );
         toast.success("Qualification added successfully");
       } else if (type === "edit") {
         await axios.put(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${qua_id}`,
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/qualifications/${qua_id}/`,
           { details: criteria }
         );
         toast.success("Qualification updated successfully");
