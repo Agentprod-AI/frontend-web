@@ -54,7 +54,7 @@ function Qualification() {
   const addCriteria = () => {
     setCriteria([
       ...criteria,
-      { question: "", type: "", answer: "", addToCampaign: false },
+      { question: "", type: "", answer: "", addToCampaign: true },
     ]);
   };
 

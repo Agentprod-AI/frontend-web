@@ -424,9 +424,22 @@ export default function PeopleForm(): JSX.Element {
 
   // Inside your component or a useEffect hook:
   useEffect(() => {
-    const newApolloUrl = constructApolloUrl(form.getValues());
+    const formData = form.getValues();
+    const newApolloUrl = constructApolloUrl(formData);
     setApolloUrl(newApolloUrl);
-  }, [form, checkedCompanyHeadcount, checkedFundingRounds]);
+  }, [
+    form,
+    checkedCompanyHeadcount,
+    checkedFundingRounds,
+    form.watch("organization_locations"),
+    form.watch("organization_industry_tag_ids"),
+    form.watch("person_titles"),
+    form.watch("q_organization_keyword_tags"),
+    form.watch("person_seniorities"),
+    form.watch("minimum_company_funding"),
+    form.watch("maximum_company_funding"),
+    form.watch("email_status"),
+  ]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
     const formData = {
@@ -470,6 +483,8 @@ export default function PeopleForm(): JSX.Element {
         pages = Math.ceil(formData.per_page / 25);
       }
     }
+    const newApolloUrl = constructApolloUrl(data);
+    setApolloUrl(newApolloUrl);
 
     setCalculatedPages(pages);
 
