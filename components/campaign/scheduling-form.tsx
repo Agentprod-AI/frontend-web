@@ -255,13 +255,17 @@ export function SchedulingForm() {
                     <FormControl>
                       <RadioGroupItem value="recurring" />
                     </FormControl>
-                    <FormLabel className="font-normal">Recurring</FormLabel>
+                    <FormLabel className="font-normal">
+                      Contact Leads Everyday
+                    </FormLabel>
                   </FormItem>
                   <FormItem className="flex items-center space-x-3 space-y-0">
                     <FormControl>
                       <RadioGroupItem value="immediate" />
                     </FormControl>
-                    <FormLabel className="font-normal">Immediate</FormLabel>
+                    <FormLabel className="font-normal">
+                      One Time Campaign
+                    </FormLabel>
                   </FormItem>
                 </RadioGroup>
               </FormControl>
