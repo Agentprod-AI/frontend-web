@@ -28,6 +28,8 @@ import { useUserContext } from "@/context/user-context";
 import { getCampaignById } from "./camapign.api";
 import { CampaignEntry } from "@/context/campaign-provider";
 import { useButtonStatus } from "@/context/button-status";
+import { Label } from "../ui/label";
+import axios from "axios";
 
 const campaignTypes = ["Outbound", "Inbound", "Nurturing"];
 
@@ -38,6 +40,9 @@ const campaignFormSchema = z.object({
     .max(50, "Campaign Name must not be longer than 50 characters."),
   campaignType: z.enum(["Outbound", "Inbound", "Nurturing"], {
     required_error: "Please select a campaign type.",
+  }),
+  scheduleType: z.enum(["recurring", "immediate"], {
+    required_error: "Please select a schedule type.",
   }),
   schedule: z.object({
     weekdayStartTime: z.string().optional(),
@@ -74,7 +79,29 @@ export function SchedulingForm() {
 
   const onSubmit = async (data: CampaignFormValues) => {
     if (type === "create") {
-      await createCampaign(data);
+      console.log("data", data);
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/`,
+        {
+          user_id: user.id,
+          campaign_name: data.campaignName,
+          campaign_type: data.campaignType,
+          monday_start: data.schedule.weekdayStartTime,
+          monday_end: data.schedule.weekdayEndTime,
+          tuesday_start: data.schedule.weekdayStartTime,
+          tuesday_end: data.schedule.weekdayEndTime,
+          wednesday_start: data.schedule.weekdayStartTime,
+          wednesday_end: data.schedule.weekdayEndTime,
+          thursday_start: data.schedule.weekdayStartTime,
+          thursday_end: data.schedule.weekdayEndTime,
+          friday_start: data.schedule.weekdayStartTime,
+          friday_end: data.schedule.weekdayEndTime,
+          schedule_type: data.scheduleType,
+          autopilot: false,
+          is_active: false,
+        }
+      ); // createCampaign(data);
+      router.push(`/dashboard/campaign/${response.data.id}`);
       toast.success("Campaign is scheduled successfully!");
       // setPageCompletion("scheduling-budget", true);
       const updatedFormsTracker = {
@@ -98,7 +125,7 @@ export function SchedulingForm() {
         return acc;
       }, {} as CampaignFormValues);
 
-      await editCampaign(changes, params.campaignId);
+      editCampaign(changes, params.campaignId);
       toast.success("Campaign is updated successfully!");
 
       const updatedFormsTracker = {
@@ -167,6 +194,7 @@ export function SchedulingForm() {
 
   return (
     <Form {...form}>
+      {/* {JSON.stringify(campaignData)} */}
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8 mb-5">
         <FormField
           control={form.control}
@@ -211,6 +239,36 @@ export function SchedulingForm() {
             </FormItem>
           )}
         />
+        <FormField
+          control={form.control}
+          name="scheduleType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Schedule Type</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value || campaignData?.schedule_type} // Updated line
+                  className="flex space-x-4"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="recurring" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Recurring</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="immediate" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Immediate</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <h1>Schedule</h1>
         <div className="flex w-[400px] justify-between">
@@ -242,6 +300,7 @@ export function SchedulingForm() {
             />
           </div>
         </div>
+
         <Button type="submit">
           {type === "create" ? "Add" : "Update"} Campaign
         </Button>

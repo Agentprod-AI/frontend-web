@@ -12,11 +12,13 @@ import { useRouter } from "next/navigation";
 import { toast } from "@/components/ui/use-toast";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "./user-context";
+import { Ole } from "next/font/google";
 
 export interface CampaignFormData {
   [key: string]: any;
   campaignName: string;
   campaignType: "Outbound" | "Inbound" | "Nurturing";
+  scheduleType: "recurring" | "immediate";
   schedule: {
     weekdayStartTime?: string;
     weekdayEndTime?: string;
@@ -188,33 +190,35 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       thursday_end: data.schedule.weekdayEndTime,
       friday_start: data.schedule.weekdayStartTime,
       friday_end: data.schedule.weekdayEndTime,
-      schedule_type: "none",
+      schedule_type: data.schedule_type,
       autopilot: false,
       is_active: false,
     };
 
-    if (postData)
-      axiosInstance
-        .post("v2/campaigns/", postData)
-        .then((response) => {
-          console.log("Campaign created successfully:", response);
-          setCampaigns((prevCampaigns) => [...prevCampaigns, response.data]);
-          let formsTracker = JSON.parse(
-            localStorage.getItem("formsTracker") || "{}"
-          );
-          formsTracker.schedulingBudget = true;
-          formsTracker.campaignId = response.data.id;
-          localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
+    console.log("postData", postData);
 
-          router.push(`/dashboard/campaign/${response.data.id}`);
-        })
-        .catch((error) => {
-          console.error("Error creating Campaign:", error);
-          toast({
-            title: "Error creating campaign",
-            description: error.message || "Failed to create campaign.",
-          });
-        });
+    // if (postData)
+    //   axiosInstance
+    //     .post("v2/campaigns/", postData)
+    //     .then((response) => {
+    //       console.log("Campaign created successfully:", response);
+    //       setCampaigns((prevCampaigns) => [...prevCampaigns, response.data]);
+    //       let formsTracker = JSON.parse(
+    //         localStorage.getItem("formsTracker") || "{}"
+    //       );
+    //       formsTracker.schedulingBudget = true;
+    //       formsTracker.campaignId = response.data.id;
+    //       localStorage.setItem("formsTracker", JSON.stringify(formsTracker));
+
+    //       // router.push(`/dashboard/campaign/${response.data.id}`);
+    //     })
+    //     .catch((error) => {
+    //       console.error("Error creating Campaign:", error);
+    //       toast({
+    //         title: "Error creating campaign",
+    //         description: error.message || "Failed to create campaign.",
+    //       });
+    //     });
   };
 
   const editCampaign = (data: CampaignFormData, campaignId: string) => {
