@@ -571,7 +571,7 @@ export default function PeopleForm(): JSX.Element {
     if (existingLeadsResponse.data === null) {
       shouldCallAPI = true;
     } else if (
-      existingLeadsResponse.data.length > 300 + pages * 25 &&
+      existingLeadsResponse.data.length > 100 + pages * 25 &&
       isSubscribed === false
     ) {
       toast.warning("Your free account has reached the limit of 300 leads");
@@ -816,14 +816,22 @@ export default function PeopleForm(): JSX.Element {
         const data = response.data;
         console.log("filters to audience: ", data);
 
-        const resp = await axiosInstance.post("v2/recurring_campaign_request", {
-          campaign_id: params.campaignId,
-          user_id: user.id,
-          apollo_url: apolloUrl,
-          page: calculatedPages + 1,
-        });
-        const data1 = resp.data;
-        console.log(" audience: ", data1);
+        const getRecData = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
+        );
+        if (getRecData.data.schedule_type === "recurring") {
+          const resp = await axiosInstance.post(
+            "v2/recurring_campaign_request",
+            {
+              campaign_id: params.campaignId,
+              user_id: user.id,
+              apollo_url: apolloUrl,
+              page: calculatedPages + 1,
+            }
+          );
+          const data1 = resp.data;
+          console.log(" audience: ", data1);
+        }
 
         toast.success("Audience created successfully");
         setTimeout(() => {}, 2000);
