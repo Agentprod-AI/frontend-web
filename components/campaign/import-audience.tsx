@@ -391,7 +391,7 @@ export const ImportAudience = () => {
       };
 
       const audienceResponse = await axiosInstance.post(
-        "v2/audience",
+        "v2/audience/",
         postBody
       );
       const audienceData = audienceResponse.data;
