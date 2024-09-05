@@ -511,7 +511,11 @@ export default function PeopleForm(): JSX.Element {
       return emailArray[randomIndex];
     };
 
-    const createScraperBody = (email: string, count: number) => ({
+    const createScraperBody = (
+      email: string,
+      count: number,
+      startPage: number
+    ) => ({
       count: Math.min(count, 25),
       email: email,
       getEmails: true,
@@ -520,7 +524,7 @@ export default function PeopleForm(): JSX.Element {
       minDelay: 8,
       password: "Agentprod06ms",
       searchUrl: apolloUrl,
-      startPage: 1,
+      startPage: startPage,
       waitForVerification: true,
       proxy: {
         useApifyProxy: true,
@@ -531,15 +535,20 @@ export default function PeopleForm(): JSX.Element {
 
     const fetchLeadsRecursively = async (
       remainingCount: number,
-      accumulatedResults: any[] = []
+      accumulatedResults: any[] = [],
+      currentPage: number = 1
     ): Promise<any[]> => {
       if (remainingCount <= 0) {
         return accumulatedResults;
       }
 
-      const countForThisCall = 25;
+      const countForThisCall = Math.min(remainingCount, 25);
       const email = getRandomEmail();
-      const scraperBody = createScraperBody(email, countForThisCall);
+      const scraperBody = createScraperBody(
+        email,
+        countForThisCall,
+        currentPage
+      );
 
       try {
         const response = await axios.post(
@@ -555,7 +564,8 @@ export default function PeopleForm(): JSX.Element {
         // Recursive call
         return fetchLeadsRecursively(
           remainingCount - countForThisCall,
-          updatedResults
+          updatedResults,
+          currentPage + 1
         );
       } catch (error) {
         console.error("Error fetching leads:", error);
