@@ -57,7 +57,7 @@ import { Lead, useLeads, Contact } from "@/context/lead-user";
 import { toast } from "sonner";
 import { PeopleProfileSheet } from "../people-profile-sheet";
 import Notification from "./Notification";
-import { useCampaignContext } from "@/context/campaign-provider";
+import { CampaignEntry, useCampaignContext } from "@/context/campaign-provider";
 import { User } from "lucide-react";
 import { LoadingCircle } from "@/app/icons";
 import { useUserContext } from "@/context/user-context";
@@ -106,9 +106,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
+  const [campaigns, setCampaigns] = React.useState<any[]>([]);
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
   const { leads, setLeads } = useLeads();
-  const { campaigns } = useCampaignContext();
+  const { user } = useUserContext();
+
+  // const { campaigns } = useCampaignContext();
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -125,6 +128,35 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   console.log("HEH", conversationId);
 
   const leadId = leads[0]?.campaign_id;
+
+  React.useEffect(() => {
+    const fetchCampaigns = () => {
+      if (user && user.id) {
+        setIsLoading(true);
+        axiosInstance
+          .get<CampaignEntry[]>(`v2/campaigns/all/${user.id}`)
+          .then((response) => {
+            console.log("Campaign From Inbox", response);
+            // Sort campaigns based on created_at field
+            const sortedCampaigns = response.data.sort((a: any, b: any) => {
+              const dateA = new Date(a.created_at).getTime();
+              const dateB = new Date(b.created_at).getTime();
+              return dateB - dateA; // Sort in descending order (newest first)
+            });
+
+            setCampaigns(sortedCampaigns);
+            setIsLoading(false);
+          })
+          .catch((error) => {
+            console.error("Error fetching campaigns:", error);
+            setError(error.message || "Failed to load campaigns.");
+            setIsLoading(false);
+          });
+      }
+    };
+
+    fetchCampaigns();
+  }, [user?.id, setCampaigns]);
 
   React.useEffect(() => {
     // For handleing, the thread if some error occurs
