@@ -75,7 +75,6 @@ export default function Page() {
       .filter(Boolean)
   );
 
-
   return (
     <>
       <DashboardPageHeader />
@@ -140,7 +139,9 @@ export default function Page() {
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
                     <div className="text-2xl font-bold">
-                      {Math.round(dashboardData.response_rate) || "0"}
+                      {(dashboardData.response_rate &&
+                        Math.round(dashboardData.response_rate)) ||
+                        "0"}
                     </div>
                   </CardContent>
                 </Card>
