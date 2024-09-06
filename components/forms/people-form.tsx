@@ -837,6 +837,8 @@ export default function PeopleForm(): JSX.Element {
               user_id: user.id,
               apollo_url: apolloUrl,
               page: calculatedPages + 1,
+              is_active: true,
+              leads_count: calculatedPages * 25,
             }
           );
           const data1 = resp.data;
