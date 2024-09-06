@@ -493,11 +493,9 @@ export default function PeopleForm(): JSX.Element {
 
     setCalculatedPages(pages);
 
-    const getRandomEmail = () => {
+    const getRandomEmail = (startPage: number) => {
       const emailArray = [
         "nisheet@agentprod.com",
-        "info@agentprod.com",
-        "muskaan@agentprodapp.com",
         "admin@agentprod.com",
         "naman.barkiya@agentprod.com",
         "siddhant.goswami@agentprod.com",
@@ -507,8 +505,15 @@ export default function PeopleForm(): JSX.Element {
         "demo@agentprod.com",
         "founders@agentprod.com",
       ];
-      const randomIndex = Math.floor(Math.random() * emailArray.length);
-      return emailArray[randomIndex];
+      const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
+
+      if (startPage > 5) {
+        const randomIndex = Math.floor(Math.random() * premiumAcc.length);
+        return premiumAcc[randomIndex];
+      } else {
+        const randomIndex = Math.floor(Math.random() * emailArray.length);
+        return emailArray[randomIndex];
+      }
     };
 
     const createScraperBody = (
@@ -543,7 +548,7 @@ export default function PeopleForm(): JSX.Element {
       }
 
       const countForThisCall = Math.min(remainingCount, 25);
-      const email = getRandomEmail();
+      const email = getRandomEmail(currentPage);
       const scraperBody = createScraperBody(
         email,
         countForThisCall,
@@ -624,6 +629,7 @@ export default function PeopleForm(): JSX.Element {
             }
           } catch (error: any) {
             if (
+              error.response?.status === 400 ||
               error.response?.data?.error?.type === "run-failed" ||
               retryCount < maxRetries - 1
             ) {
@@ -1493,7 +1499,7 @@ export default function PeopleForm(): JSX.Element {
                             className="sm:min-w-[450px] outline-none"
                             value={field.value || leadsNum}
                             min={0}
-                            max={125}
+                            max={500}
                             onChange={(e) => {
                               const value = e.target.value;
                               const numberValue =
