@@ -71,6 +71,9 @@ interface EmailMessage {
   scheduled_datetime: string;
   referral: string;
   questions: any;
+  delivered_datetime: any;
+  bounce_datetime: any;
+  spam_datetime: any;
 }
 
 interface NotificationProps {
@@ -651,9 +654,43 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             </div>
           </div>
         )}
+      {/* 
       {email?.status &&
         !email.is_reply &&
-        email?.status?.toLowerCase() === "request" && (
+        email?.status?.toLowerCase() === "scheduled" && (
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <Bell className="h-4 w-4 text-gray-400" />
+            </div>
+            <p className=" ml-1 text-xs ">
+              {email && email.scheduled_datetime
+                ? `Your draft has been scheduled to be sent at
+                ${formatDate(email.scheduled_datetime)}`
+                : "Your draft has been scheduled to be sent"}
+            </p>
+          </div>
+        )} */}
+      {email?.scheduled_datetime && (
+        <div className="flex items-center gap-3">
+          <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+            <Bell className="h-4 w-4 text-gray-400" />
+          </div>
+          <p className="ml-1 text-xs">
+            {email.status?.toLowerCase() === "scheduled"
+              ? `Your draft has been scheduled to be sent at ${formatDate(
+                  email.scheduled_datetime
+                )}`
+              : `Your draft was scheduled to be sent at ${formatDate(
+                  email.scheduled_datetime
+                )}`}
+          </p>
+        </div>
+      )}
+
+      {(email?.status &&
+        !email.is_reply &&
+        email?.status?.toLowerCase() === "request") ||
+        ((email.send_datetime || email.delivered_datetime) && (
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <SendHorizontal className="h-4 w-4 text-gray-400" />
@@ -669,7 +706,8 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               )}
             </span>
           </div>
-        )}
+        ))}
+
       {email?.status &&
         !email.is_reply &&
         email?.status?.toLowerCase() === "sent" && (
@@ -692,7 +730,28 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
 
       {email?.status &&
         !email.is_reply &&
-        email?.status?.toLowerCase() === "click" && (
+        email?.status?.toLowerCase() === "delivered" && (
+          <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <Mail className="h-4 w-4 text-gray-400" />
+            </div>
+            <p className=" ml-1 text-xs ">
+              Mail was delivered to recipient&apos;s inbox
+            </p>
+            <span className="text-gray-400 text-xs">
+              {email.send_datetime && (
+                <span className="text-gray-400 text-xs">
+                  {formatDate(email.send_datetime) || null}
+                </span>
+              )}
+            </span>
+          </div>
+        )}
+
+      {(email?.status &&
+        !email.is_reply &&
+        email?.status?.toLowerCase() === "click") ||
+        (email.click_datetime && (
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Clock3 className="h-4 w-4 text-gray-400" />
@@ -706,7 +765,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               )}
             </span>
           </div>
-        )}
+        ))}
       {email?.status &&
         !email.is_reply &&
         email?.status?.toLowerCase() === "opened" && (
@@ -804,29 +863,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           </div>
         )}
 
-      {email?.status &&
+      {(email?.status &&
         !email.is_reply &&
-        email?.status?.toLowerCase() === "delivered" && (
-          <div className="flex items-center gap-3">
-            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <Mail className="h-4 w-4 text-gray-400" />
-            </div>
-            <p className=" ml-1 text-xs ">
-              Mail was delivered to recipient&apos;s inbox
-            </p>
-            <span className="text-gray-400 text-xs">
-              {email.send_datetime && (
-                <span className="text-gray-400 text-xs">
-                  {formatDate(email.send_datetime) || null}
-                </span>
-              )}
-            </span>
-          </div>
-        )}
-
-      {email?.status &&
-        !email.is_reply &&
-        email?.status?.toLowerCase() === "soft_bounce" && (
+        email?.status?.toLowerCase() === "soft_bounce") ||
+        (email.bounce_datetime && (
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Archive className="h-4 w-4 text-gray-400" />
@@ -835,10 +875,11 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               Temporary delivery failure occurred.
             </p>
           </div>
-        )}
-      {email?.status &&
+        ))}
+      {(email?.status &&
         !email.is_reply &&
-        email?.status?.toLowerCase() === "hard_bounce" && (
+        email?.status?.toLowerCase() === "hard_bounce") ||
+        (email.bounce_datetime && (
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Archive className="h-4 w-4 text-gray-400" />
@@ -847,30 +888,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               Permanent delivery failure occurred.
             </p>
           </div>
-        )}
-
-      {email?.status &&
-        !email.is_reply &&
-        email?.status?.toLowerCase() === "scheduled" && (
-          <div className="flex items-center gap-3">
-            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <Bell className="h-4 w-4 text-gray-400" />
-            </div>
-            <p className=" ml-1 text-xs ">
-              {email && email.scheduled_datetime
-                ? `Your draft has been scheduled to be sent at
-                ${formatDate(email.scheduled_datetime)}`
-                : "Your draft has been scheduled to be sent"}
-            </p>
-            {/* <span className="text-gray-400 text-xs">
-              {email.send_datetime && (
-                <span className="text-gray-400 text-xs">
-                  {formatDate(email.send_datetime)}
-                </span>
-              )}
-            </span> */}
-          </div>
-        )}
+        ))}
 
       {email?.status &&
         !email.is_reply &&
@@ -885,9 +903,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
           </div>
         )}
 
-      {email?.status &&
+      {(email?.status &&
         !email.is_reply &&
-        email?.status?.toLowerCase() === "complain" && (
+        email?.status?.toLowerCase() === "complain") ||
+        (email.spam_datetime && (
           <div className="flex items-center gap-3">
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Clock3 className="h-4 w-4 text-gray-400" />
@@ -896,7 +915,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
               Recipient marked the email as spam.
             </p>
           </div>
-        )}
+        ))}
       {email?.status &&
         !email.is_reply &&
         email?.status?.toLowerCase() === "invalid_email" && (

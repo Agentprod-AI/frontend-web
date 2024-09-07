@@ -30,6 +30,9 @@ export interface EmailMessage {
   created_at: any;
   referral: string;
   questions: any;
+  delivered_datetime: any;
+  bounce_datetime: any;
+  spam_datetime: any;
 }
 
 export interface Mailbox {
