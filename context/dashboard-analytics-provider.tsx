@@ -89,7 +89,6 @@ const defaultDashboardState: DashboardContextType = {
   setDashboardData: () => {},
 };
 
-// Use the default state when creating the context
 const DashboardContext = createContext<DashboardContextType>(
   defaultDashboardState
 );
@@ -101,46 +100,37 @@ interface Props {
 export const DashboardProvider: React.FunctionComponent<Props> = ({
   children,
 }) => {
-  // const { user } = useAuth();
   const { user } = useUserContext();
-  const [dashboardData, setDashboardData] = useState<any>({
-    emails_sent: null,
-    engaged: null,
-    meetings_booked: null,
-    response_rate: null,
-    hot_leads: [],
-    top_performing_campaigns: [],
-    mailbox_health: {},
-  });
+  const [dashboardData, setDashboardData] = useState<DashboardEntry>(
+    defaultDashboardState.dashboardData
+  );
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
 
   React.useEffect(() => {
-    axiosInstance
-      .get<DashboardEntry[]>(`v2/dashboard/${user?.id}`)
-      .then((response) => {
-        setDashboardData(response.data);
-        console.log("Dashboard Data comingggg:", response.data);
-        setIsLoading(false);
-      })
-      .catch((error) => {
-        console.error("Error fetching data:", error);
-        setError(error.message || "Failed to load data.");
-        setIsLoading(false);
-      });
-
-    // axiosInstance
-    // .get<DashboardEntry[]>(`v2/contacts/${leadId}`)
-    // .then((response) => {
-    //   setDashboardData(response.data);
-    //   setIsLoading(false);
-    // })
-    // .catch((error) => {
-    //   console.error("Error fetching data:", error);
-    //   setError(error.message || "Failed to load data.");
-    //   setIsLoading(false);
-    // });
-  }, [user]); // chnage to user only if any error
+    if (user?.id) {
+      setIsLoading(true);
+      axiosInstance
+        .get<DashboardEntry>(`v2/dashboard/${user.id}`)
+        .then((response) => {
+          if (response.data) {
+            setDashboardData(response.data); // Check if data exists
+            console.log("Dashboard Data:", response.data);
+          } else {
+            console.warn("Received empty dashboard data");
+          }
+          setIsLoading(false);
+        })
+        .catch((error) => {
+          console.error("Error fetching data:", error);
+          setError(error.message || "Failed to load data.");
+          setIsLoading(false);
+        });
+    } else {
+      console.warn("No user ID found");
+      setIsLoading(false);
+    }
+  }, [user]);
 
   const contextValue = useMemo(
     () => ({
