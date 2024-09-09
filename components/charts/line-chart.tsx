@@ -15,12 +15,17 @@ export function LineChartComponent({
 }: {
   mailGraphData: { date: string; emails: number; new_emails: number }[];
 }) {
+  // Filter data to show only the last 15 days
+  const last15Days = mailGraphData.slice(-10);
+
+  console.log("Data for last 15 days:", last15Days);
+
   return (
     <ResponsiveContainer width="100%" height={350}>
       <LineChart
         width={500}
         height={300}
-        data={mailGraphData}
+        data={last15Days}
         margin={{
           top: 5,
           right: 30,
@@ -28,7 +33,6 @@ export function LineChartComponent({
           bottom: 5,
         }}
       >
-        {/* <CartesianGrid strokeDasharray="3 3" /> */}
         <Legend fontSize={10} />
         <XAxis
           dataKey="date"
