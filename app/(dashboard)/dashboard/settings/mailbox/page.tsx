@@ -318,6 +318,78 @@ export default function Page() {
     return result.success ? "" : result.error.errors[0].message;
   };
 
+  // const handleConnectDomain = async () => {
+  //   setIsConnectDomainButtonLoading(true);
+  //   const nonEmptyEmails = emailInput
+  //     .filter((email) => email.trim() !== "")
+  //     .map((email) => email.toLowerCase());
+  //   const hasErrors = emailErrors.some((error) => error !== "");
+
+  //   if (hasErrors || nonEmptyEmails.length === 0) {
+  //     toast.error("Please correct email errors before connecting.");
+  //     setIsConnectDomainButtonLoading(false);
+  //     return;
+  //   }
+
+  //   const schema = createEmailSchema(domainInput);
+
+  //   try {
+  //     schema.parse({ emailAddresses: nonEmptyEmails });
+  //     const senders = nonEmptyEmails.map((email) => ({
+  //       email: email,
+  //       id: uuidv4(),
+  //       name: nameInput,
+  //     }));
+
+  //     const postData = {
+  //       senders: senders,
+  //       user_id: user.id,
+  //     };
+
+  //     try {
+  //       const response = await axiosInstance.post("/v2/brevo/sender", postData);
+  //       const dnsPayload = senders.map((sender) => ({
+  //         domain: domainInput,
+  //         data: mailData,
+  //         mail: sender.email,
+  //       }));
+  //       await Promise.all(
+  //         dnsPayload.map((payload) =>
+  //           axiosInstance.post("v2/users/dns", payload)
+  //         )
+  //       );
+
+  //       await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
+  //       console.log("DNS Payloads:", dnsPayload);
+
+  //       setIsVerifyEmailOpen(false);
+  //       if (!isPresentDomain) {
+  //         setIsTableDialogOpen(true);
+  //       }
+  //       setIsAddMailboxOpen(false);
+  //       toast.success("Mailbox Added Successfully");
+  //       setDomainInput("");
+  //       setNameInput("");
+  //       setEmailInput([""]);
+  //       setFetchSuccess(false);
+  //       fetchMailboxes();
+  //       handleCloseAddMailbox();
+  //     } catch (error) {
+  //       console.error("Failed to connect", error);
+  //       toast.error("Domain Connection Failed.");
+  //     }
+  //   } catch (error) {
+  //     if (error instanceof z.ZodError) {
+  //       toast.error(error.errors[0].message);
+  //     } else {
+  //       console.error("Failed to connect", error);
+  //       toast.error("Domain Connection Failed.");
+  //     }
+  //   } finally {
+  //     setIsConnectDomainButtonLoading(false);
+  //   }
+  // };
+
   const handleConnectDomain = async () => {
     setIsConnectDomainButtonLoading(true);
     const nonEmptyEmails = emailInput
@@ -332,29 +404,35 @@ export default function Page() {
     }
 
     const schema = createEmailSchema(domainInput);
+    const senders = nonEmptyEmails.map((email) => ({
+      mailbox: email,
+      id: uuidv4(),
+      name: nameInput,
+    }));
 
     try {
       schema.parse({ emailAddresses: nonEmptyEmails });
-      const senders = nonEmptyEmails.map((email) => ({
-        mailbox: email,
-        id: uuidv4(),
-        name: nameInput,
-      }));
 
       const postData = {
+        email: nonEmptyEmails,
+        name: nameInput,
+      };
+
+      const postData1 = {
         senders: senders,
         user_id: user.id,
       };
 
       try {
-        const response = await axiosInstance.post(
+        const response = await axiosInstance.post("/v2/brevo/sender", postData);
+        const response1 = await axiosInstance.post(
           "/v2/brevo/sender/validate",
-          postData
+          postData1
         );
-        const dnsPayload = senders.map((sender) => ({
+        const dnsPayload = nonEmptyEmails.map((email) => ({
           domain: domainInput,
           data: mailData,
-          mail: sender.mailbox,
+          mail: email,
         }));
         await Promise.all(
           dnsPayload.map((payload) =>
@@ -875,7 +953,7 @@ export default function Page() {
                                   <input
                                     type="text"
                                     value={
-                                      "inbound-smtp.us-east-1.amazonaws.com."
+                                      "inbound-smtp.us-east-1.amazonaws.com"
                                     }
                                     readOnly
                                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
@@ -1240,7 +1318,7 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    value={"inbound-smtp.us-east-1.amazonaws.com."}
+                    value={"inbound-smtp.us-east-1.amazonaws.com"}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                   />
