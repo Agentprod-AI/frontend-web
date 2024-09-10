@@ -944,7 +944,7 @@ export default function Page() {
                                 <TableCell>
                                   <input
                                     type="text"
-                                    value={"1"}
+                                    value={"0"}
                                     readOnly
                                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                                   />
@@ -962,6 +962,11 @@ export default function Page() {
                               </TableRow>
                             </TableBody>
                           </Table>
+                          <p className="text-gray-600 italic text-sm">
+                            Note: Please set the priority of{" "}
+                            <code>inbound.smtp</code> to 0, and increase the
+                            priority of all other items to 9.
+                          </p>
                         </DialogContent>
                       </Dialog>
                     )}
@@ -1310,7 +1315,7 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    value={"1"}
+                    value={"0"}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                   />
