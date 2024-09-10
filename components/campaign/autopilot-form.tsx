@@ -6,7 +6,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import axios from "axios";
 import { useRouter } from "next/navigation";
-import { redirect, useParams } from "next/navigation";
+import { useParams } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
@@ -54,7 +54,9 @@ const defaultValues: Partial<AutopilotFormValues> = {
 
 const setFormValues = (setValue: any, values: Partial<AutopilotFormValues>) => {
   Object.entries(values).forEach(([key, value]) => {
-    setValue(key as keyof AutopilotFormValues, value);
+    if (key in defaultValues) {
+      setValue(key as keyof AutopilotFormValues, value);
+    }
   });
 };
 
@@ -104,26 +106,25 @@ export function AutopilotForm() {
 
   useEffect(() => {
     async function fetchData() {
-      const res = await axios.get(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot/${params.campaignId}`
-      );
-      const data = res.data;
-      if (data) {
-        setType("edit");
-        setFormValues(setValue, {
-          all_messages_actions: data.all_messages_actions,
-          replies: data.replies,
-          email: data.email,
-          ooo: data.ooo,
-          positive: data.positive,
-          negative: data.negative,
-          neutral: data.neutral,
-          maybe_later: data.maybe_later,
-          forwarded: data.forwarded,
-          error: data.error,
-          demo: data.demo,
-          not_interested: data.not_interested,
-        });
+      try {
+        const res = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/autopilot/${params.campaignId}`
+        );
+        const data = res.data;
+        if (data) {
+          setType("edit");
+          // Only set form values for fields that exist in our form schema
+          const formData: Partial<AutopilotFormValues> = {};
+          Object.keys(defaultValues).forEach((key) => {
+            if (key in data) {
+              formData[key as keyof AutopilotFormValues] = data[key];
+            }
+          });
+          setFormValues(setValue, formData);
+        }
+      } catch (error) {
+        console.error("Error fetching autopilot settings:", error);
+        toast.error("Failed to load autopilot settings.");
       }
     }
     fetchData();
