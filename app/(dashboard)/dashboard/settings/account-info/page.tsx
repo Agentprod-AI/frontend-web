@@ -105,7 +105,7 @@ export default function Page() {
       setAccountInfo((prev) =>
         prev.map((info) => {
           const newValue =
-            response.data[info.id.replace(/ /g, "_").toLowerCase()];
+            response.data[info?.id.replace(/ /g, "_").toLowerCase()];
           return newValue !== undefined ? { ...info, value: newValue } : info;
         })
       );
