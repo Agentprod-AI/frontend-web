@@ -103,6 +103,7 @@ const createEmailSchema = (domain: any) =>
   });
 
 export default function Page() {
+  const [getDomainName, setGetDomainName] = useState([]);
   const [isPresentDomain, setIsPresentDomain] = useState();
   const [isConnectDomainButtonLoading, setIsConnectDomainButtonLoading] =
     useState(false);
@@ -267,7 +268,8 @@ export default function Page() {
       }));
 
       setMailboxes(mailboxes);
-
+      const extractDomainName = mailboxes.map((mailbox: any) => mailbox.domain);
+      setGetDomainName(extractDomainName);
       const googleMailbox = mailboxes.find(
         (mailbox: any) => mailbox.platform === "Google"
       );
@@ -317,78 +319,6 @@ export default function Page() {
     const result = schema.safeParse(email);
     return result.success ? "" : result.error.errors[0].message;
   };
-
-  // const handleConnectDomain = async () => {
-  //   setIsConnectDomainButtonLoading(true);
-  //   const nonEmptyEmails = emailInput
-  //     .filter((email) => email.trim() !== "")
-  //     .map((email) => email.toLowerCase());
-  //   const hasErrors = emailErrors.some((error) => error !== "");
-
-  //   if (hasErrors || nonEmptyEmails.length === 0) {
-  //     toast.error("Please correct email errors before connecting.");
-  //     setIsConnectDomainButtonLoading(false);
-  //     return;
-  //   }
-
-  //   const schema = createEmailSchema(domainInput);
-
-  //   try {
-  //     schema.parse({ emailAddresses: nonEmptyEmails });
-  //     const senders = nonEmptyEmails.map((email) => ({
-  //       email: email,
-  //       id: uuidv4(),
-  //       name: nameInput,
-  //     }));
-
-  //     const postData = {
-  //       senders: senders,
-  //       user_id: user.id,
-  //     };
-
-  //     try {
-  //       const response = await axiosInstance.post("/v2/brevo/sender", postData);
-  //       const dnsPayload = senders.map((sender) => ({
-  //         domain: domainInput,
-  //         data: mailData,
-  //         mail: sender.email,
-  //       }));
-  //       await Promise.all(
-  //         dnsPayload.map((payload) =>
-  //           axiosInstance.post("v2/users/dns", payload)
-  //         )
-  //       );
-
-  //       await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
-  //       console.log("DNS Payloads:", dnsPayload);
-
-  //       setIsVerifyEmailOpen(false);
-  //       if (!isPresentDomain) {
-  //         setIsTableDialogOpen(true);
-  //       }
-  //       setIsAddMailboxOpen(false);
-  //       toast.success("Mailbox Added Successfully");
-  //       setDomainInput("");
-  //       setNameInput("");
-  //       setEmailInput([""]);
-  //       setFetchSuccess(false);
-  //       fetchMailboxes();
-  //       handleCloseAddMailbox();
-  //     } catch (error) {
-  //       console.error("Failed to connect", error);
-  //       toast.error("Domain Connection Failed.");
-  //     }
-  //   } catch (error) {
-  //     if (error instanceof z.ZodError) {
-  //       toast.error(error.errors[0].message);
-  //     } else {
-  //       console.error("Failed to connect", error);
-  //       toast.error("Domain Connection Failed.");
-  //     }
-  //   } finally {
-  //     setIsConnectDomainButtonLoading(false);
-  //   }
-  // };
 
   const handleConnectDomain = async () => {
     setIsConnectDomainButtonLoading(true);
@@ -552,6 +482,34 @@ export default function Page() {
       toast.error("Email Verification Failed");
     }
   };
+
+  const testDomain = async (domain: any) => {
+    try {
+      await axiosInstance.post("v2/mx/test-domain", { domain });
+      // console.log(`Domain ${domain} tested successfully`);
+    } catch (error) {
+      // console.error(`Failed to test domain ${domain}:`, error);
+    }
+  };
+
+  const testAllDomains = useCallback(async () => {
+    for (const domain of getDomainName) {
+      await testDomain(domain);
+    }
+  }, [getDomainName]);
+
+  useEffect(() => {
+    if (getDomainName.length > 0) {
+      testAllDomains();
+      const intervalId = setInterval(
+        () => {
+          testAllDomains();
+        },
+        10 * 60 * 1000
+      );
+      return () => clearInterval(intervalId);
+    }
+  }, [getDomainName, testAllDomains]);
 
   return (
     <div className="w-full">
