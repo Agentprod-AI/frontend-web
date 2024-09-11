@@ -162,7 +162,6 @@ export default function Page() {
   const handleEnableWarmup = async (email: any) => {
     try {
       const response = await axiosInstance.post(`/v2/google/warmup`, { email });
-      console.log("Warmup Enabled:", response.data);
       setMailboxes((prevMailboxes) =>
         prevMailboxes.map((mailbox) =>
           mailbox.mailbox === email ? { ...mailbox, warmup: true } : mailbox
@@ -180,7 +179,6 @@ export default function Page() {
       const response = await axiosInstance.post(`/v2/google/pause-warmup`, {
         email,
       });
-      console.log("Warmup Disabled:", response.data);
       toast.success("Warmup Disabled!");
 
       // Update the mailbox state with warmup disabled
@@ -190,7 +188,7 @@ export default function Page() {
         )
       );
     } catch (error: any) {
-      console.log(error);
+      // console.log(error);
     }
   };
 
@@ -238,7 +236,6 @@ export default function Page() {
       );
       setMailData(response.data.dns);
       setIsPresentDomain(response.data.authenticate);
-      console.log("Domain data fetched successfully:", response.data);
       setFetchSuccess(true);
       setLoading(false);
       toast.success("Domain Verified Successfully.");
@@ -276,7 +273,7 @@ export default function Page() {
       if (googleMailbox) {
         setGoogleMail(googleMailbox.mailbox);
       }
-      console.log("Mailboxes fetched successfully:", mailboxes);
+      // console.log("Mailboxes fetched successfully:", mailboxes);
     } catch (error) {
       console.error("Failed to fetch mailboxes:", error);
     }
@@ -371,7 +368,6 @@ export default function Page() {
         );
 
         await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
-        console.log("DNS Payloads:", dnsPayload);
 
         setIsVerifyEmailOpen(false);
         if (!isPresentDomain) {
@@ -438,13 +434,11 @@ export default function Page() {
       user_id: String(user.id),
       sender_name: String(nameInput),
     };
-    console.log("Payload for OTP validation:", JSON.stringify(payload));
     try {
       const response = await axiosInstance.post(
         "/v2/brevo/sender/validate",
         payload
       );
-      console.log("Response from OTP validation:", response.data.status);
       if (response.data.status === 204) {
         const newMailbox = {
           id:
@@ -463,7 +457,7 @@ export default function Page() {
         };
         await axiosInstance.post("v2/users/dns", dnsPayload);
         await axiosInstance.post("v2/mx/test-domain", { domain: domainInput });
-        console.log(dnsPayload);
+        // console.log(dnsPayload);
         setIsVerifyEmailOpen(false);
         if (!isPresentDomain) {
           setIsTableDialogOpen(true);
@@ -471,7 +465,7 @@ export default function Page() {
         setIsAddMailboxOpen(false);
         addMailbox(newMailbox);
         toast.success("Mailbox Added Successfully");
-        console.log("Mailbox added successfully:", mailboxes);
+        // console.log("Mailbox added successfully:", mailboxes);
         // Fetch the updated mailboxes list
         fetchMailboxes();
       } else {
@@ -486,7 +480,9 @@ export default function Page() {
   const testDomain = async (domain: any) => {
     try {
       await axiosInstance.post("v2/mx/test-domain", { domain });
-      // console.log(`Domain ${domain} tested successfully`);
+      console.log("Started");
+      console.log(`Domain ${domain} tested successfully`);
+      console.log("Started");
     } catch (error) {
       // console.error(`Failed to test domain ${domain}:`, error);
     }
@@ -501,13 +497,13 @@ export default function Page() {
   useEffect(() => {
     if (getDomainName.length > 0) {
       testAllDomains();
-      const intervalId = setInterval(
-        () => {
-          testAllDomains();
-        },
-        10 * 60 * 1000
-      );
-      return () => clearInterval(intervalId);
+      // const intervalId = setInterval(
+      //   () => {
+      //     testAllDomains();
+      //   },
+      //   10 * 60 * 1000
+      // );
+      // return () => clearInterval(intervalId);
     }
   }, [getDomainName, testAllDomains]);
 
