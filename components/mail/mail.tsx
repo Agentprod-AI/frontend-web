@@ -378,7 +378,6 @@ export function Mail({
     []
   );
 
-
   const handleSearchChange = React.useCallback(
     (e: React.ChangeEvent<HTMLInputElement>) => {
       setSearchTerm(e.target.value);
@@ -392,7 +391,6 @@ export function Mail({
     fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
   }, [searchTerm, campaign, filter, fetchConversations]);
 
-
   const handleTabChange = (value: string) => {
     console.log("Tab", value);
     setActiveTab(value);
@@ -403,7 +401,6 @@ export function Mail({
       setMoreOptionSelected("");
     }
   };
-
 
   const handleDeleteMail = React.useCallback(
     async (id: string) => {
@@ -433,10 +430,14 @@ export function Mail({
         toast.error("Failed to delete mail");
       }
     },
-    [mails, selectedMailId, setSenderEmail, setConversationId, setRecipientEmail]
+    [
+      mails,
+      selectedMailId,
+      setSenderEmail,
+      setConversationId,
+      setRecipientEmail,
+    ]
   );
-
-
 
   return (
     <TooltipProvider delayDuration={0}>

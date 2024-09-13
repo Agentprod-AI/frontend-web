@@ -1,4 +1,3 @@
-"use client";
 import React from "react";
 import {
   LineChart,
@@ -15,17 +14,36 @@ export function LineChartComponent({
 }: {
   mailGraphData: { date: string; emails: number; new_emails: number }[];
 }) {
-  // Filter data to show only the last 15 days
-  const last15Days = mailGraphData.slice(-10);
+  // Sort the data by date in ascending order
+  const sortedData = [...mailGraphData].sort(
+    (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+  );
 
-  console.log("Data for last 15 days:", last15Days);
+  // Get the last 30 days of data
+  const last30Days = sortedData.slice(-20);
+
+  // Format dates to be more readable
+  const formattedData = last30Days.map((item) => ({
+    ...item,
+    date: new Date(item.date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year:
+        new Date(item.date).getFullYear() !== new Date().getFullYear()
+          ? "numeric"
+          : undefined,
+    }),
+  }));
+
+  // Calculate the maximum value for Y-axis
+  const maxValue = Math.max(
+    ...formattedData.flatMap((item) => [item.emails, item.new_emails])
+  );
 
   return (
     <ResponsiveContainer width="100%" height={350}>
       <LineChart
-        width={500}
-        height={300}
-        data={last15Days}
+        data={formattedData}
         margin={{
           top: 5,
           right: 30,
@@ -33,19 +51,23 @@ export function LineChartComponent({
           bottom: 5,
         }}
       >
-        <Legend fontSize={10} />
+        <Legend />
         <XAxis
           dataKey="date"
           stroke="#888888"
           fontSize={12}
           tickLine={false}
           axisLine={false}
+          interval="preserveStartEnd"
         />
         <YAxis
           stroke="#888888"
           fontSize={12}
           tickLine={false}
           axisLine={false}
+          tickFormatter={(value) => Math.round(value).toString()}
+          domain={[0, maxValue]}
+          ticks={[0, Math.round(maxValue / 2), maxValue]}
         />
         <Tooltip />
         <Line
