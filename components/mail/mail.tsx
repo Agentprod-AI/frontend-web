@@ -40,6 +40,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
+import axios from "axios";
 
 const ITEMS_PER_PAGE = 7;
 
@@ -228,7 +229,13 @@ export function Mail({
         }`;
 
         if (search) {
-          url += `&search_filter=${search}`;
+          const searchWords = search
+            .split(" ")
+            .filter((word) => word.trim() !== "");
+          const searchParams = searchWords
+            .map((word) => `search_filter=${encodeURIComponent(word)}`)
+            .join("&");
+          url += `&${searchParams}`;
         }
 
         if (status && status !== "all") {
@@ -237,8 +244,8 @@ export function Mail({
 
         console.log("Fetching conversations with URL:", url);
 
-        const response = await axiosInstance.get<{ mails: Conversations[] }>(
-          url
+        const response = await axios.get(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}${url}`
         );
 
         console.log("Response data:", response.data.mails);
@@ -386,28 +393,14 @@ export function Mail({
   );
 
   const handleSearchClick = React.useCallback(() => {
-    const searchWords = searchTerm
-      .split(" ")
-      .filter((word) => word.trim() !== "");
-
-    console.log("Search words:", searchWords);
+    const trimmedSearchTerm = searchTerm.trim();
+    console.log("Search term:", trimmedSearchTerm);
 
     setIsUserInitiatedSearch(true);
     setPage(1);
 
-    // Construct the search filter query such that only the first word has `search_filter=`
-    const searchFilter = searchWords
-      .map((word, index) =>
-        index === 0
-          ? `${encodeURIComponent(word)}`
-          : `&search_filter=${encodeURIComponent(word)}`
-      )
-      .join("");
-
-    console.log("Search filter:", searchFilter);
-
-    // Assuming fetchConversations accepts the searchFilter string as part of a query or body
-    fetchConversations(campaign?.campaignId, 1, searchFilter, filter);
+    // Pass the search term as a string to fetchConversations
+    fetchConversations(campaign?.campaignId, 1, trimmedSearchTerm, filter);
   }, [searchTerm, campaign, filter, fetchConversations]);
 
   const handleTabChange = (value: string) => {
