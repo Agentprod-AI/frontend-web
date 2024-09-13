@@ -395,10 +395,14 @@ export function Mail({
     setIsUserInitiatedSearch(true);
     setPage(1);
 
-    // Map each search word into a search_filter query param and join them
+    // Construct the search filter query such that only the first word has `search_filter=`
     const searchFilter = searchWords
-      .map((word) => `search_filter=${encodeURIComponent(word)}`)
-      .join("&");
+      .map((word, index) =>
+        index === 0
+          ? `${encodeURIComponent(word)}`
+          : `&search_filter=${encodeURIComponent(word)}`
+      )
+      .join("");
 
     console.log("Search filter:", searchFilter);
 
