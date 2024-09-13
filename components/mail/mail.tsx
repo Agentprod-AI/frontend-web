@@ -228,7 +228,7 @@ export function Mail({
         }`;
 
         if (search) {
-          url += `&search_filter=${encodeURIComponent(search)}`;
+          url += `&search_filter=${search}`;
         }
 
         if (status && status !== "all") {
@@ -386,9 +386,24 @@ export function Mail({
   );
 
   const handleSearchClick = React.useCallback(() => {
+    const searchWords = searchTerm
+      .split(" ")
+      .filter((word) => word.trim() !== "");
+
+    console.log("Search words:", searchWords);
+
     setIsUserInitiatedSearch(true);
     setPage(1);
-    fetchConversations(campaign?.campaignId, 1, searchTerm, filter);
+
+    // Map each search word into a search_filter query param and join them
+    const searchFilter = searchWords
+      .map((word) => `search_filter=${encodeURIComponent(word)}`)
+      .join("&");
+
+    console.log("Search filter:", searchFilter);
+
+    // Assuming fetchConversations accepts the searchFilter string as part of a query or body
+    fetchConversations(campaign?.campaignId, 1, searchFilter, filter);
   }, [searchTerm, campaign, filter, fetchConversations]);
 
   const handleTabChange = (value: string) => {
