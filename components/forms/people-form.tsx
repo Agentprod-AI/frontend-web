@@ -538,44 +538,37 @@ export default function PeopleForm(): JSX.Element {
       },
     });
 
-    const fetchLeadsRecursively = async (
-      remainingCount: number,
-      accumulatedResults: any[] = [],
-      currentPage: number = 1
-    ): Promise<any[]> => {
-      if (remainingCount <= 0) {
-        return accumulatedResults;
+    const fetchLead = async (startPage: number): Promise<any[]> => {
+      const email = getRandomEmail(startPage);
+      const scraperBody = createScraperBody(email, 25, startPage);
+      let retries = 0;
+      const maxRetries = 3;
+
+      while (retries < maxRetries) {
+        try {
+          const response = await axios.post(
+            "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_Y6X1pOzX3S7os8mV9J1PMNH0Yzls8H47sPPV",
+            scraperBody
+          );
+          return response.data;
+        } catch (error) {
+          console.error(
+            `Error fetching leads for page ${startPage} (attempt ${
+              retries + 1
+            }):`,
+            error
+          );
+          retries++;
+          if (retries === maxRetries) {
+            console.error(
+              `Failed to fetch leads for page ${startPage} after ${maxRetries} attempts`
+            );
+            return [];
+          }
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay before retry
+        }
       }
-
-      const countForThisCall = Math.min(remainingCount, 25);
-      const email = getRandomEmail(currentPage);
-      const scraperBody = createScraperBody(
-        email,
-        countForThisCall,
-        currentPage
-      );
-
-      try {
-        const response = await axios.post(
-          "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_Y6X1pOzX3S7os8mV9J1PMNH0Yzls8H47sPPV",
-          scraperBody
-        );
-        console.log(response.data);
-
-        const newResults = response.data;
-
-        const updatedResults = [...accumulatedResults, ...newResults];
-        console.log("remaining count", remainingCount);
-        // Recursive call
-        return fetchLeadsRecursively(
-          remainingCount - countForThisCall,
-          updatedResults,
-          currentPage + 1
-        );
-      } catch (error) {
-        console.error("Error fetching leads:", error);
-        throw error;
-      }
+      return []; // This line should never be reached, but TypeScript requires it
     };
 
     const existingLeadsResponse = await axiosInstance.get(
@@ -601,7 +594,6 @@ export default function PeopleForm(): JSX.Element {
 
         const toastMessages = [
           "Initializing lead search engine...",
-
           "Preparing your personalized, high-quality lead list for presentation...",
         ];
 
@@ -611,48 +603,47 @@ export default function PeopleForm(): JSX.Element {
             duration: 10000,
           });
           toastIndex++;
-          clearInterval(toastInterval);
         }, 10000);
 
-        let fetchedLeads: any[] = [];
-        let retryCount = 0;
-        const maxRetries = 3;
+        const batchSize = 8; // Number of concurrent API calls
+        const totalPages = Math.ceil(data.per_page / 25);
+        let enrichedLeads: any[] = [];
 
-        while (retryCount < maxRetries) {
-          try {
-            const results = await fetchLeadsRecursively(data.per_page);
-            if (results && results.length > 0) {
-              fetchedLeads = results;
-              break;
-            } else {
-              throw new Error("No leads fetched");
-            }
-          } catch (error: any) {
-            if (
-              error.response?.status === 400 ||
-              error.response?.data?.error?.type === "run-failed" ||
-              retryCount < maxRetries - 1
-            ) {
-              retryCount++;
-              console.log(`Retry attempt ${retryCount}`);
-              continue; // Try again with a different email
-            } else {
-              throw error; // If it's not the specific error or we've exhausted retries, rethrow
-            }
+        for (let i = 0; i < totalPages; i += batchSize) {
+          const batch = Array.from(
+            { length: Math.min(batchSize, totalPages - i) },
+            (_, index) => i + index + 1
+          );
+          console.log(
+            `Processing batch ${i / batchSize + 1} of ${Math.ceil(
+              totalPages / batchSize
+            )}`
+          );
+
+          const batchPromises = batch.map(fetchLead);
+          const batchResults = await Promise.all(batchPromises);
+          const batchLeads = batchResults.flat();
+
+          enrichedLeads.push(...batchLeads);
+
+          // Optional: Add a delay between batches to avoid rate limiting
+          if (i + batchSize < totalPages) {
+            await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
           }
         }
 
-        console.log("DATA: ", fetchedLeads);
+        clearInterval(toastInterval);
 
-        console.log("New non-duplicate leads: ", fetchedLeads);
+        console.log("Fetched leads:", enrichedLeads);
 
-        // Process the received data
-        const processedLeads = fetchedLeads.map((person: any) => ({
-          ...person,
-          type: "prospective",
-          campaign_id: params.campaignId,
-          id: uuid(),
-        }));
+        const processedLeads = enrichedLeads
+          .slice(0, data.per_page)
+          .map((person: any) => ({
+            ...person,
+            type: "prospective",
+            campaign_id: params.campaignId,
+            id: uuid(),
+          }));
         setLeads(processedLeads);
         console.log("Processed new leads:", processedLeads);
         setTab("tab2");
@@ -666,7 +657,6 @@ export default function PeopleForm(): JSX.Element {
         toast.error("An error occurred while fetching data.");
         setError(error instanceof Error ? error.toString() : String(error));
         setTab("tab1");
-        setIsTableLoading(false);
       } finally {
         setIsSubmitting(false);
         setIsLoading(false);
@@ -678,7 +668,6 @@ export default function PeopleForm(): JSX.Element {
         shouldCallAPI = false;
       }
     } else {
-      // toast.info("No need to call API");
       setIsTableLoading(false);
     }
   };
