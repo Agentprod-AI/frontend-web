@@ -9,41 +9,73 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
+interface DataPoint {
+  date: string;
+  emails: number;
+  new_emails: number;
+}
+
 export function LineChartComponent({
   mailGraphData,
 }: {
-  mailGraphData: { date: string; emails: number; new_emails: number }[];
+  mailGraphData: DataPoint[];
 }) {
+  // Function to aggregate data by day
+  const aggregateDataByDay = (data: DataPoint[]): DataPoint[] => {
+    const aggregatedData: { [key: string]: DataPoint } = {};
+    data.forEach((item) => {
+      const date = new Date(item.date).toLocaleDateString("en-US", {
+        month: "short",
+        day: "numeric",
+        year:
+          new Date(item.date).getFullYear() !== new Date().getFullYear()
+            ? "numeric"
+            : undefined,
+      });
+      if (!aggregatedData[date]) {
+        aggregatedData[date] = { date, emails: 0, new_emails: 0 };
+      }
+      aggregatedData[date].emails += item.emails;
+      aggregatedData[date].new_emails += item.new_emails;
+    });
+    return Object.values(aggregatedData);
+  };
+
   // Sort the data by date in ascending order
   const sortedData = [...mailGraphData].sort(
     (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
   );
 
-  // Get the last 30 days of data
-  const last30Days = sortedData.slice(-20);
+  // Aggregate and format the data
+  const aggregatedData = aggregateDataByDay(sortedData);
 
-  // Format dates to be more readable
-  const formattedData = last30Days.map((item) => ({
-    ...item,
-    date: new Date(item.date).toLocaleDateString("en-US", {
-      month: "short",
-      day: "numeric",
-      year:
-        new Date(item.date).getFullYear() !== new Date().getFullYear()
-          ? "numeric"
-          : undefined,
-    }),
-  }));
+  // Get the last 20 days of data
+  const last20Days = aggregatedData.slice(-20);
 
-  // Calculate the maximum value for Y-axis
-  const maxValue = Math.max(
-    ...formattedData.flatMap((item) => [item.emails, item.new_emails])
+  // Calculate the maximum value from the data
+  const dataMax = Math.max(
+    ...last20Days.flatMap((item) => [item.emails, item.new_emails])
   );
+
+  // Round up to the nearest multiple of 10
+  const maxValue = Math.ceil(dataMax / 10) * 10;
+
+  // Generate ticks
+  const generateTicks = (max: number): number[] => {
+    const tickCount = 6; // Adjust this for more or fewer ticks
+    const ticks = [];
+    for (let i = 0; i < tickCount; i++) {
+      ticks.push((max / (tickCount - 1)) * i);
+    }
+    return ticks;
+  };
+
+  const yAxisTicks = generateTicks(maxValue);
 
   return (
     <ResponsiveContainer width="100%" height={350}>
       <LineChart
-        data={formattedData}
+        data={last20Days}
         margin={{
           top: 5,
           right: 30,
@@ -67,7 +99,7 @@ export function LineChartComponent({
           axisLine={false}
           tickFormatter={(value) => Math.round(value).toString()}
           domain={[0, maxValue]}
-          ticks={[0, Math.round(maxValue / 2), maxValue]}
+          ticks={yAxisTicks}
         />
         <Tooltip />
         <Line
