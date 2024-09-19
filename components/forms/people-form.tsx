@@ -267,13 +267,14 @@ export default function PeopleForm(): JSX.Element {
             setType("edit");
             try {
               const audienceFilters = await getAudienceFiltersById(id);
-              console.log("response from audience filters", audienceFilters);
-              setAllFiltersFromDB(audienceFilters.data.filters_applied);
-              setEditFilters(audienceFilters.data.filters_applied); // Store filters_applied in state
-              setAudienceId(audienceFilters.id);
-              populateFormWithExistingFilters(
-                audienceFilters.data.filters_applied
+              console.log(
+                "response from audience filters",
+                audienceFilters.filters_applied
               );
+              setAllFiltersFromDB(audienceFilters.filters_applied);
+              setEditFilters(audienceFilters.filters_applied); // Store filters_applied in state
+              setAudienceId(audienceFilters.id);
+              populateFormWithExistingFilters(audienceFilters.filters_applied);
             } catch (error) {
               console.error("Error fetching audience filters:", error);
             }
@@ -634,24 +635,29 @@ export default function PeopleForm(): JSX.Element {
 
         clearInterval(toastInterval);
 
-        console.log("Fetched leads:", enrichedLeads);
+        if (enrichedLeads.length === 0) {
+          toast.error("No leads found");
+          setTab("tab1");
+        } else {
+          console.log("Fetched leads:", enrichedLeads);
 
-        const processedLeads = enrichedLeads
-          .slice(0, data.per_page)
-          .map((person: any) => ({
-            ...person,
-            type: "prospective",
-            campaign_id: params.campaignId,
-            id: uuid(),
-          }));
-        setLeads(processedLeads);
-        console.log("Processed new leads:", processedLeads);
-        setTab("tab2");
+          const processedLeads = enrichedLeads
+            .slice(0, data.per_page)
+            .map((person: any) => ({
+              ...person,
+              type: "prospective",
+              campaign_id: params.campaignId,
+              id: uuid(),
+            }));
+          setLeads(processedLeads);
+          console.log("Processed new leads:", processedLeads);
+          setTab("tab2");
 
-        setIsTableLoading(false);
-        toast.success(
-          `${processedLeads.length} new leads fetched successfully`
-        );
+          setIsTableLoading(false);
+          toast.success(
+            `${processedLeads.length} new leads fetched successfully`
+          );
+        }
       } catch (error) {
         console.error(error);
         toast.error("An error occurred while fetching data.");
@@ -810,10 +816,28 @@ export default function PeopleForm(): JSX.Element {
       });
 
     if (type === "create") {
+      const formData = form.getValues();
       const postBody = {
         campaign_id: params.campaignId,
         audience_type: "prospective",
-        filters_applied: { ...allFilters },
+        filters_applied: {
+          q_organization_domains: formData.q_organization_domains,
+          organization_industry_tag_ids: formData.organization_industry_tag_ids,
+          q_organization_keyword_tags: formData.q_organization_keyword_tags,
+          organization_locations: formData.organization_locations,
+          person_seniorities: formData.person_seniorities,
+          company_headcount: checkedCompanyHeadcount,
+          organization_latest_funding_stage_cd: checkedFundingRounds,
+          revenue_range: {
+            min: formData.minimum_company_funding?.text,
+            max: formData.maximum_company_funding?.text,
+          },
+          person_titles: formData.person_titles,
+          per_page: formData.per_page,
+          email_status: formData.email_status,
+          organization_job_locations: formData.organization_job_locations,
+          q_organization_job_titles: formData.q_organization_job_titles,
+        },
       };
 
       try {
@@ -898,110 +922,131 @@ export default function PeopleForm(): JSX.Element {
   };
 
   function populateFormWithExistingFilters(allFiltersFromDB: any) {
-    console.log("allFiltersFromDB", allFiltersFromDB);
     if (allFiltersFromDB) {
-      // setPersonSenioritiesTags(
-      //   mapFiltersToTags(allFiltersFromDB.person_seniorities)
-      // );
-      // form.setValue("person_seniorities", allFiltersFromDB.person_seniorities);
-      mapFiltersToTags(
-        "person_seniorities",
-        allFiltersFromDB.person_seniorities,
-        setPersonSenioritiesTags,
-        "person_seniorities"
-      );
-      mapFiltersToTags(
-        "person_titles",
-        allFiltersFromDB.person_titles,
-        setPersonTitlesTags,
-        "person_titles"
-      );
-      mapFiltersToTags(
-        "q_organization_domains",
-        allFiltersFromDB.q_organization_domains,
-        setQOrganizationDomainsTags,
-        "q_organization_domains"
-      );
-      mapFiltersToTags(
-        "organization_industry_tag_ids",
-        allFiltersFromDB.organization_industry_tag_ids,
-        setOrganizationKeywordTags,
-        "organization_industry_tag_ids"
-      );
-      mapFiltersToTags(
-        "q_organization_keyword_tags",
-        allFiltersFromDB.q_organization_keyword_tags,
-        setOrganizationKeywordTags,
-        "q_organization_keyword_tags"
-      );
-      mapFiltersToTags(
-        "organization_locations",
-        allFiltersFromDB.organization_locations,
-        setOrganizationLocationsTags,
-        "organization_locations"
-      );
-      // mapFiltersToTags(
-      //   "revenue_range",
-      //   allFiltersFromDB.revenue_range.max,
-      //   (newValue) => {
-      //     const numericValue = Number(newValue);
-      //     const updatedValue = {
-      //       ...maximumCompanyFunding,
-      //       text: numericValue,
-      //     };
-      //     setMaximumCompanyFunding(updatedValue);
-      //   },
-      //   "revenue_range"
-      // );
-      // console.log("maximum value : ", maximumCompanyFunding.text);
-      mapFiltersToTags(
-        "organization_industry_tag_ids",
-        allFiltersFromDB.q_keywords,
-        setOrganizationKeywordTags,
-        "organization_industry_tag_ids"
-      );
-      mapFiltersToTags(
-        "q_organization_keyword_tags",
-        allFiltersFromDB.q_keywords,
-        setOrganizationCompanyTags,
-        "q_organization_keyword_tags"
-      );
-      const formatFundingHeadcount =
-        allFiltersFromDB?.organization_latest_funding_stage_cd?.map(
-          (range: string) => {
-            return range.split(",").join("-");
-          }
+      // Organization Industry Tag IDs
+      if (allFiltersFromDB.organization_industry_tag_ids) {
+        setOrganizationKeywordTags(
+          allFiltersFromDB.organization_industry_tag_ids
         );
-      setCheckedFundingRounds(formatFundingHeadcount);
-      const formatCheckedHeadcount =
-        allFiltersFromDB?.organization_num_employees_ranges?.map(
-          (range: string) => {
-            return range.split(",").join("-");
-          }
+        setValue(
+          "organization_industry_tag_ids",
+          allFiltersFromDB.organization_industry_tag_ids
         );
-      setCheckedCompanyHeadcount(formatCheckedHeadcount);
-      form.setValue(
-        "company_headcount",
-        allFiltersFromDB.organization_num_employees_ranges
-      );
-      form.setValue(
-        "organization_latest_funding_stage_cd",
-        allFiltersFromDB.organization_latest_funding_stage_cd
-      );
-      form.setValue(
-        "organization_job_locations",
-        allFiltersFromDB.organization_job_locations
-      );
-      form.setValue(
-        "q_organization_job_titles",
-        allFiltersFromDB.q_organization_job_titles
-      );
-      form.setValue("email_status", allFiltersFromDB.email_status);
-      form.setValue(
-        "per_page",
-        allFiltersFromDB.per_page * allFiltersFromDB.page
-      );
-      console.log("form values updated, current values", form.getValues());
+      }
+
+      // Organization Keyword Tags
+      if (allFiltersFromDB.q_organization_keyword_tags) {
+        setOrganizationCompanyTags(
+          allFiltersFromDB.q_organization_keyword_tags
+        );
+        setValue(
+          "q_organization_keyword_tags",
+          allFiltersFromDB.q_organization_keyword_tags
+        );
+      }
+
+      // Organization Locations
+      if (allFiltersFromDB.organization_locations) {
+        setOrganizationLocationsTags(allFiltersFromDB.organization_locations);
+        setValue(
+          "organization_locations",
+          allFiltersFromDB.organization_locations
+        );
+      }
+
+      // Person Seniorities
+      if (allFiltersFromDB.person_seniorities) {
+        setPersonSenioritiesTags(allFiltersFromDB.person_seniorities);
+        setValue("person_seniorities", allFiltersFromDB.person_seniorities);
+      }
+
+      // Person Titles
+      if (allFiltersFromDB.person_titles) {
+        setPersonTitlesTags(allFiltersFromDB.person_titles);
+        setValue("person_titles", allFiltersFromDB.person_titles);
+      }
+
+      // Per Page
+      if (allFiltersFromDB.per_page) {
+        setValue("per_page", allFiltersFromDB.per_page);
+      }
+
+      // Company Headcount
+      if (allFiltersFromDB.company_headcount) {
+        setCheckedCompanyHeadcount(allFiltersFromDB.company_headcount);
+        setValue("company_headcount", allFiltersFromDB.company_headcount);
+      }
+
+      // Funding Rounds
+      if (allFiltersFromDB.organization_latest_funding_stage_cd) {
+        setCheckedFundingRounds(
+          allFiltersFromDB.organization_latest_funding_stage_cd
+        );
+        setValue(
+          "organization_latest_funding_stage_cd",
+          allFiltersFromDB.organization_latest_funding_stage_cd
+        );
+      }
+
+      // Company Domains
+      if (allFiltersFromDB.q_organization_domains) {
+        setQOrganizationDomainsTags(allFiltersFromDB.q_organization_domains);
+        setValue(
+          "q_organization_domains",
+          allFiltersFromDB.q_organization_domains
+        );
+      }
+
+      // Revenue Range
+      if (allFiltersFromDB.revenue_range) {
+        if (allFiltersFromDB.revenue_range.min) {
+          setMinimumCompanyFunding({
+            id: "min",
+            text: Number(allFiltersFromDB.revenue_range.min),
+          });
+          setValue("minimum_company_funding", {
+            id: "min",
+            text: Number(allFiltersFromDB.revenue_range.min),
+          });
+        }
+        if (allFiltersFromDB.revenue_range.max) {
+          setMaximumCompanyFunding({
+            id: "max",
+            text: Number(allFiltersFromDB.revenue_range.max),
+          });
+          setValue("maximum_company_funding", {
+            id: "max",
+            text: Number(allFiltersFromDB.revenue_range.max),
+          });
+        }
+      }
+
+      // Job Titles (if used for technology)
+      if (allFiltersFromDB.q_organization_job_titles) {
+        setJobOfferingTags(allFiltersFromDB.q_organization_job_titles);
+        setValue(
+          "q_organization_job_titles",
+          allFiltersFromDB.q_organization_job_titles
+        );
+      }
+
+      // Job Locations
+      if (allFiltersFromDB.organization_job_locations) {
+        setJobLocationTags(allFiltersFromDB.organization_job_locations);
+        setValue(
+          "organization_job_locations",
+          allFiltersFromDB.organization_job_locations
+        );
+      }
+
+      // Email Status (if applicable)
+      if (allFiltersFromDB.email_status) {
+        setValue("email_status", allFiltersFromDB.email_status);
+      }
+
+      // Additional fields can be added here as needed
+
+      console.log("Form values updated, current values:", form.getValues());
     }
   }
 
