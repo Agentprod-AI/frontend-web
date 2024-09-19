@@ -59,11 +59,44 @@ export default function CampaignPage() {
     useCampaignContext();
   const [loading, setLoading] = useState<string | null>(null);
   const [showAllCampaigns, setShowAllCampaigns] = useState(false);
+  const [recurringCampaignData, setRecurringCampaignData] = useState<any[]>([]);
   const { user } = useUserContext();
 
   console.log("fromCampaignPage", campaigns);
 
   localStorage.removeItem("formsTracker");
+
+  useEffect(() => {
+    async function fetchRecurringCampaignData() {
+      const recurringDataPromises = campaigns
+        .filter((campaign) => campaign.schedule_type === "recurring")
+        .map(async (campaign) => {
+          try {
+            const response = await axiosInstance.get(
+              `/v2/recurring_campaign_request/${campaign.id}`
+            );
+            return {
+              campaign_id: campaign.id,
+              is_active: response.data.is_active,
+            };
+          } catch (error) {
+            console.error(
+              `Failed to fetch recurring data for campaign ${campaign.id}`,
+              error
+            );
+            return null;
+          }
+        });
+
+      const results = await Promise.all(recurringDataPromises);
+      const filteredResults = results.filter((result) => result !== null);
+      setRecurringCampaignData(filteredResults);
+    }
+
+    if (campaigns.length > 0) {
+      fetchRecurringCampaignData();
+    }
+  }, [campaigns]);
 
   const toggleCampaignIsActive = async (
     campaignId: string,
@@ -73,32 +106,65 @@ export default function CampaignPage() {
     const campaign = campaigns.find((campaign) => campaign.id === campaignId);
     const campaignName = campaign ? campaign.campaign_name : "Unknown Campaign";
     try {
-      if (campaign?.is_active) {
+      if (campaign?.schedule_type === "recurring") {
         const response = await axiosInstance.put(
-          `/v2/campaigns/pause/${campaignId}`
+          "https://backend.agentprod.com/v2/recurring_campaign_request",
+          {
+            campaign_id: campaignId,
+            is_active: !isActive,
+          }
         );
-        setCampaigns((currentCampaigns) =>
-          currentCampaigns.map((campaign) =>
-            campaign.id === campaignId
-              ? { ...campaign, is_active: !campaign.is_active }
-              : campaign
-          )
-        );
-        toast.success(`${campaignName} has been paused successfully`);
-        console.log(response);
+        if (response.status === 200) {
+          // Update recurringCampaignData state
+          setRecurringCampaignData((prevData) =>
+            prevData.map((item) =>
+              item.campaign_id === campaignId
+                ? { ...item, is_active: !isActive }
+                : item
+            )
+          );
+          toast.success(
+            `${campaignName} has been ${
+              !isActive ? "resumed" : "paused"
+            } successfully`
+          );
+        }
       } else {
-        setCampaigns((currentCampaigns) =>
-          currentCampaigns.map((campaign) =>
-            campaign.id === campaignId
-              ? { ...campaign, is_active: !campaign.is_active }
-              : campaign
-          )
-        );
-        toast.success(`${campaignName} has been resumed successfully`);
+        // Existing logic for non-recurring campaigns
+        if (isActive) {
+          const response = await axiosInstance.put(
+            `/v2/campaigns/pause/${campaignId}`
+          );
+          if (response.status === 200) {
+            setCampaigns((currentCampaigns) =>
+              currentCampaigns.map((campaign) =>
+                campaign.id === campaignId
+                  ? { ...campaign, is_active: false }
+                  : campaign
+              )
+            );
+            toast.success(`${campaignName} has been paused successfully`);
+          }
+        } else {
+          const response = await axiosInstance.put(
+            `/v2/campaigns/pause/${campaignId}`
+          );
+          if (response.status === 200) {
+            setCampaigns((currentCampaigns) =>
+              currentCampaigns.map((campaign) =>
+                campaign.id === campaignId
+                  ? { ...campaign, is_active: true }
+                  : campaign
+              )
+            );
+            toast.success(`${campaignName} has been resumed successfully`);
+          }
+        }
       }
-      setLoading(null);
     } catch (error) {
       console.error("Failed to toggle campaign activity status", error);
+      toast.error(`Failed to update ${campaignName}`);
+    } finally {
       setLoading(null);
     }
   };
@@ -135,8 +201,7 @@ export default function CampaignPage() {
           </div>
           <div className="flex gap-4 items-center">
             <p className="text-sm text-muted-foreground">
-              {campaignItem.daily_outreach_number || 0}/
-              {campaignItem?.contacts || 0}
+              {campaignItem?.replies || 0}/{campaignItem?.contacts || 0}
             </p>
             <CircularProgressbar
               value={
@@ -159,6 +224,11 @@ export default function CampaignPage() {
               className="w-10 h-10"
             />
           </div>
+        </div>
+        <div className="text-xs text-white/80 -space-y-4 bg-green-400/20 w-max px-4 py-1 rounded-3xl">
+          {campaignItem?.schedule_type === "recurring"
+            ? "Recurring"
+            : "One-time"}
         </div>
 
         <div className="flex flex-col gap-2">
@@ -195,14 +265,35 @@ export default function CampaignPage() {
         </div>
 
         <div className="flex gap-4 justify-between items-center">
-          <Switch
-            checked={campaignItem?.is_active}
-            onCheckedChange={() =>
-              campaignItem.id !== undefined &&
-              toggleCampaignIsActive(campaignItem.id, campaignItem.is_active)
-            }
-            className="flex-none"
-          />
+          {campaignItem?.schedule_type === "recurring" ? (
+            <Switch
+              checked={
+                recurringCampaignData.find(
+                  (item) => item.campaign_id === campaignItem.id
+                )?.is_active || false
+              }
+              onCheckedChange={() =>
+                campaignItem.id !== undefined &&
+                toggleCampaignIsActive(
+                  campaignItem.id,
+                  recurringCampaignData.find(
+                    (item) => item.campaign_id === campaignItem.id
+                  )?.is_active
+                )
+              }
+              className="flex-none"
+            />
+          ) : (
+            <Switch
+              checked={campaignItem?.is_active}
+              onCheckedChange={() =>
+                campaignItem.id !== undefined &&
+                toggleCampaignIsActive(campaignItem.id, campaignItem.is_active)
+              }
+              className="flex-none"
+            />
+          )}
+
           <div>
             <Button
               variant={"ghost"}
