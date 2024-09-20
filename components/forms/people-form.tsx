@@ -1611,7 +1611,7 @@ export default function PeopleForm(): JSX.Element {
                     className="flex justify-between w-full py-3 cursor-pointer"
                     onClick={() => toggleDropdown("industry")}
                   >
-                    <div className="text-sm">Industry and Keyword</div>
+                    <div className="text-sm">Industry</div>
                     {dropdownsOpen.industry ? (
                       <ChevronUp
                         color="#000000"
@@ -1928,20 +1928,6 @@ export default function PeopleForm(): JSX.Element {
                   </div>
                 </div>
                 <div className="bg-muted px-2 rounded">
-                  {/* <div
-                    className="flex justify-between w-full py-3 cursor-pointer"
-                    onClick={() => toggleDropdown("jobPostings")}
-                  >
-                    <div className="text-sm">Technology Used</div>
-                    {dropdownsOpen.jobPostings ? (
-                      <ChevronUp color="#000000" />
-                    ) : (
-                      <ChevronUp
-                        color="#000000"
-                        className="transition-transform duration-200 transform rotate-180"
-                      />
-                    )}
-                  </div> */}
                   <div
                     className={`${
                       dropdownsOpen.jobPostings ? "block" : "hidden"
@@ -1977,39 +1963,6 @@ export default function PeopleForm(): JSX.Element {
                           )}
                         />
                       </div>
-                      {/* <div className="w-1/2 mb-3">
-                        <FormField
-                          control={form.control}
-                          name="organization_job_locations"
-                          render={({ field }) => (
-                            <FormItem className="flex flex-col items-start mx-1 my-4">
-                              <FormLabel className="text-left font-normal">
-                                Job located at
-                              </FormLabel>
-                              <FormControl>
-                                <TagInput
-                                  {...field}
-                                  dropdown={true}
-                                  dropdownPlaceholder="Enter locations..."
-                                  dropdownOptions={orgLocations}
-                                  tags={jobLocationTags}
-                                  variant={"base"}
-                                  className="sm:min-w-[450px]"
-                                  setTags={(newTags) => {
-                                    setJobLocationTags(newTags);
-                                    setValue(
-                                      "organization_job_locations",
-                                      newTags as [Tag, ...Tag[]]
-                                    );
-                                  }}
-                                />
-                              </FormControl>
-
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div> */}
                     </div>
                   </div>
                 </div>
@@ -2031,34 +1984,10 @@ export default function PeopleForm(): JSX.Element {
               <LoadingCircle />
             ) : (
               <div>
-                {/* <AudienceTableClient/> */}
                 <AudienceTable />
               </div>
             )}
-            {/* {isCreateBtnLoading ? (
-              <LoadingCircle />
-            ) : type === "create" ? (
-              <Button
-                onClick={(event) => {
-                  event.preventDefault();
-                  createAudience();
-                }}
-              >
-                Create Audience
-              </Button>
-            ) : (
-              <div className="w-1/4 flex justify-between">
-                <Button>Go Back</Button>
-                <Button
-                  onClick={(event) => {
-                    event.preventDefault();
-                    createAudience();
-                  }}
-                >
-                  Update Audience
-                </Button>
-              </div>
-            )} */}
+
             {type === "create" ? (
               <Button
                 onClick={(event) => {
