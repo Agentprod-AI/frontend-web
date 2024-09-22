@@ -543,14 +543,21 @@ export default function PeopleForm(): JSX.Element {
       const email = getRandomEmail(startPage);
       const scraperBody = createScraperBody(email, 25, startPage);
       let retries = 0;
+      const TIMEOUT = 50000;
       const maxRetries = 3;
 
       while (retries < maxRetries) {
         try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
           const response = await axios.post(
             "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_Y6X1pOzX3S7os8mV9J1PMNH0Yzls8H47sPPV",
-            scraperBody
+            scraperBody,
+            {
+              signal: controller.signal,
+            }
           );
+          clearTimeout(timeoutId);
           return response.data;
         } catch (error) {
           console.error(
@@ -560,7 +567,9 @@ export default function PeopleForm(): JSX.Element {
             error
           );
           retries++;
-          if (retries === maxRetries) {
+          if (axios.isCancel(error)) {
+            console.log("Request timed out. Retrying...");
+          } else if (retries === maxRetries) {
             console.error(
               `Failed to fetch leads for page ${startPage} after ${maxRetries} attempts`
             );
