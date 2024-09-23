@@ -1316,6 +1316,39 @@ export default function PeopleForm(): JSX.Element {
                   >
                     <FormField
                       control={form.control}
+                      name="person_titles"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start py-4 w-8/12">
+                          <FormLabel className="text-left">
+                            Current Job Title
+                          </FormLabel>
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              dropdown={true}
+                              dropdownPlaceholder="Enter a job title"
+                              dropdownOptions={jobTitles}
+                              tags={personTitlesTags}
+                              variant={"base"}
+                              className="sm:min-w-[450px]"
+                              setTags={(newTags) => {
+                                setPersonTitlesTags(newTags);
+                                setValue(
+                                  "person_titles",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          {/* <FormDescription>
+                        These are the job titles that you&apos;re interested in.
+                      </FormDescription> */}
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
                       name="person_seniorities"
                       render={({ field }) => (
                         <FormItem className="flex flex-col items-start py-4 w-8/12">
@@ -1343,39 +1376,6 @@ export default function PeopleForm(): JSX.Element {
                           {/* <FormDescription>
                         These are the seniorities that you&apos;re interested
                         in.
-                      </FormDescription> */}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="person_titles"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-start py-4 w-8/12">
-                          <FormLabel className="text-left">
-                            Current Job Title
-                          </FormLabel>
-                          <FormControl>
-                            <TagInput
-                              {...field}
-                              dropdown={true}
-                              dropdownPlaceholder="Enter a job title"
-                              dropdownOptions={jobTitles}
-                              tags={personTitlesTags}
-                              variant={"base"}
-                              className="sm:min-w-[450px]"
-                              setTags={(newTags) => {
-                                setPersonTitlesTags(newTags);
-                                setValue(
-                                  "person_titles",
-                                  newTags as [Tag, ...Tag[]]
-                                );
-                              }}
-                            />
-                          </FormControl>
-                          {/* <FormDescription>
-                        These are the job titles that you&apos;re interested in.
                       </FormDescription> */}
                           <FormMessage />
                         </FormItem>
