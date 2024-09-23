@@ -152,14 +152,14 @@ export const PeopleProfileSheet = ({
                     : data.company}
                 </span>
               </div>
-              {data.phone_numbers && (
+              {/* {data.phone_numbers && (
                 <div className="flex space-x-2 w-full">
                   <Phone className="h-5 w-5 text-muted-foreground" />
                   <span className="text-sm text-muted-foreground whitespace-normal w-full">
                     {data.phone_numbers[0]?.sanitized_number || data.phone}
                   </span>
                 </div>
-              )}
+              )} */}
               <div className="flex space-x-2 w-full">
                 <Linkedin className="h-5 w-5 text-muted-foreground" />
                 <span className="text-sm text-muted-foreground whitespace-normal w-full underline">
@@ -322,7 +322,7 @@ export const PeopleProfileSheet = ({
                   >
                     <div className="flex items-center justify-between space-x-4 w-full">
                       <h4 className="text-sm font-semibold">Addresses</h4>
-                      <CollapsibleTrigger asChild> 
+                      <CollapsibleTrigger asChild>
                         <Button variant="ghost" size="sm" className="w-9 p-0">
                           <ChevronsUpDown className="h-4 w-4" />
                           <span className="sr-only">Toggle</span>

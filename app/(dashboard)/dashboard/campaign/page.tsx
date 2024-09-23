@@ -225,7 +225,7 @@ export default function CampaignPage() {
             />
           </div>
         </div>
-        <div className="text-xs text-white/80 -space-y-4 bg-green-400/20 w-max px-4 py-1 rounded-3xl">
+        <div className="text-xs dark:text-white/80 text-black -space-y-4 bg-green-400/80 dark:bg-green-400/20 w-max px-4 py-1 rounded-3xl">
           {campaignItem?.schedule_type === "recurring"
             ? "Recurring"
             : "One-time"}

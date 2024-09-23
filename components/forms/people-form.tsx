@@ -12,6 +12,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { ChevronUp } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tag, TagInput, Tag as type } from "@/components/ui/tag/tag-input";
 import { Button } from "@/components/ui/button";
@@ -24,7 +25,6 @@ import { toast } from "sonner";
 import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
-import { ChevronUp } from "lucide-react";
 import { v4 as uuid } from "uuid";
 import { orgLocations, jobTitles, seniorities, InputType } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -38,6 +38,7 @@ import { useButtonStatus } from "@/context/button-status";
 import AudienceTable from "../ui/AudienceTable";
 import axios from "axios";
 import { useSubscription } from "@/hooks/userSubscription";
+import MultiSelectInput from "./MultiSelect";
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -1647,7 +1648,7 @@ export default function PeopleForm(): JSX.Element {
                             <TagInput
                               {...field}
                               tags={organizationKeywordTags}
-                              placeholder="Enter industry keywords"
+                              placeholder="Enter industry"
                               variant="base"
                               onFocus={() => toggleKeywordsDropdown(true)}
                               className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
