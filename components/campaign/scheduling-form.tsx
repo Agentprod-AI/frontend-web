@@ -78,65 +78,51 @@ export function SchedulingForm() {
   const [formsTracker, setFormsTracker] = useState(defaultFormsTracker);
 
   const onSubmit = async (data: CampaignFormValues) => {
-    if (type === "create") {
-      console.log("data", data);
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/`,
-        {
-          user_id: user.id,
-          campaign_name: data.campaignName,
-          campaign_type: data.campaignType,
-          monday_start: data.schedule.weekdayStartTime,
-          monday_end: data.schedule.weekdayEndTime,
-          tuesday_start: data.schedule.weekdayStartTime,
-          tuesday_end: data.schedule.weekdayEndTime,
-          wednesday_start: data.schedule.weekdayStartTime,
-          wednesday_end: data.schedule.weekdayEndTime,
-          thursday_start: data.schedule.weekdayStartTime,
-          thursday_end: data.schedule.weekdayEndTime,
-          friday_start: data.schedule.weekdayStartTime,
-          friday_end: data.schedule.weekdayEndTime,
-          schedule_type: data.scheduleType,
-          autopilot: false,
-          is_active: false,
-        }
-      ); // createCampaign(data);
-      router.push(`/dashboard/campaign/${response.data.id}`);
-      toast.success("Campaign is scheduled successfully!");
-      // setPageCompletion("scheduling-budget", true);
-      const updatedFormsTracker = {
-        schedulingBudget: true,
-        offering: true,
-      };
-      localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
-      setFormsTracker((prevFormsTracker) => ({
-        ...prevFormsTracker,
-        ...updatedFormsTracker,
-      }));
-    } else if (type === "edit") {
-      const changes = Object.keys(data).reduce((acc, key) => {
-        const propertyKey = key as keyof CampaignFormValues;
-        if (
-          JSON.stringify(data[propertyKey]) !==
-          JSON.stringify(watchAllFields[propertyKey])
-        ) {
-          acc = { ...acc, [propertyKey]: data[propertyKey] };
-        }
-        return acc;
-      }, {} as CampaignFormValues);
+    const campaignData = {
+      user_id: user.id,
+      campaign_name: data.campaignName,
+      campaign_type: data.campaignType,
+      monday_start: data.schedule.weekdayStartTime,
+      monday_end: data.schedule.weekdayEndTime,
+      tuesday_start: data.schedule.weekdayStartTime,
+      tuesday_end: data.schedule.weekdayEndTime,
+      wednesday_start: data.schedule.weekdayStartTime,
+      wednesday_end: data.schedule.weekdayEndTime,
+      thursday_start: data.schedule.weekdayStartTime,
+      thursday_end: data.schedule.weekdayEndTime,
+      friday_start: data.schedule.weekdayStartTime,
+      friday_end: data.schedule.weekdayEndTime,
+      schedule_type: data.scheduleType,
+      autopilot: false,
+      is_active: false,
+    };
 
-      editCampaign(changes, params.campaignId);
-      toast.success("Campaign is updated successfully!");
+    try {
+      if (type === "create") {
+        const response = await axios.post(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/`,
+          campaignData
+        );
+        router.push(`/dashboard/campaign/${response.data.id}`);
+        toast.success("Campaign is scheduled successfully!");
+      } else {
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`,
+          campaignData
+        );
+        router.push(`/dashboard/campaign/${params.campaignId}`);
+        toast.success("Campaign is updated successfully!");
+      }
 
       const updatedFormsTracker = {
         schedulingBudget: true,
         offering: true,
       };
       localStorage.setItem("formsTracker", JSON.stringify(updatedFormsTracker));
-      setFormsTracker((prevFormsTracker) => ({
-        ...prevFormsTracker,
-        ...updatedFormsTracker,
-      }));
+      setPageCompletion("scheduling-budget", true);
+    } catch (error) {
+      console.error("Error saving campaign:", error);
+      toast.error("Failed to save campaign. Please try again.");
     }
   };
 
