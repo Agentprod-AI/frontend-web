@@ -199,6 +199,8 @@ export default function PeopleForm(): JSX.Element {
   const [organizationKeywordTags, setOrganizationKeywordTags] = React.useState<
     Tag[]
   >([]);
+  const [searchTerm, setSearchTerm] = useState("");
+
   const [error, setError] = React.useState<string | null>(null);
   const [apolloUrl, setApolloUrl] = useState("");
   const [organizationCompanyTags, setOrganizationCompanyTags] = React.useState<
@@ -244,10 +246,53 @@ export default function PeopleForm(): JSX.Element {
   const [allFilters, setAllFilters] = React.useState<any>();
 
   const [allFiltersFromDB, setAllFiltersFromDB] = React.useState<any>();
-
+  const [jobTitleDropdownIsOpen, setJobTitleDropdownIsOpen] = useState(false);
+  const [filteredJobTitles, setFilteredJobTitles] = useState(jobTitles);
+  const [jobTitleSearchTerm, setJobTitleSearchTerm] = useState("");
+  const jobTitleDropdownRef = useRef<HTMLDivElement>(null);
   const [audienceId, setAudienceId] = React.useState<string>();
   const { setPageCompletion } = useButtonStatus();
   const [type, setType] = useState<"create" | "edit">("create");
+
+  const toggleJobTitleDropdown = (isOpen: boolean) => {
+    setJobTitleDropdownIsOpen(isOpen);
+  };
+
+  const handleJobTitleDropdownSelect = (title: string) => {
+    const newTag: Tag = {
+      text: title,
+      id: title,
+    };
+
+    if (!personTitlesTags.some((tag) => tag.text === title)) {
+      const updatedTags = [...personTitlesTags, newTag];
+      setPersonTitlesTags(updatedTags);
+      setValue("person_titles", updatedTags as [Tag, ...Tag[]]);
+    }
+  };
+
+  useEffect(() => {
+    const filtered = jobTitles.filter((title) =>
+      title.toLowerCase().includes(jobTitleSearchTerm.toLowerCase())
+    );
+    setFilteredJobTitles(filtered);
+  }, [jobTitleSearchTerm]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        jobTitleDropdownRef.current &&
+        !jobTitleDropdownRef.current.contains(event.target as Node)
+      ) {
+        setJobTitleDropdownIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -307,6 +352,10 @@ export default function PeopleForm(): JSX.Element {
       }
     }
   };
+
+  const filteredKeywords = keywords.filter((option) =>
+    option.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   const checkedFields = (
     field: string[] | undefined,
@@ -1314,39 +1363,89 @@ export default function PeopleForm(): JSX.Element {
                       dropdownsOpen.currentEmployment ? "block" : "hidden"
                     }`}
                   >
-                    <FormField
-                      control={form.control}
-                      name="person_titles"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-start py-4 w-8/12">
-                          <FormLabel className="text-left">
-                            Current Job Title
-                          </FormLabel>
-                          <FormControl>
-                            <TagInput
-                              {...field}
-                              dropdown={true}
-                              dropdownPlaceholder="Enter a job title"
-                              dropdownOptions={jobTitles}
-                              tags={personTitlesTags}
-                              variant={"base"}
-                              className="sm:min-w-[450px]"
-                              setTags={(newTags) => {
-                                setPersonTitlesTags(newTags);
-                                setValue(
-                                  "person_titles",
-                                  newTags as [Tag, ...Tag[]]
-                                );
-                              }}
-                            />
-                          </FormControl>
-                          {/* <FormDescription>
-                        These are the job titles that you&apos;re interested in.
-                      </FormDescription> */}
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
+                    <div
+                      className={`${
+                        dropdownsOpen.currentEmployment ? "block" : "hidden"
+                      } relative`}
+                    >
+                      <FormField
+                        control={form.control}
+                        name="person_titles"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col items-start py-4 w-8/12">
+                            <FormLabel className="text-left">
+                              Current Job Title
+                            </FormLabel>
+                            <FormControl>
+                              <TagInput
+                                {...field}
+                                tags={personTitlesTags}
+                                placeholder="Enter a job title"
+                                variant="base"
+                                onFocus={() => toggleJobTitleDropdown(true)}
+                                className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
+                                setTags={(newTags) => {
+                                  setPersonTitlesTags(newTags);
+                                  setValue(
+                                    "person_titles",
+                                    newTags as [Tag, ...Tag[]]
+                                  );
+                                }}
+                                onInputChange={(value) =>
+                                  setJobTitleSearchTerm(value)
+                                }
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <div className="absolute inline-block text-left -my-4">
+                        {jobTitleDropdownIsOpen && (
+                          <ScrollArea
+                            className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            style={{
+                              height:
+                                filteredJobTitles.length > 0
+                                  ? `${Math.min(
+                                      filteredJobTitles.length * 40,
+                                      200
+                                    )}px`
+                                  : "auto",
+                            }}
+                          >
+                            <div
+                              className="py-1"
+                              role="menu"
+                              aria-orientation="vertical"
+                              aria-labelledby="options-menu"
+                              onClick={() => toggleJobTitleDropdown(false)}
+                              ref={jobTitleDropdownRef}
+                            >
+                              {filteredJobTitles.length > 0 ? (
+                                filteredJobTitles.map((title) => (
+                                  <button
+                                    key={title}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleJobTitleDropdownSelect(title);
+                                      setJobTitleSearchTerm("");
+                                    }}
+                                    className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                  >
+                                    {title}
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                  No results found
+                                </div>
+                              )}
+                            </div>
+                          </ScrollArea>
+                        )}
+                      </div>
+                    </div>
                     <FormField
                       control={form.control}
                       name="person_seniorities"
@@ -1658,6 +1757,7 @@ export default function PeopleForm(): JSX.Element {
                                   newTags as any
                                 );
                               }}
+                              onInputChange={(value) => setSearchTerm(value)}
                             />
                           </FormControl>
                           <FormMessage />
@@ -1666,7 +1766,18 @@ export default function PeopleForm(): JSX.Element {
                     />
                     <div className="absolute inline-block text-left -my-4">
                       {keywordDropdownIsOpen && (
-                        <ScrollArea className="w-56 z-50 h-[200px] rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none">
+                        <ScrollArea
+                          className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                          style={{
+                            height:
+                              filteredKeywords.length > 0
+                                ? `${Math.min(
+                                    filteredKeywords.length * 40,
+                                    200
+                                  )}px`
+                                : "auto",
+                          }}
+                        >
                           <div
                             className="py-1"
                             role="menu"
@@ -1675,18 +1786,25 @@ export default function PeopleForm(): JSX.Element {
                             onClick={() => toggleKeywordsDropdown(false)}
                             ref={keywordDropdownRef}
                           >
-                            {keywords.map((option) => (
-                              <button
-                                key={option.value}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleDropdownSelect(option);
-                                }}
-                                className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
-                              >
-                                {option.name}
-                              </button>
-                            ))}
+                            {filteredKeywords.length > 0 ? (
+                              filteredKeywords.map((option) => (
+                                <button
+                                  key={option.value}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleDropdownSelect(option);
+                                    setSearchTerm("");
+                                  }}
+                                  className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                >
+                                  {option.name}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                No results found
+                              </div>
+                            )}
                           </div>
                         </ScrollArea>
                       )}
