@@ -592,7 +592,7 @@ export default function PeopleForm(): JSX.Element {
       const email = getRandomEmail(startPage);
       const scraperBody = createScraperBody(email, 25, startPage);
       let retries = 0;
-      const TIMEOUT = 50000;
+      const TIMEOUT = 90000;
       const maxRetries = 3;
 
       while (retries < maxRetries) {
