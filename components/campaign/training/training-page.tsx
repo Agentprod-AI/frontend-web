@@ -167,23 +167,42 @@ export default function Training() {
     const userId = user.id as string;
 
     try {
+      const checkReck = await axios.get(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request/${params.campaignId}`
+      );
+      if (checkReck.data.is_active === false) {
+        await axios.put(
+          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request`,
+          {
+            campaign_id: params.campaignId,
+            is_active: true,
+          }
+        );
+      }
       toast.success(
         "Your drafts are getting created, it might take some time."
       );
-      if (previewType == "previewFromTemplate") {
-        const response = await startCampaign(params.campaignId, userId, false);
 
-        console.log("trainingResponse", response);
+      // Start the campaign in the background without awaiting
+      if (previewType == "previewFromTemplate") {
+        startCampaign(params.campaignId, userId, false)
+          .then((response) => console.log("trainingResponse", response))
+          .catch((error) => console.error("Error starting campaign:", error));
       } else if (previewType == "previewFromAI") {
-        const response = await startCampaign(params.campaignId, userId, true);
-        console.log("trainingResponse", response);
+        startCampaign(params.campaignId, userId, true)
+          .then((response) => console.log("trainingResponse", response))
+          .catch((error) => console.error("Error starting campaign:", error));
       }
+
       localStorage.setItem("newCampaignId", params.campaignId);
       localStorage.setItem("redirectFromCampaign", "true");
-      localStorage.setItem("campaignDraftStatus", "pending"); // Add this line
+      localStorage.setItem("campaignDraftStatus", "pending");
 
-      setStartCampaignIsLoading(false);
-      router.push("/dashboard/mail");
+      // Set a timeout to redirect after 20 seconds
+      setTimeout(() => {
+        setStartCampaignIsLoading(false);
+        router.push("/dashboard/mail");
+      }, 30000);
     } catch (error: any) {
       console.log("TrainingResponse", error);
       toast.error(error.message);

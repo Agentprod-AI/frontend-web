@@ -191,6 +191,8 @@ export default function PeopleForm(): JSX.Element {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const [calculatedPages, setCalculatedPages] = useState(1);
+  const [filteredKeywords, setFilteredKeywords] = useState(keywords);
+  const [keywordSearchTerm, setKeywordSearchTerm] = useState("");
 
   const [jobLocationTags, setJobLocationTags] = React.useState<Tag[]>([]);
 
@@ -208,6 +210,7 @@ export default function PeopleForm(): JSX.Element {
   >([]);
 
   const keywordDropdownRef = useRef<HTMLDivElement>(null);
+  const keywordInputRef = useRef<HTMLInputElement>(null);
 
   const companyDropdownRef = useRef<HTMLDivElement>(null);
 
@@ -250,6 +253,8 @@ export default function PeopleForm(): JSX.Element {
   const [filteredJobTitles, setFilteredJobTitles] = useState(jobTitles);
   const [jobTitleSearchTerm, setJobTitleSearchTerm] = useState("");
   const jobTitleDropdownRef = useRef<HTMLDivElement>(null);
+  const jobTitleInputRef = useRef<HTMLInputElement>(null);
+
   const [audienceId, setAudienceId] = React.useState<string>();
   const { setPageCompletion } = useButtonStatus();
   const [type, setType] = useState<"create" | "edit">("create");
@@ -264,11 +269,17 @@ export default function PeopleForm(): JSX.Element {
       id: title,
     };
 
-    if (!personTitlesTags.some((tag) => tag.text === title)) {
+    if (
+      !personTitlesTags.some(
+        (tag) => tag.text.toLowerCase() === title.toLowerCase()
+      )
+    ) {
       const updatedTags = [...personTitlesTags, newTag];
       setPersonTitlesTags(updatedTags);
       setValue("person_titles", updatedTags as [Tag, ...Tag[]]);
     }
+    setJobTitleSearchTerm("");
+    setJobTitleDropdownIsOpen(false);
   };
 
   useEffect(() => {
@@ -276,13 +287,15 @@ export default function PeopleForm(): JSX.Element {
       title.toLowerCase().includes(jobTitleSearchTerm.toLowerCase())
     );
     setFilteredJobTitles(filtered);
+    setJobTitleDropdownIsOpen(jobTitleSearchTerm.length > 0);
   }, [jobTitleSearchTerm]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         jobTitleDropdownRef.current &&
-        !jobTitleDropdownRef.current.contains(event.target as Node)
+        !jobTitleDropdownRef.current.contains(event.target as Node) &&
+        !jobTitleInputRef.current?.contains(event.target as Node)
       ) {
         setJobTitleDropdownIsOpen(false);
       }
@@ -352,10 +365,6 @@ export default function PeopleForm(): JSX.Element {
       }
     }
   };
-
-  const filteredKeywords = keywords.filter((option) =>
-    option.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
 
   const checkedFields = (
     field: string[] | undefined,
@@ -558,7 +567,7 @@ export default function PeopleForm(): JSX.Element {
       const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
 
       if (startPage > 5) {
-        const randomIndex = Math.floor(Math.random() * premiumAcc.length);
+        const randomIndex = startPage % 2;
         return premiumAcc[randomIndex];
       } else {
         const randomIndex = Math.floor(Math.random() * emailArray.length);
@@ -600,7 +609,7 @@ export default function PeopleForm(): JSX.Element {
           const controller = new AbortController();
           const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
           const response = await axios.post(
-            "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_n5GCPgdvobcZfCa9w38PSxtIQiY22E4k3ARa",
+            "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_tfRHgg31u5FO91JskY6lSPRgIhly643AVGd3",
             scraperBody,
             {
               signal: controller.signal,
@@ -651,18 +660,41 @@ export default function PeopleForm(): JSX.Element {
         setIsLoading(true);
         setIsTableLoading(true);
 
-        const toastMessages = [
-          "Initializing lead search engine...",
-          "Preparing your personalized, high-quality lead list for presentation...",
-        ];
+        let countdownDuration = 0;
+        if (formData.per_page <= 200) {
+          countdownDuration = 90; // 1 min 30 sec
+        } else if (formData.per_page <= 400) {
+          countdownDuration = 240; // 4 mins
+        } else {
+          countdownDuration = 420; // 7 mins
+        }
 
-        let toastIndex = 0;
-        const toastInterval = setInterval(() => {
-          toast.info(toastMessages[toastIndex % toastMessages.length], {
-            duration: 10000,
-          });
-          toastIndex++;
-        }, 10000);
+        const countdownToastId = toast.loading(
+          `Estimated time: ${Math.floor(countdownDuration / 60)}:${(
+            countdownDuration % 60
+          )
+            .toString()
+            .padStart(2, "0")}`
+        );
+        let remainingTime = countdownDuration;
+        const countdownInterval = setInterval(() => {
+          remainingTime--;
+          const minutes = Math.floor(remainingTime / 60);
+          const seconds = remainingTime % 60;
+          toast.loading(
+            `Estimated time: ${minutes}:${seconds.toString().padStart(2, "0")}`,
+            {
+              id: countdownToastId,
+            }
+          );
+
+          if (remainingTime <= 0) {
+            clearInterval(countdownInterval);
+            toast.loading("Taking longer than usual...", {
+              id: countdownToastId,
+            });
+          }
+        }, 1000);
 
         const batchSize = 8; // Number of concurrent API calls
         const totalPages = Math.ceil(data.per_page / 25);
@@ -691,7 +723,8 @@ export default function PeopleForm(): JSX.Element {
           }
         }
 
-        clearInterval(toastInterval);
+        clearInterval(countdownInterval);
+        toast.dismiss(countdownToastId);
 
         if (enrichedLeads.length === 0) {
           toast.error("No leads found");
@@ -853,92 +886,122 @@ export default function PeopleForm(): JSX.Element {
     console.log("data = " + audienceBody);
 
     setIsCreateBtnLoading(true);
-    const response = axiosInstance
-      .post<Contact[]>(`v2/lead/bulk/`, audienceBody)
-      .then((response: any) => {
-        const data = response.data;
-        console.log("DATA from contacts: ", data);
-        if (data.isArray) {
-          setLeads(data);
-        } else {
-          setLeads([data]);
-        }
-        toast.success("Audience created successfully");
-        // router.push(`/dashboard/campaign/create/${params.campaignId}`);
-      })
-      .catch((error: any) => {
-        console.log(error);
-        setError(error instanceof Error ? error.toString() : String(error));
-        setIsCreateBtnLoading(false);
-        toast.error("Audience Creation Failer");
-      });
+    try {
+      const response = await axiosInstance.post<Contact[]>(
+        `v2/lead/bulk/`,
+        audienceBody
+      );
+      const data = response.data;
+      console.log("DATA from contacts: ", data);
+      if (Array.isArray(data)) {
+        setLeads(data);
+      } else {
+        setLeads([data]);
+      }
+      toast.success("Audience created successfully");
 
-    if (type === "create") {
-      const formData = form.getValues();
-      const postBody = {
-        campaign_id: params.campaignId,
-        audience_type: "prospective",
-        filters_applied: {
-          q_organization_domains: formData.q_organization_domains,
-          organization_industry_tag_ids: formData.organization_industry_tag_ids,
-          q_organization_keyword_tags: formData.q_organization_keyword_tags,
-          organization_locations: formData.organization_locations,
-          person_seniorities: formData.person_seniorities,
-          company_headcount: checkedCompanyHeadcount,
-          organization_latest_funding_stage_cd: checkedFundingRounds,
-          revenue_range: {
-            min: formData.minimum_company_funding?.text,
-            max: formData.maximum_company_funding?.text,
+      if (type === "create") {
+        const formData = form.getValues();
+        const postBody = {
+          campaign_id: params.campaignId,
+          audience_type: "prospective",
+          filters_applied: {
+            q_organization_domains: formData.q_organization_domains,
+            organization_industry_tag_ids:
+              formData.organization_industry_tag_ids,
+            q_organization_keyword_tags: formData.q_organization_keyword_tags,
+            organization_locations: formData.organization_locations,
+            person_seniorities: formData.person_seniorities,
+            company_headcount: checkedCompanyHeadcount,
+            organization_latest_funding_stage_cd: checkedFundingRounds,
+            revenue_range: {
+              min: formData.minimum_company_funding?.text,
+              max: formData.maximum_company_funding?.text,
+            },
+            person_titles: formData.person_titles,
+            per_page: formData.per_page,
+            email_status: formData.email_status,
+            organization_job_locations: formData.organization_job_locations,
+            q_organization_job_titles: formData.q_organization_job_titles,
           },
-          person_titles: formData.person_titles,
-          per_page: formData.per_page,
-          email_status: formData.email_status,
-          organization_job_locations: formData.organization_job_locations,
-          q_organization_job_titles: formData.q_organization_job_titles,
-        },
-      };
+        };
 
-      try {
-        const response = await axiosInstance.post("v2/audience/", postBody);
-        const data = response.data;
-        console.log("filters to audience: ", data);
+        const audienceResponse = await axiosInstance.post(
+          "v2/audience/",
+          postBody
+        );
+        console.log("filters to audience: ", audienceResponse.data);
 
         const getRecData = await axios.get(
           `${process.env.NEXT_PUBLIC_SERVER_URL}v2/campaigns/${params.campaignId}`
         );
         if (getRecData.data.schedule_type === "recurring") {
-          const resp = await axiosInstance.post(
+          const recurringResponse = await axiosInstance.post(
             "v2/recurring_campaign_request",
             {
               campaign_id: params.campaignId,
               user_id: user.id,
               apollo_url: apolloUrl,
               page: calculatedPages + 1,
-              is_active: true,
+              is_active: false,
               leads_count: calculatedPages * 25,
             }
           );
-          const data1 = resp.data;
-          console.log(" audience: ", data1);
+          console.log("Recurring campaign request: ", recurringResponse.data);
         }
 
         toast.success("Audience created successfully");
-        setTimeout(() => {}, 2000);
-      } catch (error) {
-        console.error(error);
-        setError(error instanceof Error ? error.toString() : String(error));
-      } finally {
         toast.info("Updating user details, please wait...");
-        setTimeout(() => {
-          setIsCreateBtnLoading(false);
-          router.push(`/dashboard/campaign/${params.campaignId}`);
-        }, 46000);
+
+        // Start polling for leads
+        let attempts = 0;
+        const maxAttempts = 20;
+        const pollInterval = 6000; // 7 seconds
+
+        const checkLeads = async () => {
+          try {
+            const response = await axios.get(
+              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
+            );
+            if (Array.isArray(response.data) && response.data.length >= 1) {
+              setIsCreateBtnLoading(false);
+              setTimeout(() => {
+                router.push(`/dashboard/campaign/${params.campaignId}`);
+              }, 4000);
+
+              return true;
+            }
+          } catch (error) {
+            console.error("Error checking leads:", error);
+          }
+          return false;
+        };
+
+        const poll = async () => {
+          const success = await checkLeads();
+          if (success) {
+            return;
+          }
+
+          attempts++;
+          if (attempts >= maxAttempts) {
+            console.log("Max attempts reached. Stopping polling.");
+            toast.error("Failed to update leads. Please try again later.");
+            setIsCreateBtnLoading(false);
+            return;
+          }
+
+          setTimeout(poll, pollInterval);
+        };
+
+        poll(); // Start the polling process
       }
+    } catch (error) {
+      console.error("Error creating audience:", error);
+      setError(error instanceof Error ? error.toString() : String(error));
+      toast.error("Audience Creation Failed");
+      setIsCreateBtnLoading(false);
     }
-
-    console.log(allFilters);
-
-    console.log("response from creating contact", response);
   };
 
   type FieldName =
@@ -1242,6 +1305,13 @@ export default function PeopleForm(): JSX.Element {
   const [companyDropdownIsOpen, setCompanyDropdownIsOpen] =
     React.useState(false);
 
+  useEffect(() => {
+    const filtered = keywords.filter((keyword) =>
+      keyword.name.toLowerCase().includes(keywordSearchTerm.toLowerCase())
+    );
+    setFilteredKeywords(filtered);
+    setKeywordDropdownIsOpen(keywordSearchTerm.length > 0);
+  }, [keywordSearchTerm]);
   function toggleKeywordsDropdown(isOpen: boolean) {
     setKeywordDropdownIsOpen(isOpen);
   }
@@ -1261,9 +1331,14 @@ export default function PeopleForm(): JSX.Element {
       !organizationKeywordTags.some((tag: any) => tag.value === option.value)
     ) {
       setOrganizationKeywordTags((prevState) => [...prevState, keywordTag]);
+      setValue("organization_industry_tag_ids", [
+        ...organizationKeywordTags,
+        keywordTag,
+      ] as any);
     }
+    setKeywordSearchTerm("");
+    setKeywordDropdownIsOpen(false);
   }
-
   useEffect(() => {
     if (organizationKeywordTags.length > 0) {
       setValue("organization_industry_tag_ids", organizationKeywordTags as any);
@@ -1283,14 +1358,14 @@ export default function PeopleForm(): JSX.Element {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         keywordDropdownRef.current &&
-        !keywordDropdownRef.current.contains(event.target as Node)
+        !keywordDropdownRef.current.contains(event.target as Node) &&
+        !(event.target as Element).closest(".tag-input-container")
       ) {
         setKeywordDropdownIsOpen(false);
       }
     };
 
     document.addEventListener("mousedown", handleClickOutside);
-
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
@@ -1433,13 +1508,38 @@ export default function PeopleForm(): JSX.Element {
                                     }}
                                     className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                                   >
-                                    {title}
+                                    {title
+                                      .split(" ")
+                                      .map(
+                                        (word) =>
+                                          word.charAt(0).toUpperCase() +
+                                          word.slice(1).toLowerCase()
+                                      )
+                                      .join(" ")}
                                   </button>
                                 ))
                               ) : (
-                                <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                  No results found
-                                </div>
+                                <button
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    if (jobTitleSearchTerm.trim()) {
+                                      handleJobTitleDropdownSelect(
+                                        jobTitleSearchTerm.trim()
+                                      );
+                                      setJobTitleSearchTerm("");
+                                    }
+                                  }}
+                                  className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                >
+                                  {jobTitleSearchTerm
+                                    .split(" ")
+                                    .map(
+                                      (word) =>
+                                        word.charAt(0).toUpperCase() +
+                                        word.slice(1).toLowerCase()
+                                    )
+                                    .join(" ")}
+                                </button>
                               )}
                             </div>
                           </ScrollArea>
@@ -1748,7 +1848,7 @@ export default function PeopleForm(): JSX.Element {
                               tags={organizationKeywordTags}
                               placeholder="Enter industry"
                               variant="base"
-                              onFocus={() => toggleKeywordsDropdown(true)}
+                              onFocus={() => setKeywordDropdownIsOpen(true)}
                               className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
                               setTags={(newTags) => {
                                 setOrganizationKeywordTags(newTags);
@@ -1757,7 +1857,9 @@ export default function PeopleForm(): JSX.Element {
                                   newTags as any
                                 );
                               }}
-                              onInputChange={(value) => setSearchTerm(value)}
+                              onInputChange={(value) =>
+                                setKeywordSearchTerm(value)
+                              }
                             />
                           </FormControl>
                           <FormMessage />
@@ -1783,7 +1885,6 @@ export default function PeopleForm(): JSX.Element {
                             role="menu"
                             aria-orientation="vertical"
                             aria-labelledby="options-menu"
-                            onClick={() => toggleKeywordsDropdown(false)}
                             ref={keywordDropdownRef}
                           >
                             {filteredKeywords.length > 0 ? (
@@ -1793,17 +1894,41 @@ export default function PeopleForm(): JSX.Element {
                                   onClick={(e) => {
                                     e.preventDefault();
                                     handleDropdownSelect(option);
-                                    setSearchTerm("");
                                   }}
                                   className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                                 >
-                                  {option.name}
+                                  {option.name
+                                    .split(" ")
+                                    .map(
+                                      (word) =>
+                                        word.charAt(0).toUpperCase() +
+                                        word.slice(1).toLowerCase()
+                                    )
+                                    .join(" ")}
                                 </button>
                               ))
                             ) : (
-                              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                No results found
-                              </div>
+                              <button
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  if (keywordSearchTerm.trim()) {
+                                    handleDropdownSelect({
+                                      value: keywordSearchTerm.trim(),
+                                      name: keywordSearchTerm.trim(),
+                                    });
+                                  }
+                                }}
+                                className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                              >
+                                {keywordSearchTerm
+                                  .split(" ")
+                                  .map(
+                                    (word) =>
+                                      word.charAt(0).toUpperCase() +
+                                      word.slice(1).toLowerCase()
+                                  )
+                                  .join(" ")}
+                              </button>
                             )}
                           </div>
                         </ScrollArea>
@@ -1847,7 +1972,7 @@ export default function PeopleForm(): JSX.Element {
                               tags={organizationCompanyTags}
                               placeholder="Enter company keywords"
                               variant="base"
-                              onFocus={() => toggleCompanyDropdown(true)}
+                              onFocus={() => setKeywordDropdownIsOpen(true)}
                               className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
                               setTags={(newTags) => {
                                 setOrganizationCompanyTags(newTags);
@@ -1855,6 +1980,10 @@ export default function PeopleForm(): JSX.Element {
                                   "q_organization_keyword_tags",
                                   newTags as [Tag, ...Tag[]]
                                 );
+                              }}
+                              onInputChange={(value) => {
+                                setSearchTerm(value);
+                                setKeywordDropdownIsOpen(value.length > 0);
                               }}
                             />
                           </FormControl>
