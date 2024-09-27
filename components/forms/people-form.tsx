@@ -670,14 +670,17 @@ export default function PeopleForm(): JSX.Element {
         setIsLoading(true);
         setIsTableLoading(true);
 
-        let countdownDuration = 0;
-        if (formData.per_page <= 200) {
-          countdownDuration = 90; // 1 min 30 sec
-        } else if (formData.per_page <= 400) {
-          countdownDuration = 240; // 4 mins
-        } else {
-          countdownDuration = 420; // 7 mins
-        }
+        const calculateCountdownDuration = (perPage: number): number => {
+          if (perPage <= 25) return 20;
+          if (perPage <= 50) return 30;
+          if (perPage <= 100) return 40;
+          if (perPage <= 200) return 60;
+          if (perPage <= 300) return 90;
+          if (perPage <= 400) return 120;
+          return 180; // for anything above 400
+        };
+
+        let countdownDuration = calculateCountdownDuration(formData.per_page);
 
         const countdownToastId = toast.loading(
           `Estimated time: ${Math.floor(countdownDuration / 60)}:${(
