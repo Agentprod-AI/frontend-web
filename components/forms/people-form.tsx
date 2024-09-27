@@ -436,6 +436,15 @@ export default function PeopleForm(): JSX.Element {
         .join("");
     }
 
+    if (formData.q_organization_domains && formData.q_organization_domains.length > 0) {
+      url += formData.q_organization_domains
+        .map(
+          (domain: any) =>
+            `&qKeywords=${encodeURIComponent(domain.text)}`
+        )
+        .join("");
+    }
+
     if (
       formData.q_organization_keyword_tags &&
       formData.q_organization_keyword_tags.length > 0
@@ -503,6 +512,7 @@ export default function PeopleForm(): JSX.Element {
     form.watch("minimum_company_funding"),
     form.watch("maximum_company_funding"),
     form.watch("email_status"),
+    form.watch("q_organization_domains"),
   ]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -1784,34 +1794,33 @@ export default function PeopleForm(): JSX.Element {
                     }`}
                   >
                     <FormField
-                      control={form.control}
-                      name="q_organization_domains"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-start py-4 w-8/12">
-                          <FormControl>
-                            <TagInput
-                              {...field}
-                              tags={qOrganizationDomainsTags}
-                              placeholder="Enter company domain"
-                              variant={"base"}
-                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
-                              setTags={(newTags) => {
-                                setQOrganizationDomainsTags(newTags);
-                                setValue(
-                                  "q_organization_domains",
-                                  newTags as [Tag, ...Tag[]]
-                                );
-                              }}
-                            />
-                          </FormControl>
-                          {/* <FormDescription>
-                        These are the company domains that you&apos;re
-                        interested in.
-                      </FormDescription> */}
-                          <FormMessage />
-                        </FormItem>
-                      )}
+              control={form.control}
+              name="q_organization_domains"
+              render={({ field }) => (
+                <FormItem className="flex flex-col items-start py-4 w-8/12">
+                  <FormControl>
+                    <TagInput
+                      {...field}
+                      tags={qOrganizationDomainsTags}
+                      placeholder="Enter company domain"
+                      variant={"base"}
+                      className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                      setTags={(newTags) => {
+                        // Only allow one domain
+                        const updatedTags = Array.isArray(newTags) ? newTags.slice(-1) : [];
+                        setQOrganizationDomainsTags(updatedTags);
+                        setValue(
+                          "q_organization_domains",
+                          updatedTags as [Tag, ...Tag[]]
+                        );
+                      }}
+                      maxTags={1}
                     />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
                   </div>
                 </div>
                 <div className="bg-muted px-2 rounded">
