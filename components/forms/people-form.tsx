@@ -1183,6 +1183,7 @@ export default function PeopleForm(): JSX.Element {
 
       // Email Status (if applicable)
       if (allFiltersFromDB.email_status) {
+
         setValue("email_status", allFiltersFromDB.email_status);
       }
 
@@ -1197,6 +1198,8 @@ export default function PeopleForm(): JSX.Element {
   }, [checkedCompanyHeadcount]);
 
   const updateAudience = async () => {
+    setIsTableLoading(true);
+  // toast.loading("Updating audience...");
     const formData = form.getValues();
 
     const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
@@ -1289,30 +1292,160 @@ export default function PeopleForm(): JSX.Element {
 
     try {
       // Update audience filters
+      const recurringCampaignResponse = await axiosInstance.get(`v2/recurring_campaign_request/${params.campaignId}`);
+
+      if (recurringCampaignResponse.data !== null) {
+        // If recurring campaign request exists, update the Apollo URL
+        const newApolloUrl = constructApolloUrl(formData);
+        await axiosInstance.put(`v2/recurring_campaign_request`, {
+          campaign_id: params.campaignId,
+          apollo_url: newApolloUrl,
+        });
+        console.log("Recurring campaign request updated with new Apollo URL");
+      }
+
+      const newApolloUrl = constructApolloUrl(formData);
+    setApolloUrl(newApolloUrl);
+
+    let pages = 1;
+    if (formData.per_page) {
+      if (formData.per_page <= 25) {
+        pages = 1;
+      } else if (formData.per_page <= 50) {
+        pages = 2;
+      } else if (formData.per_page <= 75) {
+        pages = 3;
+      } else {
+        pages = Math.ceil(formData.per_page / 25);
+      }
+    }
+    setCalculatedPages(pages);
+
+    // Fetch leads from Apify
+    const getRandomEmail = (startPage: number) => {
+      const emailArray = [
+        "nisheet@agentprod.com",
+        "admin@agentprod.com",
+        "naman.barkiya@agentprod.com",
+        "siddhant.goswami@agentprod.com",
+        "muskaan@agentprod.com",
+        "bharath.kumar@getquestionpro.com",
+        "Urvashi.singh@getverloop.com",
+        "demo@agentprod.com",
+        "founders@agentprod.com",
+      ];
+      const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
+
+      if (startPage > 5) {
+        const randomIndex = startPage % 2;
+        return premiumAcc[randomIndex];
+      } else {
+        const randomIndex = Math.floor(Math.random() * emailArray.length);
+        return emailArray[randomIndex];
+      }
+    };
+
+    const createScraperBody = (email: string, count: number, startPage: number) => ({
+      count: Math.min(count, 25),
+      email: email,
+      getEmails: true,
+      guessedEmails: true,
+      maxDelay: 15,
+      minDelay: 8,
+      password: "Agentprod06ms",
+      searchUrl: newApolloUrl,
+      startPage: startPage,
+      waitForVerification: true,
+      proxy: {
+        useApifyProxy: true,
+        apifyProxyGroups: ["RESIDENTIAL"],
+        apifyProxyCountry: "IN",
+      },
+    });
+
+    const fetchLead = async (startPage: number): Promise<any[]> => {
+      const email = getRandomEmail(startPage);
+      const scraperBody = createScraperBody(email, 25, startPage);
+      let retries = 0;
+      const TIMEOUT = 90000;
+      const maxRetries = 3;
+
+      while (retries < maxRetries) {
+        try {
+          const controller = new AbortController();
+          const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+          const response = await axios.post(
+            "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_n5GCPgdvobcZfCa9w38PSxtIQiY22E4k3ARa",
+            scraperBody,
+            {
+              signal: controller.signal,
+            }
+          );
+          clearTimeout(timeoutId);
+          return response.data;
+        } catch (error) {
+          console.error(`Error fetching leads for page ${startPage} (attempt ${retries + 1}):`, error);
+          retries++;
+          if (axios.isCancel(error)) {
+            console.log("Request timed out. Retrying...");
+          } else if (retries === maxRetries) {
+            console.error(`Failed to fetch leads for page ${startPage} after ${maxRetries} attempts`);
+            return [];
+          }
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay before retry
+        }
+      }
+      return [];
+    };
+
+    const batchSize = 8;
+    const totalPages = Math.ceil(formData.per_page / 25);
+    let enrichedLeads: any[] = [];
+
+    for (let i = 0; i < totalPages; i += batchSize) {
+      const batch = Array.from({ length: Math.min(batchSize, totalPages - i) }, (_, index) => i + index + 1);
+      console.log(`Processing batch ${i / batchSize + 1} of ${Math.ceil(totalPages / batchSize)}`);
+
+      const batchPromises = batch.map(fetchLead);
+      const batchResults = await Promise.all(batchPromises);
+      const batchLeads = batchResults.flat();
+
+      enrichedLeads.push(...batchLeads);
+
+      if (i + batchSize < totalPages) {
+        await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
+      }
+    }
+
+    if (enrichedLeads.length === 0) {
+      toast.error("No leads found");
+      setTab("tab1");
+    } else {
+      console.log("Fetched leads:", enrichedLeads);
+
+      const processedLeads = enrichedLeads
+        .slice(0, formData.per_page)
+        .map((person: any) => ({
+          ...person,
+          type: "prospective",
+          campaign_id: params.campaignId,
+          id: uuid(),
+        }));
+      setLeads(processedLeads);
+      console.log("Processed new leads:", processedLeads);
+
+      // Update audience filters
       // await axiosInstance.put(`v2/audience/${audienceId}`, filtersPostBody);
 
-      // Fetch updated leads
-      const updatedLeadsResponse = await axiosInstance.post<Lead[]>(
-        `v2/apollo/leads`,
-        filters
-      );
-      const updatedLeads = updatedLeadsResponse.data;
-
-      updatedLeads.forEach((person: Lead) => {
-        person.type = "prospective";
-        person.campaign_id = params.campaignId;
-        person.id = uuid();
-      });
-
-      setLeads(updatedLeads);
 
       // Update contacts
-      const updateLeadsBody = mapLeadsToBodies(updatedLeads, params.campaignId);
+      const updateLeadsBody = mapLeadsToBodies(processedLeads, params.campaignId);
       await axiosInstance.post(`v2/lead/bulk/`, updateLeadsBody);
 
       toast.success("Audience updated successfully");
       router.push(`/dashboard/campaign/${params.campaignId}`);
-    } catch (error) {
+    }
+  } catch (error) {
       console.error("Error updating audience:", error);
       toast.error("Error updating audience");
     } finally {
@@ -2245,15 +2378,16 @@ export default function PeopleForm(): JSX.Element {
               </div>
             </div>
             {type === "edit" && (
-              <Button
-                onClick={(event) => {
-                  event.preventDefault();
-                  updateAudience();
-                }}
-              >
-                Update Audience
-              </Button>
-            )}
+    <Button
+      onClick={(event) => {
+        event.preventDefault();
+        updateAudience();
+      }}
+      disabled={isTableLoading}
+    >
+      {isTableLoading ? <LoadingCircle /> : "Update Audience"}
+    </Button>
+  )}
           </TabsContent>
           <TabsContent value="tab2">
             {isTableLoading ? (
