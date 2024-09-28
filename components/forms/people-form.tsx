@@ -671,9 +671,9 @@ export default function PeopleForm(): JSX.Element {
         setIsTableLoading(true);
 
         const calculateCountdownDuration = (perPage: number): number => {
-          if (perPage <= 25) return 20;
-          if (perPage <= 50) return 30;
-          if (perPage <= 100) return 40;
+          if (perPage <= 25) return 30;
+          if (perPage <= 50) return 40;
+          if (perPage <= 100) return 50;
           if (perPage <= 200) return 60;
           if (perPage <= 300) return 90;
           if (perPage <= 400) return 120;
@@ -702,10 +702,18 @@ export default function PeopleForm(): JSX.Element {
           );
 
           if (remainingTime <= 0) {
-            clearInterval(countdownInterval);
-            toast.loading("Taking longer than usual...", {
-              id: countdownToastId,
-            });
+            // Reset the timer instead of showing "Taking longer than usual"
+            remainingTime = countdownDuration;
+            toast.loading(
+              `Estimated time: ${Math.floor(countdownDuration / 60)}:${(
+                countdownDuration % 60
+              )
+                .toString()
+                .padStart(2, "0")}`,
+              {
+                id: countdownToastId,
+              }
+            );
           }
         }, 1000);
 
