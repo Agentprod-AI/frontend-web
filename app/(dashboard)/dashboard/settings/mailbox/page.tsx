@@ -51,6 +51,7 @@ import Image from "next/image";
 import { Badge } from "@/components/ui/badge";
 import axios from "axios";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { CheckCircledIcon, CrossCircledIcon } from "@radix-ui/react-icons";
 
 interface MailData {
   id: number;
@@ -102,6 +103,26 @@ const createEmailSchema = (domain: any) =>
       .nonempty(),
   });
 
+const createMailboxSchema = () =>
+  z.object({
+    email: z.string().min(1),
+    password: z.string().min(1),
+    domain: z
+      .string()
+      .endsWith(".com", { message: `Domain must end with ".com"` })
+      .min(1),
+  });
+
+const addForwardingSchema = () =>
+  z.object({
+    domain: z
+      .string()
+      .endsWith(".com", { message: `Domain must end with ".com"` })
+      .min(1),
+    email: z.string().min(1),
+    fwdemail: z.string().min(1),
+  });
+
 export default function Page() {
   const [getDomainName, setGetDomainName] = useState([]);
   const [isPresentDomain, setIsPresentDomain] = useState();
@@ -113,12 +134,34 @@ export default function Page() {
   const [loading, setLoading] = useState(false);
   const [fetchSuccess, setFetchSuccess] = useState(false);
   const [isAddMailboxOpen, setIsAddMailboxOpen] = useState(false);
+  const [isBuyDomainOpen, setIsBuyDomainOpen] = useState(false);
+  const [isBuyDomainLoading, setIsBuyDomainLoading] = useState(false);
   const [isVerifyEmailOpen, setIsVerifyEmailOpen] = useState(false);
   const [isTableDialogOpen, setIsTableDialogOpen] = useState(false);
   const [emailInput, setEmailInput] = useState(Array(5).fill(""));
   const [emailErrors, setEmailErrors] = useState(Array(5).fill("")); //RealTime
   const [nameInput, setNameInput] = useState("");
   const [domainInput, setDomainInput] = useState("");
+  const [buyDomainInput, setBuyDomainInput] = useState("");
+  const [boughtDomain, setBoughtDomain] = useState("agentemployee.com");
+  const [domainIsAvailable, setDomainIsAvailable] = useState<
+    boolean | "default"
+  >("default");
+  const [domainSuggestions, setDomainSuggestions] = useState<string[] | null>(
+    null
+  );
+  const [buyDomainStatus, setBuyDomainStatus] = useState<string>();
+  const [createdEmail, setCreatedEmail] = useState("adarsh@agentemployee.com");
+  const [iscPanelOpen, setIscPanelOpen] = useState(true);
+  const [isForwardingOpen, setIsForwardingOpen] = useState(false);
+  const [addingForwarding, setAddingForwarding] = useState(false);
+  const [mailboxSenderName, setMailboxSenderName] = useState("");
+  const [mailboxSenderEmail, setMailboxSenderEmail] = useState("");
+  const [mailboxDomain, setMailboxDomain] = useState("");
+  const [mailboxPassword, setMailboxPassword] = useState("");
+  const [creatingMailbox, setCreatingMailbox] = useState(false);
+  const [forwardingEmail, setForwardingEmail] = useState("");
+  const [loadingSuggestions, setLoadingSuggestions] = useState(false);
   const [mailData, setMailData] = useState<MailData[]>([]);
   const [mailboxes, setMailboxes] = useState(initialMailboxes);
   const [otpInput, setOtpInput] = useState("");
@@ -133,6 +176,9 @@ export default function Page() {
 
   const handleOpenAddMailbox = () => setIsChooseServiceOpen(true);
   const handleCloseAddMailbox = () => setIsChooseServiceOpen(false);
+
+  const handleOpenBuyDomain = () => setIsBuyDomainOpen(true);
+  const handleCloseBuyDomain = () => setIsBuyDomainOpen(false);
 
   const handleOpenAgentprodService = () => {
     setIsChooseServiceOpen(false);
@@ -506,6 +552,231 @@ export default function Page() {
       // return () => clearInterval(intervalId);
     }
   }, [getDomainName, testAllDomains]);
+
+  const domainIsCorrect = () => {
+    setBuyDomainInput(buyDomainInput.trim());
+    return buyDomainInput.toLocaleLowerCase().endsWith(".com");
+  };
+
+  const showDomainSuggestions = async (domainKeyword: string, tld: string) => {
+    try {
+      const payload = {
+        query: domainKeyword,
+        tlds: tld,
+      };
+      const response = await axiosInstance.post(
+        "v2/godaddy/domains/suggest",
+        payload
+      );
+      setDomainSuggestions(response.data);
+      setLoadingSuggestions(false);
+    } catch (error: any) {
+      console.error("Error occured in loading suggestions: ", error);
+      toast.error("Failed to load suggestions");
+    }
+  };
+
+  const checkDomainAvailability = async () => {
+    if (domainIsCorrect() === true) {
+      setLoading(true);
+      const payload = {
+        domains: [buyDomainInput],
+      };
+      try {
+        const response = await axiosInstance.post(
+          "v2/godaddy/domains/available",
+          payload
+        );
+        setDomainIsAvailable(response.data.domains[0].available);
+        setLoading(false);
+        if (response.data.domains[0].available === false) {
+          setLoadingSuggestions(true);
+          const domainParts = buyDomainInput.split(".");
+          showDomainSuggestions(domainParts[0], domainParts[1]);
+        } else {
+          setDomainSuggestions(null);
+        }
+      } catch (error: any) {
+        console.error("Error occured in checking domain availability: ", error);
+        toast.error("Domain availability check failed");
+      }
+    }
+  };
+
+  const buyDomain = async () => {
+    setIsBuyDomainLoading(true);
+    if (domainIsAvailable == true) {
+      console.log("buy domain");
+      const payload = {
+        consent: {
+          agreedAt: "2024-08-17T23:22:02Z",
+          agreedBy: "info@agentprod.com",
+          agreementKeys: ["DNRA"],
+        },
+        contactAdmin: {
+          addressMailing: {
+            address1: "Kolimi heights, Halasuru",
+            city: "Bangalore",
+            country: "IN",
+            postalCode: "56008",
+            state: "Karnataka",
+          },
+          email: "info@agentprod.com",
+          nameFirst: "Muskaan",
+          nameLast: "M",
+          phone: "+91.754 399 7250",
+        },
+        contactBilling: {
+          addressMailing: {
+            address1: "Kolimi heights, Halasuru",
+            city: "Bangalore",
+            country: "IN",
+            postalCode: "56008",
+            state: "Karnataka",
+          },
+          email: "info@agentprod.com",
+          nameFirst: "Muskaan",
+          nameLast: "M",
+          phone: "+91.754 399 7250",
+        },
+        contactRegistrant: {
+          addressMailing: {
+            address1: "Kolimi heights, Halasuru",
+            city: "Bangalore",
+            country: "IN",
+            postalCode: "56008",
+            state: "Karnataka",
+          },
+          email: "info@agentprod.com",
+          nameFirst: "Muskaan",
+          nameLast: "M",
+          phone: "+91.754 399 7250",
+        },
+        contactTech: {
+          addressMailing: {
+            address1: "Kolimi heights, Halasuru",
+            city: "Bangalore",
+            country: "IN",
+            postalCode: "56008",
+            state: "Karnataka",
+          },
+          email: "info@agentprod.com",
+          nameFirst: "Muskaan",
+          nameLast: "M",
+          phone: "+91.754 399 7250",
+        },
+        domain: buyDomainInput,
+        nameServers: ["ns49.domaincontrol.com", "ns50.domaincontrol.com"],
+        period: 1,
+        privacy: false,
+        renewAuto: false,
+      };
+
+      try {
+        const response = await axiosInstance.post(
+          "v2/godaddy/domains/purchase",
+          payload
+        );
+        toast.success("Domain registered successfully!");
+        setBoughtDomain(buyDomainInput);
+        setBuyDomainInput("");
+        setIsBuyDomainLoading(false);
+        setIsBuyDomainOpen(false);
+        setIscPanelOpen(true);
+        console.log(response);
+      } catch (error) {
+        toast.error(`Failed to purchase domain`);
+        console.log(`Failed to purchase domain: ${error}`);
+      }
+    } else {
+      toast.error("Domain is not available");
+    }
+  };
+
+  const displayDomainIsAvailable = () => {
+    if (domainIsAvailable !== "default") {
+      return (
+        <div>
+          {domainIsAvailable ? (
+            <CheckCircledIcon color="green" />
+          ) : (
+            <CrossCircledIcon color="red" />
+          )}
+        </div>
+      );
+    }
+  };
+
+  const toggleBuyDomain = () => {
+    if (domainIsAvailable !== "default") {
+      return !domainIsAvailable;
+    } else {
+      return true;
+    }
+  };
+
+  const createMailbox = async () => {
+    setCreatingMailbox(true);
+
+    const payload = {
+      email: mailboxSenderEmail,
+      password: mailboxPassword,
+      domain: boughtDomain,
+    };
+
+    console.log(payload);
+
+    const schema = createMailboxSchema();
+
+    try {
+      schema.parse(payload);
+      const response = await axiosInstance.post(
+        "/v2/cpanel/email/addpop",
+        payload
+      );
+      console.log(response);
+      toast.success("Domain registered successfully!");
+      setCreatedEmail(`${mailboxSenderEmail}@${boughtDomain}`);
+      setCreatingMailbox(false);
+      setIscPanelOpen(false);
+      setIsForwardingOpen(true);
+    } catch (error: any) {
+      setCreatingMailbox(false);
+      toast.error(`Failed to create mailbox, see console for more information`);
+      console.log(`Failed to create mailbox: ${error}`);
+    }
+  };
+
+  const addForwarding = async () => {
+    setAddingForwarding(true);
+    const payload = {
+      email: createdEmail,
+      domain: boughtDomain,
+      fwdemail: forwardingEmail,
+    };
+
+    console.log(payload);
+
+    const schema = addForwardingSchema();
+
+    try {
+      schema.parse(payload);
+      const response = await axiosInstance.post(
+        "/v2/cpanel/email/add_forwarder",
+        payload
+      );
+      console.log(response);
+      toast.success("Forwarding email set successfully!");
+      setAddingForwarding(false);
+      setIsForwardingOpen(false);
+    } catch (error: any) {
+      setAddingForwarding(false);
+      toast.error(
+        `Failed to add forwarding email, see console for more information`
+      );
+      console.log(`Failed to add forwarding email: ${error}`);
+    }
+  };
 
   return (
     <div className="w-full">
@@ -976,10 +1247,14 @@ export default function Page() {
           "No mailboxes connected."
         )}
       </div>
-      <Button className="mt-5" onClick={handleOpenAddMailbox}>
-        Add Mailbox
-      </Button>
-
+      <div className="flex items-center gap-4">
+        <Button className="mt-5" onClick={handleOpenAddMailbox}>
+          Add Mailbox
+        </Button>
+        <Button className="mt-5" onClick={handleOpenBuyDomain}>
+          Buy Domain
+        </Button>
+      </div>
       <Dialog open={isWarmupDialogOpen} onOpenChange={setIsWarmupDialogOpen}>
         <DialogContent className="w-full">
           <DialogHeader>
@@ -1168,6 +1443,203 @@ export default function Page() {
                 "Connect Domain"
               )}
             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isBuyDomainOpen} onOpenChange={setIsBuyDomainOpen}>
+        <DialogContent className="w-full">
+          <DialogHeader>
+            <DialogTitle>Buy Domain</DialogTitle>
+            <DialogDescription>
+              Enter the domain that you want to buy.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 justify-center">
+            <div className="flex items-center gap-4">
+              <p className="text-sm">Domain</p>
+              <Input
+                value={buyDomainInput}
+                onChange={(e) => {
+                  setBuyDomainInput(e.target.value);
+                  setDomainIsAvailable("default");
+                }}
+                placeholder="Enter domain to check availability"
+                className="flex-grow"
+              />
+              {displayDomainIsAvailable()}
+              <Button
+                variant="outline"
+                type="submit"
+                onClick={checkDomainAvailability}
+                className="w-50"
+              >
+                {loading ? <LoadingCircle /> : "Check"}
+              </Button>
+            </div>
+            {loadingSuggestions ? (
+              <div className="flex items-center justify-center gap-4 my-4">
+                Loading suggestions...
+                <LoadingCircle />
+              </div>
+            ) : (
+              domainSuggestions?.map((domain: string) => {
+                return (
+                  <div className="flex items-center gap-4">
+                    <Input
+                      disabled={true}
+                      value={domain}
+                      className="flex-grow"
+                    />
+                    <Button
+                      onClick={() => {
+                        setBuyDomainInput(domain);
+                        setDomainIsAvailable("default");
+                      }}
+                      variant={"outline"}
+                    >
+                      Use
+                    </Button>
+                  </div>
+                );
+              })
+            )}
+          </div>
+          {/* <div className="grid items-center gap-4">
+            <p className="text-sm">Name</p>
+            <Input
+              value={nameInput}
+              onChange={(e) => setNameInput(e.target.value)}
+              placeholder="Enter name"
+            />
+          </div> */}
+          <DialogFooter>
+            {isBuyDomainLoading ? (
+              <div className="flex items-center gap-4">
+                <div>Registering your domain...</div>
+                <LoadingCircle />
+              </div>
+            ) : (
+              <Button onClick={buyDomain} disabled={toggleBuyDomain()}>
+                Buy Domain
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={iscPanelOpen} onOpenChange={setIscPanelOpen}>
+        <DialogContent className="w-full">
+          <DialogHeader>
+            <DialogTitle>Create Mailbox</DialogTitle>
+            <DialogDescription>
+              Enter the mailbox that you want to create.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 justify-center">
+            {/* <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Sender Name</p>
+              <Input
+                value={mailboxSenderName}
+                onChange={(e) => {
+                  setMailboxSenderName(e.target.value);
+                }}
+                placeholder="Enter the sender name"
+                className="flex-grow"
+              />
+            </div> */}
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Email ID</p>
+              <Input
+                value={mailboxSenderEmail}
+                onChange={(e) => {
+                  setMailboxSenderEmail(e.target.value);
+                }}
+                placeholder="Enter the email that you want to create, ex: email@example.com"
+                className="flex-grow"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Domain</p>
+              <Input
+                value={boughtDomain}
+                disabled={true}
+                placeholder="Enter domain for the email"
+                className="flex-grow"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Password</p>
+              <Input
+                value={mailboxPassword}
+                type="password"
+                onChange={(e) => {
+                  setMailboxPassword(e.target.value);
+                }}
+                placeholder="Enter a password for the mailbox"
+                className="flex-grow"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            {creatingMailbox ? (
+              <div className="flex items-center gap-4">
+                <div>Creating mailbox...</div>
+                <LoadingCircle />
+              </div>
+            ) : (
+              <Button onClick={createMailbox}>Create Mailbox</Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      <Dialog open={isForwardingOpen} onOpenChange={setIsForwardingOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Add Forwarding</DialogTitle>
+            <DialogDescription>
+              Add a forwarding email to your custom mailbox.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-2 justify-center">
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Email ID</p>
+              <Input
+                value={createdEmail}
+                disabled={true}
+                placeholder="Enter the email that you want to create, ex: email@example.com"
+                className="flex-grow"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Domain</p>
+              <Input
+                value={boughtDomain}
+                disabled={true}
+                placeholder="Enter domain for the email"
+                className="flex-grow"
+              />
+            </div>
+            <div className="flex flex-col gap-1.5">
+              <p className="text-sm">Email</p>
+              <Input
+                value={forwardingEmail}
+                type="email"
+                onChange={(e) => {
+                  setForwardingEmail(e.target.value);
+                }}
+                placeholder="Enter email to forward to"
+                className="flex-grow"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            {addingForwarding ? (
+              <div className="flex items-center gap-4">
+                <div>Adding forwarding...</div>
+                <LoadingCircle />
+              </div>
+            ) : (
+              <Button onClick={addForwarding}>Add Forwarding</Button>
+            )}
           </DialogFooter>
         </DialogContent>
       </Dialog>
