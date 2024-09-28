@@ -16,6 +16,8 @@ import {
   SalesForceIcon,
   SlackIcon,
   ZapierIcon,
+  ZohoIcon,
+  PipedriveIcon,
 } from "@/app/icons";
 import {
   Dialog,
@@ -46,7 +48,13 @@ import { useForm } from "react-hook-form";
 import { z } from "zod";
 // import { toast } from "@/components/ui/use-toast";
 import { Switch } from "@/components/ui/switch";
-import { hubspotLogin, salesforceLogin, slackLogin } from ".";
+import {
+  hubspotLogin,
+  salesforceLogin,
+  slackLogin,
+  zohoLogin,
+  pipedriveLogin,
+} from ".";
 import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
 
@@ -62,6 +70,14 @@ export default function Page() {
   const [isHubspotMailboxOpen, setIsHubspotMailboxOpen] = React.useState(false);
   const [isConnectedToHubspot, setIsConnectedToHubspot] = React.useState(false);
 
+  const [isZohoMailboxOpen, setIsZohoMailboxOpen] = React.useState(false);
+  const [isConnectedToZoho, setIsConnectedToZoho] = React.useState(false);
+
+  const [isPipedriveMailboxOpen, setIsPipedriveMailboxOpen] =
+    React.useState(false);
+  const [isConnectedToPipedrive, setIsConnectedToPipedrive] =
+    React.useState(false);
+
   const [isSalesforceMailboxOpen, setIsSalesforceMailboxOpen] =
     React.useState(false);
   const [isConnectedToSalesforce, setIsConnectedToSalesforce] =
@@ -69,6 +85,9 @@ export default function Page() {
 
   const [loading, setLoading] = React.useState(false);
   const [selectedHubspotLeadType, setSelectedHubspotLeadType] =
+    React.useState("all");
+  const [selectedZohoLeadType, setSelectedZohoLeadType] = React.useState("all");
+  const [selectedPipedriveLeadType, setSelectedPipedriveType] =
     React.useState("all");
   const { user } = useUserContext();
 
@@ -111,9 +130,53 @@ export default function Page() {
     }
   };
 
+  const updateZohoLeadType = async () => {
+    setLoading(true);
+    const payload = {
+      user_id: user.id,
+    };
+    console.log("Payload:", payload);
+    try {
+      const response = await axiosInstance.post(
+        "v2/zoho/upsert/contacts",
+        payload
+      );
+      console.log("Zoho Lead Type Updated:", response.data);
+      setLoading(false);
+      toast.success("Zoho lead type updated successfully");
+      setIsZohoMailboxOpen(false);
+    } catch (error) {
+      console.error("Failed to update Zoho lead type:", error);
+      throw error;
+    }
+  };
+
+  const updatePipedriveLeadType = async () => {
+    setLoading(true);
+    const payload = {
+      user_id: user.id,
+    };
+    console.log("Payload:", payload);
+    try {
+      const response = await axiosInstance.post(
+        "v2/pipedrive/upsert/contacts",
+        payload
+      );
+      console.log("Pipedrive Lead Type Updated:", response.data);
+      setLoading(false);
+      toast.success("Pipedrive lead type updated successfully");
+      setIsPipedriveMailboxOpen(false);
+    } catch (error) {
+      console.error("Failed to update Pipedrive lead type:", error);
+      throw error;
+    }
+  };
+
   // closing dialogbox
   const handleCloseHubspotMailbox = () => setIsHubspotMailboxOpen(false);
   const handleCloseSalesforceMailbox = () => setIsSalesforceMailboxOpen(false);
+  const handleCloseZohoMailbox = () => setIsZohoMailboxOpen(false);
+  const handleClosePipedriveMailbox = () => setIsPipedriveMailboxOpen(false);
   // closing dialogbox
 
   React.useEffect(() => {
@@ -143,8 +206,36 @@ export default function Page() {
       }
     };
 
+    const fetchZohoStatus = async (): Promise<any> => {
+      try {
+        const response = await axiosInstance.post(`v2/hubspot/status`, {
+          user_id: user.id,
+          platform: "zoho",
+        });
+        setIsConnectedToZoho(response.data.message);
+      } catch (error) {
+        console.error("Failed to fetch zoho status:", error);
+        throw error;
+      }
+    };
+
+    const fetchPipedriveStatus = async (): Promise<any> => {
+      try {
+        const response = await axiosInstance.post(`v2/hubspot/status`, {
+          user_id: user.id,
+          platform: "pipedrive",
+        });
+        setIsConnectedToPipedrive(response.data.message);
+      } catch (error) {
+        console.error("Failed to fetch pipedrive status:", error);
+        throw error;
+      }
+    };
+
     fetchSalesforceStatus();
     fetchHubSpotStatus();
+    fetchZohoStatus();
+    fetchPipedriveStatus();
   }, []);
 
   const handleHubspotConnect = async () => {
@@ -160,6 +251,22 @@ export default function Page() {
       setIsSalesforceMailboxOpen(true);
     } else {
       salesforceLogin(user.id);
+    }
+  };
+
+  const handleZohoConnect = async () => {
+    if (isConnectedToZoho) {
+      setIsZohoMailboxOpen(true);
+    } else {
+      zohoLogin(user.id);
+    }
+  };
+
+  const handlePipedriveConnect = async () => {
+    if (isConnectedToPipedrive) {
+      setIsPipedriveMailboxOpen(true);
+    } else {
+      pipedriveLogin(user.id);
     }
   };
 
@@ -846,6 +953,237 @@ export default function Page() {
         </CardHeader>
         <CardContent className="space-y-2 mt-2">
           <CardTitle>Zapier</CardTitle>
+          <CardDescription>
+            Used to interact with the AgentProd and receive notifications.
+          </CardDescription>
+        </CardContent>
+      </Card>
+      {/* Zoho Card */}
+      <Card>
+        <CardHeader className="flex flex-col justify-between">
+          <div className="flex justify-between items-center">
+            <div className="w-1/2">
+              <ZohoIcon />
+            </div>
+            <div
+              className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
+              onClick={() => handleZohoConnect()}
+            >
+              {isConnectedToZoho ? "Connected" : "Connect"}
+            </div>
+          </div>
+          <Dialog open={isZohoMailboxOpen} onOpenChange={setIsZohoMailboxOpen}>
+            <DialogContent className="w-full">
+              <DialogHeader>
+                <DialogTitle>
+                  <div className="flex flex-col gap-4 mb-1">
+                    <div className="flex justify-center items-center flex-row gap-3">
+                      <Image src={logo} alt="logo" width={40} height={40} />
+                      <ArrowLeftRight />
+                      <div className="w-28">
+                        <ZohoIcon />
+                      </div>
+                    </div>
+                    Export AgentProd Leads to Zoho
+                  </div>
+                </DialogTitle>
+                <DialogDescription>
+                  Configure how you want to export leads to Zoho
+                </DialogDescription>
+              </DialogHeader>
+              <Separator />
+              <div>
+                <div className="w-full space-y-6">
+                  <div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-base text-gray-400">
+                          Configure Leads
+                        </p>
+                      </div>
+                      <div>
+                        <RadioGroup
+                          value={selectedZohoLeadType}
+                          onValueChange={setSelectedZohoLeadType}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem value="all" className="h-6 w-6" />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">Export All Leads</h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that is enrolled
+                                  from your AgentProd account
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem
+                                value="engaged"
+                                className="h-6 w-6"
+                              />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">
+                                  Export Engaged Leads
+                                </h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that have responsed
+                                  to your outbound workflows
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Separator />
+              <DialogFooter>
+                <Button
+                  variant={"outline"}
+                  className="mt-3"
+                  onClick={handleCloseZohoMailbox}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="mt-3"
+                  type="submit"
+                  onClick={() => updateZohoLeadType()}
+                >
+                  {loading ? <LoadingCircle /> : "Update"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent className="space-y-2 mt-2">
+          <CardTitle>Zoho</CardTitle>
+          <CardDescription>
+            Used to interact with the AgentProd and receive notifications.
+          </CardDescription>
+        </CardContent>
+      </Card>
+
+      {/* Pipedrive Card */}
+      <Card>
+        <CardHeader className="flex flex-col justify-between">
+          <div className="flex justify-between items-center">
+            <PipedriveIcon />
+            <div
+              className={`text-sm border rounded-lg text-center p-2 cursor-pointer`}
+              onClick={() => handlePipedriveConnect()}
+            >
+              {isConnectedToPipedrive ? "Connected" : "Connect"}
+            </div>
+          </div>
+          <Dialog
+            open={isPipedriveMailboxOpen}
+            onOpenChange={setIsPipedriveMailboxOpen}
+          >
+            <DialogContent className="w-full">
+              <DialogHeader>
+                <DialogTitle>
+                  <div className="flex flex-col gap-4 mb-1">
+                    <div className="flex justify-center items-center flex-row gap-3">
+                      <Image src={logo} alt="logo" width={40} height={40} />
+                      <ArrowLeftRight />
+                      <div className="w-44">
+                        <PipedriveIcon />
+                      </div>
+                    </div>
+                    Export AgentProd Leads to Pipedrive
+                  </div>
+                </DialogTitle>
+                <DialogDescription>
+                  Configure how you want to export leads to Pipedrive
+                </DialogDescription>
+              </DialogHeader>
+              <Separator />
+              <div>
+                <div className="w-full space-y-6">
+                  <div>
+                    <div className="space-y-3">
+                      <div>
+                        <p className="text-base text-gray-400">
+                          Configure Leads
+                        </p>
+                      </div>
+                      <div>
+                        <RadioGroup
+                          value={selectedZohoLeadType}
+                          onValueChange={setSelectedZohoLeadType}
+                          className="flex flex-col space-y-1"
+                        >
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem value="all" className="h-6 w-6" />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">Export All Leads</h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that is enrolled
+                                  from your AgentProd account
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                          <div className="flex items-center space-x-3 space-y-0">
+                            <div>
+                              <RadioGroupItem
+                                value="engaged"
+                                className="h-6 w-6"
+                              />
+                            </div>
+                            <div className="font-bold">
+                              <div>
+                                <h1 className="text-lg">
+                                  Export Engaged Leads
+                                </h1>
+                                <p className="font-normal text-gray-400">
+                                  We will stream every lead that have responsed
+                                  to your outbound workflows
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </RadioGroup>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <DialogFooter>
+                <Button
+                  variant={"outline"}
+                  className="mt-3"
+                  onClick={handleClosePipedriveMailbox}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  className="mt-3"
+                  type="submit"
+                  onClick={() => updatePipedriveLeadType()}
+                >
+                  {loading ? <LoadingCircle /> : "Update"}
+                </Button>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </CardHeader>
+        <CardContent className="space-y-2 mt-2">
+          <CardTitle>Pipedrive</CardTitle>
           <CardDescription>
             Used to interact with the AgentProd and receive notifications.
           </CardDescription>
