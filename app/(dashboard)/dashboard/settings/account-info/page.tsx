@@ -21,9 +21,11 @@ export default function Page() {
   const { user, updateUser } = useUserContext();
   const [isEditing, setIsEditing] = useState(false);
   const [accountInfo, setAccountInfo] = useState<Info[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   const fetchDataInfo = async () => {
     if (user?.id) {
+      setIsLoading(true);
       try {
         const response = await axiosInstance.get(`/v2/settings/${user.id}`);
         const data = response.data;
@@ -54,6 +56,8 @@ export default function Page() {
       } catch (error) {
         console.error("Failed to fetch user details:", error);
         toast.error("Error fetching user details.");
+      } finally {
+        setIsLoading(false);
       }
     }
   };
@@ -85,8 +89,20 @@ export default function Page() {
   };
 
   useEffect(() => {
-    fetchDataInfo();
+    if (user?.id) {
+      fetchDataInfo();
+    } else {
+      setIsLoading(false);
+    }
   }, [user?.id]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
+  if (!user?.id) {
+    return <div>Please log in to view account information.</div>;
+  }
 
   const handleInputChange = (id: string, value: string) => {
     setAccountInfo((prev) =>
@@ -95,20 +111,33 @@ export default function Page() {
   };
 
   const handleUpdateClick = async () => {
-    const payload = accountInfo.reduce((acc, { id, value }) => {
-      const key = id.replace(/ /g, "_").toLowerCase();
-      return { ...acc, [key]: value };
-    }, {});
+    const payload = {
+      user_id: user.id,
+      first_name: accountInfo.find(info => info.id === "Sender First Name")?.value,
+      last_name: accountInfo.find(info => info.id === "Sender Last Name")?.value,
+      job_title: accountInfo.find(info => info.id === "Sender Job")?.value,
+      phone_number: accountInfo.find(info => info.id === "Phone")?.value,
+      email: accountInfo.find(info => info.id === "Email")?.value,
+      company: accountInfo.find(info => info.id === "Company")?.value,
+      company_id: accountInfo.find(info => info.id === "Company ID")?.value,
+      // Assuming these fields are not editable in the UI, we'll keep their current values
+      notifications: accountInfo.find(info => info.id === "Notifications")?.value,
+      plan: accountInfo.find(info => info.id === "Plan")?.value,
+      leads_used: accountInfo.find(info => info.id === "Leads used")?.value,
+      // These fields are not in the UI, so we'll need to handle them separately
+      thread_id: "", // You may need to get this value from somewhere else
+      hubspot_token: "", // You may need to get this value from somewhere else
+      salesforce_token: "" // You may need to get this value from somewhere else
+    };
 
     try {
       const response = await axiosInstance.put(`/v2/settings`, payload);
-      setAccountInfo((prev) =>
-        prev.map((info) => {
-          const newValue =
-            response.data[info?.id.replace(/ /g, "_").toLowerCase()];
-          return newValue !== undefined ? { ...info, value: newValue } : info;
-        })
-      );
+      // Update the local state with the response data
+      setAccountInfo(prev => prev.map(info => {
+        const key = info.id.replace(/ /g, "_").toLowerCase();
+        const newValue = response.data[key];
+        return newValue !== undefined ? { ...info, value: newValue } : info;
+      }));
       toast.success("User details updated successfully");
       setIsEditing(false);
     } catch (error) {
