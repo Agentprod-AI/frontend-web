@@ -218,7 +218,7 @@ export const ImportAudience = () => {
     const fetchLead = async (lead: any): Promise<any[]> => {
       const firstName = encodeURIComponent(lead.first_name || "");
       const companyName = encodeURIComponent(lead.company_name || "");
-      const url = `https://app.apollo.io/#/people?finderViewId=5b6dfc5a73f47568b2e5f11c&qKeywords=${firstName}%20${companyName}`;
+      const url = `https://app.apollo.io/#/people?finderViewId=5b6dfc5a73f47568b2e5f11c&sortByField=account_owner_id&sortAscending=true&qKeywords=${firstName}%20${companyName}`;
       console.log(url);
 
       const scraperBody = createScraperBody(url);
