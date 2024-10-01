@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2Icon } from "lucide-react";
+import { Trash2Icon, Loader2 } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { AudienceTableClient } from "../tables/audience-table/client";
@@ -61,6 +61,8 @@ export const ImportAudience = () => {
   const [type, setType] = useState<"create" | "edit">("create");
 
   const { setPageCompletion } = useButtonStatus();
+
+  const [isEnrichmentLoading, setIsEnrichmentLoading] = useState(false);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -166,6 +168,9 @@ export const ImportAudience = () => {
   };
 
   const enrichmentHandler = async () => {
+    setIsEnrichmentLoading(true);
+    toast.loading("Enriching leads...", { id: "enrichment" });
+
     const leadsToEnrich = fileData?.map((row) => {
       const mappedRow: { [key: string]: string } = {};
       selectedValue.forEach(({ presetValue, fileColumnName }) => {
@@ -314,11 +319,15 @@ export const ImportAudience = () => {
       console.log("Processed leads:", processedLeads);
       setIsDialogOpen(false);
       setIsLeadsTableActive(true);
+
+      toast.success("Leads enriched successfully", { id: "enrichment" });
     } catch (error) {
       console.error("Error in enrichment process:", error);
       setError("Failed to enrich leads.");
+      toast.error("Failed to enrich leads", { id: "enrichment" });
     } finally {
       setIsLoading(false);
+      setIsEnrichmentLoading(false);
     }
   };
 
@@ -539,8 +548,19 @@ export const ImportAudience = () => {
               </TableBody>
             </Table>
             <DialogFooter className="flex sm:justify-start">
-              <Button onClick={enrichmentHandler} className="w-1/3">
-                Confirm
+              <Button 
+                onClick={enrichmentHandler} 
+                className="w-1/3"
+                disabled={isEnrichmentLoading}
+              >
+                {isEnrichmentLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Enriching...
+                  </>
+                ) : (
+                  "Confirm"
+                )}
               </Button>
               <DialogClose asChild>
                 <Button variant="outline" className="w-1/3">
