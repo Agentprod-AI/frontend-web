@@ -42,7 +42,7 @@ import {
 import { toast } from "sonner";
 import axios from "axios";
 
-const ITEMS_PER_PAGE = 7;
+const ITEMS_PER_PAGE = 10;
 
 interface MailProps {
   accounts: {
@@ -224,8 +224,12 @@ export function Mail({
         if (campaignId) {
           url = `v2/mailbox/campaign/${campaignId}/${user?.id}`;
         }
-        url += `?limit=${ITEMS_PER_PAGE}&offset=${
-          (pageNum - 1) * ITEMS_PER_PAGE
+
+        // Set ITEMS_PER_PAGE to 100 if the status is "replied"
+        const itemsPerPage = status === "replied" ? 100 : ITEMS_PER_PAGE;
+
+        url += `?limit=${itemsPerPage}&offset=${
+          (pageNum - 1) * itemsPerPage
         }`;
 
         if (search) {
@@ -262,7 +266,7 @@ export function Mail({
           setInitialMailIdSet(false);
         }
 
-        setHasMore(response.data.mails.length === ITEMS_PER_PAGE);
+        setHasMore(response.data.mails.length === itemsPerPage);
         setPage(pageNum);
       } catch (err: any) {
         console.error("Error fetching mails:", err);
@@ -412,6 +416,9 @@ export function Mail({
     } else {
       setMoreOptionSelected("");
     }
+    // Reset page and mails when changing tabs
+    setPage(1);
+    setMails([]);
   };
 
   const handleDeleteMail = React.useCallback(
@@ -504,9 +511,9 @@ export function Mail({
                       Scheduled
                     </DropdownMenuItem>
                     <DropdownMenuItem
-                      onSelect={() => handleTabChange("responded")}
+                      onSelect={() => handleTabChange("replied")}
                     >
-                      Responded
+                      Replied
                     </DropdownMenuItem>
                     <DropdownMenuItem onSelect={() => handleTabChange("sent")}>
                       Sent
