@@ -170,14 +170,18 @@ export default function Training() {
       const checkReck = await axios.get(
         `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request/${params.campaignId}`
       );
-      if (checkReck.data.is_active === false) {
-        await axios.put(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request`,
-          {
-            campaign_id: params.campaignId,
-            is_active: true,
-          }
-        );
+      
+       if(checkReck.data !== null){
+        if (checkReck.data.is_active === false) {
+          await axios.put(
+            `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request`,
+            {
+              campaign_id: params.campaignId,
+              is_active: true,
+            }
+          );
+        }
+        
       }
       toast.success(
         "Your drafts are getting created, it might take some time."
