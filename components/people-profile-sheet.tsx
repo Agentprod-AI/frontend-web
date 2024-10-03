@@ -26,16 +26,19 @@ import {
 import { Button } from "./ui/button";
 import { Lead, Contact } from "@/context/lead-user";
 import { ScrollArea } from "./ui/scroll-area";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
 import { useCompanyInfo, CompanyInfo } from "@/context/company-linkedin";
 
 interface PeopleProfileSheetProps {
   data: Lead | Contact;
   companyInfoProp?: CompanyInfo;
+  posts: string[];
 }
 
 export const PeopleProfileSheet = ({
   data,
   companyInfoProp,
+  posts,
 }: PeopleProfileSheetProps) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
@@ -55,9 +58,12 @@ export const PeopleProfileSheet = ({
   const { getCompanyInfo, companyInfo, setCompanyLinkedin } = useCompanyInfo();
   const [subdepartmentsCollapsibleOpen, setSubdepartmentsCollapsibleOpen] =
     useState(false);
+  const [linkedinPostsCollapsibleOpen, setLinkedinPostsCollapsibleOpen] =
+    useState(false);
   // const [companyCollapsibleOpen, setCompanyCollapsibleOpen] = useState(false);
 
-  console.log("Leads Data for Indiviual User", data);
+  console.log("Leads Data for Indiviual User", posts[0]);
+  // console.log("Posts data", posts)
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -78,7 +84,7 @@ export const PeopleProfileSheet = ({
   };
 
   useEffect(() => {
-    console.log(data);
+    console.log(`useffect data ${companyInfoProp}: `);
     const fetchCompanyInfo = async () => {
       if (data) {
         if (!companyInfoProp) {
@@ -759,6 +765,64 @@ export const PeopleProfileSheet = ({
             </Collapsible>
 
             {/* Compliments */}
+
+            {/* Posts */}
+            <Collapsible
+  open={linkedinPostsCollapsibleOpen}
+  onOpenChange={setLinkedinPostsCollapsibleOpen}
+  className="pt-4 space-y-2 text-muted-foreground w-full"
+>
+  <div className="flex items-center justify-between space-x-4 w-full">
+    <h4 className="text-sm font-semibold">LinkedIn Posts</h4>
+    <CollapsibleTrigger asChild>
+      <Button variant="ghost" size="sm" className="w-9 p-0">
+        <ChevronsUpDown className="h-4 w-4" />
+        <span className="sr-only">Toggle</span>
+      </Button>
+    </CollapsibleTrigger>
+  </div>
+
+  {posts && (
+    <>
+      {console.log(`Data is : ${posts}`)}
+      
+      {/* First post wrapped in Card */}
+      <Card className="w-full">
+        <CardHeader>
+          <CardTitle>Post 1</CardTitle> {/* Optional Title */}
+        </CardHeader>
+        <CardContent>
+          <div className="px-2 py-1 font-mono text-xs whitespace-normal break-words w-full">
+            {posts[0]}
+          </div>
+        </CardContent>
+      </Card>
+
+      <CollapsibleContent className="space-y-2 w-full">
+        {/* Loop through remaining posts */}
+        {posts.map((val: any, ind: any) => {
+          // Skip first post since it's already displayed
+          if (ind === 0) return null;
+          
+          return (
+            <Card key={`post_card_${ind}`} className="w-full">
+              <CardHeader>
+                <CardTitle>Post {ind + 1}</CardTitle> {/* Optional Title */}
+              </CardHeader>
+              <CardContent>
+                <div className="px-2 py-1 font-mono text-xs whitespace-normal break-words w-full">
+                  {val}
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })}
+      </CollapsibleContent>
+    </>
+  )}
+</Collapsible>
+            {/* Posts */}
+
             <br />
             <p className="flex gap-2 items-center text-sm text-muted-foreground whitespace-normal w-full">
               <Building2 className="h-4 w-4" />
