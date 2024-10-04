@@ -33,7 +33,7 @@ import Image from "next/image";
 interface PeopleProfileSheetProps {
   data: Lead | Contact;
   companyInfoProp?: CompanyInfo;
-  posts: any;
+  posts?: any;
 }
 
 export const PeopleProfileSheet = ({
@@ -564,76 +564,76 @@ export const PeopleProfileSheet = ({
 
             {/* Posts */}
             <Collapsible
-      open={linkedinPostsCollapsibleOpen}
-      onOpenChange={setLinkedinPostsCollapsibleOpen}
-      className="pt-4 space-y-2 text-muted-foreground w-full"
-    >
-      <div className="flex items-center justify-between space-x-4 w-full">
-        <h4 className="text-sm font-semibold">LinkedIn Posts</h4>
-        <CollapsibleTrigger asChild>
-          <Button variant="ghost" size="sm" className="w-9 p-0">
-            <ChevronsUpDown className="h-4 w-4" />
-            <span className="sr-only">Toggle</span>
-          </Button>
-        </CollapsibleTrigger>
-      </div>
-
-      {posts && posts.length > 0 && (
-        <>
-          <div className="border-white/50 border rounded-md p-2">
-            <div className="text-sm font-semibold mb-2">Latest Post</div>
-            <div className="flex flex-col sm:flex-row gap-4">
-              {posts[0].attachments && posts[0].attachments.length > 0 && (
-                <div className="flex-shrink-0 ">
-                  <Image 
-                    src={posts[0].attachments[0]} 
-                    alt="Post attachment" 
-                    width={100} 
-                    height={100} 
-                    className="object-cover rounded-md"
-                  />
-                </div>
-              )}
-              <div className="flex-grow">
-                <p className="text-xs whitespace-pre-wrap break-words">
-                  {posts[0].text && posts[0].text.length > 300 
-                    ? posts[0].text.substring(0, 300) + "..." 
-                    : posts[0].text}
-                </p>
+              open={linkedinPostsCollapsibleOpen}
+              onOpenChange={setLinkedinPostsCollapsibleOpen}
+              className="pt-4 space-y-2 text-muted-foreground w-full"
+            >
+              <div className="flex items-center justify-between space-x-4 w-full">
+                <h4 className="text-sm font-semibold flex items-center gap-2"> <Linkedin className="h-4 w-4 text-muted-foreground " />LinkedIn Posts</h4>
+                <CollapsibleTrigger asChild>
+                  <Button variant="ghost" size="sm" className="w-9 p-0">
+                    <ChevronsUpDown className="h-4 w-4" />
+                    <span className="sr-only">Toggle</span>
+                  </Button>
+                </CollapsibleTrigger>
               </div>
-            </div>
-          </div>
 
-          <CollapsibleContent className="space-y-4 w-full">
-            {posts.slice(1).map((post: { attachments: string | any[]; text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; }, index: number) => (
-              <div key={`post_card_${index + 1}`} className="border-white/50 border rounded-md p-2">
-                <div className="text-sm font-semibold mb-2">Post {index + 2}</div>
-                <div className="flex flex-col sm:flex-row gap-4">
-                  {post.attachments && post.attachments.length > 0 && (
-                    <div className="flex-shrink-0">
-                      <Image 
-                        src={post.attachments[0]} 
-                        alt={`Post ${index + 2} attachment`} 
-                        width={100} 
-                        height={100} 
-                        className="object-cover rounded-md"
-                      />
+              {posts && posts.length > 0 && (
+                <>
+                  <div className="border-white/20 border rounded-md p-2">
+                    <div className="text-sm font-semibold mb-2">Latest Post</div>
+                    <div className="flex flex-col sm:flex-row gap-4">
+                      {posts[0].attachments && posts[0].attachments.length > 0 && (
+                        <div className="flex-shrink-0 ">
+                          <Image
+                            src={posts[0].attachments[0]}
+                            alt="Post attachment"
+                            width={100}
+                            height={100}
+                            className="object-cover rounded-md"
+                          />
+                        </div>
+                      )}
+                      <div className="flex-grow">
+                        <p className="text-xs whitespace-pre-wrap break-words">
+                          {posts[0].text && posts[0].text.length > 300
+                            ? posts[0].text.substring(0, 300) + "..."
+                            : posts[0].text}
+                        </p>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex-grow">
-                    <p className="text-xs whitespace-pre-wrap break-words">
-                      {typeof post.text === 'string' && post.text.length > 300 
-                        ? post.text.substring(0, 300) + "..." 
-                        : post.text}
-                    </p>
                   </div>
-                </div>
-              </div>
-            ))}
-          </CollapsibleContent>
-        </>
-      )}
-    </Collapsible>
+
+                  <CollapsibleContent className="space-y-4 w-full">
+                    {posts.slice(1).map((post: { attachments: string | any[]; text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; }, index: number) => (
+                      <div key={`post_card_${index + 1}`} className="border-white/20 border rounded-md p-2">
+                        <div className="text-sm font-semibold mb-2">Post {index + 2}</div>
+                        <div className="flex flex-col sm:flex-row gap-4">
+                          {post.attachments && post.attachments.length > 0 && (
+                            <div className="flex-shrink-0">
+                              <Image
+                                src={post.attachments[0]}
+                                alt={`Post ${index + 2} attachment`}
+                                width={100}
+                                height={100}
+                                className="object-cover rounded-md"
+                              />
+                            </div>
+                          )}
+                          <div className="flex-grow">
+                            <p className="text-xs whitespace-pre-wrap break-words">
+                              {typeof post.text === 'string' && post.text.length > 300
+                                ? post.text.substring(0, 300) + "..."
+                                : post.text}
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CollapsibleContent>
+                </>
+              )}
+            </Collapsible>
             {/* Posts */}
 
             {/* Technologies */}
