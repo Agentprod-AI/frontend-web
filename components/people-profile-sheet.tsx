@@ -3,7 +3,7 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable import/no-unresolved */
 import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
-import { useState, useEffect } from "react";
+import { useState, useEffect, JSXElementConstructor, Key, PromiseLikeOfReactNode, ReactElement, ReactNode, ReactPortal } from "react";
 import {
   Briefcase,
   ChevronsUpDown,
@@ -27,15 +27,19 @@ import { Button } from "./ui/button";
 import { Lead, Contact } from "@/context/lead-user";
 import { ScrollArea } from "./ui/scroll-area";
 import { useCompanyInfo, CompanyInfo } from "@/context/company-linkedin";
+import { Card, CardContent, CardHeader, CardTitle } from "./ui/card";
+import Image from "next/image";
 
 interface PeopleProfileSheetProps {
   data: Lead | Contact;
   companyInfoProp?: CompanyInfo;
+  posts: any;
 }
 
 export const PeopleProfileSheet = ({
   data,
   companyInfoProp,
+  posts,
 }: PeopleProfileSheetProps) => {
   const [collapsibleOpen, setCollapsibleOpen] = useState(false);
   const [addressCollapsibleOpen, setAddressCollapsibleOpen] = useState(false);
@@ -44,6 +48,8 @@ export const PeopleProfileSheet = ({
   const [technologiesCollapsibleOpen, setTechnologiesCollapsibleOpen] =
     useState(false);
   const [complimentsCollapsibleOpen, setComplimentsCollapsibleOpen] =
+    useState(false);
+  const [linkedinPostsCollapsibleOpen, setLinkedinPostsCollapsibleOpen] =
     useState(false);
   const [valueCollapsibleOpen, setValueCollapsibleOpen] = useState(false);
   const [metricsCollapsibleOpen, setMetricsCollapsibleOpen] = useState(false);
@@ -102,7 +108,9 @@ export const PeopleProfileSheet = ({
   if (loading) {
     return <div>Loading...</div>;
   }
-
+  if (posts === "No posts available") {
+    return null;
+  }
   if (!data) {
     return <div>No lead found.</div>;
   }
@@ -244,9 +252,8 @@ export const PeopleProfileSheet = ({
                 </div>
                 <div className="text-sm text-muted-foreground whitespace-normal w-full">
                   <span className="font-semibold">Headquarters:</span>{" "}
-                  {`${data.organization.city || "N/A"}, ${
-                    data.organization.state || "N/A"
-                  }, ${data.organization.country || "N/A"}`}
+                  {`${data.organization.city || "N/A"}, ${data.organization.state || "N/A"
+                    }, ${data.organization.country || "N/A"}`}
                 </div>
                 <div className="text-sm text-muted-foreground whitespace-normal w-full">
                   <span className="font-semibold">Type:</span>{" "}
@@ -283,16 +290,16 @@ export const PeopleProfileSheet = ({
                   data.organization.industries.length > 0) ||
                   (data.organization.secondary_industries &&
                     data.organization.secondary_industries.length > 0)) && (
-                  <div className="text-sm text-muted-foreground whitespace-normal w-full">
-                    <span className="font-semibold">
-                      Industries & Specialties:
-                    </span>{" "}
-                    {[
-                      ...(data.organization.industries || []),
-                      ...(data.organization.secondary_industries || []),
-                    ].join(", ")}
-                  </div>
-                )}
+                    <div className="text-sm text-muted-foreground whitespace-normal w-full">
+                      <span className="font-semibold">
+                        Industries & Specialties:
+                      </span>{" "}
+                      {[
+                        ...(data.organization.industries || []),
+                        ...(data.organization.secondary_industries || []),
+                      ].join(", ")}
+                    </div>
+                  )}
               </>
             )}
 
@@ -554,6 +561,80 @@ export const PeopleProfileSheet = ({
             </Collapsible>
 
             <br />
+
+            {/* Posts */}
+            <Collapsible
+      open={linkedinPostsCollapsibleOpen}
+      onOpenChange={setLinkedinPostsCollapsibleOpen}
+      className="pt-4 space-y-2 text-muted-foreground w-full"
+    >
+      <div className="flex items-center justify-between space-x-4 w-full">
+        <h4 className="text-sm font-semibold">LinkedIn Posts</h4>
+        <CollapsibleTrigger asChild>
+          <Button variant="ghost" size="sm" className="w-9 p-0">
+            <ChevronsUpDown className="h-4 w-4" />
+            <span className="sr-only">Toggle</span>
+          </Button>
+        </CollapsibleTrigger>
+      </div>
+
+      {posts && posts.length > 0 && (
+        <>
+          <div className="border-white/50 border rounded-md p-2">
+            <div className="text-sm font-semibold mb-2">Latest Post</div>
+            <div className="flex flex-col sm:flex-row gap-4">
+              {posts[0].attachments && posts[0].attachments.length > 0 && (
+                <div className="flex-shrink-0 ">
+                  <Image 
+                    src={posts[0].attachments[0]} 
+                    alt="Post attachment" 
+                    width={100} 
+                    height={100} 
+                    className="object-cover rounded-md"
+                  />
+                </div>
+              )}
+              <div className="flex-grow">
+                <p className="text-xs whitespace-pre-wrap break-words">
+                  {posts[0].text && posts[0].text.length > 300 
+                    ? posts[0].text.substring(0, 300) + "..." 
+                    : posts[0].text}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <CollapsibleContent className="space-y-4 w-full">
+            {posts.slice(1).map((post: { attachments: string | any[]; text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; }, index: number) => (
+              <div key={`post_card_${index + 1}`} className="border-white/50 border rounded-md p-2">
+                <div className="text-sm font-semibold mb-2">Post {index + 2}</div>
+                <div className="flex flex-col sm:flex-row gap-4">
+                  {post.attachments && post.attachments.length > 0 && (
+                    <div className="flex-shrink-0">
+                      <Image 
+                        src={post.attachments[0]} 
+                        alt={`Post ${index + 2} attachment`} 
+                        width={100} 
+                        height={100} 
+                        className="object-cover rounded-md"
+                      />
+                    </div>
+                  )}
+                  <div className="flex-grow">
+                    <p className="text-xs whitespace-pre-wrap break-words">
+                      {typeof post.text === 'string' && post.text.length > 300 
+                        ? post.text.substring(0, 300) + "..." 
+                        : post.text}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </CollapsibleContent>
+        </>
+      )}
+    </Collapsible>
+            {/* Posts */}
 
             {/* Technologies */}
 
