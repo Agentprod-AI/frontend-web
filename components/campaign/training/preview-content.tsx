@@ -295,7 +295,7 @@ function PreviewContent() {
             <PeopleProfileSheet
               data={contact}
               companyInfoProp={linkedinInformation}
-              posts={posts}
+              {...(Array.isArray(posts) && posts.length > 0 ? { posts } : {})}
             />
           )}
         </div>
