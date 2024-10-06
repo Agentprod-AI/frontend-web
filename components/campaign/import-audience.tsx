@@ -312,6 +312,7 @@ export const ImportAudience = () => {
           organization_id: lead.organization_id,
           seniority: "",
           revealed_for_current_team: false,
+          linkedin_posts: [], 
         })
       );
 
@@ -377,6 +378,7 @@ export const ImportAudience = () => {
       phone: lead.phone,
       technologies: lead.technologies || [],
       organization: lead.organization,
+      linkedin_posts: lead.linkedin_posts || [],
     }));
   }
 
