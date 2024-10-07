@@ -567,6 +567,10 @@ export const PeopleProfileSheet = ({
 
             <br />
 
+            {data.linkedin_bio && <h5 className="text-sm font-medium text-muted-foreground pb-2 flex items-center gap-2"> <Linkedin className="h-4 w-4 text-muted-foreground " />LinkedIn Bio</h5>}
+            {data.linkedin_bio && <div className="text-xs text-muted-foreground">{data.linkedin_bio}</div>}
+            <br />
+
             {/* Posts */}
             <Collapsible
               open={linkedinPostsCollapsibleOpen}
