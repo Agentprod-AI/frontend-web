@@ -125,6 +125,7 @@ export interface Data {
   contact: ContactData;
   linkedin_information: LinkedInInformation;
   email: EmailContent;
+  posts : string[];
 }
 
 export const TrainingPeopleProfileSheet = ({

@@ -228,8 +228,8 @@ export default function PeopleForm(): JSX.Element {
     email_status: { id: string; text: string }[] | undefined;
     company_headcount: { id: string; text: string }[] | undefined;
     organization_latest_funding_stage_cd:
-      | { id: string; text: string }[]
-      | undefined;
+    | { id: string; text: string }[]
+    | undefined;
     minimum_company_funding: { id: string; text: number } | undefined;
     maximum_company_funding: { id: string; text: number } | undefined;
     per_page: { id: string; text: number } | undefined;
@@ -258,6 +258,14 @@ export default function PeopleForm(): JSX.Element {
   const [jobTitleSearchTerm, setJobTitleSearchTerm] = useState("");
   const jobTitleDropdownRef = useRef<HTMLDivElement>(null);
   const jobTitleInputRef = useRef<HTMLInputElement>(null);
+
+
+  const [locationDropdownIsOpen, setLocationDropdownIsOpen] = useState(false);
+  const [filteredLocations, setFilteredLocations] = useState(orgLocations);
+  const [locationSearchTerm, setLocationSearchTerm] = useState("");
+  const locationDropdownRef = useRef<HTMLDivElement>(null);
+  const locationInputRef = useRef<HTMLInputElement>(null);
+
 
   const [audienceId, setAudienceId] = React.useState<string>();
   const { setPageCompletion } = useButtonStatus();
@@ -361,6 +369,54 @@ export default function PeopleForm(): JSX.Element {
         !jobTitleInputRef.current?.contains(event.target as Node)
       ) {
         setJobTitleDropdownIsOpen(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
+  const toggleLocationDropdown = (isOpen: boolean) => {
+    setLocationDropdownIsOpen(isOpen);
+  };
+
+  const handleLocationDropdownSelect = (location: string) => {
+    const newTag: Tag = {
+      text: location,
+      id: location,
+    };
+
+    if (
+      !organizationLocationsTags.some(
+        (tag) => tag.text.toLowerCase() === location.toLowerCase()
+      )
+    ) {
+      const updatedTags = [...organizationLocationsTags, newTag];
+      setOrganizationLocationsTags(updatedTags);
+      setValue("organization_locations", updatedTags as [Tag, ...Tag[]]);
+    }
+    setLocationSearchTerm("");
+    setLocationDropdownIsOpen(false);
+  };
+
+  useEffect(() => {
+    const filtered = orgLocations.filter((location) =>
+      location.toLowerCase().includes(locationSearchTerm.toLowerCase())
+    );
+    setFilteredLocations(filtered);
+    setLocationDropdownIsOpen(locationSearchTerm.length > 0);
+  }, [locationSearchTerm]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        locationDropdownRef.current &&
+        !locationDropdownRef.current.contains(event.target as Node) &&
+        !locationInputRef.current?.contains(event.target as Node)
+      ) {
+        setLocationDropdownIsOpen(false);
       }
     };
 
@@ -628,26 +684,26 @@ export default function PeopleForm(): JSX.Element {
     setCalculatedPages(pages);
 
     const getRandomEmail = (startPage: number) => {
-      const emailArray = [
-        "nisheet@agentprod.com",
-        "admin@agentprod.com",
-        "naman.barkiya@agentprod.com",
-        "siddhant.goswami@agentprod.com",
-        "muskaan@agentprod.com",
-        "bharath.kumar@getquestionpro.com",
-        "Urvashi.singh@getverloop.com",
-        "demo@agentprod.com",
-        "founders@agentprod.com",
-      ];
+      // const emailArray = [
+      //   "nisheet@agentprod.com",
+      //   "admin@agentprod.com",
+      //   "naman.barkiya@agentprod.com",
+      //   "siddhant.goswami@agentprod.com",
+      //   "muskaan@agentprod.com",
+      //   "bharath.kumar@getquestionpro.com",
+      //   "Urvashi.singh@getverloop.com",
+      //   "demo@agentprod.com",
+      //   "founders@agentprod.com",
+      // ];
       const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
 
-      if (startPage > 5) {
-        const randomIndex = startPage % 2;
-        return premiumAcc[randomIndex];
-      } else {
-        const randomIndex = Math.floor(Math.random() * emailArray.length);
-        return emailArray[randomIndex];
-      }
+      // if (startPage > 5) {
+      const randomIndex = startPage % 2;
+      return premiumAcc[randomIndex];
+      // } else {
+      //   const randomIndex = Math.floor(Math.random() * emailArray.length);
+      //   return emailArray[randomIndex];
+      // }
     };
 
     const createScraperBody = (
@@ -694,8 +750,7 @@ export default function PeopleForm(): JSX.Element {
           return response.data;
         } catch (error) {
           console.error(
-            `Error fetching leads for page ${startPage} (attempt ${
-              retries + 1
+            `Error fetching leads for page ${startPage} (attempt ${retries + 1
             }):`,
             error
           );
@@ -964,6 +1019,8 @@ export default function PeopleForm(): JSX.Element {
       phone: lead.phone,
       technologies: lead.technologies || [],
       organization: lead.organization,
+      linkedin_posts: lead.linkedin_posts,
+      linkedin_bio: lead.linkedin_bio || "",
     }));
   }
 
@@ -1264,7 +1321,7 @@ export default function PeopleForm(): JSX.Element {
 
   const updateAudience = async () => {
     setIsTableLoading(true);
-  // toast.loading("Updating audience...");
+    // toast.loading("Updating audience...");
     const formData = form.getValues();
 
     const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
@@ -1283,64 +1340,64 @@ export default function PeopleForm(): JSX.Element {
       prospected_by_current_team: ["No"],
       ...(Array.isArray(formData.person_titles) &&
         formData.person_titles.length > 0 && {
-          person_titles: formData.person_titles
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        person_titles: formData.person_titles
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       ...(Array.isArray(formData.organization_locations) &&
         formData.organization_locations.length > 0 && {
-          organization_locations: formData.organization_locations
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        organization_locations: formData.organization_locations
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       organization_num_employees_ranges: checkedFields(
         checkedCompanyHeadcount,
         true
       ),
       ...(Array.isArray(formData.person_seniorities) &&
         formData.person_seniorities.length > 0 && {
-          person_seniorities: formData.person_seniorities
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        person_seniorities: formData.person_seniorities
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       ...(Array.isArray(formData.q_organization_domains) &&
         formData.q_organization_domains.length > 0 && {
-          q_organization_domains: formData.q_organization_domains
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        q_organization_domains: formData.q_organization_domains
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       ...(formData.email_status && { email_status: formData.email_status }),
       ...(Array.isArray(formData.organization_industry_tag_ids) &&
         formData.organization_industry_tag_ids.length > 0 && {
-          organization_industry_tag_ids: formData.organization_industry_tag_ids
-            .map((tag) => tag?.value)
-            .filter(Boolean),
-        }),
+        organization_industry_tag_ids: formData.organization_industry_tag_ids
+          .map((tag) => tag?.value)
+          .filter(Boolean),
+      }),
       ...(Array.isArray(formData.q_organization_keyword_tags) &&
         formData.q_organization_keyword_tags.length > 0 && {
-          q_organization_keyword_tags: formData.q_organization_keyword_tags
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        q_organization_keyword_tags: formData.q_organization_keyword_tags
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       ...(formData.minimum_company_funding &&
         formData.maximum_company_funding && {
-          revenue_range: {
-            min: formData.minimum_company_funding.text?.toString(),
-            max: formData.maximum_company_funding.text?.toString(),
-          },
-        }),
+        revenue_range: {
+          min: formData.minimum_company_funding.text?.toString(),
+          max: formData.maximum_company_funding.text?.toString(),
+        },
+      }),
       ...(Array.isArray(formData.organization_job_locations) &&
         formData.organization_job_locations.length > 0 && {
-          organization_job_locations: formData.organization_job_locations
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        organization_job_locations: formData.organization_job_locations
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       ...(Array.isArray(formData.q_organization_job_titles) &&
         formData.q_organization_job_titles.length > 0 && {
-          q_organization_job_titles: formData.q_organization_job_titles
-            .map((tag) => tag?.text)
-            .filter(Boolean),
-        }),
+        q_organization_job_titles: formData.q_organization_job_titles
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
       organization_latest_funding_stage_cd: checkedFields(
         checkedFundingRounds,
         false
@@ -1370,147 +1427,147 @@ export default function PeopleForm(): JSX.Element {
       }
 
       const newApolloUrl = constructApolloUrl(formData);
-    setApolloUrl(newApolloUrl);
+      setApolloUrl(newApolloUrl);
 
-    let pages = 1;
-    if (formData.per_page) {
-      if (formData.per_page <= 25) {
-        pages = 1;
-      } else if (formData.per_page <= 50) {
-        pages = 2;
-      } else if (formData.per_page <= 75) {
-        pages = 3;
-      } else {
-        pages = Math.ceil(formData.per_page / 25);
-      }
-    }
-    setCalculatedPages(pages);
-
-    // Fetch leads from Apify
-    const getRandomEmail = (startPage: number) => {
-      const emailArray = [
-        "nisheet@agentprod.com",
-        "admin@agentprod.com",
-        "naman.barkiya@agentprod.com",
-        "siddhant.goswami@agentprod.com",
-        "muskaan@agentprod.com",
-        "bharath.kumar@getquestionpro.com",
-        "Urvashi.singh@getverloop.com",
-        "demo@agentprod.com",
-        "founders@agentprod.com",
-      ];
-      const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
-
-      if (startPage > 5) {
-        const randomIndex = startPage % 2;
-        return premiumAcc[randomIndex];
-      } else {
-        const randomIndex = Math.floor(Math.random() * emailArray.length);
-        return emailArray[randomIndex];
-      }
-    };
-
-    const createScraperBody = (email: string, count: number, startPage: number) => ({
-      count: Math.min(count, 25),
-      email: email,
-      getEmails: true,
-      guessedEmails: true,
-      maxDelay: 15,
-      minDelay: 8,
-      password: "Agentprod06ms",
-      searchUrl: newApolloUrl,
-      startPage: startPage,
-      waitForVerification: true,
-      proxy: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"],
-        apifyProxyCountry: "IN",
-      },
-    });
-
-    const fetchLead = async (startPage: number): Promise<any[]> => {
-      const email = getRandomEmail(startPage);
-      const scraperBody = createScraperBody(email, 25, startPage);
-      let retries = 0;
-      const TIMEOUT = 90000;
-      const maxRetries = 3;
-
-      while (retries < maxRetries) {
-        try {
-          const controller = new AbortController();
-          const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
-          const response = await axios.post(
-            "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_n5GCPgdvobcZfCa9w38PSxtIQiY22E4k3ARa",
-            scraperBody,
-            {
-              signal: controller.signal,
-            }
-          );
-          clearTimeout(timeoutId);
-          return response.data;
-        } catch (error) {
-          console.error(`Error fetching leads for page ${startPage} (attempt ${retries + 1}):`, error);
-          retries++;
-          if (axios.isCancel(error)) {
-            console.log("Request timed out. Retrying...");
-          } else if (retries === maxRetries) {
-            console.error(`Failed to fetch leads for page ${startPage} after ${maxRetries} attempts`);
-            return [];
-          }
-          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay before retry
+      let pages = 1;
+      if (formData.per_page) {
+        if (formData.per_page <= 25) {
+          pages = 1;
+        } else if (formData.per_page <= 50) {
+          pages = 2;
+        } else if (formData.per_page <= 75) {
+          pages = 3;
+        } else {
+          pages = Math.ceil(formData.per_page / 25);
         }
       }
-      return [];
-    };
+      setCalculatedPages(pages);
 
-    const batchSize = 8;
-    const totalPages = Math.ceil(formData.per_page / 25);
-    let enrichedLeads: any[] = [];
+      // Fetch leads from Apify
+      const getRandomEmail = (startPage: number) => {
+        // const emailArray = [
+        //   "nisheet@agentprod.com",
+        //   "admin@agentprod.com",
+        //   "naman.barkiya@agentprod.com",
+        //   "siddhant.goswami@agentprod.com",
+        //   "muskaan@agentprod.com",
+        //   "bharath.kumar@getquestionpro.com",
+        //   "Urvashi.singh@getverloop.com",
+        //   "demo@agentprod.com",
+        //   "founders@agentprod.com",
+        // ];
+        const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
 
-    for (let i = 0; i < totalPages; i += batchSize) {
-      const batch = Array.from({ length: Math.min(batchSize, totalPages - i) }, (_, index) => i + index + 1);
-      console.log(`Processing batch ${i / batchSize + 1} of ${Math.ceil(totalPages / batchSize)}`);
+        // if (startPage > 5) {
+        const randomIndex = startPage % 2;
+        return premiumAcc[randomIndex];
+        // } else {
+        //   const randomIndex = Math.floor(Math.random() * emailArray.length);
+        //   return emailArray[randomIndex];
+        // }
+      };
 
-      const batchPromises = batch.map(fetchLead);
-      const batchResults = await Promise.all(batchPromises);
-      const batchLeads = batchResults.flat();
+      const createScraperBody = (email: string, count: number, startPage: number) => ({
+        count: Math.min(count, 25),
+        email: email,
+        getEmails: true,
+        guessedEmails: true,
+        maxDelay: 15,
+        minDelay: 8,
+        password: "Agentprod06ms",
+        searchUrl: newApolloUrl,
+        startPage: startPage,
+        waitForVerification: true,
+        proxy: {
+          useApifyProxy: true,
+          apifyProxyGroups: ["RESIDENTIAL"],
+          apifyProxyCountry: "IN",
+        },
+      });
 
-      enrichedLeads.push(...batchLeads);
+      const fetchLead = async (startPage: number): Promise<any[]> => {
+        const email = getRandomEmail(startPage);
+        const scraperBody = createScraperBody(email, 25, startPage);
+        let retries = 0;
+        const TIMEOUT = 90000;
+        const maxRetries = 3;
 
-      if (i + batchSize < totalPages) {
-        await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
+        while (retries < maxRetries) {
+          try {
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
+            const response = await axios.post(
+              "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_n5GCPgdvobcZfCa9w38PSxtIQiY22E4k3ARa",
+              scraperBody,
+              {
+                signal: controller.signal,
+              }
+            );
+            clearTimeout(timeoutId);
+            return response.data;
+          } catch (error) {
+            console.error(`Error fetching leads for page ${startPage} (attempt ${retries + 1}):`, error);
+            retries++;
+            if (axios.isCancel(error)) {
+              console.log("Request timed out. Retrying...");
+            } else if (retries === maxRetries) {
+              console.error(`Failed to fetch leads for page ${startPage} after ${maxRetries} attempts`);
+              return [];
+            }
+            await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay before retry
+          }
+        }
+        return [];
+      };
+
+      const batchSize = 8;
+      const totalPages = Math.ceil(formData.per_page / 25);
+      let enrichedLeads: any[] = [];
+
+      for (let i = 0; i < totalPages; i += batchSize) {
+        const batch = Array.from({ length: Math.min(batchSize, totalPages - i) }, (_, index) => i + index + 1);
+        console.log(`Processing batch ${i / batchSize + 1} of ${Math.ceil(totalPages / batchSize)}`);
+
+        const batchPromises = batch.map(fetchLead);
+        const batchResults = await Promise.all(batchPromises);
+        const batchLeads = batchResults.flat();
+
+        enrichedLeads.push(...batchLeads);
+
+        if (i + batchSize < totalPages) {
+          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
+        }
       }
-    }
 
-    if (enrichedLeads.length === 0) {
-      toast.error("No leads found");
-      setTab("tab1");
-    } else {
-      console.log("Fetched leads:", enrichedLeads);
+      if (enrichedLeads.length === 0) {
+        toast.error("No leads found");
+        setTab("tab1");
+      } else {
+        console.log("Fetched leads:", enrichedLeads);
 
-      const processedLeads = enrichedLeads
-        .slice(0, formData.per_page)
-        .map((person: any) => ({
-          ...person,
-          type: "prospective",
-          campaign_id: params.campaignId,
-          id: uuid(),
-        }));
-      setLeads(processedLeads);
-      console.log("Processed new leads:", processedLeads);
+        const processedLeads = enrichedLeads
+          .slice(0, formData.per_page)
+          .map((person: any) => ({
+            ...person,
+            type: "prospective",
+            campaign_id: params.campaignId,
+            id: uuid(),
+          }));
+        setLeads(processedLeads);
+        console.log("Processed new leads:", processedLeads);
 
-      // Update audience filters
-      // await axiosInstance.put(`v2/audience/${audienceId}`, filtersPostBody);
+        // Update audience filters
+        // await axiosInstance.put(`v2/audience/${audienceId}`, filtersPostBody);
 
 
-      // Update contacts
-      const updateLeadsBody = mapLeadsToBodies(processedLeads, params.campaignId);
-      await axiosInstance.post(`v2/lead/bulk/`, updateLeadsBody);
+        // Update contacts
+        const updateLeadsBody = mapLeadsToBodies(processedLeads, params.campaignId);
+        await axiosInstance.post(`v2/lead/bulk/`, updateLeadsBody);
 
-      toast.success("Audience updated successfully");
-      router.push(`/dashboard/campaign/${params.campaignId}`);
-    }
-  } catch (error) {
+        toast.success("Audience updated successfully");
+        router.push(`/dashboard/campaign/${params.campaignId}`);
+      }
+    } catch (error) {
       console.error("Error updating audience:", error);
       toast.error("Error updating audience");
     } finally {
@@ -1607,6 +1664,31 @@ export default function PeopleForm(): JSX.Element {
     };
   }, []);
 
+  useEffect(() => {
+    const filtered = orgLocations.filter((location) =>
+      location.toLowerCase().includes(locationSearchTerm.toLowerCase())
+    );
+    setFilteredLocations(filtered);
+    setLocationDropdownIsOpen(locationSearchTerm.length > 0);
+  }, [locationSearchTerm]);
+  
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        locationDropdownRef.current &&
+        !locationDropdownRef.current.contains(event.target as Node) &&
+        !locationInputRef.current?.contains(event.target as Node)
+      ) {
+        setLocationDropdownIsOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   return (
     <Form {...form}>
       <form
@@ -1615,9 +1697,8 @@ export default function PeopleForm(): JSX.Element {
       >
         <Tabs value={tab} onValueChange={onTabChange} className="w-full">
           <TabsList
-            className={`grid grid-cols-2 w-[330px] ${
-              type === "edit" && "hidden"
-            }`}
+            className={`grid grid-cols-2 w-[330px] ${type === "edit" && "hidden"
+              }`}
           >
             <TabsTrigger value="tab1" disabled={isSubmitting}>
               Edit
@@ -1653,14 +1734,12 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${
-                      dropdownsOpen.currentEmployment ? "block" : "hidden"
-                    }`}
+                    className={`${dropdownsOpen.currentEmployment ? "block" : "hidden"
+                      }`}
                   >
                     <div
-                      className={`${
-                        dropdownsOpen.currentEmployment ? "block" : "hidden"
-                      } relative`}
+                      className={`${dropdownsOpen.currentEmployment ? "block" : "hidden"
+                        } relative`}
                     >
                       <FormField
                         control={form.control}
@@ -1702,9 +1781,9 @@ export default function PeopleForm(): JSX.Element {
                               height:
                                 filteredJobTitles.length > 0
                                   ? `${Math.min(
-                                      filteredJobTitles.length * 40,
-                                      200
-                                    )}px`
+                                    filteredJobTitles.length * 40,
+                                    200
+                                  )}px`
                                   : "auto",
                             }}
                           >
@@ -1823,9 +1902,8 @@ export default function PeopleForm(): JSX.Element {
                         </FormLabel>
                         <FormControl>
                           <div
-                            className={`${
-                              dropdownsOpen.headcount ? "block" : "hidden"
-                            }`}
+                            className={`${dropdownsOpen.headcount ? "block" : "hidden"
+                              }`}
                           >
                             {companyHeadcountOptions.map(
                               (headcountOption, index) => (
@@ -1910,34 +1988,83 @@ export default function PeopleForm(): JSX.Element {
                         </FormLabel>
                         <FormControl>
                           <div
-                            className={`${
-                              dropdownsOpen.orgLocations ? "block" : "hidden"
-                            }`}
+                            className={`${dropdownsOpen.orgLocations ? "block" : "hidden"
+                              } relative`}
                           >
-                            <div className="w-2/3 sm:min-w-[300px] mb-3">
-                              <TagInput
-                                {...field}
-                                dropdown={true}
-                                dropdownPlaceholder="Enter a location"
-                                dropdownOptions={orgLocations}
-                                tags={organizationLocationsTags}
-                                variant={"base"}
-                                className="sm:min-w-[450px]"
-                                setTags={(newTags) => {
-                                  setOrganizationLocationsTags(newTags);
-                                  setValue(
-                                    "organization_locations",
-                                    newTags as [Tag, ...Tag[]]
-                                  );
-                                }}
-                              />
+                            <TagInput
+                              {...field}
+                              tags={organizationLocationsTags}
+                              placeholder="Enter a location"
+                              variant="base"
+                              onFocus={() => toggleLocationDropdown(true)}
+                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              setTags={(newTags) => {
+                                setOrganizationLocationsTags(newTags);
+                                setValue(
+                                  "organization_locations",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                              onInputChange={(value) => setLocationSearchTerm(value)}
+                            />
+                            <div className="absolute inline-block text-left ">
+                              {locationDropdownIsOpen && (
+                                <ScrollArea
+                                  className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                                  style={{
+                                    height:
+                                      filteredLocations.length > 0
+                                        ? `${Math.min(
+                                          filteredLocations.length * 40,
+                                          200
+                                        )}px`
+                                        : "auto",
+                                  }}
+                                >
+                                  <div
+                                    className="py-1"
+                                    role="menu"
+                                    aria-orientation="vertical"
+                                    aria-labelledby="options-menu"
+                                    onClick={() => toggleLocationDropdown(false)}
+                                    ref={locationDropdownRef}
+                                  >
+                                    {filteredLocations.length > 0 ? (
+                                      filteredLocations.map((location) => (
+                                        <button
+                                          key={location}
+                                          onClick={(e) => {
+                                            e.preventDefault();
+                                            handleLocationDropdownSelect(location);
+                                            setLocationSearchTerm("");
+                                          }}
+                                          className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                        >
+                                          {location}
+                                        </button>
+                                      ))
+                                    ) : (
+                                      <button
+                                        onClick={(e) => {
+                                          e.preventDefault();
+                                          if (locationSearchTerm.trim()) {
+                                            handleLocationDropdownSelect(
+                                              locationSearchTerm.trim()
+                                            );
+                                            setLocationSearchTerm("");
+                                          }
+                                        }}
+                                        className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                      >
+                                        {locationSearchTerm}
+                                      </button>
+                                    )}
+                                  </div>
+                                </ScrollArea>
+                              )}
                             </div>
                           </div>
                         </FormControl>
-                        {/* <FormDescription>
-                      These are the company locations that you&apos;re
-                      interested in.
-                    </FormDescription> */}
                         <FormMessage />
                       </FormItem>
                     )}
@@ -2132,6 +2259,7 @@ export default function PeopleForm(): JSX.Element {
                     />
                     </div>
                   )}
+
                   </div>
                 </div>
 
@@ -2156,9 +2284,8 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${
-                      dropdownsOpen.industry ? "block" : "hidden"
-                    } relative`}
+                    className={`${dropdownsOpen.industry ? "block" : "hidden"
+                      } relative`}
                   >
                     <FormField
                       control={form.control}
@@ -2197,9 +2324,9 @@ export default function PeopleForm(): JSX.Element {
                             height:
                               filteredKeywords.length > 0
                                 ? `${Math.min(
-                                    filteredKeywords.length * 40,
-                                    200
-                                  )}px`
+                                  filteredKeywords.length * 40,
+                                  200
+                                )}px`
                                 : "auto",
                           }}
                         >
@@ -2280,9 +2407,8 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${
-                      dropdownsOpen.company ? "block" : "hidden"
-                    } relative`}
+                    className={`${dropdownsOpen.company ? "block" : "hidden"
+                      } relative`}
                   >
                     <FormField
                       control={form.control}
@@ -2334,9 +2460,8 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${
-                      dropdownsOpen.revenueFunding ? "block" : "hidden"
-                    }`}
+                    className={`${dropdownsOpen.revenueFunding ? "block" : "hidden"
+                      }`}
                   >
                     <FormField
                       control={form.control}
@@ -2366,9 +2491,8 @@ export default function PeopleForm(): JSX.Element {
                           </FormLabel>
                           <FormControl>
                             <div
-                              className={`${
-                                dropdownsOpen.funding ? "block" : "hidden"
-                              }`}
+                              className={`${dropdownsOpen.funding ? "block" : "hidden"
+                                }`}
                             >
                               {fundingRounds.map((round, index) => (
                                 <div
@@ -2427,9 +2551,8 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${
-                      dropdownsOpen.companyFunding ? "block" : "hidden"
-                    }`}
+                    className={`${dropdownsOpen.companyFunding ? "block" : "hidden"
+                      }`}
                   >
                     <div className="">
                       <div className="text-sm font-medium">
@@ -2508,9 +2631,8 @@ export default function PeopleForm(): JSX.Element {
                 </div>
                 <div className="bg-muted px-2 rounded">
                   <div
-                    className={`${
-                      dropdownsOpen.jobPostings ? "block" : "hidden"
-                    }`}
+                    className={`${dropdownsOpen.jobPostings ? "block" : "hidden"
+                      }`}
                   >
                     <div className="flex items-center  gap-2">
                       <div className="mb-3 ">
@@ -2548,16 +2670,16 @@ export default function PeopleForm(): JSX.Element {
               </div>
             </div>
             {type === "edit" && (
-    <Button
-      onClick={(event) => {
-        event.preventDefault();
-        updateAudience();
-      }}
-      disabled={isTableLoading}
-    >
-      {isTableLoading ? <LoadingCircle /> : "Update Audience"}
-    </Button>
-  )}
+              <Button
+                onClick={(event) => {
+                  event.preventDefault();
+                  updateAudience();
+                }}
+                disabled={isTableLoading}
+              >
+                {isTableLoading ? <LoadingCircle /> : "Update Audience"}
+              </Button>
+            )}
           </TabsContent>
           <TabsContent value="tab2">
             {isTableLoading ? (

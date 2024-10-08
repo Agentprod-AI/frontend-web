@@ -88,6 +88,8 @@ export interface Lead {
   phone: string;
   technologies: string[];
   organization: any;
+  linkedin_posts: any;
+  linkedin_bio: string;
 }
 
 export interface Contact {
@@ -135,6 +137,8 @@ export interface Contact {
   phone: string;
   technologies: string[];
   organization: any;
+  linkedin_posts: any;
+  linkedin_bio: string;
 }
 
 // Define the state structure for our context

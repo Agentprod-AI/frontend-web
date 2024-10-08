@@ -1,12 +1,10 @@
-name: CI/CD
-
+name: Test Server CI/CD
 on:
   push:
-    branches: [main]
-
+    branches: [testServer]
 jobs:
   deploy:
-    runs-on: [self-hosted, Linux, X64, production]
+    runs-on: [self-hosted, Linux, X64, test]
     env:
       APOLLO_API_KEY: ${{ secrets.APOLLO_API_KEY }}
       CLERK_SECRET_KEY: ${{ secrets.CLERK_SECRET_KEY }}
@@ -18,11 +16,10 @@ jobs:
       NEXT_PUBLIC_CLERK_SIGN_UP_URL: ${{ secrets.NEXT_PUBLIC_CLERK_SIGN_UP_URL }}
       NEXT_PUBLIC_LOCAL_SERVER: ${{ secrets.NEXT_PUBLIC_LOCAL_SERVER }}
       NEXT_PUBLIC_RAZORPAY_API_KEY: ${{ secrets.NEXT_PUBLIC_RAZORPAY_API_KEY }}
-      NEXT_PUBLIC_SERVER_URL: ${{ secrets.NEXT_PUBLIC_SERVER_URL }}
+      NEXT_PUBLIC_SERVER_URL: ${{ secrets.NEXT_PUBLIC_TEST_URL }}
       NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
       NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
       RAZORPAY_API_SECRET_KEY: ${{ secrets.RAZORPAY_API_SECRET_KEY }}
-
     steps:
       - uses: actions/checkout@v2
         with:
