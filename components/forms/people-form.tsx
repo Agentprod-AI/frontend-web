@@ -26,7 +26,7 @@ import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 import { v4 as uuid } from "uuid";
-import { orgLocations, jobTitles, seniorities, InputType } from "./formUtils";
+import { orgLocations, jobTitles, seniorities, InputType, companyDomains } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
@@ -38,6 +38,10 @@ import { useButtonStatus } from "@/context/button-status";
 import AudienceTable from "../ui/AudienceTable";
 import axios from "axios";
 import { useSubscription } from "@/hooks/userSubscription";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+
+
 
 const FormSchema = z.object({
   q_organization_domains: z
@@ -267,6 +271,65 @@ export default function PeopleForm(): JSX.Element {
   const { setPageCompletion } = useButtonStatus();
   const [type, setType] = useState<"create" | "edit">("create");
 
+  const [companyDomainDropdownIsOpen, setCompanyDomainDropdownIsOpen] = useState(false);
+  const [filteredCompanyDomains, setFilteredCompanyDomains] = useState(companyDomains)
+  const [companyDomainSearchTerm, setCompanyDomainSearchTerm] = useState("");
+  const companyDomainDropdownRef = useRef<HTMLDivElement>(null);
+  const companyDomainInputRef = useRef<HTMLInputElement>(null);
+  const [selectionType, setSelectionType] = useState('list');
+
+
+
+  const handleSelectionTypeChange = (value: any) => {
+    setSelectionType(value);
+    if (value === 'list') {
+      setQOrganizationDomainsTags([]);
+      setValue('q_organization_domains', [])
+    } else {
+      setQOrganizationDomainsTags([]);
+      setValue('q_organization_domains', []);
+    }
+  };
+
+  const handleCompanyDomainDropdownSelect = (company: any) => {
+    const newTag = { text: company.companyName, id: company.organizationId };
+
+    if (!qOrganizationDomainsTags.some((tag) => tag.text === company.companyName)) {
+      const updatedTags = [...qOrganizationDomainsTags, newTag];
+      setQOrganizationDomainsTags(updatedTags);
+      setValue('q_organization_domains', updatedTags);
+    }
+    setCompanyDomainSearchTerm('');
+    setCompanyDomainDropdownIsOpen(false);
+  };
+
+  useEffect(() => {
+    const filtered = companyDomains
+      .filter((company) =>
+        company.companyName.toLowerCase().includes(companyDomainSearchTerm.toLowerCase())
+      )
+      .map((company) => company);
+  
+    setFilteredCompanyDomains(filtered);
+  }, [companyDomainSearchTerm]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        companyDomainDropdownRef.current &&
+        !companyDomainDropdownRef.current.contains(event.target as Node) &&
+        !companyDomainInputRef.current?.contains(event.target as Node)
+      ) {
+        setCompanyDomainDropdownIsOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   const toggleJobTitleDropdown = (isOpen: boolean) => {
     setJobTitleDropdownIsOpen(isOpen);
   };
@@ -491,14 +554,16 @@ export default function PeopleForm(): JSX.Element {
         })
         .join("");
     }
-
-    if (formData.q_organization_domains && formData.q_organization_domains.length > 0) {
+    
+    if (selectionType === 'list' && formData.q_organization_domains && formData.q_organization_domains.length > 0) {
       url += formData.q_organization_domains
-        .map(
-          (domain: any) =>
-            `&qKeywords=${encodeURIComponent(domain.text)}`
-        )
+        .map((domain: any) => `&organizationIds[]=${encodeURIComponent(domain.id)}`)
         .join("");
+    } else if (selectionType === 'custom' && formData.q_organization_domains && formData.q_organization_domains.length > 0) {
+      const customDomain = formData.q_organization_domains[0];
+      if (customDomain && customDomain.text) {
+        url += `&qKeywords=${encodeURIComponent(customDomain.text)}`;
+      }
     }
 
     if (
@@ -2043,6 +2108,9 @@ export default function PeopleForm(): JSX.Element {
               </div>
               <div className="w-1/2 flex flex-col gap-2">
                 <div className="mb-2">Advanced</div>
+
+                {/* Company Domain */}
+
                 <div className="bg-muted px-2 rounded">
                   <div
                     className="flex justify-between w-full py-3 cursor-pointer"
@@ -2059,30 +2127,128 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
 
-                  <div
-                    className={`${dropdownsOpen.companyDomains ? "block" : "hidden"
-                      }`}
-                  >
-                    <FormField
+                <div className={`${dropdownsOpen.companyDomains ? "block" : "hidden"}`}>
+
+                  <RadioGroup className="mb-3" value={selectionType} onValueChange={handleSelectionTypeChange}>
+                    <div className="flex">
+                      <div className="flex items-center space-x-2 mr-3">
+                        <RadioGroupItem value="list" id="list" />
+                        <Label htmlFor="list">Select from list</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="custom" id="custom" />
+                        <Label htmlFor="custom">Enter custom company</Label>
+                      </div>
+                    </div>
+                  </RadioGroup>
+                  {selectionType === 'list' && (
+
+                      <div>
+                        <FormField
+                        control={form.control}
+                        name="q_organization_domains"
+                        render={({ field }) => (
+                          <FormItem className="flex flex-col items-start pb-4 w-8/12">
+                            <FormControl>
+                              <TagInput
+                                {...field}
+                                tags={qOrganizationDomainsTags}
+                                placeholder="Enter Company Domains"
+                                variant="base"
+                                onFocus={() => setCompanyDomainDropdownIsOpen(true)}
+                                className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
+                                setTags={(newTags) => {
+                                  if (Array.isArray(newTags)) {
+                                    if (newTags.length < qOrganizationDomainsTags.length) {
+                                      setQOrganizationDomainsTags(newTags);
+                                      setValue("q_organization_domains", newTags as [Tag, ...Tag[]]);
+                                      return;
+                                    }
+                      
+                                    const lastTag = newTags[newTags.length - 1];
+                                    const updatedTags = lastTag?.id.includes('-')
+                                      ? newTags.slice(0, -1)
+                                      : newTags;
+                      
+                                    setQOrganizationDomainsTags(updatedTags);
+                                    setValue("q_organization_domains", updatedTags as [Tag, ...Tag[]]);
+                                  }
+                                }}
+                                onInputChange={(value) => setCompanyDomainSearchTerm(value)}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+
+                      <div className="absolute inline-block text-left -my-4">
+                        {companyDomainDropdownIsOpen && (
+                          <ScrollArea
+                            className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                            style={{
+                              height: filteredCompanyDomains.length > 0
+                                ? `${Math.min(filteredCompanyDomains.length * 40, 200)}px`
+                                : "auto",
+                            }}
+                          >
+                            <div
+                              className="py-1"
+                              role="menu"
+                              aria-orientation="vertical"
+                              aria-labelledby="options-menu"
+                              ref={companyDomainDropdownRef}
+                            >
+                              {filteredCompanyDomains.length > 0 ? (
+                                filteredCompanyDomains.map((company) => (
+                                  <button
+                                    key={company.companyName}
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      handleCompanyDomainDropdownSelect(company)
+                                      setCompanyDomainSearchTerm("");
+                                    }}
+                                    className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                  >
+                                    {company.companyName
+                                      .split(" ")
+                                      .map(
+                                        (word) =>
+                                          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                                      )
+                                      .join(" ")}
+                                  </button>
+                                ))
+                              ) : (
+                                <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                  No items found
+                                </div>
+                              )}
+                            </div>
+                          </ScrollArea>
+                        )}
+                      </div>
+                      </div>
+
+                  )}
+
+                  {selectionType === 'custom' && (
+                    <div className={`${dropdownsOpen.companyDomains ? "block" : "hidden"}`}>
+                      <FormField
                       control={form.control}
                       name="q_organization_domains"
                       render={({ field }) => (
-                        <FormItem className="flex flex-col items-start py-4 w-8/12">
+                        <FormItem className="flex flex-col items-start pb-4 w-8/12">
                           <FormControl>
                             <TagInput
                               {...field}
                               tags={qOrganizationDomainsTags}
-                              placeholder="Enter company domain"
-                              variant={"base"}
-                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              placeholder="Enter Custom Company"
+                              variant="base"
+                              className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
                               setTags={(newTags) => {
-                                // Only allow one domain
-                                const updatedTags = Array.isArray(newTags) ? newTags.slice(-1) : [];
-                                setQOrganizationDomainsTags(updatedTags);
-                                setValue(
-                                  "q_organization_domains",
-                                  updatedTags as [Tag, ...Tag[]]
-                                );
+                                setQOrganizationDomainsTags(newTags);
+                                setValue('q_organization_domains', newTags as [Tag, ...Tag[]]);
                               }}
                               maxTags={1}
                             />
@@ -2091,8 +2257,14 @@ export default function PeopleForm(): JSX.Element {
                         </FormItem>
                       )}
                     />
+                    </div>
+                  )}
+
                   </div>
                 </div>
+
+                {/* Industry */}
+
                 <div className="bg-muted px-2 rounded">
                   <div
                     className="flex justify-between w-full py-3 cursor-pointer"
