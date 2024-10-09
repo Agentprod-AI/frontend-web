@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2Icon, Loader2 } from "lucide-react";
+import { Trash2Icon, Loader2, ChevronUp, ChevronDown, ExternalLink, Search } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { AudienceTableClient } from "../tables/audience-table/client";
@@ -46,6 +46,8 @@ import { FileIcon } from "lucide-react";
 interface FileData {
   [key: string]: string;
 }
+
+
 
 export const ImportAudience = () => {
   const [fileData, setFileData] = useState<FileData[]>();
@@ -515,7 +517,7 @@ export const ImportAudience = () => {
       setTimeout(() => {
         router.push(`/dashboard/campaign/${params.campaignId}`);
         setIsCreateBtnLoading(false);
-      }, 40000);
+      }, 20000);
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.toString() : String(error));
@@ -599,7 +601,7 @@ export const ImportAudience = () => {
 
     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
       <Card
-        className={`cursor-pointer transition-all h-56 ${selectedOption === "withEnrichment" ? "border-primary" : ""}`}
+        className={`cursor-pointer transition-all h-60 ${selectedOption === "withEnrichment" ? "border-primary" : ""}`}
         onClick={() => handleOptionSelect("withEnrichment")}
       >
         <CardHeader>
@@ -619,7 +621,7 @@ export const ImportAudience = () => {
       </Card>
 
       <Card
-        className={`cursor-pointer transition-all h-56 ${selectedOption === "withoutEnrichment" ? "border-primary" : ""}`}
+        className={`cursor-pointer transition-all h-60 ${selectedOption === "withoutEnrichment" ? "border-primary" : ""}`}
         onClick={() => handleOptionSelect("withoutEnrichment")}
       >
         <CardHeader>
@@ -765,7 +767,18 @@ export const ImportAudience = () => {
 
       {isLeadsTableActive && (
         <>
-          <AudienceTable />
+          {selectedOption === "withoutEnrichment" ? (
+            <WithoutEnrichmentTable 
+              leads={leads.map(lead => ({
+                name: lead.name,
+                email: lead.email,
+                company: lead.company,
+                linkedin_url: lead.linkedin_url || ''
+              }))} 
+            />
+          ) : (
+            <AudienceTable />
+          )}
           {isCreateBtnLoading ? (
             <LoadingCircle />
           ) : (
@@ -788,5 +801,105 @@ export const ImportAudience = () => {
         </div>
       )} */}
     </>
+  );
+};
+
+interface WithoutEnrichmentTableProps {
+  leads: {
+    name: string;
+    email: string;
+    company: string;
+    linkedin_url: string;
+  }[];
+}
+const WithoutEnrichmentTable: React.FC<WithoutEnrichmentTableProps> = ({ leads }) => {
+  const [searchTerm, setSearchTerm] = useState('');
+  const [sortColumn, setSortColumn] = useState<any>('name');
+  const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('asc');
+
+  const handleSort = (column: keyof typeof leads[0]) => {
+    if (column === sortColumn) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+  const sortedLeads = [...leads].sort((a, b) => {
+    const aValue = a[sortColumn as keyof typeof a] as string;
+    const bValue = b[sortColumn as keyof typeof b] as string;
+    if (aValue < bValue) return sortDirection === 'asc' ? -1 : 1;
+    if (aValue > bValue) return sortDirection === 'asc' ? 1 : -1;
+    return 0;
+  });
+
+  const filteredLeads = sortedLeads.filter(lead =>
+    Object.values(lead).some(value => 
+      value && typeof value === 'string' && value.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <h2 className="text-2xl font-bold dark:text-white">Imported Leads</h2>
+        <div className="relative">
+          <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+          <Input
+            type="text"
+            placeholder="Search leads..."
+            className="pl-8 pr-4 bg-white dark:bg-gray-800 border-gray-300 dark:border-gray-700 text-gray-900 dark:text-gray-100"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
+      <div className="border dark:border-gray-700 rounded-lg overflow-hidden">
+        <div className="max-h-96 overflow-y-auto">
+          <Table>
+            <TableHeader className="sticky top-0 bg-gray-50 dark:bg-gray-800 z-10">
+              <TableRow>
+                {['Name', 'Email', 'Company', 'LinkedIn URL'].map((header) => (
+                  <TableHead key={header} className="font-bold text-gray-700 dark:text-gray-300">
+                    <Button
+                      variant="ghost"
+                      onClick={() => handleSort(header.toLowerCase().replace(' url', '_url') as "name" | "email" | "company" | "linkedin_url")}
+                      className="font-bold hover:bg-gray-100 dark:hover:bg-gray-700"
+                    >
+                      {header}
+                      {sortColumn === header.toLowerCase().replace(' url', '_url') && (
+                        sortDirection === 'asc' ? <ChevronUp className="ml-2 h-4 w-4" /> : <ChevronDown className="ml-2 h-4 w-4" />
+                      )}
+                    </Button>
+                  </TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {filteredLeads.map((lead, index) => (
+                <TableRow key={index} className="hover:bg-gray-50 dark:hover:bg-gray-800">
+                  <TableCell className="dark:text-gray-300">{lead.name || 'N/A'}</TableCell>
+                  <TableCell className="dark:text-gray-300">{lead.email || 'N/A'}</TableCell>
+                  <TableCell className="dark:text-gray-300">{lead.company || 'N/A'}</TableCell>
+                  <TableCell>
+                    {lead.linkedin_url ? (
+                      <a href={lead.linkedin_url} target="_blank" rel="noopener noreferrer" className="flex items-center text-blue-600 dark:text-blue-400 hover:underline">
+                        View Profile
+                        <ExternalLink className="ml-1 h-4 w-4" />
+                      </a>
+                    ) : (
+                      'N/A'
+                    )}
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      <div className="text-sm text-gray-500 dark:text-gray-400">
+        Showing {filteredLeads.length} of {leads.length} leads
+      </div>
+    </div>
   );
 };
