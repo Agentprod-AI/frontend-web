@@ -83,6 +83,11 @@ export const PeopleProfileSheet = ({
     return spacedText[0].toUpperCase() + spacedText.slice(1).toLowerCase();
   };
 
+  const isDisplayableImage = (url: string) => {
+    // Check if the URL contains common image formats or doesn't contain 'pdf'
+    return !url.toLowerCase().includes('pdf');
+  };
+
   useEffect(() => {
     console.log(data);
     const fetchCompanyInfo = async () => {
@@ -562,6 +567,10 @@ export const PeopleProfileSheet = ({
 
             <br />
 
+            {data.linkedin_bio && <h5 className="text-sm font-medium text-muted-foreground pb-2 flex items-center gap-2"> <Linkedin className="h-4 w-4 text-muted-foreground " />LinkedIn Bio</h5>}
+            {data.linkedin_bio && <div className="text-xs text-muted-foreground">{data.linkedin_bio}</div>}
+            <br />
+
             {/* Posts */}
             <Collapsible
               open={linkedinPostsCollapsibleOpen}
@@ -578,58 +587,69 @@ export const PeopleProfileSheet = ({
                 </CollapsibleTrigger>
               </div>
 
-              {posts && posts.length > 0 && (
+              {data.linkedin_posts && data.linkedin_posts.length > 0 && (
                 <>
                   <div className="border-white/20 border rounded-md p-2">
                     <div className="text-sm font-semibold mb-2">Latest Post</div>
                     <div className="flex flex-col sm:flex-row gap-4">
-                      {posts[0].attachments && posts[0].attachments.length > 0 && (
-                        <div className="flex-shrink-0 ">
-                          <Image
-                            src={posts[0].attachments[0]}
-                            alt="Post attachment"
-                            width={100}
-                            height={100}
-                            className="object-cover rounded-md"
-                          />
-                        </div>
-                      )}
                       <div className="flex-grow">
                         <p className="text-xs whitespace-pre-wrap break-words">
-                          {posts[0].text && posts[0].text.length > 300
-                            ? posts[0].text.substring(0, 300) + "..."
-                            : posts[0].text}
+                          {JSON.parse(data.linkedin_posts[0]).text.length > 300
+                            ? JSON.parse(data.linkedin_posts[0]).text.substring(0, 300) + "..."
+                            : JSON.parse(data.linkedin_posts[0]).text}
                         </p>
                       </div>
                     </div>
+                    {JSON.parse(data.linkedin_posts[0]).attachments && (
+                      <div className="mt-2">
+                        {JSON.parse(data.linkedin_posts[0]).attachments.map((attachment: string, index: number) => (
+                          <div key={index} className="mt-2">
+                            {isDisplayableImage(attachment) ? (
+                              <Image src={attachment} alt={`Attachment ${index + 1}`} width={200} height={200} />
+                            ) : (
+                              <a href={attachment} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                                View Attachment {index + 1}
+                              </a>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
                   </div>
 
                   <CollapsibleContent className="space-y-4 w-full">
-                    {posts.slice(1).map((post: { attachments: string | any[]; text: string | number | boolean | ReactElement<any, string | JSXElementConstructor<any>> | Iterable<ReactNode> | PromiseLikeOfReactNode | null | undefined; }, index: number) => (
-                      <div key={`post_card_${index + 1}`} className="border-white/20 border rounded-md p-2">
-                        <div className="text-sm font-semibold mb-2">Post {index + 2}</div>
-                        <div className="flex flex-col sm:flex-row gap-4">
-                          {post.attachments && post.attachments.length > 0 && (
-                            <div className="flex-shrink-0">
-                              <Image
-                                src={post.attachments[0]}
-                                alt={`Post ${index + 2} attachment`}
-                                width={100}
-                                height={100}
-                                className="object-cover rounded-md"
-                              />
+                    {data.linkedin_posts.slice(1).map((post: string, index: number) => {
+                      const parsedPost = JSON.parse(post);
+                      return (
+                        <div key={`post_card_${index + 1}`} className="border-white/20 border rounded-md p-2">
+                          <div className="text-sm font-semibold mb-2">Post {index + 2}</div>
+                          <div className="flex flex-col sm:flex-row gap-4">
+                            <div className="flex-grow">
+                              <p className="text-xs whitespace-pre-wrap break-words">
+                                {parsedPost.text.length > 300
+                                  ? parsedPost.text.substring(0, 300) + "..."
+                                  : parsedPost.text}
+                              </p>
+                            </div>
+                          </div>
+                          {parsedPost.attachments && (
+                            <div className="mt-2">
+                              {parsedPost.attachments.map((attachment: string, index: number) => (
+                                <div key={index} className="mt-2">
+                                  {isDisplayableImage(attachment) ? (
+                                    <Image src={attachment} alt={`Attachment ${index + 1}`} width={200} height={200} />
+                                  ) : (
+                                    <a href={attachment} target="_blank" rel="noopener noreferrer" className="text-blue-500 hover:underline">
+                                      View Attachment
+                                    </a>
+                                  )}
+                                </div>
+                              ))}
                             </div>
                           )}
-                          <div className="flex-grow">
-                            <p className="text-xs whitespace-pre-wrap break-words">
-                              {typeof post.text === 'string' && post.text.length > 300
-                                ? post.text.substring(0, 300) + "..."
-                                : post.text}
-                            </p>
-                          </div>
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CollapsibleContent>
                 </>
               )}

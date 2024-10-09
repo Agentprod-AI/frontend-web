@@ -80,7 +80,7 @@ export default function DashboardLayout({
             <ResizablePanel minSize={70} defaultSize={85}>
               <ScrollArea className="h-screen">
                 <PageHeaderProvider>
-                  {isSubscribed === false && <WarningBanner />}
+                  {/* {isSubscribed === false && <WarningBanner />} */}
                   <main className="px-4 pb-20">{children}</main>
                 </PageHeaderProvider>
               </ScrollArea>
