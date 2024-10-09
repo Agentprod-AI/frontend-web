@@ -41,8 +41,8 @@ import { useParams, useRouter } from "next/navigation";
 import { useButtonStatus } from "@/context/button-status";
 import axios from "axios";
 import AudienceTable from "../ui/AudienceTable";
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
-
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { FileIcon } from "lucide-react";
 interface FileData {
   [key: string]: string;
 }
@@ -341,7 +341,7 @@ export const ImportAudience = () => {
           organization_id: lead.organization_id,
           seniority: "",
           revealed_for_current_team: false,
-          linkedin_posts: [], 
+          linkedin_posts: [],
           linkedin_bio: "",
         })
       );
@@ -594,45 +594,65 @@ export const ImportAudience = () => {
   return (
     <>
       {showCards && (
-        <div className="my-4">
-          <div className="grid grid-cols-2 gap-4">
-            <Card
-              className={`cursor-pointer transition-all h-48 ${selectedOption === "withEnrichment" ? "border-primary" : ""}`}
-              onClick={() => handleOptionSelect("withEnrichment")}
-            >
-              <CardHeader className="h-full flex flex-col justify-center">
-                <CardTitle className="text-2xl mb-2">Enrich Your Data</CardTitle>
-                <CardDescription>
-                  Upload your file and let us enhance it with additional insights.
-                  Perfect for expanding your dataset with valuable information.
-                </CardDescription>
-              </CardHeader>
-            </Card>
-            <Card
-              className={`cursor-pointer transition-all h-48 ${selectedOption === "withoutEnrichment" ? "border-primary" : ""}`}
-              onClick={() => handleOptionSelect("withoutEnrichment")}
-            >
-              <CardHeader className="h-full flex flex-col justify-center">
-                <CardTitle className="text-2xl mb-2">Use Your Data As-Is</CardTitle>
-                <CardDescription>
-                  Upload your file without any modifications. Ideal when you have complete data.
-                  <span className="block mt-2 text-sm font-semibold">
-                    Required fields: Name, Company, LinkedIn, Email ID
-                  </span>
-                </CardDescription>
-              </CardHeader>
-            </Card>
-          </div>
-          <Input
-            ref={fileInputRef}
-            id="file-upload"
-            type="file"
-            accept=".csv,.xlsx,.xls"
-            onChange={handleFileChange}
-            className="hidden"
-          />
-        </div>
-      )}
+  <div className="my-4">
+    <h2 className="text-2xl font-bold mb-4">Choose Your Import Method</h2>
+
+    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <Card
+        className={`cursor-pointer transition-all h-56 ${selectedOption === "withEnrichment" ? "border-primary" : ""}`}
+        onClick={() => handleOptionSelect("withEnrichment")}
+      >
+        <CardHeader>
+          <CardTitle className="text-2xl mb-2 flex items-center">
+            <FileIcon className="mr-2" /> Enhance Your Contact List
+          </CardTitle>
+          <CardDescription>
+            <ul className="list-disc list-inside space-y-2">
+              <li>Upload your file (CSV, Excel, etc.)</li>
+              <li>We'll enrich each contact with additional details</li>
+              <li>Get their email ID, LinkedIn ID, job titles, company size, etc.</li>
+              <li>Save time on manual research</li>
+              <li>Required fields: Name, Company</li>
+            </ul>
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      <Card
+        className={`cursor-pointer transition-all h-56 ${selectedOption === "withoutEnrichment" ? "border-primary" : ""}`}
+        onClick={() => handleOptionSelect("withoutEnrichment")}
+      >
+        <CardHeader>
+          <CardTitle className="text-2xl mb-2 flex items-center">
+            <FileIcon className="mr-2" /> Use Your Data As-Is
+          </CardTitle>
+          <CardDescription>
+            <ul className="list-disc list-inside space-y-2">
+              <li>Upload your complete contact list</li>
+              <li>We'll use the data exactly as provided</li>
+              <li>Ideal for up-to-date, verified contacts</li>
+              <li>Required fields: Name, Company, LinkedIn, Email ID</li>
+            </ul>
+          </CardDescription>
+        </CardHeader>
+      </Card>
+
+      <div className="mt-6 light:bg-blue-100 dark:bg-blue-900/40 p-4 rounded-lg col-span-2 w-1/2">
+        <h3 className="font-semibold text-lg mb-2">Need Help Deciding?</h3>
+        <p>Choose "Enhance" if you want to find more details like their email ID, LinkedIn ID of your contacts. Pick "As-Is" if your list is already complete with all required fields. Not sure? Contact our support team for guidance.</p>
+      </div>
+    </div>
+
+    <Input
+      ref={fileInputRef}
+      id="file-upload"
+      type="file"
+      accept=".csv,.xlsx,.xls"
+      onChange={handleFileChange}
+      className="hidden"
+    />
+  </div>
+)}
       {error && <div className="text-red-500">{error}</div>}
       {isLoading && <LoadingCircle />}
       {fileData && (
