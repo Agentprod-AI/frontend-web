@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { LoadingCircle } from "@/app/icons";
@@ -41,6 +41,7 @@ import { useParams, useRouter } from "next/navigation";
 import { useButtonStatus } from "@/context/button-status";
 import axios from "axios";
 import AudienceTable from "../ui/AudienceTable";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent } from "@/components/ui/card";
 
 interface FileData {
   [key: string]: string;
@@ -48,6 +49,12 @@ interface FileData {
 
 export const ImportAudience = () => {
   const [fileData, setFileData] = useState<FileData[]>();
+  const [mandatoryColumns, setMandatoryColumns] = useState({
+    name: false,
+    email: false,
+    company_name: false,
+    linkedin_url: false
+  });
   const [file, setFile] = useState<File>();
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -59,10 +66,14 @@ export const ImportAudience = () => {
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
   const [type, setType] = useState<"create" | "edit">("create");
+  const [selectedOption, setSelectedOption] = useState<"withEnrichment" | "withoutEnrichment" | null>(null);
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { setPageCompletion } = useButtonStatus();
 
   const [isEnrichmentLoading, setIsEnrichmentLoading] = useState(false);
+  const [showCards, setShowCards] = useState(true);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -90,6 +101,9 @@ export const ImportAudience = () => {
       complete: (results) => {
         setFileData(results.data as FileData[]);
         setIsLoading(false);
+        if (selectedOption === "withoutEnrichment") {
+          validateMandatoryColumns(results.data[0] as FileData);
+        }
         setIsDialogOpen(true);
       },
       error: (error) => {
@@ -109,6 +123,9 @@ export const ImportAudience = () => {
       const parsedData = XLSX.utils.sheet_to_json(sheet);
       setFileData(parsedData as FileData[]);
       setIsLoading(false);
+      if (selectedOption === "withoutEnrichment") {
+        validateMandatoryColumns(parsedData[0] as FileData);
+      }
       setIsDialogOpen(true);
     };
     reader.onerror = (error) => {
@@ -116,6 +133,17 @@ export const ImportAudience = () => {
       setIsLoading(false);
     };
     reader.readAsBinaryString(file);
+  };
+
+  const validateMandatoryColumns = (firstRow: FileData) => {
+    const columns = Object.keys(firstRow);
+    const newMandatoryColumns = {
+      name: columns.some(col => col.toLowerCase().includes('name')),
+      email: columns.some(col => col.toLowerCase().includes('email')),
+      company_name: columns.some(col => col.toLowerCase().includes('company')),
+      linkedin_url: columns.some(col => col.toLowerCase().includes('linkedin'))
+    };
+    setMandatoryColumns(newMandatoryColumns);
   };
 
   useEffect(() => {
@@ -169,6 +197,7 @@ export const ImportAudience = () => {
 
   const enrichmentHandler = async () => {
     setIsEnrichmentLoading(true);
+    setShowCards(false); // Hide cards when enrichment starts
     toast.loading("Enriching leads...", { id: "enrichment" });
 
     const leadsToEnrich = fileData?.map((row) => {
@@ -191,13 +220,13 @@ export const ImportAudience = () => {
 
     const getRandomEmail = () => {
       const emailArray = [
-        "nisheet@agentprod.com",
+        // "nisheet@agentprod.com",
         "info@agentprod.com",
         "muskaan@agentprodapp.com",
-        "admin@agentprod.com",
-        "naman.barkiya@agentprod.com",
-        "siddhant.goswami@agentprod.com",
-        "muskaan@agentprod.com",
+        // "admin@agentprod.com",
+        // "naman.barkiya@agentprod.com",
+        // "siddhant.goswami@agentprod.com",
+        // "muskaan@agentprod.com",
       ];
       return emailArray[Math.floor(Math.random() * emailArray.length)];
     };
@@ -312,6 +341,8 @@ export const ImportAudience = () => {
           organization_id: lead.organization_id,
           seniority: "",
           revealed_for_current_team: false,
+          linkedin_posts: [],
+          linkedin_bio: "",
         })
       );
 
@@ -379,6 +410,74 @@ export const ImportAudience = () => {
       organization: lead.organization,
     }));
   }
+
+  const processNonEnrichedData = () => {
+    setShowCards(false);
+    if (!fileData) return;
+
+    const processedLeads = fileData.map((row): Lead => ({
+      type: "prospective",
+      campaign_id: params.campaignId,
+      id: uuid(),
+      first_name: row['First Name'] || row['First_Name'] || row.Name?.split(' ')[0] || '',
+      last_name: row['Last Name'] || row['Last_Name'] || row.Name?.split(' ').slice(1).join(' ') || '',
+      name: row.Name || row['Full Name'] || `${row['First Name'] || ''} ${row['Last Name'] || ''}`.trim(),
+      title: row.Title || row['Job Title'] || row.Position || '',
+      linkedin_url: row['LinkedIn URL'] || row['Linkedin URL'] || row['LinkedIn'] || row.Linkedin || "",
+      email_status: 'verified',
+      photo_url: row['Photo URL'] || row['Avatar URL'] || '',
+      twitter_url: row['Twitter URL'] || row['Twitter'] || '',
+      github_url: row['GitHub URL'] || row['Github'] || null,
+      facebook_url: row['Facebook URL'] || row['Facebook'] || null,
+      extrapolated_email_confidence: null,
+      headline: row.Headline || row.Bio || '',
+      email: row.Email || row['Email Address'] || '',
+      employment_history: [],
+      state: row.State || '',
+      city: row.City || '',
+      country: row.Country || row['Country Code'] || '',
+      is_likely_to_engage: false,
+      departments: row.Departments ? row.Departments.split(',') : [],
+      subdepartments: [],
+      functions: row.Functions ? row.Functions.split(',') : [],
+      phone_numbers: row.Phone ? [{ phone: row.Phone }] : [],
+      intent_strength: null,
+      show_intent: false,
+      is_responded: false,
+      company_linkedin_url: row['Company LinkedIn URL'] || '',
+      pain_points: [],
+      value: [],
+      metrics: [],
+      compliments: [],
+      lead_information: '',
+      is_b2b: 'false',
+      score: null,
+      qualification_details: '',
+      company: row['Company Name'] || row['Company'] || row['Organization'] || '',
+      phone: row.Phone || row['Phone Number'] || '',
+      technologies: row.Technologies ? row.Technologies.split(',') : [],
+      organization: row['Company Name'] || row['Company'] || row['Organization'] || '',
+      organization_id: '',
+      seniority: row.Seniority || row['Employment Seniority'] || '',
+      revealed_for_current_team: false,
+      linkedin_posts: [],
+      linkedin_bio: row['LinkedIn Bio'] || '',
+    }));
+
+    setLeads(processedLeads);
+    setIsLeadsTableActive(true);
+    setIsDialogOpen(false);
+    toast.success("Leads processed successfully");
+  };
+
+  const handleConfirmClick = () => {
+    if (selectedOption === "withoutEnrichment") {
+      processNonEnrichedData();
+    } else {
+      enrichmentHandler();
+    }
+  };
+
 
   const createAudience = async () => {
     const audienceBody = mapLeadsToBodies(leads as Lead[]);
@@ -481,20 +580,57 @@ export const ImportAudience = () => {
     "Company Crunchbase URL",
   ];
 
+  const handleOptionSelect = (option: "withEnrichment" | "withoutEnrichment") => {
+    setSelectedOption(option);
+    setFile(undefined); // Reset file when changing options
+    // Trigger file input click
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
+
   return (
     <>
-      <div className="my-4">
-        <div className="py-3">Add your CSV or XLSX file here.</div>
-        <Input
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          className="w-full cursor-pointer"
-          onChange={handleFileChange}
-        />
-        {file && (
-          <Trash2Icon className="cursor-pointer" onClick={handleRemoveFile} />
-        )}
-      </div>
+      {showCards && (
+        <div className="my-4">
+          <div className="grid grid-cols-2 gap-4">
+            <Card
+              className={`cursor-pointer transition-all h-48 ${selectedOption === "withEnrichment" ? "border-primary" : ""}`}
+              onClick={() => handleOptionSelect("withEnrichment")}
+            >
+              <CardHeader className="h-full flex flex-col justify-center">
+                <CardTitle className="text-2xl mb-2">Enrich Your Data</CardTitle>
+                <CardDescription>
+                  Upload your file and let us enhance it with additional insights.
+                  Perfect for expanding your dataset with valuable information.
+                </CardDescription>
+              </CardHeader>
+            </Card>
+            <Card
+              className={`cursor-pointer transition-all h-48 ${selectedOption === "withoutEnrichment" ? "border-primary" : ""}`}
+              onClick={() => handleOptionSelect("withoutEnrichment")}
+            >
+              <CardHeader className="h-full flex flex-col justify-center">
+                <CardTitle className="text-2xl mb-2">Use Your Data As-Is</CardTitle>
+                <CardDescription>
+                  Upload your file without any modifications. Ideal when you have complete data.
+                  <span className="block mt-2 text-sm font-semibold">
+                    Required fields: Name, Company, LinkedIn, Email ID
+                  </span>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+          <Input
+            ref={fileInputRef}
+            id="file-upload"
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </div>
+      )}
       {error && <div className="text-red-500">{error}</div>}
       {isLoading && <LoadingCircle />}
       {fileData && (
@@ -503,7 +639,9 @@ export const ImportAudience = () => {
             <DialogHeader>
               <DialogTitle>Map File Columns</DialogTitle>
               <DialogDescription>
-                Map the file columns to appropriate fields.
+                {selectedOption === "withoutEnrichment"
+                  ? "Ensure all mandatory fields are mapped correctly."
+                  : "Map the file columns to appropriate fields."}
               </DialogDescription>
             </DialogHeader>
             <Table>
@@ -519,26 +657,57 @@ export const ImportAudience = () => {
                   <TableRow key={index}>
                     <TableCell className="font-medium">{column}</TableCell>
                     <TableCell>
-                      <Select onValueChange={handleSelectChange}>
-                        <SelectTrigger className="w-[180px]">
-                          <SelectValue placeholder="Type" />
-                        </SelectTrigger>
-                        <SelectContent className="h-60">
-                          <SelectGroup>
-                            <SelectLabel>Options</SelectLabel>
-                            {filteredOptions.map((option, index) => (
-                              <SelectItem
-                                key={index}
-                                value={`${option
-                                  .toLowerCase()
-                                  .replace(/ /g, "_")}~${column}`}
-                              >
-                                {option}
-                              </SelectItem>
-                            ))}
-                          </SelectGroup>
-                        </SelectContent>
-                      </Select>
+                      {selectedOption === "withoutEnrichment" ? (
+                        <Select onValueChange={handleSelectChange}
+                          defaultValue={
+                            column.toLowerCase().includes('name') ? 'name' :
+                              column.toLowerCase().includes('email') ? 'email' :
+                                column.toLowerCase().includes('company') || column.toLowerCase().includes('organization') ? 'company_name' :
+                                  column.toLowerCase().includes('linkedin') ? 'linkedin_url' :
+                                    undefined
+                          }>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Type" />
+                          </SelectTrigger>
+                          <SelectContent className="h-60">
+                            <SelectGroup>
+                              {/* <SelectItem value="name">Name</SelectItem>
+                              <SelectItem value="email">Email</SelectItem>
+                              <SelectItem value="company_name">Company Name</SelectItem>
+                              <SelectItem value="linkedin_url">LinkedIn URL</SelectItem> */}
+                              <SelectLabel>Other Fields</SelectLabel>
+                              {filteredOptions.map((option, optionIndex) => (
+                                <SelectItem
+                                  key={optionIndex}
+                                  value={option.toLowerCase().replace(/ /g, "_")}
+                                >
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <Select onValueChange={handleSelectChange}>
+                          <SelectTrigger className="w-[180px]">
+                            <SelectValue placeholder="Type" />
+                          </SelectTrigger>
+                          <SelectContent className="h-60">
+                            <SelectGroup>
+                              <SelectLabel>Options</SelectLabel>
+                              {filteredOptions.map((option, index) => (
+                                <SelectItem
+                                  key={index}
+                                  value={`${option
+                                    .toLowerCase()
+                                    .replace(/ /g, "_")}~${column}`}
+                                >
+                                  {option}
+                                </SelectItem>
+                              ))}
+                            </SelectGroup>
+                          </SelectContent>
+                        </Select>)}
                     </TableCell>
                     <TableCell className="text-muted-foreground">
                       {fileData[0][column]}
@@ -548,15 +717,15 @@ export const ImportAudience = () => {
               </TableBody>
             </Table>
             <DialogFooter className="flex sm:justify-start">
-              <Button 
-                onClick={enrichmentHandler} 
+              <Button
+                onClick={handleConfirmClick}
                 className="w-1/3"
-                disabled={isEnrichmentLoading}
+                disabled={selectedOption === "withoutEnrichment" && Object.values(mandatoryColumns).some(v => !v)}
               >
                 {isEnrichmentLoading ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Enriching...
+                    Processing...
                   </>
                 ) : (
                   "Confirm"
@@ -571,6 +740,7 @@ export const ImportAudience = () => {
           </DialogContent>
         </Dialog>
       )}
+
       {isLeadsTableActive && (
         <>
           <AudienceTable />
@@ -588,6 +758,13 @@ export const ImportAudience = () => {
           )}
         </>
       )}
+
+      {/* {leads && leads.length > 0 && (
+        <div className="my-4">
+          <h2>Processed Leads:</h2>
+          <pre>{JSON.stringify(leads, null, 2)}</pre>
+        </div>
+      )} */}
     </>
   );
 };
