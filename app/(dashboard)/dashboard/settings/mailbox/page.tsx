@@ -507,6 +507,33 @@ export default function Page() {
     }
   }, [getDomainName, testAllDomains]);
 
+  const verifyDomain = async () => {
+    console.log("Current domainInput:", getDomainName); // Debugging line
+
+    try {
+      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${getDomainName[0]}/authenticate`);
+      
+      if (response.data.error === "Request failed with status code 404") {
+        toast.error("Domain not found. Please check your domain settings and try again.");
+      } else {
+        toast.success("Domain verified successfully!");
+        
+        // Close the dialogs only if verification is successful
+        setIsTableDialogOpen(false);
+        setIsVerifyEmailOpen(false);
+        setIsAddMailboxOpen(false);
+      }
+    } catch (error: any) {
+      if (error.response && error.response.status === 400) {
+        toast.error("Failed to verify domain. Please check your domain settings and try again.");
+      } else {
+        toast.error("An error occurred while verifying the domain. Please try again later.");
+      }
+      
+      console.error("Domain verification error:", error);
+    }
+  };
+
   return (
     <div className="w-full">
       <Alert>
@@ -1261,7 +1288,7 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    value={domainInput}
+                    value={"@"}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                   />
@@ -1285,18 +1312,18 @@ export default function Page() {
               </TableRow>
             </TableBody>
           </Table>
+          
           <DialogFooter>
             <Button
               type="button"
-              onClick={() => {
-                setIsTableDialogOpen(false);
-                setIsVerifyEmailOpen(false);
-                setIsAddMailboxOpen(false);
-              }}
+              onClick={verifyDomain}
             >
-              Close
+              Verify Domain
             </Button>
           </DialogFooter>
+            <p className="text-gray-600 italic text-sm mt-2">
+      Note: Please set the priority of all other MX records to 10.
+    </p>
         </DialogContent>
       </Dialog>
     </div>
