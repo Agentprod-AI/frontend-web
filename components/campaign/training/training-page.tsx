@@ -47,6 +47,10 @@ import { LoadingCircle } from "@/app/icons";
 import { FieldType, VariableType } from "./types";
 import { toast } from "sonner";
 import axios from "axios";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export interface PreviewData {
   email: {
@@ -78,6 +82,8 @@ export default function Training() {
   const [previewData, setPreviewData] = React.useState<PreviewData | null>(
     null
   );
+  const [selectedOption, setSelectedOption] = useState<number>(200);
+  const [customPrompt, setCustomPrompt] = useState('');
   const [previewLoading, setPreviewLoading] = useState(false);
   const [showEditCamp, setShowEditCamp] = useState(true);
   const [type, setType] = useState<"create" | "edit">("create");
@@ -172,8 +178,8 @@ export default function Training() {
       const checkReck = await axios.get(
         `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request/${params.campaignId}`
       );
-      
-       if(checkReck.data !== null){
+
+      if (checkReck.data !== null) {
         if (checkReck.data.is_active === false) {
           await axios.put(
             `${process.env.NEXT_PUBLIC_SERVER_URL}v2/recurring_campaign_request`,
@@ -183,7 +189,7 @@ export default function Training() {
             }
           );
         }
-        
+
       }
       toast.success(
         "Your drafts are getting created, it might take some time."
@@ -386,6 +392,30 @@ export default function Training() {
     setShowEditCamp(!showEditCamp);
   };
 
+  const handleGenerate = async () => {
+    try {
+      const personaData = {
+        user_id: user.id,
+        campaign_id: params.campaignId,
+        detailed_product_description: customPrompt,
+        length_of_email: selectedOption,
+ 
+      };
+  
+      const res = await axios.put(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/personas/campaign`,
+        personaData
+      );
+  
+      console.log("Persona update response:", res.data);
+      await handleLetAiWrite();
+    } catch (error) {
+      console.error("Error updating persona:", error);
+      toast.error("Failed to update persona information");
+    }
+  };
+
+
   return (
     <>
       <div className="w-full h-14 px-4 flex flex-row justify-between items-center rounded-lg border">
@@ -494,14 +524,72 @@ export default function Training() {
       </div>
       {activeTab === "editor" ? (
         <div>
-          <div
-            className="mx-16 mt-3 hover:underline cursor-pointer flex flex-row gap-1 items-center"
-            onClick={handleLetAiWrite}
+          <Card className="w-full mt-4 shadow-md">
+      <CardHeader className="pb-2 border-b">
+        <CardTitle className="text-2xl text-center font-semibold">
+          Let AI write
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-4 space-y-4 w-80">
+        <div className="rounded-md">
+          <Label className="text-sm font-medium mb-2 block">Length of email</Label>
+          <RadioGroup
+            defaultValue="medium"
+            className="flex justify-between"
+            onValueChange={(value) => setSelectedOption(parseInt(value))}
           >
-            Let AI write email on its own
-            {loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}
+            {[
+              { label: 'Short', value: 90 },
+              { label: 'Medium', value: 130 },
+              { label: 'Long', value: 180 }
+            ].map((option) => (
+              <div key={option.label} className="flex items-center">
+                <RadioGroupItem
+                  value={option.value.toString()}
+                  id={option.label}
+                  className="mr-2"
+                />
+                <Label htmlFor={option.label} className="capitalize cursor-pointer">
+                  {option.label}
+                </Label>
+              </div>
+            ))}
+          </RadioGroup>
+        </div>
+
+        <div>
+          <Label htmlFor="custom-instructions" className="text-sm font-medium mb-1 block">
+            Custom Instructions (Optional)
+          </Label>
+          <Input
+            id="custom-instructions"
+            placeholder="Enter your custom instructions here..."
+            value={customPrompt}
+            onChange={(e) => setCustomPrompt(e.target.value)}
+            className="w-full"
+          />
+        </div>
+
+        <Button
+          onClick={handleGenerate}
+          className="w-full"
+        >
+          <div className="flex items-center justify-center">
+            Preview Email <span className="ml-2">{loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}</span>
           </div>
-          <EditorContent />
+        </Button>
+      </CardContent>
+    </Card>
+          <Card className="w-full mt-4">
+            <CardHeader>
+              <CardTitle className="text-2xl font-bold text-center">
+                Use Ai Template
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <EditorContent />
+            </CardContent>
+          </Card>
         </div>
       ) : (
         <PreviewContent />
