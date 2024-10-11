@@ -1034,6 +1034,14 @@ export default function PeopleForm(): JSX.Element {
         `v2/lead/bulk/`,
         audienceBody
       );
+
+      // Check for 403 status code
+      if (response.status === 403) {
+        toast.error("Leads limit hit. Please upgrade your plan or contact support.");
+        setIsCreateBtnLoading(false);
+        return; // Exit the function early
+      }
+
       const data = response.data;
       console.log("DATA from contacts: ", data);
       if (Array.isArray(data)) {
