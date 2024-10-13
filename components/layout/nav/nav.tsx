@@ -114,7 +114,8 @@ export function Nav({ links, isCollapsed }: NavProps) {
                   <MiniNav key={link.label} nav={link} />
                 ) : !link.isCollapsible ? (
                   <SimpleNav key={link.label} nav={link} />
-                ) : (
+                ) 
+                : (
                   <CollapseNavItem nav={link} key={link.label} />
                 )
               )}
@@ -123,7 +124,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
         </nav>
       </div>
       
-      <div className="mt-auto px-2 pb-2">
+      {links[3]?.category === "Report a bug" &&<div className="mt-auto px-2 pb-2">
         <button
           className={`w-full py-2 px-3 bg-black text-sm text-white dark:border-white border rounded-md ${
             isCollapsed ? 'p-2' : ''
@@ -133,7 +134,7 @@ export function Nav({ links, isCollapsed }: NavProps) {
         >
           {isCollapsed ? '?' : 'Report a bug'}
         </button>
-      </div>
+      </div>}
     </div>
   );
 }
