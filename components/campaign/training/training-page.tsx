@@ -397,16 +397,16 @@ export default function Training() {
       const personaData = {
         user_id: user.id,
         campaign_id: params.campaignId,
-        detailed_product_description: customPrompt,
+        custom_instructions: customPrompt ? [customPrompt] : [],
         length_of_email: selectedOption,
- 
+
       };
-  
+
       const res = await axios.put(
         `${process.env.NEXT_PUBLIC_SERVER_URL}v2/personas/campaign`,
         personaData
       );
-  
+
       console.log("Persona update response:", res.data);
       await handleLetAiWrite();
     } catch (error) {
@@ -525,61 +525,61 @@ export default function Training() {
       {activeTab === "editor" ? (
         <div>
           <Card className="w-full mt-4 shadow-md">
-      <CardHeader className="pb-2 border-b">
-        <CardTitle className="text-2xl text-center font-semibold">
-          Let AI write
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-4 space-y-4 w-80">
-        <div className="rounded-md">
-          <Label className="text-sm font-medium mb-2 block">Length of email</Label>
-          <RadioGroup
-            defaultValue="medium"
-            className="flex justify-between"
-            onValueChange={(value) => setSelectedOption(parseInt(value))}
-          >
-            {[
-              { label: 'Short', value: 90 },
-              { label: 'Medium', value: 130 },
-              { label: 'Long', value: 180 }
-            ].map((option) => (
-              <div key={option.label} className="flex items-center">
-                <RadioGroupItem
-                  value={option.value.toString()}
-                  id={option.label}
-                  className="mr-2"
-                />
-                <Label htmlFor={option.label} className="capitalize cursor-pointer">
-                  {option.label}
-                </Label>
+            <CardHeader className="pb-2 border-b">
+              <CardTitle className="text-2xl text-center font-semibold">
+                Let AI write
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="pt-4 space-y-4 w-80">
+              <div className="rounded-md">
+                <Label className="text-sm font-medium mb-2 block">Length of email</Label>
+                <RadioGroup
+                  defaultValue="medium"
+                  className="flex justify-between"
+                  onValueChange={(value) => setSelectedOption(parseInt(value))}
+                >
+                  {[
+                    { label: 'Short', value: 90 },
+                    { label: 'Medium', value: 130 },
+                    { label: 'Long', value: 180 }
+                  ].map((option) => (
+                    <div key={option.label} className="flex items-center">
+                      <RadioGroupItem
+                        value={option.value.toString()}
+                        id={option.label}
+                        className="mr-2"
+                      />
+                      <Label htmlFor={option.label} className="capitalize cursor-pointer">
+                        {option.label}
+                      </Label>
+                    </div>
+                  ))}
+                </RadioGroup>
               </div>
-            ))}
-          </RadioGroup>
-        </div>
 
-        <div>
-          <Label htmlFor="custom-instructions" className="text-sm font-medium mb-1 block">
-            Custom Instructions (Optional)
-          </Label>
-          <Input
-            id="custom-instructions"
-            placeholder="Enter your custom instructions here..."
-            value={customPrompt}
-            onChange={(e) => setCustomPrompt(e.target.value)}
-            className="w-full"
-          />
-        </div>
+              <div>
+                <Label htmlFor="custom-instructions" className="text-sm font-medium mb-1 block">
+                  Custom Instructions (Optional)
+                </Label>
+                <Input
+                  id="custom-instructions"
+                  placeholder="Enter your custom instructions here..."
+                  value={customPrompt}
+                  onChange={(e) => setCustomPrompt(e.target.value)}
+                  className="w-full"
+                />
+              </div>
 
-        <Button
-          onClick={handleGenerate}
-          className="w-full"
-        >
-          <div className="flex items-center justify-center">
-            Preview Email <span className="ml-2">{loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}</span>
-          </div>
-        </Button>
-      </CardContent>
-    </Card>
+              <Button
+                onClick={handleGenerate}
+                className="w-full"
+              >
+                <div className="flex items-center justify-center">
+                  Preview Email <span className="ml-2">{loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}</span>
+                </div>
+              </Button>
+            </CardContent>
+          </Card>
           <Card className="w-full mt-4">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">
