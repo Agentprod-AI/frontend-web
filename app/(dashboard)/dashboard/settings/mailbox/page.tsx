@@ -4,7 +4,7 @@
 /* eslint-disable no-console */
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import * as z from "zod";
 import { v4 as uuidv4 } from "uuid";
@@ -130,6 +130,8 @@ export default function Page() {
   const [isLoadingMailboxes, setIsLoadingMailboxes] = useState(false); // Shimmer UI Prep
   const [isApppasswordLoading, setIsApppassowrdLoading] = useState(false);
   const { user } = useUserContext();
+  const [isVerifying, setIsVerifying] = useState(false);
+  const verificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleOpenAddMailbox = () => setIsChooseServiceOpen(true);
   const handleCloseAddMailbox = () => setIsChooseServiceOpen(false);
@@ -507,32 +509,46 @@ export default function Page() {
     }
   }, [getDomainName, testAllDomains]);
 
-  const verifyDomain = async () => {
-    console.log("Current domainInput:", getDomainName); // Debugging line
 
-    try {
-      const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${getDomainName[0]}/authenticate`);
-      
-      if (response.data.error === "Request failed with status code 404") {
-        toast.error("Domain not found. Please check your domain settings and try again.");
-      } else {
-        toast.success("Domain verified successfully!");
+
+  const verifyDomain = async (domain:string) => {
+
+
+
+    // Close all dialogs immediately
+    setIsTableDialogOpen(false);
+    setIsVerifyEmailOpen(false);
+    setIsAddMailboxOpen(false);
+
+    // Start background verification
+    setIsVerifying(true);
+    verificationIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${domain}/authenticate`);
         
-        // Close the dialogs only if verification is successful
-        setIsTableDialogOpen(false);
-        setIsVerifyEmailOpen(false);
-        setIsAddMailboxOpen(false);
-      }
-    } catch (error: any) {
-      if (error.response && error.response.status === 400) {
-        toast.error("Failed to verify domain. Please check your domain settings and try again.");
-      } else {
+        if (!response.data.error) {
+          clearInterval(verificationIntervalRef.current!);
+          setIsVerifying(false);
+          toast.success("Domain verified successfully!");
+        } else {
+          console.log("Domain not yet verified, continuing checks...");
+        }
+      } catch (error: any) {
+        clearInterval(verificationIntervalRef.current!);
+        setIsVerifying(false);
         toast.error("An error occurred while verifying the domain. Please try again later.");
+        console.error("Domain verification error:", error);
       }
-      
-      console.error("Domain verification error:", error);
-    }
+    }, 2 * 60 * 1000); // Check every 2 minutes
   };
+
+  useEffect(() => {
+    return () => {
+      if (verificationIntervalRef.current) {
+        clearInterval(verificationIntervalRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full">
@@ -943,6 +959,14 @@ export default function Page() {
                               </TableRow>
                             </TableBody>
                           </Table>
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              onClick={() => verifyDomain(mailbox.domain)}
+                            >
+                              Verify Domain
+                            </Button>
+                          </DialogFooter>
                           <p className="text-gray-600 italic text-sm">
                             Note: Please set the priority of{" "}
                             <code>inbound.smtp</code> to 0, and increase the
@@ -1316,7 +1340,7 @@ export default function Page() {
           <DialogFooter>
             <Button
               type="button"
-              onClick={verifyDomain}
+              onClick={() => verifyDomain(mailboxes[0].domain)}
             >
               Verify Domain
             </Button>
