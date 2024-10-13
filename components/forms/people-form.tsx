@@ -2300,12 +2300,23 @@ export default function PeopleForm(): JSX.Element {
                               variant="base"
                               onFocus={() => setKeywordDropdownIsOpen(true)}
                               className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
-                              setTags={(newTags) => {
-                                setOrganizationKeywordTags(newTags);
-                                setValue(
-                                  "organization_industry_tag_ids",
-                                  newTags as any
-                                );
+                              setTags={(newTags: any) => {
+                                if (Array.isArray(newTags)) {
+                                  if (newTags.length < organizationKeywordTags.length) {
+                                    setOrganizationKeywordTags(newTags);
+                                    setValue("organization_industry_tag_ids", newTags as any);
+                                    return;
+                                  }
+                              
+                                  const lastTag = newTags[newTags.length - 1];
+                              
+                                  const updatedTags = lastTag?.id.includes('-')
+                                    ? newTags.slice(0, -1)
+                                    : newTags;
+                              
+                                  setOrganizationKeywordTags(updatedTags);
+                                  setValue("organization_industry_tag_ids", updatedTags as any);
+                                }
                               }}
                               onInputChange={(value) =>
                                 setKeywordSearchTerm(value)
@@ -2319,58 +2330,33 @@ export default function PeopleForm(): JSX.Element {
                     <div className="absolute inline-block text-left -my-4">
                       {keywordDropdownIsOpen && (
                         <ScrollArea
-                          className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
-                          style={{
-                            height:
-                              filteredKeywords.length > 0
-                                ? `${Math.min(
-                                  filteredKeywords.length * 40,
-                                  200
-                                )}px`
-                                : "auto",
-                          }}
+                        className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        style={{
+                          height:
+                            filteredKeywords.length > 0
+                              ? `${Math.min(filteredKeywords.length * 40, 200)}px`
+                              : "auto",
+                        }}
+                      >
+                        <div
+                          className="py-1"
+                          role="menu"
+                          aria-orientation="vertical"
+                          aria-labelledby="options-menu"
+                          ref={keywordDropdownRef}
                         >
-                          <div
-                            className="py-1"
-                            role="menu"
-                            aria-orientation="vertical"
-                            aria-labelledby="options-menu"
-                            ref={keywordDropdownRef}
-                          >
-                            {filteredKeywords.length > 0 ? (
-                              filteredKeywords.map((option) => (
-                                <button
-                                  key={option.value}
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    handleDropdownSelect(option);
-                                  }}
-                                  className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
-                                >
-                                  {option.name
-                                    .split(" ")
-                                    .map(
-                                      (word) =>
-                                        word.charAt(0).toUpperCase() +
-                                        word.slice(1).toLowerCase()
-                                    )
-                                    .join(" ")}
-                                </button>
-                              ))
-                            ) : (
+                          {filteredKeywords.length > 0 ? (
+                            filteredKeywords.map((option) => (
                               <button
+                                key={option.value}
                                 onClick={(e) => {
                                   e.preventDefault();
-                                  if (keywordSearchTerm.trim()) {
-                                    handleDropdownSelect({
-                                      value: keywordSearchTerm.trim(),
-                                      name: keywordSearchTerm.trim(),
-                                    });
-                                  }
+                                  handleDropdownSelect(option);
+                                  setKeywordSearchTerm("");
                                 }}
                                 className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
                               >
-                                {keywordSearchTerm
+                                {option.name
                                   .split(" ")
                                   .map(
                                     (word) =>
@@ -2379,9 +2365,15 @@ export default function PeopleForm(): JSX.Element {
                                   )
                                   .join(" ")}
                               </button>
-                            )}
-                          </div>
-                        </ScrollArea>
+                            ))
+                          ) : (
+                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                              No items found
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                      
                       )}
                     </div>
                   </div>
@@ -2407,8 +2399,9 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${dropdownsOpen.company ? "block" : "hidden"
-                      } relative`}
+                    className={`${
+                      dropdownsOpen.company ? "block" : "hidden"
+                    } relative`}
                   >
                     <FormField
                       control={form.control}
@@ -2421,7 +2414,6 @@ export default function PeopleForm(): JSX.Element {
                               tags={organizationCompanyTags}
                               placeholder="Enter company keywords"
                               variant="base"
-                              onFocus={() => setKeywordDropdownIsOpen(true)}
                               className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
                               setTags={(newTags) => {
                                 setOrganizationCompanyTags(newTags);
@@ -2429,10 +2421,6 @@ export default function PeopleForm(): JSX.Element {
                                   "q_organization_keyword_tags",
                                   newTags as [Tag, ...Tag[]]
                                 );
-                              }}
-                              onInputChange={(value) => {
-                                setSearchTerm(value);
-                                setKeywordDropdownIsOpen(value.length > 0);
                               }}
                             />
                           </FormControl>
