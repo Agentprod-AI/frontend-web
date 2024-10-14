@@ -184,6 +184,12 @@ export const navItems: NavInterface[] = [
       },
     ],
   },
+  {
+    category: "Report a bug",
+    items: [
+     
+    ],
+  },
 ];
 
 export const mails = [

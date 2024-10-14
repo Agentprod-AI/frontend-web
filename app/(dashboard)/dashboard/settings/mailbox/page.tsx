@@ -4,7 +4,7 @@
 /* eslint-disable no-console */
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useRef } from "react";
 import { CircularProgressbar, buildStyles } from "react-circular-progressbar";
 import * as z from "zod";
 import { v4 as uuidv4 } from "uuid";
@@ -130,6 +130,8 @@ export default function Page() {
   const [isLoadingMailboxes, setIsLoadingMailboxes] = useState(false); // Shimmer UI Prep
   const [isApppasswordLoading, setIsApppassowrdLoading] = useState(false);
   const { user } = useUserContext();
+  const [isVerifying, setIsVerifying] = useState(false);
+  const verificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const handleOpenAddMailbox = () => setIsChooseServiceOpen(true);
   const handleCloseAddMailbox = () => setIsChooseServiceOpen(false);
@@ -506,6 +508,47 @@ export default function Page() {
       // return () => clearInterval(intervalId);
     }
   }, [getDomainName, testAllDomains]);
+
+
+
+  const verifyDomain = async (domain:string) => {
+
+
+
+    // Close all dialogs immediately
+    setIsTableDialogOpen(false);
+    setIsVerifyEmailOpen(false);
+    setIsAddMailboxOpen(false);
+
+    // Start background verification
+    setIsVerifying(true);
+    verificationIntervalRef.current = setInterval(async () => {
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${domain}/authenticate`);
+        
+        if (!response.data.error) {
+          clearInterval(verificationIntervalRef.current!);
+          setIsVerifying(false);
+          toast.success("Domain verified successfully!");
+        } else {
+          console.log("Domain not yet verified, continuing checks...");
+        }
+      } catch (error: any) {
+        clearInterval(verificationIntervalRef.current!);
+        setIsVerifying(false);
+        toast.error("An error occurred while verifying the domain. Please try again later.");
+        console.error("Domain verification error:", error);
+      }
+    }, 2 * 60 * 1000); // Check every 2 minutes
+  };
+
+  useEffect(() => {
+    return () => {
+      if (verificationIntervalRef.current) {
+        clearInterval(verificationIntervalRef.current);
+      }
+    };
+  }, []);
 
   return (
     <div className="w-full">
@@ -916,6 +959,14 @@ export default function Page() {
                               </TableRow>
                             </TableBody>
                           </Table>
+                          <DialogFooter>
+                            <Button
+                              type="button"
+                              onClick={() => verifyDomain(mailbox.domain)}
+                            >
+                              Verify Domain
+                            </Button>
+                          </DialogFooter>
                           <p className="text-gray-600 italic text-sm">
                             Note: Please set the priority of{" "}
                             <code>inbound.smtp</code> to 0, and increase the
@@ -1261,7 +1312,7 @@ export default function Page() {
                 <TableCell>
                   <input
                     type="text"
-                    value={domainInput}
+                    value={"@"}
                     readOnly
                     className="w-full h-10 bg-transparent border border-gray-400 rounded-sm px-2"
                   />
@@ -1285,18 +1336,18 @@ export default function Page() {
               </TableRow>
             </TableBody>
           </Table>
+          
           <DialogFooter>
             <Button
               type="button"
-              onClick={() => {
-                setIsTableDialogOpen(false);
-                setIsVerifyEmailOpen(false);
-                setIsAddMailboxOpen(false);
-              }}
+              onClick={() => verifyDomain(mailboxes[0].domain)}
             >
-              Close
+              Verify Domain
             </Button>
           </DialogFooter>
+            <p className="text-gray-600 italic text-sm mt-2">
+      Note: Please set the priority of all other MX records to 10.
+    </p>
         </DialogContent>
       </Dialog>
     </div>

@@ -1,5 +1,4 @@
 import "./globals.css";
-import { ClerkProvider } from "@clerk/nextjs";
 import "@uploadthing/react/styles.css";
 import type { Metadata } from "next";
 import Providers from "@/components/layout/providers";
@@ -36,7 +35,6 @@ export default async function RootLayout({
   }
 
   return (
-    <ClerkProvider>
       <html lang="en" suppressHydrationWarning>
         <head>
           <Script
@@ -73,6 +71,5 @@ export default async function RootLayout({
           </Providers>
         </body>
       </html>
-    </ClerkProvider>
   );
 }
