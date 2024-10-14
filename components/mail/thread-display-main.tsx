@@ -682,12 +682,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const lastEmail = thread[thread.length - 1];
 
-    const unsubscribeLink =
-      "https://c813b042.sibforms.com/serve/MUIFACgOoNUQaUMaLeDSg4MqyII5sxJsKlTht8bu0QczloASUT1[…]zXFFdhD-z4tMlMX3wuEczUEShKd0mklk4Fyf76rLkIiQb_1toOnqLQ7eIh";
+    // const unsubscribeLink =
+    //   "https://c813b042.sibforms.com/serve/MUIFACgOoNUQaUMaLeDSg4MqyII5sxJsKlTht8bu0QczloASUT1[…]zXFFdhD-z4tMlMX3wuEczUEShKd0mklk4Fyf76rLkIiQb_1toOnqLQ7eIh";
 
-    const unsubscribeText = `\n\nTo unsubscribe from future communications, please ${(
-      <a href={unsubscribeLink}>click here</a>
-    )}.`;
+    // const unsubscribeText = `\n\nTo unsubscribe from future communications, please ${(
+    //   <a href={unsubscribeLink}>click here</a>
+    // )}.`;
 
     React.useEffect(() => {
       // For handleing, the thread if some error occurs
@@ -793,7 +793,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body + unsubscribeText,
+        body: body ,
       };
 
       axiosInstance
@@ -820,7 +820,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body + unsubscribeText,
+        body: body ,
       };
 
       console.log("Sending pyaload", payload);
@@ -847,7 +847,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: sanitizeSubject(lastEmail.subject),
-        body: followUpBody + unsubscribeText,
+        body: followUpBody,
       };
 
       console.log("Sending Followup", payload);
@@ -875,7 +875,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: sanitizeSubject(lastEmail.subject),
-        body: followUpBody + unsubscribeText,
+        body: followUpBody,
       };
 
       axiosInstance
