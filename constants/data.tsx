@@ -122,6 +122,7 @@ export const navItems: NavInterface[] = [
         icon: "chat",
         label: "chat with sally",
         isCollapsible: false,
+        id : "chatwithsally"
       },
     ],
   },
@@ -134,6 +135,7 @@ export const navItems: NavInterface[] = [
         icon: "dashboard",
         label: "Dashboard",
         isCollapsible: false,
+        id : "dashboard"
       },
       {
         title: "Inbox",
@@ -141,6 +143,7 @@ export const navItems: NavInterface[] = [
         icon: "mail",
         label: "mail",
         isCollapsible: true,
+        id : "inbox"
       },
       {
         title: "Campaign",
@@ -148,6 +151,7 @@ export const navItems: NavInterface[] = [
         icon: "campaign",
         label: "campaign",
         isCollapsible: false,
+        id : "campaign"
       },
     ],
   },
@@ -160,6 +164,7 @@ export const navItems: NavInterface[] = [
         icon: "lead",
         label: "leads",
         isCollapsible: false,
+        id : "leads"
       },
       {
         title: "Analytics",
@@ -167,6 +172,7 @@ export const navItems: NavInterface[] = [
         icon: "analytics",
         label: "analytics",
         isCollapsible: false,
+        id : "analytics"
       },
       {
         title: "Settings",
@@ -174,6 +180,7 @@ export const navItems: NavInterface[] = [
         icon: "settings",
         label: "settings",
         isCollapsible: false,
+        id : "settings"
       },
     ],
   },

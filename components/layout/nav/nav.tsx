@@ -1,10 +1,12 @@
-import React, { useEffect, useCallback } from 'react';
+import React, { useEffect, useCallback, useRef, useState } from 'react';
 import { NavInterface } from "@/types";
 import MiniNav from "./mini-nav";
 import SimpleNav from "./simple-nav";
 import CollapseNavItem from "./collapse-nav-item";
 import { Button } from "@/components/ui/button";
 import { useAuth } from '@/context/auth-provider';
+import introJs from "intro.js";
+import "@/components/layout/nav/introjs-css/custom-introjs.css"
 
 // Update the TawkAPI interface
 interface TawkAPI {
@@ -33,16 +35,15 @@ interface NavProps {
 
 export function Nav({ links, isCollapsed }: NavProps) {
   const { user } = useAuth();
+  const tourInstance = useRef(introJs());
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   const initializeTawk = useCallback(() => {
     //@ts-ignore
-
     window.Tawk_API = window.Tawk_API || {};
     //@ts-ignore
-
     window.Tawk_API.autoStart = false;
     //@ts-ignore
-
     window.Tawk_API.onLoad = function() {
       window.Tawk_API?.hideWidget();
 
@@ -66,10 +67,9 @@ export function Nav({ links, isCollapsed }: NavProps) {
         });
       }
     };
-//@ts-ignore
+    //@ts-ignore
     window.Tawk_API.onStatusChange = function(status) {
       //@ts-ignore
-
       if (status === 'online') {
         window.Tawk_API?.start({ showWidget: false });
       }
@@ -95,6 +95,25 @@ export function Nav({ links, isCollapsed }: NavProps) {
     };
   }, [initializeTawk]);
 
+  useEffect(() => {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    
+    if (!hasSeenOnboarding && user) {
+      setShowOnboarding(true);
+      localStorage.setItem('hasSeenOnboarding', 'true');
+    }
+
+    tourInstance.current.setOptions({
+      showBullets: false,
+      showProgress: true,
+      disableInteraction: false,
+    });
+
+    if (showOnboarding) {
+      tourInstance.current.start();
+    }
+  }, [user, showOnboarding]);
+
   const handleSupportClick = () => {
     if (window.Tawk_API?.isChatMinimized()) {
       window.Tawk_API?.maximize();
@@ -103,17 +122,36 @@ export function Nav({ links, isCollapsed }: NavProps) {
     }
   };
 
+  // Define the desired order
+  const desiredOrder = ["chatwithsally", "settings", "campaign"];
+
+  // Sort the links based on the desired order
+  const sortedLinks = links.map(section => ({
+    ...section,
+    items: section.items.sort((a, b) => {
+      const indexA = desiredOrder.indexOf(a.id as string);
+      const indexB = desiredOrder.indexOf(b.id as string);
+      return indexA - indexB;
+    })
+  }));
+
   return (
     <div data-collapsed={isCollapsed} className="group flex flex-col h-full">
       <div className="flex-grow">
         <nav className="grid gap-1 px-2 pt-2 group-[[data-collapsed=true]]:justify-center group-[[data-collapsed=true]]:px-2">
-          {links.map((nav, index) => (
+          {sortedLinks.map((nav, index) => (
             <div key={index}>
               {nav.items.map((link) =>
                 isCollapsed ? (
                   <MiniNav key={link.label} nav={link} />
                 ) : !link.isCollapsible ? (
-                  <SimpleNav key={link.label} nav={link} />
+                  <SimpleNav 
+                    key={link.label} 
+                    nav={link} 
+                    id={link.id} 
+                    tourInstance={tourInstance.current} 
+                    showOnboarding={showOnboarding}
+                  />
                 ) : (
                   <CollapseNavItem nav={link} key={link.label} />
                 )
