@@ -10,6 +10,7 @@ export interface NavItem {
   description?: string;
   isCollapsible?: boolean;
   subNavs?: NavItem[];
+  id ?: string
 }
 
 export interface NavInterface {
