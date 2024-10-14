@@ -684,26 +684,9 @@ export default function PeopleForm(): JSX.Element {
     setCalculatedPages(pages);
 
     const getRandomEmail = (startPage: number) => {
-      // const emailArray = [
-      //   "nisheet@agentprod.com",
-      //   "admin@agentprod.com",
-      //   "naman.barkiya@agentprod.com",
-      //   "siddhant.goswami@agentprod.com",
-      //   "muskaan@agentprod.com",
-      //   "bharath.kumar@getquestionpro.com",
-      //   "Urvashi.singh@getverloop.com",
-      //   "demo@agentprod.com",
-      //   "founders@agentprod.com",
-      // ];
-      const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
-
-      // if (startPage > 5) {
-      const randomIndex = startPage % 2;
+      const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com", "demo@agentprod.com"];
+      const randomIndex = startPage % 3;
       return premiumAcc[randomIndex];
-      // } else {
-      //   const randomIndex = Math.floor(Math.random() * emailArray.length);
-      //   return emailArray[randomIndex];
-      // }
     };
 
     const createScraperBody = (
@@ -1445,26 +1428,9 @@ export default function PeopleForm(): JSX.Element {
 
       // Fetch leads from Apify
       const getRandomEmail = (startPage: number) => {
-        // const emailArray = [
-        //   "nisheet@agentprod.com",
-        //   "admin@agentprod.com",
-        //   "naman.barkiya@agentprod.com",
-        //   "siddhant.goswami@agentprod.com",
-        //   "muskaan@agentprod.com",
-        //   "bharath.kumar@getquestionpro.com",
-        //   "Urvashi.singh@getverloop.com",
-        //   "demo@agentprod.com",
-        //   "founders@agentprod.com",
-        // ];
-        const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com"];
-
-        // if (startPage > 5) {
-        const randomIndex = startPage % 2;
+        const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com", "demo@agentprod.com"];
+        const randomIndex = startPage % 3;
         return premiumAcc[randomIndex];
-        // } else {
-        //   const randomIndex = Math.floor(Math.random() * emailArray.length);
-        //   return emailArray[randomIndex];
-        // }
       };
 
       const createScraperBody = (email: string, count: number, startPage: number) => ({
