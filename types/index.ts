@@ -10,11 +10,13 @@ export interface NavItem {
   description?: string;
   isCollapsible?: boolean;
   subNavs?: NavItem[];
+  beta?: boolean;
 }
 
 export interface NavInterface {
   category: string;
   items: NavItem[];
+  
 }
 
 export interface NavItemWithChildren extends NavItem {

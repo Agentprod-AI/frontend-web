@@ -25,7 +25,14 @@ export default function SimpleNav({ nav }: { nav: NavItem }) {
           )}
         >
           <Icon className="mr-2 h-4 w-4" />
-          {nav.title}
+          <span className="flex items-center">
+            {nav.title}
+            {nav.beta && (
+              <span className="ml-2 rounded-full  px-2 py-1 text-xs font-semibold text-white/70 border-white/80 border">
+                Beta
+              </span>
+            )}
+          </span>
           {nav.isCollapsible && (
             <ChevronsUpDown className="h-4 w-4 ml-auto text-muted-foreground" />
           )}

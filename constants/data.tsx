@@ -122,6 +122,7 @@ export const navItems: NavInterface[] = [
         icon: "chat",
         label: "chat with sally",
         isCollapsible: false,
+        beta: true,
       },
     ],
   },
