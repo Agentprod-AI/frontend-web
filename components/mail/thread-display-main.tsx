@@ -736,6 +736,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           },
         ],
       };
+      
       axiosInstance
         .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
