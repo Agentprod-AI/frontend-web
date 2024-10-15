@@ -172,35 +172,11 @@ export default function Page() {
     resolver: zodResolver(FormSchema),
   });
 
-  const handleLinkedInConnect = async () => {
+  const handleLinkedInConnect = () => {
 
-    try {
-      const response = await fetch('/api/download-linkedin-plugin', {
-        method: 'GET',
-      });
-      
-      if (!response.ok) {
-        throw new Error('Download failed');
-      }
-
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = 'chrome-extension.zip';
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
-      
-      toast.success("LinkedIn plugin downloaded successfully");
-    } catch (error) {
-      console.error('Download failed:', error);
-      toast.error("Failed to download LinkedIn plugin. Please try again.");
-    } finally {
-
-    }
+    console.log('Connecting with:', linkedInEmail);
   };
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Slack Card Started Here */}
@@ -527,7 +503,15 @@ export default function Page() {
                       This will allow you to connect your LinkedIn account to the AgentProd platform.
                     </p>
                   </div>
-                  <Button className="" onClick={handleLinkedInConnect}>Download Linkedin Plugin</Button>
+                  <Button className="" onClick={handleLinkedInConnect}>
+                    <a
+                      href="/chrome-extension.zip"
+                      download="chrome-extension.zip"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      Download LinkedIn Plugin
+                    </a>
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
