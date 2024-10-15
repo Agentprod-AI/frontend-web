@@ -24,6 +24,7 @@ import {
   DialogTitle,
   DialogDescription,
   DialogFooter,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
@@ -51,6 +52,8 @@ import { useUserContext } from "@/context/user-context";
 import axiosInstance from "@/utils/axiosInstance";
 
 import { toast } from "sonner";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const FormSchema = z.object({
   type: z.enum(["all", "engaged"], {
@@ -61,7 +64,9 @@ const FormSchema = z.object({
 export default function Page() {
   const [isHubspotMailboxOpen, setIsHubspotMailboxOpen] = React.useState(false);
   const [isConnectedToHubspot, setIsConnectedToHubspot] = React.useState(false);
-
+  const [isLinkedInMailboxOpen, setIsLinkedInMailboxOpen] = React.useState(false);
+  const [linkedInEmail, setLinkedInEmail] = React.useState('');
+  const [linkedInPassword, setLinkedInPassword] = React.useState('');
   const [isSalesforceMailboxOpen, setIsSalesforceMailboxOpen] =
     React.useState(false);
   const [isConnectedToSalesforce, setIsConnectedToSalesforce] =
@@ -167,6 +172,35 @@ export default function Page() {
     resolver: zodResolver(FormSchema),
   });
 
+  const handleLinkedInConnect = async () => {
+
+    try {
+      const response = await fetch('/api/download-linkedin-plugin', {
+        method: 'GET',
+      });
+      
+      if (!response.ok) {
+        throw new Error('Download failed');
+      }
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = 'chrome-extension.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
+      
+      toast.success("LinkedIn plugin downloaded successfully");
+    } catch (error) {
+      console.error('Download failed:', error);
+      toast.error("Failed to download LinkedIn plugin. Please try again.");
+    } finally {
+
+    }
+  };
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {/* Slack Card Started Here */}
@@ -460,126 +494,47 @@ export default function Page() {
           <div className="flex justify-between items-center">
             <LinkedInIcon />
             <div
-              className={`text-sm border rounded-lg text-center p-2 cursor-not-allowed`}
-              onClick={() => {}}
+              className={`text-sm border rounded-lg text-center p-2 cursor-pointer `}
+              onClick={() => {
+                setIsLinkedInMailboxOpen(true);
+              }}
             >
-              Coming Soon
-            </div>
-          </div>
-          <Dialog>
-            <DialogContent className="w-full">
-              <DialogHeader>
-                <DialogTitle>
-                  <div className="flex flex-col gap-4 mb-1">
-                    <div className="flex justify-center items-center flex-row gap-3">
-                      <Image src={logo} alt="logo" width={40} height={40} />
-                      <ArrowLeftRight />
-                      <HubSpotIcon />
-                    </div>
-                    Export AgentProd Leads to HubSpot
-                  </div>
-                </DialogTitle>
-                <DialogDescription>
-                  Description about the action being performed
-                </DialogDescription>
-              </DialogHeader>
-              <Separator />
-              <Form {...form}>
-                <form
-                  // onSubmit={form.handleSubmit(onSubmit)}
-                  className="w-2/3 space-y-6"
-                >
-                  <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                      <FormItem className="space-y-3">
-                        <FormLabel>
-                          <p className="text-base text-gray-400">
-                            Configure Leads
-                          </p>
-                        </FormLabel>
-                        <FormControl>
-                          <RadioGroup
-                            onValueChange={field.onChange}
-                            defaultValue={field.value}
-                            className="flex flex-col space-y-1"
-                          >
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="all"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">Export All Leads</h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that is enrolled
-                                    from your AgentProd account
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                            <FormItem className="flex items-center space-x-3 space-y-0">
-                              <FormControl>
-                                <RadioGroupItem
-                                  value="engaged"
-                                  className="h-6 w-6 focus:bg-black focus:text-white"
-                                />
-                              </FormControl>
-                              <FormLabel className="font-bold">
-                                <div>
-                                  <h1 className="text-lg">
-                                    Export Engaged Leads
-                                  </h1>
-                                  <p className="font-normal text-gray-400">
-                                    We will stream every lead that have
-                                    responsed to your outbound workflows
-                                  </p>
-                                </div>
-                              </FormLabel>
-                            </FormItem>
-                          </RadioGroup>
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </form>
-              </Form>
-              <Separator />
-              <div className="flex flex-row gap-4">
-                <p className="font-semibold">
-                  Avoid outreach to leads that is already in your CRM?{" "}
-                </p>
-                <Switch />
-              </div>
-              <DialogFooter>
-                <Button
-                  variant={"outline"}
-                  className="mt-3"
-                  onClick={handleCloseHubspotMailbox}
-                >
-                  Cancel
-                </Button>
-                <Button className="mt-3" type="submit">
-                  Update
-                </Button>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-
-          {/* {service.isConnected ? (
-            <Button variant={"outline"} className="text-sm">
-              Disconnect
-            </Button>
-          ) : (
-            <Button variant={"outline"} className="text-sm">
               Connect
-            </Button>
-          )} */}
+            </div>
+            <Dialog open={isLinkedInMailboxOpen}
+              onOpenChange={setIsLinkedInMailboxOpen}>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>
+                    <div className="flex flex-col gap-4 mb-1">
+                      <div className="flex justify-center items-center flex-row gap-3">
+                        <Image src={logo} alt="logo" width={40} height={40} />
+                        <ArrowLeftRight />
+                        <LinkedInIcon />
+                      </div>
+                      Connect LinkedIn Account
+                    </div>
+                  </DialogTitle>
+                  <DialogDescription>
+                    Connect your LinkedIn account to the AgentProd platform.
+                  </DialogDescription>
+                </DialogHeader>
+                <Separator />
+                <div className="space-y-4">
+                  <div className="space-y-2">
+                    <p className="text-base text-gray-400">Download the Linkedin Plugin</p>
+                    <p className="text-base text-gray-400">
+                      This will allow you to connect your LinkedIn account to the AgentProd platform.
+                    </p>
+                  </div>
+                  <Button className="" onClick={handleLinkedInConnect}>Download Linkedin Plugin</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </div>
+
+
+
         </CardHeader>
         <CardContent className="space-y-2 mt-2">
           <CardTitle>LinkedIn</CardTitle>
@@ -724,7 +679,7 @@ export default function Page() {
             <ZapierIcon />
             <div
               className={`text-sm border rounded-lg text-center p-2 cursor-not-allowed`}
-              onClick={() => {}}
+              onClick={() => { }}
             >
               Coming Soon
             </div>

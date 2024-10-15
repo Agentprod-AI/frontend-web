@@ -32,6 +32,7 @@ import {
   ChevronsUpDown,
   Edit3,
   Forward,
+  Linkedin,
   ListTodo,
   MailPlus,
   RefreshCw,
@@ -682,18 +683,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const lastEmail = thread[thread.length - 1];
 
-    // const unsubscribeLink =
-    //   "https://c813b042.sibforms.com/serve/MUIFACgOoNUQaUMaLeDSg4MqyII5sxJsKlTht8bu0QczloASUT1[…]zXFFdhD-z4tMlMX3wuEczUEShKd0mklk4Fyf76rLkIiQb_1toOnqLQ7eIh";
-
-    // const unsubscribeText = `\n\nTo unsubscribe from future communications, please ${(
-    //   <a href={unsubscribeLink}>click here</a>
-    // )}.`;
+    // Add this state to store the platform
+    const [platform, setPlatform] = React.useState("");
 
     React.useEffect(() => {
-      // For handleing, the thread if some error occurs
       setError("");
       setIsLoading(true);
-      // For handleing, the thread if some error occurs
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
@@ -705,8 +700,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             if (response.data[0].suggestions) {
               setSuggestions(response.data[0].suggestions);
             }
+            // Store the platform information
+            setPlatform(response.data[0].platform);
           }
-
           setIsLoading(false);
         })
         .catch((err) => {
@@ -816,28 +812,42 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const handleSendNow = () => {
       SetIsLoadingButton(true);
-      const payload = {
-        conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
-        subject: title,
-        body: body ,
-      };
+      
+      let payload;
+      let endpoint;
 
-      console.log("Sending pyaload", payload);
+      if (platform === "Linkedin") {
+        payload = {
+          email: recipientEmail,
+          user_id: user.id, // Assuming you have access to the user object
+          message: body
+        };
+        endpoint = "/v2/linkedin/send-message";
+      } else {
+        payload = {
+          conversation_id: conversationId,
+          sender: senderEmail,
+          recipient: recipientEmail,
+          subject: title,
+          body: body,
+        };
+        endpoint = "/v2/mailbox/send/immediately";
+      }
+
       axiosInstance
-        .post("/v2/mailbox/send/immediately", payload)
+        .post(endpoint, payload)
         .then((response) => {
-          toast.success("Your email has been sent successfully!");
+          toast.success("Your message has been sent successfully!");
           setThread(response.data);
-          updateMailStatus(conversationId, "sent"); // Update mail status
+          updateMailStatus(conversationId, "sent");
           SetIsLoadingButton(false);
           setEditable(false);
           setSelectedMailId(conversationId);
         })
         .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
+          console.error("Failed to send message:", error);
+          toast.error("Failed to send the message. Please try again.");
+          SetIsLoadingButton(false);
         });
     };
 
@@ -998,9 +1008,10 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       </span>
                     </div>
                   </div>
-                  <CardHeader>
-                    <CardTitle className="text-sm flex -mt-8 -ml-3">
-                      <Input
+                  {platform !== "Linkedin" && (
+                    <CardHeader>
+                      <CardTitle className="text-sm flex -mt-2 -ml-3">
+                        <Input
                         value={sanitizeSubject(followUpSubject)}
                         disabled={!editable}
                         className="text-xs"
@@ -1009,6 +1020,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       />
                     </CardTitle>
                   </CardHeader>
+                  )}
                   <CardContent className="text-xs -ml-3 -mt-4">
                     <Textarea
                       value={followUpBody}
@@ -1020,9 +1032,10 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   </CardContent>
                   <CardFooter className="flex justify-between text-xs items-center">
                     <div>
-                      <Button
-                        disabled={editable}
-                        onClick={handleFollowUpApproval}
+                      {platform !== "Linkedin" && (
+                        <Button
+                          disabled={editable}
+                          onClick={handleFollowUpApproval}
                       >
                         {loadingSmartSchedule ? (
                           <LoadingCircle />
@@ -1030,6 +1043,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                           "Smart Schedule"
                         )}
                       </Button>
+                      )}
                       <Button
                         variant={"secondary"}
                         className="ml-2"
@@ -1126,37 +1140,45 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 {"You to " + leads[0]?.name}
               </span>
               <div className="flex gap-3">
-                {/* <span className="text-gray-500 text-sm  ">8 hours ago</span> */}
-                <span className="text-green-500 text-sm ">Draft</span>
+                <span className="text-blue-500 text-sm flex items-center space-x-2">
+                  {platform === "Linkedin" ? "LinkedIn Message" : "Draft"}
+                  <div className="h-4 w-4 pl-2">
+                    {platform === "Linkedin" && <Linkedin className="h-4 w-4" />}
+                  </div>
+                </span>
               </div>
             </div>
-            <CardHeader>
-              <CardTitle className="text-sm flex -mt-8 -ml-3">
-                <Input
-                  value={title}
-                  disabled={!editable}
-                  className="text-xs"
-                  placeholder="Subject"
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </CardTitle>
-            </CardHeader>
+            {platform !== "Linkedin" && (
+              <CardHeader>
+                <CardTitle className="text-sm flex -mt-8 -ml-3">
+                  <Input
+                    value={title}
+                    disabled={!editable}
+                    className="text-xs"
+                    placeholder="Subject"
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                </CardTitle>
+              </CardHeader>
+            )}
             <CardContent className="text-xs -ml-3 -mt-4">
               <Textarea
                 value={body}
                 disabled={!editable}
                 className="text-xs h-64"
-                placeholder="Enter email body"
+                placeholder="Enter message body"
                 onChange={(e) => setBody(e.target.value)}
               />
             </CardContent>
             <CardFooter className="flex justify-between text-xs items-center">
               <div>
-                <Button disabled={editable} onClick={handleApproveEmail}>
-                  {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
-                </Button>
+                {platform !== "Linkedin" && (
+                  <Button disabled={editable} onClick={handleApproveEmail}>
+                    {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
+                  </Button>
+                )}
                 <Button
-                  variant={"secondary"}
+                  variant={platform === "Linkedin" ? "default" : "secondary"}
                   className="ml-2"
                   onClick={handleSendNow}
                 >
@@ -1188,7 +1210,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <div ref={internalScrollRef} />
           </Card>
         </div>
-        <SuggestionDisplay suggestions={suggestions} />
+        {platform !== "Linkedin" && <SuggestionDisplay suggestions={suggestions} />}
       </div>
     );
   };

@@ -11,7 +11,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Card, CardTitle, CardContent } from "@/components/ui/card";
-import { Plus } from "lucide-react";
+import { MailIcon, Plus } from "lucide-react";
 import Link from "next/link";
 import { useCampaignContext } from "@/context/campaign-provider";
 import { Icons } from "@/components/icons";
@@ -24,6 +24,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import Image from "next/image";
+import { Linkedin } from 'lucide-react';
+
 
 interface CampaignEntry {
   user_id: string;
@@ -49,6 +51,7 @@ interface CampaignEntry {
   friday_end?: string;
   id: string;
   contacts?: number;
+  channel?: string;
   offering_details?: string[];
   replies?: number;
   meetings_booked?: number;
@@ -225,12 +228,30 @@ export default function CampaignPage() {
             />
           </div>
         </div>
+        <div className="space-y-2">
+
         <div className="text-xs dark:text-white/80 text-black -space-y-4 bg-green-400/80 dark:bg-green-400/20 w-max px-4 py-1 rounded-3xl">
           {campaignItem?.schedule_type === "recurring"
-            ? "Recurring"
+            ? "Contact Leads Every Day"
             : "One-time"}
         </div>
+        <div className={`text-xs flex items-center gap-1 dark:text-white/80 text-black ${
+          campaignItem?.channel === "Linkedin" 
+            ? "bg-blue-400/80 dark:bg-blue-400/20" 
+            : "bg-purple-400/80 dark:bg-purple-400/20"
+        } w-max px-4 py-1 rounded-3xl`}>
+          {campaignItem?.channel === "Linkedin"
+            ? "Linkedin"
+            : "Email"}
+          <span className="w-4 h-4 flex items-center justify-center">
+            {campaignItem?.channel === "Linkedin" 
+              ? <Linkedin className="w-3 h-3" />
+              : <MailIcon className="w-3 h-3" />
+            }
+          </span>
+        </div>
 
+            </div>
         <div className="flex flex-col gap-2">
           <TooltipProvider>
             <Tooltip>
