@@ -1079,7 +1079,7 @@ export default function PeopleForm(): JSX.Element {
 
         // Start polling for leads
         let attempts = 0;
-        const maxAttempts = 20;
+        const maxAttempts = 10;
         const pollInterval = 6000; // 7 seconds
 
         const checkLeads = async () => {

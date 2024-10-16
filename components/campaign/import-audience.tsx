@@ -67,6 +67,7 @@ export const ImportAudience = () => {
   const { setPageCompletion } = useButtonStatus();
 
   const [isEnrichmentLoading, setIsEnrichmentLoading] = useState(false);
+  const [showCard, setShowCard] = useState(true);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -173,6 +174,7 @@ export const ImportAudience = () => {
 
   const enrichmentHandler = async () => {
     setIsEnrichmentLoading(true);
+    setShowCard(false); // Hide the card when enrichment starts
     toast.loading("Enriching leads...", { id: "enrichment" });
 
     const leadsToEnrich = fileData?.map((row) => {
@@ -195,9 +197,12 @@ export const ImportAudience = () => {
 
       // Prepare the data for the new endpoint
       const enrichmentData = leadsToEnrich.map(lead => ({
-        first_name: lead.first_name || "",
-        last_name: lead.last_name || "",
-        email: lead.email || ""
+        first_name: lead.first_name || lead.name.split(" ")[0] || "",
+        last_name: lead.last_name || lead.name.split(" ")[1] || "",
+        email: lead.email || "",
+        company_website_url: lead.company_website_url || "",
+        company_name: lead.company_name || "",
+        linkedin_url: lead.linkedin_url || "",
       }));
 
       // Call the new endpoint
@@ -356,10 +361,47 @@ export const ImportAudience = () => {
 
       // Step 3: Update user details
       toast.info("Updating user details, please wait...");
-      setTimeout(() => {
-        router.push(`/dashboard/campaign/${params.campaignId}`);
-        setIsCreateBtnLoading(false);
-      }, 40000);
+      let attempts = 0;
+      const maxAttempts = 10;
+      const pollInterval = 6000; // 7 seconds
+
+        const checkLeads = async () => {
+          try {
+            const response = await axios.get(
+              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
+            );
+            if (Array.isArray(response.data) && response.data.length >= 1) {
+              setIsCreateBtnLoading(false);
+              setTimeout(() => {
+                router.push(`/dashboard/campaign/${params.campaignId}`);
+              }, 4000);
+
+              return true;
+            }
+          } catch (error) {
+            console.error("Error checking leads:", error);
+          }
+          return false;
+        };
+
+        const poll = async () => {
+          const success = await checkLeads();
+          if (success) {
+            return;
+          }
+
+          attempts++;
+          if (attempts >= maxAttempts) {
+            console.log("Max attempts reached. Stopping polling.");
+            toast.error("Failed to update leads. Please try again later.");
+            setIsCreateBtnLoading(false);
+            return;
+          }
+
+          setTimeout(poll, pollInterval);
+        };
+
+        poll();
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.toString() : String(error));
@@ -371,6 +413,7 @@ export const ImportAudience = () => {
   const filteredOptions = [
     "First Name",
     "Last Name",
+    "Name",
     "Email",
     "LinkedIn URL",
     "Company Name",
@@ -386,42 +429,42 @@ export const ImportAudience = () => {
 
   return (
     <>
+      {showCard && (
+        <div className="my-4">
+          <h2 className="text-2xl font-bold mb-4">Choose Your Import Method</h2>
 
-  <div className="my-4">
-    <h2 className="text-2xl font-bold mb-4">Choose Your Import Method</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card
+              className="cursor-pointer transition-all h-60 border-primary"
+              onClick={handleCardClick}
+            >
+              <CardHeader>
+                <CardTitle className="text-2xl mb-2 flex items-center">
+                  <FileIcon className="mr-2" /> Enhance Your Contact List
+                </CardTitle>
+                <CardDescription>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Upload your file (CSV, Excel, etc.)</li>
+                    <li>We'll enrich each contact with additional details</li>
+                    <li>Get their email ID, LinkedIn ID, job titles, company size, etc.</li>
+                    <li>Save time on manual research</li>
+                    <li>Required fields: Name, Company</li>
+                  </ul>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
 
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <Card
-        className="cursor-pointer transition-all h-60 border-primary"
-        onClick={handleCardClick}
-      >
-        <CardHeader>
-          <CardTitle className="text-2xl mb-2 flex items-center">
-            <FileIcon className="mr-2" /> Enhance Your Contact List
-          </CardTitle>
-          <CardDescription>
-            <ul className="list-disc list-inside space-y-2">
-              <li>Upload your file (CSV, Excel, etc.)</li>
-              <li>We'll enrich each contact with additional details</li>
-              <li>Get their email ID, LinkedIn ID, job titles, company size, etc.</li>
-              <li>Save time on manual research</li>
-              <li>Required fields: Name, Company</li>
-            </ul>
-          </CardDescription>
-        </CardHeader>
-      </Card>
-      
-    </div>
-
-    <Input
-      ref={fileInputRef}
-      id="file-upload"
-      type="file"
-      accept=".csv,.xlsx,.xls"
-      onChange={handleFileChange}
-      className="hidden"
-    />
-  </div>
+          <Input
+            ref={fileInputRef}
+            id="file-upload"
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </div>
+      )}
 
       {error && <div className="text-red-500">{error}</div>}
       {isLoading && <LoadingCircle />}
