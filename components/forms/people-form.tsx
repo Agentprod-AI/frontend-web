@@ -76,7 +76,7 @@ const FormSchema = z.object({
       id: z.string(),
       text: z.string(),
     })
-  ),
+  ).optional(),
   email_status: z
     .array(
       z.object({
@@ -1737,7 +1737,7 @@ export default function PeopleForm(): JSX.Element {
                           </FormItem>
                         )}
                       />
-                      <div className="absolute inline-block text-left -my-4">
+                      {/* <div className="absolute inline-block text-left -my-4">
                         {jobTitleDropdownIsOpen && (
                           <ScrollArea
                             className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
@@ -1806,7 +1806,7 @@ export default function PeopleForm(): JSX.Element {
                             </div>
                           </ScrollArea>
                         )}
-                      </div>
+                      </div> */}
                     </div>
                     <FormField
                       control={form.control}
@@ -1820,7 +1820,7 @@ export default function PeopleForm(): JSX.Element {
                             <TagInput
                               {...field}
                               dropdown={true}
-                              dropdownPlaceholder="Add management postitions"
+                              dropdownPlaceholder="Add management positions"
                               dropdownOptions={seniorities}
                               tags={personSenioritiesTags}
                               variant={"base"}
@@ -1834,10 +1834,6 @@ export default function PeopleForm(): JSX.Element {
                               }}
                             />
                           </FormControl>
-                          {/* <FormDescription>
-                        These are the seniorities that you&apos;re interested
-                        in.
-                      </FormDescription> */}
                           <FormMessage />
                         </FormItem>
                       )}
@@ -1921,10 +1917,6 @@ export default function PeopleForm(): JSX.Element {
                             )}
                           </div>
                         </FormControl>
-                        {/* <FormDescription>
-                      This is headcount of the company that you&apos;re
-                      interested in.
-                    </FormDescription> */}
                         <FormMessage />
                       </FormItem>
                     )}
