@@ -683,19 +683,18 @@ export default function PeopleForm(): JSX.Element {
 
     setCalculatedPages(pages);
 
-    const getRandomEmail = (startPage: number) => {
+    const getRandomEmail = () => {
       const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com", "demo@agentprod.com"];
-      const randomIndex = startPage % 3;
+      const randomIndex = Math.floor(Math.random() * premiumAcc.length);
       return premiumAcc[randomIndex];
     };
 
     const createScraperBody = (
-      email: string,
       count: number,
       startPage: number
     ) => ({
       count: Math.min(count, 25),
-      email: email,
+      email: getRandomEmail(),
       getEmails: true,
       guessedEmails: true,
       maxDelay: 15,
@@ -712,8 +711,7 @@ export default function PeopleForm(): JSX.Element {
     });
 
     const fetchLead = async (startPage: number): Promise<any[]> => {
-      const email = getRandomEmail(startPage);
-      const scraperBody = createScraperBody(email, 25, startPage);
+      const scraperBody = createScraperBody(25, startPage);
       let retries = 0;
       const TIMEOUT = 90000;
       const maxRetries = 3;
