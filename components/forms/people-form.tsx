@@ -26,7 +26,7 @@ import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { LoadingCircle } from "@/app/icons";
 import { AudienceTableClient } from "../tables/audience-table/client";
 import { v4 as uuid } from "uuid";
-import { orgLocations, jobTitles, seniorities, InputType, companyDomains } from "./formUtils";
+import { orgLocations, jobTitles, seniorities, InputType, companyDomains, technologies } from "./formUtils";
 import { Checkbox } from "@/components/ui/checkbox";
 import axiosInstance from "@/utils/axiosInstance";
 import { useUserContext } from "@/context/user-context";
@@ -141,6 +141,38 @@ const FormSchema = z.object({
       })
     )
     .optional(),
+  search_signals: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string()
+      })
+    )
+    .optional(),
+  job_posting_titles: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
+  job_posting_locations: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
+  currently_using_technologies: z
+    .array(
+      z.object({
+        id: z.string(),
+        text: z.string(),
+      })
+    )
+    .optional(),
 });
 
 export default function PeopleForm(): JSX.Element {
@@ -174,10 +206,16 @@ export default function PeopleForm(): JSX.Element {
 
   const [personTitlesTags, setPersonTitlesTags] = React.useState<Tag[]>([]);
 
+  const [jobPostingTitles, setJobPostingTitles] = React.useState<Tag[]>([]);
+  const [jobPostingLocations, setJobPostingLocations] = React.useState<Tag[]>([]);
+
   const [checkedFundingRounds, setCheckedFundingRounds] =
     React.useState<string[]>();
 
   const [checkedCompanyHeadcount, setCheckedCompanyHeadcount] =
+    React.useState<string[]>();
+
+  const [checkedSearchSignal, setCheckedSearchSignal] =
     React.useState<string[]>();
 
   const [minimumCompanyFunding, setMinimumCompanyFunding] =
@@ -205,6 +243,16 @@ export default function PeopleForm(): JSX.Element {
   const [organizationKeywordTags, setOrganizationKeywordTags] = React.useState<
     Tag[]
   >([]);
+
+  const [currentlyUsingTechnologiesTags, setCurrentlyUsingTechnologiesTags] = React.useState<
+    Tag[]
+  >([]);
+
+  const [filteredTechnologies, setFilteredTechnologies] = useState(technologies);
+  const [technologiesSearchTerm, setTechnologiesSearchTerm] = useState("");
+  const [technologiesDropdownIsOpen, setTechnologiesDropdownIsOpen] = useState(false);
+  const technologyDropdownRef = useRef<HTMLDivElement>(null);
+
   const [searchTerm, setSearchTerm] = useState("");
 
   const [error, setError] = React.useState<string | null>(null);
@@ -236,6 +284,7 @@ export default function PeopleForm(): JSX.Element {
     q_keywords: { id: string; text: string } | undefined;
     organization_job_locations: { id: string; text: string }[] | undefined;
     q_organization_job_titles: { id: string; text: string }[] | undefined;
+    search_signals: { id: string; text: string }[] | undefined;
   }
 
   interface TagInput {
@@ -536,6 +585,20 @@ export default function PeopleForm(): JSX.Element {
         .join("");
     }
 
+    if (
+      formData.currently_using_technologies &&
+      formData.currently_using_technologies.length > 0
+    ) {
+      url += formData.currently_using_technologies
+        .map(
+          (technology: any) =>
+            `&currentlyUsingAnyOfTechnologyUids[]=${encodeURIComponent(
+              technology.id
+            )}`
+        )
+        .join("")
+    }
+
     if (formData.person_titles && formData.person_titles.length > 0) {
       url += formData.person_titles
         .map(
@@ -580,6 +643,24 @@ export default function PeopleForm(): JSX.Element {
         "&includedOrganizationKeywordFields[]=tags&includedOrganizationKeywordFields[]=name";
     }
 
+    if (formData.job_posting_titles && formData.job_posting_titles.length > 0) {
+      url += formData.job_posting_titles
+        .map(
+          (tag: any) =>
+            `&qOrganizationJobTitles[]=${encodeURIComponent(tag.text)}`
+        )
+        .join("")
+    }
+
+    if (formData.job_posting_locations && formData.job_posting_locations.length > 0) {
+      url += formData.job_posting_locations
+        .map(
+          (tag: any) =>
+            `&organizationJobLocations[]=${encodeURIComponent(tag.text)}`
+        )
+        .join("")
+    }
+
     if (checkedFundingRounds && checkedFundingRounds.length > 0) {
       url += checkedFundingRounds
         .map(
@@ -587,6 +668,15 @@ export default function PeopleForm(): JSX.Element {
             `&organizationLatestFundingStageCd[]=${encodeURIComponent(round)}`
         )
         .join("");
+    }
+
+    if (checkedSearchSignal && checkedSearchSignal.length > 0) {
+      url += checkedSearchSignal
+        .map(
+          (signal: string) =>
+            `&searchSignalIds[]=${encodeURIComponent(signal)}`
+        )
+        .join("")
     }
 
     if (formData.person_seniorities && formData.person_seniorities.length > 0) {
@@ -625,6 +715,7 @@ export default function PeopleForm(): JSX.Element {
     form,
     checkedCompanyHeadcount,
     checkedFundingRounds,
+    checkedSearchSignal,
     form.watch("organization_locations"),
     form.watch("organization_industry_tag_ids"),
     form.watch("person_titles"),
@@ -634,6 +725,9 @@ export default function PeopleForm(): JSX.Element {
     form.watch("maximum_company_funding"),
     form.watch("email_status"),
     form.watch("q_organization_domains"),
+    form.watch("job_posting_locations"),
+    form.watch("job_posting_titles"),
+    form.watch("currently_using_technologies"),
   ]);
 
   const onSubmit = async (data: z.infer<typeof FormSchema>) => {
@@ -641,11 +735,15 @@ export default function PeopleForm(): JSX.Element {
       q_organization_domains: data.q_organization_domains,
       organization_industry_tag_ids: data.organization_industry_tag_ids,
       q_organization_keyword_tags: data.q_organization_keyword_tags,
+      currently_using_technologies: data.currently_using_technologies,
+      job_posting_locations: data.job_posting_locations,
+      job_posting_titles: data.job_posting_titles,
       organization_locations: data.organization_locations,
       person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
       organization_latest_funding_stage_cd:
         data.organization_latest_funding_stage_cd,
+      search_signals: data.search_signals,
       minimum_company_funding: data.minimum_company_funding,
       maximum_company_funding: data.maximum_company_funding,
       person_titles: data.person_titles,
@@ -902,6 +1000,8 @@ export default function PeopleForm(): JSX.Element {
     companyDomains: false,
     industry: false,
     company: false,
+    searchSignals: false,
+    technologies: false,
   });
   const toggleDropdown = (id: string) => {
     setDropdownsOpen((prev) => ({
@@ -918,6 +1018,12 @@ export default function PeopleForm(): JSX.Element {
     value: string;
     checked: boolean;
   };
+
+  type SignalCheckboxOptions = {
+    id: string;
+    name: string;
+    checked: boolean;
+  }
 
   const fundingRounds = [
     { name: "Seed", checked: false, value: "0" },
@@ -949,6 +1055,24 @@ export default function PeopleForm(): JSX.Element {
     { name: "5001-10000", value: "5001-10000", checked: false },
     { name: "10000+", value: "10000+", checked: false },
   ];
+
+  const signals: SignalCheckboxOptions[] = [
+    {id: "643daa349293c1cdaa4d00f8", name: "New role", checked: false},
+    {id: "643daa3c9293c1cdaa4d00f9", name: "Opened 2+ emails in past week", checked: false},
+    {id: "643daa3f9293c1cdaa4d00fa", name: "Rapid growth", checked: false},
+    {id: "643daa439293c1cdaa4d00fb", name: "Recent funding", checked: false},
+    {id: "649f201bed59e501eb4d3f0f", name: "High buying intent", checked: false},
+    {id: "649f201bed59e501eb4d3f10", name: "Merger or acquisition", checked: false},
+    {id: "649f201bed59e501eb4d3f11", name: "New product or service", checked: false},
+    {id: "649f201ced59e501eb4d3f12", name: "Cutting costs", checked: false},
+    {id: "649f201ced59e501eb4d3f13", name: "Office expansion", checked: false},
+    {id: "649f201ced59e501eb4d3f14", name: "New partnership", checked: false},
+    {id: "649f201ced59e501eb4d3f15", name: "New client signed", checked: false},
+    {id: "649f201ded59e501eb4d3f16", name: "Award or recognition", checked: false},
+    {id: "663279c828a0230001e2338b", name: "Former champion changed jobs", checked: false},
+    {id: "663279c828a0230001e2338c", name: "Recently promoted", checked: false}
+  ];
+  
 
   // const [loading, setLoading] = React.useState(true);
 
@@ -1033,11 +1157,15 @@ export default function PeopleForm(): JSX.Element {
             q_organization_domains: formData.q_organization_domains,
             organization_industry_tag_ids:
               formData.organization_industry_tag_ids,
+            currently_using_technologies: formData.currently_using_technologies,
             q_organization_keyword_tags: formData.q_organization_keyword_tags,
+            job_posting_titles: formData.job_posting_titles,
+            job_posting_locations: formData.job_posting_locations,
             organization_locations: formData.organization_locations,
             person_seniorities: formData.person_seniorities,
             company_headcount: checkedCompanyHeadcount,
             organization_latest_funding_stage_cd: checkedFundingRounds,
+            search_signals: checkedSearchSignal,
             revenue_range: {
               min: formData.minimum_company_funding?.text,
               max: formData.maximum_company_funding?.text,
@@ -1179,6 +1307,17 @@ export default function PeopleForm(): JSX.Element {
         );
       }
 
+      // Currently using Technologies
+      if (allFiltersFromDB.currently_using_technologies) {
+        setCurrentlyUsingTechnologiesTags(
+          allFiltersFromDB.currently_using_technologies
+        );
+        setValue(
+          "currently_using_technologies",
+          allFiltersFromDB.currently_using_technologies
+        );
+      }
+
       // Organization Keyword Tags
       if (allFiltersFromDB.q_organization_keyword_tags) {
         setOrganizationCompanyTags(
@@ -1211,6 +1350,18 @@ export default function PeopleForm(): JSX.Element {
         setValue("person_titles", allFiltersFromDB.person_titles);
       }
 
+      // Job Posting Titles
+      if (allFiltersFromDB.job_posting_titles) {
+        setJobPostingTitles(allFiltersFromDB.job_posting_titles);
+        setValue("job_posting_titles", allFiltersFromDB.job_posting_titles);
+      }
+
+      // Job Posting Locations
+      if (allFiltersFromDB.job_posting_locations) {
+        setJobPostingLocations(allFiltersFromDB.job_posting_locations);
+        setValue("job_posting_locations", allFiltersFromDB.job_posting_locations);
+      }
+
       // Per Page
       if (allFiltersFromDB.per_page) {
         setValue("per_page", allFiltersFromDB.per_page);
@@ -1231,6 +1382,17 @@ export default function PeopleForm(): JSX.Element {
           "organization_latest_funding_stage_cd",
           allFiltersFromDB.organization_latest_funding_stage_cd
         );
+      }
+
+      // Search Signals
+      if (allFiltersFromDB.search_signals) {
+        setCheckedSearchSignal(
+          allFiltersFromDB.search_signals
+        );
+        setValue(
+          "search_signals",
+          allFiltersFromDB.search_signals
+        )
       }
 
       // Company Domains
@@ -1354,9 +1516,27 @@ export default function PeopleForm(): JSX.Element {
           .map((tag) => tag?.value)
           .filter(Boolean),
       }),
+      ...(Array.isArray(formData.currently_using_technologies) &&
+        formData.currently_using_technologies.length > 0 && {
+        currently_using_technologies: formData.currently_using_technologies
+          .map((tag) => tag?.id)
+          .filter(Boolean),
+      }),
       ...(Array.isArray(formData.q_organization_keyword_tags) &&
         formData.q_organization_keyword_tags.length > 0 && {
         q_organization_keyword_tags: formData.q_organization_keyword_tags
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
+      ...(Array.isArray(formData.job_posting_titles) &&
+        formData.job_posting_titles.length > 0 && {
+        job_posting_titles: formData.job_posting_titles
+          .map((tag) => tag?.text)
+          .filter(Boolean),
+      }),
+      ...(Array.isArray(formData.job_posting_locations) &&
+        formData.job_posting_locations.length > 0 && {
+        job_posting_locations: formData.job_posting_locations
           .map((tag) => tag?.text)
           .filter(Boolean),
       }),
@@ -1383,6 +1563,10 @@ export default function PeopleForm(): JSX.Element {
         checkedFundingRounds,
         false
       ),
+      search_signals: checkedFields(
+        checkedSearchSignal,
+        false
+      )
     };
 
     const filtersPostBody = {
@@ -1552,6 +1736,7 @@ export default function PeopleForm(): JSX.Element {
     setFilteredKeywords(filtered);
     setKeywordDropdownIsOpen(keywordSearchTerm.length > 0);
   }, [keywordSearchTerm]);
+
   function toggleKeywordsDropdown(isOpen: boolean) {
     setKeywordDropdownIsOpen(isOpen);
   }
@@ -1579,6 +1764,7 @@ export default function PeopleForm(): JSX.Element {
     setKeywordSearchTerm("");
     setKeywordDropdownIsOpen(false);
   }
+  
   useEffect(() => {
     if (organizationKeywordTags.length > 0) {
       setValue("organization_industry_tag_ids", organizationKeywordTags as any);
@@ -1587,12 +1773,78 @@ export default function PeopleForm(): JSX.Element {
     }
   }, [organizationKeywordTags, setValue]);
 
+  function handleTechnologiesDropdownSelect(option: any) {
+    const technologyTag = {
+      id: option.uid,
+      text: option.name,
+    }
+
+    if (!currentlyUsingTechnologiesTags.some((tag: any) => tag.id === option.id)) {
+      setCurrentlyUsingTechnologiesTags((prevState) => [...prevState, technologyTag]);
+      setValue("currently_using_technologies", [
+        ...currentlyUsingTechnologiesTags,
+        technologyTag,
+      ] as any)
+    }
+    setTechnologiesSearchTerm("");
+    setTechnologiesDropdownIsOpen(false);
+  }
+
+  useEffect(() => {
+    const filtered = technologies
+      .filter((technology) =>
+        technology.name.toLowerCase().includes(technologiesSearchTerm.toLowerCase())
+      );
+    
+    setFilteredTechnologies(filtered);
+    setTechnologiesDropdownIsOpen(technologiesSearchTerm.length > 0);
+  }, [technologiesSearchTerm, technologies]);
+
+  useEffect(() => {
+    if (currentlyUsingTechnologiesTags.length > 0) {
+      setValue("currently_using_technologies", currentlyUsingTechnologiesTags as any);
+    } else {
+      setValue("currently_using_technologies", []);
+    }
+  }, [currentlyUsingTechnologiesTags, setValue]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        technologyDropdownRef.current &&
+        !technologyDropdownRef.current.contains(event.target as Node) &&
+        !technologyDropdownRef.current?.contains(event.target as Node)
+      ) {
+        setTechnologiesDropdownIsOpen(false);
+      }
+    };
+  
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
+
   React.useEffect(() => {
     setValue(
       "q_organization_keyword_tags",
       organizationCompanyTags as [Tag, ...Tag[]]
     );
   }, [organizationCompanyTags]);
+
+  React.useEffect(() => {
+    setValue(
+      "job_posting_titles",
+      jobPostingTitles as [Tag, ...Tag[]]
+    );
+  }, [jobPostingTitles]);
+
+  React.useEffect(() => {
+    setValue(
+      "job_posting_locations",
+      jobPostingLocations as [Tag, ...Tag[]]
+    );
+  }, [jobPostingLocations]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -2581,7 +2833,289 @@ export default function PeopleForm(): JSX.Element {
                     </div>
                   </div>
                 </div>
+
+                {/* Technologies Section */}
+
                 <div className="bg-muted px-2 rounded">
+                  <div
+                    className="flex justify-between w-full py-3 cursor-pointer"
+                    onClick={() => toggleDropdown("technologies")}
+                  >
+                    <div className="text-sm">Technologies</div>
+                    {dropdownsOpen.technologies ? (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-0"
+                      />
+                    ) : (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-180"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`${dropdownsOpen.technologies ? "block" : "hidden"
+                      } relative`}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="currently_using_technologies"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start pb-4 w-8/12">
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              tags={currentlyUsingTechnologiesTags}
+                              placeholder="Enter Technology"
+                              variant="base"
+                              onFocus={() => setTechnologiesDropdownIsOpen(true)}
+                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              setTags={(newTags: any) => {
+                                if (Array.isArray(newTags)) {
+                                  if (newTags.length < currentlyUsingTechnologiesTags.length) {
+                                    setCurrentlyUsingTechnologiesTags(newTags);
+                                    setValue("currently_using_technologies", newTags as any);
+                                    return;
+                                  }
+                              
+                                  const lastTag = newTags[newTags.length - 1];
+                              
+                                  const updatedTags = lastTag?.id.includes('-')
+                                    ? newTags.slice(0, -1)
+                                    : newTags;
+                              
+                                  setCurrentlyUsingTechnologiesTags(updatedTags);
+                                  setValue("currently_using_technologies", updatedTags as any);
+                                }
+                              }}
+                              onInputChange={(value) =>
+                                setTechnologiesSearchTerm(value)
+                              }
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <div className="absolute inline-block text-left -my-4">
+                      {technologiesDropdownIsOpen && (
+                        <ScrollArea
+                        className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        style={{
+                          height:
+                            filteredTechnologies.length > 0
+                              ? `${Math.min(filteredTechnologies.length * 40, 200)}px`
+                              : "auto",
+                        }}
+                      >
+                        <div
+                          className="py-1"
+                          role="menu"
+                          aria-orientation="vertical"
+                          aria-labelledby="options-menu"
+                          ref={technologyDropdownRef}
+                        >
+                          {filteredTechnologies.length > 0 ? (
+                            filteredTechnologies.map((option) => (
+                              <button
+                                key={option.uid}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  handleTechnologiesDropdownSelect(option);
+                                  setTechnologiesSearchTerm("");
+                                }}
+                                className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                              >
+                                {option.name
+                                  .split(" ")
+                                  .map(
+                                    (word) =>
+                                      word.charAt(0).toUpperCase() +
+                                      word.slice(1).toLowerCase()
+                                  )
+                                  .join(" ")}
+                              </button>
+                            ))
+                          ) : (
+                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                              No items found
+                            </div>
+                          )}
+                        </div>
+                      </ScrollArea>
+                      
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Signals */}
+
+                <div className="bg-muted px-2 rounded">
+                  <FormField
+                    control={form.control}
+                    name="search_signals"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col items-start">
+                        <FormLabel
+                          className="flex justify-between font-normal w-full py-3 cursor-pointer items-center text-left"
+                          onClick={() => toggleDropdown("searchSignals")}
+                        >
+                          <div>Signals</div>
+                          {dropdownsOpen.searchSignals ? (
+                            <ChevronUp color="#000000" />
+                          ) : (
+                            <ChevronUp
+                              color="#000000"
+                              className="transition-transform duration-200 transform rotate-180"
+                            />
+                          )}
+                        </FormLabel>
+                        <FormControl>
+                          <div
+                            className={`${dropdownsOpen.searchSignals ? "block" : "hidden"
+                              }`}
+                          >
+                            {signals.map(
+                              (signal, index) => (
+                                <div
+                                  className="text-sm flex items-center mb-3"
+                                  key={index}
+                                >
+                                  <Checkbox
+                                    {...field}
+                                    className="mr-2"
+                                    checked={checkedSearchSignal?.includes(
+                                      signal.id
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      const isChecked = checked.valueOf();
+                                      const value = signal.id;
+
+                                      setCheckedSearchSignal(
+                                        (currentChecked) => {
+                                          if (
+                                            currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return currentChecked;
+                                          }
+
+                                          if (
+                                            !currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return [
+                                              ...(currentChecked || []),
+                                              value,
+                                            ];
+                                          }
+
+                                          return (currentChecked || []).filter(
+                                            (item) => item !== value
+                                          );
+                                        }
+                                      );
+                                    }}
+                                    value={signal.name}
+                                  />
+                                  {signal.name}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {/* Job Postings */}
+
+                <div className="bg-muted px-2 rounded">
+                  <div
+                    className="flex justify-between w-full py-3 cursor-pointer"
+                    onClick={() => toggleDropdown("jobPostings")}
+                  >
+                    <div className="text-sm">Job Posting</div>
+                    {dropdownsOpen.jobPostings ? (
+                      <ChevronUp color="#000000" />
+                    ) : (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-180"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`${dropdownsOpen.jobPostings ? "block" : "hidden"
+                      }`}
+                  >
+                    <FormField
+                      control={form.control}
+                      name="job_posting_titles"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start pb-4 w-8/12 mt-3">
+                          <FormLabel className="text-left">
+                            Job Titles
+                          </FormLabel>
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              tags={jobPostingTitles}
+                              placeholder="Enter Job Title"
+                              variant="base"
+                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              setTags={(newTags) => {
+                                setJobPostingTitles(newTags);
+                                setValue(
+                                  "job_posting_titles",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="job_posting_locations"
+                      render={({ field }) => (
+                        <FormItem className="flex flex-col items-start pb-4 w-8/12">
+                          <FormLabel className="text-left">
+                            Job Locations
+                          </FormLabel>
+                          <FormControl>
+                            <TagInput
+                              {...field}
+                              tags={jobPostingLocations}
+                              placeholder="Enter Job Location"
+                              variant="base"
+                              className="sm:min-w-[450px] bg-white/90 text-black placeholder:text-black/[70]"
+                              setTags={(newTags) => {
+                                setJobPostingLocations(newTags);
+                                setValue(
+                                  "job_posting_locations",
+                                  newTags as [Tag, ...Tag[]]
+                                );
+                              }}
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+
+
+
+                {/* <div className="bg-muted px-2 rounded">
                   <div
                     className={`${dropdownsOpen.jobPostings ? "block" : "hidden"
                       }`}
@@ -2618,7 +3152,9 @@ export default function PeopleForm(): JSX.Element {
                       </div>
                     </div>
                   </div>
-                </div>
+                </div> */}
+
+
               </div>
             </div>
             {type === "edit" && (
