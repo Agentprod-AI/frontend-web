@@ -331,6 +331,31 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
     }
   }
 
+  const handleSaveChanges = () => {
+    SetIsLoadingButton(true);
+    const payload = {
+      conversation_id: conversationId,
+      subject: title,
+      body: body,
+      // Add other necessary fields from the email object
+    };
+
+    axiosInstance.patch(`/v2/mailbox/action_draft/update?_id=${email.id}`, payload)
+      .then((response) => {
+        toast.success("Draft updated successfully!");
+        setEditable(false);
+        // Update the email object with the new data if necessary
+        // setEmail(response.data);
+      })
+      .catch((error) => {
+        console.error("Failed to update draft:", error);
+        toast.error("Failed to update the draft. Please try again.");
+      })
+      .finally(() => {
+        SetIsLoadingButton(false);
+      });
+  };
+
   return (
     <div className="flex flex-col gap-3 w-full">
       {email.is_special && email?.category?.trim() !== "Forwarded to" && (
@@ -525,9 +550,10 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
                       {editable && (
                         <Button
                           variant={"ghost"}
-                          onClick={() => setEditable(false)}
+                          onClick={handleSaveChanges}
+                          disabled={isLoadingButton}
                         >
-                          <Check className="h-4 w-4" />
+                          {isLoadingButton ? <LoadingCircle /> : <Check className="h-4 w-4" />}
                         </Button>
                       )}
                     </div>
