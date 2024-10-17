@@ -77,6 +77,8 @@ export default function Page() {
     React.useState("all");
   const { user } = useUserContext();
 
+  const [linkedInUrl, setLinkedInUrl] = React.useState('');
+
   const updateHubspotLeadType = async () => {
     setLoading(true);
     const payload = {
@@ -172,9 +174,29 @@ export default function Page() {
     resolver: zodResolver(FormSchema),
   });
 
-  const handleLinkedInConnect = () => {
+  const handleLinkedInConnect = async () => {
+    try {
+      const payload = {
+        user_id: user.id, // Assuming you have access to the user object
+        linkedin_url: linkedInUrl,
+        username: linkedInEmail,
+        password: linkedInPassword
+      };
 
-    console.log('Connecting with:', linkedInEmail);
+      const response = await axiosInstance.post('/v2/linkedin/login', payload);
+
+      if (response.status === 200) {
+        toast.success("LinkedIn credentials submitted successfully. Please proceed with the next steps.");
+        // Handle successful response here
+        // For example, you might want to move to the next step:
+        // setLinkedInStep(2);
+      } else {
+        toast.error("Failed to connect LinkedIn account. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error connecting LinkedIn account:", error);
+      toast.error("An error occurred while connecting your LinkedIn account. Please try again later.");
+    }
   };
 
   return (
@@ -492,27 +514,49 @@ export default function Page() {
                     </div>
                   </DialogTitle>
                   <DialogDescription>
-                    Connect your LinkedIn account to the AgentProd platform.
+                    Step 1 of 3: Enter your LinkedIn credentials
                   </DialogDescription>
                 </DialogHeader>
                 <Separator />
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <p className="text-base text-gray-400">Download the Linkedin Plugin</p>
-                    <p className="text-base text-gray-400">
-                      This will allow you to connect your LinkedIn account to the AgentProd platform.
-                    </p>
+                    <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
+                    <Input
+                      id="linkedin-url"
+                      placeholder="https://www.linkedin.com/in/yourprofile/"
+                      value={linkedInUrl}
+                      onChange={(e) => setLinkedInUrl(e.target.value)}
+                    />
                   </div>
-                  <Button className="" onClick={handleLinkedInConnect}>
-                    <a
-                      href="/chrome-extension.zip"
-                      download="chrome-extension.zip"
-                      onClick={(e) => e.stopPropagation()}
-                    >
-                      Download LinkedIn Plugin
-                    </a>
-                  </Button>
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin-email">LinkedIn Email</Label>
+                    <Input
+                      id="linkedin-email"
+                      type="email"
+                      placeholder="your.email@example.com"
+                      value={linkedInEmail}
+                      onChange={(e) => setLinkedInEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="linkedin-password">LinkedIn Password</Label>
+                    <Input
+                      id="linkedin-password"
+                      type="password"
+                      placeholder="Enter your password"
+                      value={linkedInPassword}
+                      onChange={(e) => setLinkedInPassword(e.target.value)}
+                    />
+                  </div>
                 </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={() => setIsLinkedInMailboxOpen(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={handleLinkedInConnect}>
+                    Next
+                  </Button>
+                </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
