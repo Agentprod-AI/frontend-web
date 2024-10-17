@@ -2630,7 +2630,7 @@ export default function PeopleForm(): JSX.Element {
               <LoadingCircle />
             ) : (
               <div>
-                <AudienceTable />
+                {!isCreateBtnLoading ? <AudienceTable />:<div className="mt-10"></div>}
               </div>
             )}
 
