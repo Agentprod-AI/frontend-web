@@ -7,7 +7,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { useState, useEffect, SetStateAction } from "react";
-import { useLeads } from "@/context/lead-user";
+import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { Checkbox } from "./checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "./avatar";
 import { NameAction } from "../tables/user-tables/name-action";
@@ -17,39 +17,23 @@ function AudienceTable() {
   const { leads, setLeads } = useLeads();
   const { toggleSidebar, setItemId } = useLeadSheetSidebar();
 
-  const [deselectedLeads, setDeselectedLeads] = useState(new Set());
-  const [selectedRows, setSelectedRows] = useState(new Set());
+  const [deselectedLeads, setDeselectedLeads] = useState<any[]>([]);
   const [activeLeadId, setActiveLeadId] = useState(null);
 
-  useEffect(() => {
-    setSelectedRows(new Set(leads.map((lead) => lead.id)));
-  }, [leads]);
-
-  const handleCheckboxChange = (leadId: unknown) => {
-    setSelectedRows((prevSelectedRows) => {
-      const newSelectedRows = new Set(prevSelectedRows);
-
-      if (newSelectedRows.has(leadId)) {
-        newSelectedRows.delete(leadId);
-        setDeselectedLeads((prevDeselectedLeads) =>
-          new Set(prevDeselectedLeads).add(leadId)
-        );
-      } else {
-        newSelectedRows.add(leadId);
-        setDeselectedLeads((prevDeselectedLeads) => {
-          const updatedDeselectedLeads = new Set(prevDeselectedLeads);
-          updatedDeselectedLeads.delete(leadId);
-          return updatedDeselectedLeads;
-        });
-      }
-      return newSelectedRows;
-    });
+  const handleCheckboxChange = (lead: Lead | Contact) => {
+    if (deselectedLeads.some(deselectedLead => deselectedLead.id === lead.id)) {
+      // Re-select the lead
+      setDeselectedLeads(deselectedLeads.filter(deselectedLead => deselectedLead.id !== lead.id));
+      setLeads([...leads, lead] as Lead[] | Contact[]);
+    } else {
+      // Deselect the lead
+      setDeselectedLeads([...deselectedLeads, lead]);
+      //@ts-ignore
+      setLeads((prevLeads: Lead[] | Contact[]) => prevLeads.filter((l: Lead | Contact) => l.id !== lead.id));
+    }
   };
 
-  const allLeads = leads.map((lead) => ({
-    ...lead,
-    selected: selectedRows.has(lead.id),
-  }));
+  const allLeads = [...leads, ...deselectedLeads].sort((a, b) => a.id - b.id);
 
   const handleLeadClick = (leadId: any) => {
     setActiveLeadId(leadId);
@@ -74,8 +58,8 @@ function AudienceTable() {
               <TableRow key={lead.id}>
                 <TableCell className="">
                   <Checkbox
-                    checked={selectedRows.has(lead.id)}
-                    onCheckedChange={() => handleCheckboxChange(lead.id)}
+                    checked={!deselectedLeads.some(deselectedLead => deselectedLead.id === lead.id)}
+                    onCheckedChange={() => handleCheckboxChange(lead)}
                   />
                 </TableCell>
                 <TableCell
