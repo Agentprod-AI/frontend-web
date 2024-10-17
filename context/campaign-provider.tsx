@@ -74,6 +74,7 @@ export interface CampaignEntry {
   offering_details: any[];
   replies: any;
   meetings_booked: any;
+  channel: any
 }
 
 export const defaultCampaignEntry: CampaignEntry = {
@@ -103,6 +104,7 @@ export const defaultCampaignEntry: CampaignEntry = {
   replies: "",
   meetings_booked: "",
   detail: "",
+  channel: "",
 };
 
 export const defaultGoalEntry: GoalFormData = {
@@ -193,6 +195,7 @@ export const CampaignProvider: React.FunctionComponent<Props> = ({
       schedule_type: data.schedule_type,
       autopilot: false,
       is_active: false,
+      channel_type: data.channelType,
     };
 
     console.log("postData", postData);
