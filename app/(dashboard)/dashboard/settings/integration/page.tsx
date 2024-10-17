@@ -54,6 +54,7 @@ import axiosInstance from "@/utils/axiosInstance";
 import { toast } from "sonner";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { ArkoseCaptchaIntegration } from "./ArkoseCaptchaIntegration";
 
 const FormSchema = z.object({
   type: z.enum(["all", "engaged"], {
@@ -78,6 +79,14 @@ export default function Page() {
   const { user } = useUserContext();
 
   const [linkedInUrl, setLinkedInUrl] = React.useState('');
+  const [linkedInStep, setLinkedInStep] = React.useState(1);
+  const [captchaToken, setCaptchaToken] = React.useState('');
+  const [captchaPublicKey, setCaptchaPublicKey] = React.useState('');
+  const [captchaData, setCaptchaData] = React.useState('');
+  const [captchaAccountId, setCaptchaAccountId] = React.useState('');
+  const [isCaptchaSolved, setIsCaptchaSolved] = React.useState(false);
+  const [showCaptchaButton, setShowCaptchaButton] = React.useState(true);
+  const [captchaLoaded, setCaptchaLoaded] = React.useState(false);
 
   const updateHubspotLeadType = async () => {
     setLoading(true);
@@ -177,7 +186,7 @@ export default function Page() {
   const handleLinkedInConnect = async () => {
     try {
       const payload = {
-        user_id: user.id, // Assuming you have access to the user object
+        user_id: user.id,
         linkedin_url: linkedInUrl,
         username: linkedInEmail,
         password: linkedInPassword
@@ -186,10 +195,103 @@ export default function Page() {
       const response = await axiosInstance.post('/v2/linkedin/login', payload);
 
       if (response.status === 200) {
-        toast.success("LinkedIn credentials submitted successfully. Please proceed with the next steps.");
-        // Handle successful response here
-        // For example, you might want to move to the next step:
-        // setLinkedInStep(2);
+        const checkpointData = response.data;
+        setCaptchaPublicKey(checkpointData.checkpoint.public_key);
+        setCaptchaData(checkpointData.checkpoint.data);
+        setCaptchaAccountId(checkpointData.account_id);
+
+        toast.success("LinkedIn credentials submitted successfully. Please complete the CAPTCHA verification.");
+        setLinkedInStep(2);
+        loadCaptcha();
+      } else {
+        toast.error("Failed to connect LinkedIn account. Please try again.");
+      }
+    } catch (error) {
+      console.error("Error connecting LinkedIn account:", error);
+    }
+  };
+
+  const loadCaptcha = () => {
+    const captcha = new ArkoseCaptchaIntegration(captchaPublicKey, captchaData);
+
+    captcha.onLoaded = () => {
+      console.log("CAPTCHA loaded successfully");
+      setCaptchaLoaded(true);
+      setShowCaptchaButton(false);
+    };
+
+    captcha.onSuccess = (token) => {
+      console.log("CAPTCHA resolved successfully", { token });
+      setCaptchaToken(token);
+      setIsCaptchaSolved(true);
+      captcha.unload();
+    };
+
+    captcha.onError = () => {
+      console.log("CAPTCHA resolution failed");
+      toast.error("CAPTCHA verification failed. Please try again.");
+      setIsCaptchaSolved(false);
+      setShowCaptchaButton(true);
+    };
+
+    captcha.load("linkedin-captcha-container");
+  };
+
+  const handleSolveCaptcha = async () => {
+    try {
+      const payload = {
+        code: captchaToken,
+        account_id: captchaAccountId
+      };
+
+      const response = await axiosInstance.post('/v2/linkedin/solve', payload);
+
+      if (response.status === 200 && response.data.object === "AccountCreated") {
+        toast.success("LinkedIn account connected successfully!");
+        setIsLinkedInMailboxOpen(false);
+        // Reset the LinkedIn connection state
+        setLinkedInStep(1);
+        
+      } else if(response.data.type === "errors/invalid_credentials"){
+        toast.error("Invalid LinkedIn credentials. Please try again.");
+        setLinkedInStep(1);
+        setLinkedInUrl('');
+        setLinkedInEmail('');
+        setLinkedInPassword('');
+        setCaptchaToken('');
+        setCaptchaPublicKey('');
+        setCaptchaData('');
+        setCaptchaAccountId('');
+      } else{
+        setLinkedInStep(3);
+      }
+    } catch (error) {
+      console.error("Error verifying CAPTCHA:", error);
+      toast.error("An error occurred while verifying the CAPTCHA. Please try again.");
+      setIsCaptchaSolved(false);
+      loadCaptcha(); // Reload CAPTCHA for another attempt
+    }
+  };
+
+  const handleFinalLinkedInConnect = async () => {
+    try {
+      const payload = {
+        user_id: user.id,
+        linkedin_url: linkedInUrl,
+        username: linkedInEmail,
+        password: linkedInPassword,
+        captcha_token: captchaToken,
+        account_id: captchaAccountId
+      };
+
+      const response = await axiosInstance.post('/v2/linkedin/solve', payload);
+
+      if (response.status === 200) {
+        toast.success("LinkedIn account connected successfully!");
+        setIsLinkedInMailboxOpen(false);
+        // Reset the LinkedIn connection state
+        setLinkedInStep(1);
+        
       } else {
         toast.error("Failed to connect LinkedIn account. Please try again.");
       }
@@ -514,55 +616,74 @@ export default function Page() {
                     </div>
                   </DialogTitle>
                   <DialogDescription>
-                    Step 1 of 3: Enter your LinkedIn credentials
+                    Step {linkedInStep} of 3: {linkedInStep === 1 ? "Enter your LinkedIn credentials" : linkedInStep === 2 ? "Complete CAPTCHA verification" : "Finalizing connection"}
                   </DialogDescription>
                 </DialogHeader>
                 <Separator />
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
-                    <Input
-                      id="linkedin-url"
-                      placeholder="https://www.linkedin.com/in/yourprofile/"
-                      value={linkedInUrl}
-                      onChange={(e) => setLinkedInUrl(e.target.value)}
-                    />
+                {linkedInStep === 1 && (
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-url">LinkedIn Profile URL</Label>
+                      <Input
+                        id="linkedin-url"
+                        placeholder="https://www.linkedin.com/in/yourprofile/"
+                        value={linkedInUrl}
+                        onChange={(e) => setLinkedInUrl(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-email">LinkedIn Email</Label>
+                      <Input
+                        id="linkedin-email"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={linkedInEmail}
+                        onChange={(e) => setLinkedInEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="linkedin-password">LinkedIn Password</Label>
+                      <Input
+                        id="linkedin-password"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={linkedInPassword}
+                        onChange={(e) => setLinkedInPassword(e.target.value)}
+                      />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin-email">LinkedIn Email</Label>
-                    <Input
-                      id="linkedin-email"
-                      type="email"
-                      placeholder="your.email@example.com"
-                      value={linkedInEmail}
-                      onChange={(e) => setLinkedInEmail(e.target.value)}
-                    />
+                )}
+                {linkedInStep === 2 && (
+                  <div className="space-y-4">
+                    {showCaptchaButton && (
+                      <Button onClick={loadCaptcha}>
+                        Show CAPTCHA
+                      </Button>
+                    )}
+                    <div id="linkedin-captcha-container" className="min-h-[450px]"></div>
+                    {captchaLoaded && captchaToken && (
+                      <Button onClick={handleSolveCaptcha}>
+                        Verify CAPTCHA
+                      </Button>
+                    )}
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="linkedin-password">LinkedIn Password</Label>
-                    <Input
-                      id="linkedin-password"
-                      type="password"
-                      placeholder="Enter your password"
-                      value={linkedInPassword}
-                      onChange={(e) => setLinkedInPassword(e.target.value)}
-                    />
-                  </div>
-                </div>
+                )}
+                {linkedInStep === 3 && (
+                  <div>Finalizing your LinkedIn connection...</div>
+                )}
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsLinkedInMailboxOpen(false)}>
                     Cancel
                   </Button>
-                  <Button onClick={handleLinkedInConnect}>
-                    Next
-                  </Button>
+                  {linkedInStep === 1 && (
+                    <Button onClick={handleLinkedInConnect}>
+                      Next
+                    </Button>
+                  )}
                 </DialogFooter>
               </DialogContent>
             </Dialog>
           </div>
-
-
-
         </CardHeader>
         <CardContent className="space-y-2 mt-2">
           <CardTitle>LinkedIn</CardTitle>
