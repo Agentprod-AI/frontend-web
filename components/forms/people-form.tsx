@@ -1088,7 +1088,7 @@ export default function PeopleForm(): JSX.Element {
               `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
             );
             if (Array.isArray(response.data) && response.data.length >= 1) {
-              setIsCreateBtnLoading(false);
+              
               setTimeout(() => {
                 router.push(`/dashboard/campaign/${params.campaignId}`);
               }, 4000);
