@@ -536,8 +536,8 @@ export default function Training() {
                   onValueChange={(value) => setSelectedOption(parseInt(value))}
                 >
                   {[
-                    { label: 'Short', value: 90 },
-                    { label: 'Medium', value: 130 },
+                    { label: 'Short', value: 60 },
+                    { label: 'Medium', value: 120 },
                     { label: 'Long', value: 180 }
                   ].map((option) => (
                     <div key={option.label} className="flex items-center">
