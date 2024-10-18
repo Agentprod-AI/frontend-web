@@ -497,9 +497,7 @@ export default function Training() {
                           <TableRow key={index}>
                             <TableCell>{data.seed_mail}</TableCell>
                             <TableCell>
-                              {data.receivedAt.length > 0
-                                ? data.receivedAt[data.receivedAt.length - 1]
-                                : ""}
+                              {data.receivedAt}
                             </TableCell>
                             <TableCell className="text-green-400 ">
                               {data.spam_score}
