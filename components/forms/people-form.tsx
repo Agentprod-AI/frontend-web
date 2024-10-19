@@ -12,7 +12,13 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { ChevronUp } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { ChevronUp, ExternalLink } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Tag, TagInput, Tag as type } from "@/components/ui/tag/tag-input";
 import { Button } from "@/components/ui/button";
@@ -71,12 +77,6 @@ const FormSchema = z.object({
       text: z.string(),
     })
   ),
-  person_seniorities: z.array(
-    z.object({
-      id: z.string(),
-      text: z.string(),
-    })
-  ).optional(),
   email_status: z
     .array(
       z.object({
@@ -271,7 +271,6 @@ export default function PeopleForm(): JSX.Element {
   interface Data {
     q_organization_domains: { id: string; text: string }[] | undefined;
     organization_locations: { id: string; text: string }[] | undefined;
-    person_seniorities: { id: string; text: string }[] | undefined;
     person_titles: { id: string; text: string }[] | undefined;
     email_status: { id: string; text: string }[] | undefined;
     company_headcount: { id: string; text: string }[] | undefined;
@@ -679,15 +678,6 @@ export default function PeopleForm(): JSX.Element {
         .join("")
     }
 
-    if (formData.person_seniorities && formData.person_seniorities.length > 0) {
-      url += formData.person_seniorities
-        .map(
-          (seniority: any) =>
-            `&personSeniorities[]=${encodeURIComponent(seniority.text)}`
-        )
-        .join("");
-    }
-
     if (formData.minimum_company_funding && formData.maximum_company_funding) {
       url += `&organizationRevenueRanges[]=${encodeURIComponent(
         formData.minimum_company_funding.text
@@ -720,7 +710,6 @@ export default function PeopleForm(): JSX.Element {
     form.watch("organization_industry_tag_ids"),
     form.watch("person_titles"),
     form.watch("q_organization_keyword_tags"),
-    form.watch("person_seniorities"),
     form.watch("minimum_company_funding"),
     form.watch("maximum_company_funding"),
     form.watch("email_status"),
@@ -739,7 +728,6 @@ export default function PeopleForm(): JSX.Element {
       job_posting_locations: data.job_posting_locations,
       job_posting_titles: data.job_posting_titles,
       organization_locations: data.organization_locations,
-      person_seniorities: data.person_seniorities,
       company_headcount: data.company_headcount,
       organization_latest_funding_stage_cd:
         data.organization_latest_funding_stage_cd,
@@ -1162,7 +1150,6 @@ export default function PeopleForm(): JSX.Element {
             job_posting_titles: formData.job_posting_titles,
             job_posting_locations: formData.job_posting_locations,
             organization_locations: formData.organization_locations,
-            person_seniorities: formData.person_seniorities,
             company_headcount: checkedCompanyHeadcount,
             organization_latest_funding_stage_cd: checkedFundingRounds,
             search_signals: checkedSearchSignal,
@@ -1338,12 +1325,6 @@ export default function PeopleForm(): JSX.Element {
         );
       }
 
-      // Person Seniorities
-      if (allFiltersFromDB.person_seniorities) {
-        setPersonSenioritiesTags(allFiltersFromDB.person_seniorities);
-        setValue("person_seniorities", allFiltersFromDB.person_seniorities);
-      }
-
       // Person Titles
       if (allFiltersFromDB.person_titles) {
         setPersonTitlesTags(allFiltersFromDB.person_titles);
@@ -1497,12 +1478,6 @@ export default function PeopleForm(): JSX.Element {
         checkedCompanyHeadcount,
         true
       ),
-      ...(Array.isArray(formData.person_seniorities) &&
-        formData.person_seniorities.length > 0 && {
-        person_seniorities: formData.person_seniorities
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
       ...(Array.isArray(formData.q_organization_domains) &&
         formData.q_organization_domains.length > 0 && {
         q_organization_domains: formData.q_organization_domains
@@ -1939,7 +1914,7 @@ export default function PeopleForm(): JSX.Element {
                     className="flex justify-between w-full py-3 cursor-pointer"
                     onClick={() => toggleDropdown("currentEmployment")}
                   >
-                    <div className="text-sm">Current employment</div>
+                    <div className="text-sm">Current Employment</div>
                     {dropdownsOpen.currentEmployment ? (
                       <ChevronUp color="#000000" />
                     ) : (
@@ -2060,7 +2035,7 @@ export default function PeopleForm(): JSX.Element {
                         )}
                       </div> */}
                     </div>
-                    <FormField
+                    {/* <FormField
                       control={form.control}
                       name="person_seniorities"
                       render={({ field }) => (
@@ -2089,7 +2064,7 @@ export default function PeopleForm(): JSX.Element {
                           <FormMessage />
                         </FormItem>
                       )}
-                    />
+                    /> */}
                   </div>
                 </div>
                 <div className="bg-muted px-2 rounded">
@@ -2352,6 +2327,22 @@ export default function PeopleForm(): JSX.Element {
                   {selectionType === 'list' && (
 
                       <div>
+                        <div className="flex flex-row items-center gap-1 mb-2">
+                          <p className="text-xs">Contact us to add your company in the list</p>
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                              <a href="mailto:info@agentprod.com" title="info@agnetprod.com">
+                                <ExternalLink size={12} />
+                              </a>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p>info@agentprod.com</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          </TooltipProvider>
+                      </div>
+
                         <FormField
                         control={form.control}
                         name="q_organization_domains"
