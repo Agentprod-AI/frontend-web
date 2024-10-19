@@ -39,7 +39,7 @@ export default function Page() {
           { id: "Phone", value: data.phone_number, isEditable: true },
           { id: "Company", value: data.company, isEditable: true },
           { id: "Company ID", value: data.companyId, isEditable: true },
-          { id: "Notifications", value: data.notifications, isEditable: false },
+          { id: "Notifications", value: data.notifications, isEditable: true },
           { id: "Plan", value: "", isEditable: false },
           { id: "Leads used", value: data.leads_used, isEditable: false },
         ];
@@ -170,7 +170,7 @@ export default function Page() {
                       }
                     />
                   ) : (
-                    info?.value
+                    info?.value?.toString()
                   )}
                 </TableCell>
               </TableRow>
