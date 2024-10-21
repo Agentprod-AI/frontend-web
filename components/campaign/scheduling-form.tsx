@@ -48,6 +48,9 @@ const campaignFormSchema = z.object({
     weekdayStartTime: z.string().optional(),
     weekdayEndTime: z.string().optional(),
   }),
+  channelType: z.enum(["mail", "Linkedin"], {
+    required_error: "Please select a channel type.",
+  }),
 });
 
 type CampaignFormValues = z.infer<typeof campaignFormSchema>;
@@ -95,6 +98,7 @@ export function SchedulingForm() {
       schedule_type: data.scheduleType,
       autopilot: false,
       is_active: false,
+      channel: data.channelType,
     };
 
     try {
@@ -266,6 +270,43 @@ export function SchedulingForm() {
             </FormItem>
           )}
         />
+
+
+        <FormField
+          control={form.control}
+          name="channelType"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Channel Type</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value || campaignData?.channel}
+                  className="flex space-x-4"
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="mail" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Email
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="Linkedin" />
+                    </FormControl>
+                    <FormLabel className="font-normal">
+                      Linkedin
+                    </FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
 
         <h1>Schedule</h1>
         <div className="flex w-[400px] justify-between">
