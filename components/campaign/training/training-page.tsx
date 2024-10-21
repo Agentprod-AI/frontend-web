@@ -417,46 +417,46 @@ export default function Training() {
     }
   };
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  //   const file = e.target.files?.[0];
+  //   if (!file) return;
 
-    const isValidFileType = (
-      (fileType === 'image' && file.type.startsWith('image/')) ||
-      (fileType === 'video' && file.type.startsWith('video/')) ||
-      (fileType === 'pdf' && file.type === 'application/pdf')
-    );
+  //   const isValidFileType = (
+  //     (fileType === 'image' && file.type.startsWith('image/')) ||
+  //     (fileType === 'video' && file.type.startsWith('video/')) ||
+  //     (fileType === 'pdf' && file.type === 'application/pdf')
+  //   );
 
-    if (!isValidFileType) {
-      toast.error(`Invalid file type. Please select a ${fileType} file.`);
-      return;
-    }
+  //   if (!isValidFileType) {
+  //     toast.error(`Invalid file type. Please select a ${fileType} file.`);
+  //     return;
+  //   }
 
-    setUploadedFile(file);
-    setUploading(true);
+  //   setUploadedFile(file);
+  //   setUploading(true);
 
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
+  //   try {
+  //     const formData = new FormData();
+  //     formData.append('file', file);
 
-      const response = await axios.post(
-        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/upload/${fileType}/${params.campaignId}`,
-        formData
-      );
+  //     const response = await axios.post(
+  //       `${process.env.NEXT_PUBLIC_SERVER_URL}v2/upload/${fileType}/${params.campaignId}`,
+  //       formData
+  //     );
 
-      if (!response.data) {
-        throw new Error('Upload failed');
-      }
+  //     if (!response.data) {
+  //       throw new Error('Upload failed');
+  //     }
 
-      toast.success('File uploaded successfully!');
-      setUploadedFile(null);
-    } catch (error) {
-      toast.error('Failed to upload file');
-      console.error('Upload error:', error);
-    } finally {
-      setUploading(false);
-    }
-  };
+  //     toast.success('File uploaded successfully!');
+  //     setUploadedFile(null);
+  //   } catch (error) {
+  //     toast.error('Failed to upload file');
+  //     console.error('Upload error:', error);
+  //   } finally {
+  //     setUploading(false);
+  //   }
+  // };
 
 
   return (
@@ -614,7 +614,7 @@ export default function Training() {
                   </div>
                 </div>
 
-                <div className="w-1/2 space-y-4">
+                {/* <div className="w-1/2 space-y-4">
                   <div>
                     <Label className="text-sm font-medium block mb-2">File Type</Label>
                     <RadioGroup
@@ -657,7 +657,7 @@ export default function Training() {
                       </p>
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
               <Button
                 onClick={handleGenerate}
