@@ -609,10 +609,11 @@ export default function PeopleForm(): JSX.Element {
     if (checkedCompanyHeadcount && checkedCompanyHeadcount.length > 0) {
       url += checkedCompanyHeadcount
         .map((range: string) => {
+          if (range === "10000+") {
+            return `&organizationNumEmployeesRanges%5B%5D=10001`;
+          }
           const [min, max] = range.split("-");
-          return `&organizationNumEmployeesRanges[]=${encodeURIComponent(
-            min
-          )},${max === "x" ? "" : encodeURIComponent(max)}`;
+          return `&organizationNumEmployeesRanges[]=${encodeURIComponent(min)},${max === "x" ? "" : encodeURIComponent(max)}`;
         })
         .join("");
     }
@@ -678,10 +679,11 @@ export default function PeopleForm(): JSX.Element {
         .join("")
     }
 
-    if (formData.minimum_company_funding && formData.maximum_company_funding) {
-      url += `&organizationRevenueRanges[]=${encodeURIComponent(
-        formData.minimum_company_funding.text
-      )},${encodeURIComponent(formData.maximum_company_funding.text)}`;
+    if (formData.minimum_company_funding || formData.maximum_company_funding) {
+      const minRevenue = formData.minimum_company_funding ? encodeURIComponent(formData.minimum_company_funding.text) : '';
+      const maxRevenue = formData.maximum_company_funding ? encodeURIComponent(formData.maximum_company_funding.text) : '';
+      
+      url += `&revenueRange%5Bmin%5D=${minRevenue}&revenueRange%5Bmax%5D=${maxRevenue}`;
     }
 
     if (formData.email_status && formData.email_status.length > 0) {
