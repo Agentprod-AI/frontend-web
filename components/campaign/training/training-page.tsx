@@ -458,6 +458,9 @@ export default function Training() {
   //   }
   // };
 
+  const handleTemplatePreview = async () => {
+    handleCustomGenerate();
+  };
 
   return (
     <>
@@ -477,7 +480,6 @@ export default function Training() {
               <TabsTrigger
                 value="preview"
                 className="flex gap-1"
-                onClick={handleCustomGenerate}
               >
                 {previewLoading ? (
                   <div className="flex items-center">
@@ -678,6 +680,14 @@ export default function Training() {
             </CardHeader>
             <CardContent>
               <EditorContent />
+              <Button
+                onClick={handleTemplatePreview}
+                className="mt-4"
+              >
+                <div className="flex items-center justify-center">
+                  Preview Email <span className="ml-2">{loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}</span>
+                </div>
+              </Button>
             </CardContent>
           </Card>
         </div>
