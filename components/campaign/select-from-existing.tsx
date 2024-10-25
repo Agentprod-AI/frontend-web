@@ -163,44 +163,13 @@ export const SelectFromExisting = () => {
     }));
   }
 
-  // const createAudience = async () => {
-  //   if (selectedLeads.length === 0) {
-  //     toast.error("Please select leads to create an audience");
-  //     return;
-  //   }
-
-  //   console.log(selectedLeads)
-
-  //   setIsCreateBtnLoading(true);
-  //   try {
-  //     const audienceBody = mapLeadsToBodies(selectedLeads, params.campaignId);
-  //     const response = await axiosInstance.post<Contact[]>(`v2/nurturing/leads`, audienceBody);
-  //     const data = response.data;
-      
-  //     if (Array.isArray(data)) {
-  //       setLeads(data);
-  //     } else {
-  //       setLeads([data]);
-  //     }
-      
-  //     toast.success("Audience created successfully");
-  //     router.push(`/dashboard/campaign/${params.campaignId}`);
-  //   } catch (error) {
-  //     console.error(error);
-  //     setError(error instanceof Error ? error.toString() : String(error));
-  //     toast.error("Failed to create audience");
-  //   } finally {
-  //     setIsCreateBtnLoading(false);
-  //   }
-  // };
-
   const createAudience = async () => {
     if (allSelectedLeads.size === 0) {
       toast.error("Please select leads to create an audience");
       return;
     }
 
-    console.log(allSelectedLeads)
+    // console.log(allSelectedLeads)
 
     setIsCreateBtnLoading(true);
     try {
