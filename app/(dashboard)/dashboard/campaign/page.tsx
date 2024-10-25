@@ -203,7 +203,7 @@ export default function CampaignPage() {
             <p className="text-sm text-muted-foreground">
               {campaignItem?.replies || 0}/{campaignItem?.contacts || 0}
             </p>
-            <CircularProgressbar
+            {/* <CircularProgressbar
               value={
                 campaignItem?.daily_outreach_number && campaignItem?.contacts
                   ? (campaignItem.daily_outreach_number /
@@ -222,7 +222,7 @@ export default function CampaignPage() {
                   : 0
               }%`}
               className="w-10 h-10"
-            />
+            /> */}
           </div>
         </div>
         <div className="text-xs dark:text-white/80 text-black -space-y-4 bg-green-400/80 dark:bg-green-400/20 w-max px-4 py-1 rounded-3xl">
