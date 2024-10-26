@@ -9,9 +9,7 @@ export interface NavItem {
   label?: string;
   description?: string;
   isCollapsible?: boolean;
-  subNavs?: NavItem[];
-  beta?: boolean;
-}
+  subNavs?: NavItem[]
 
 export interface NavInterface {
   category: string;
