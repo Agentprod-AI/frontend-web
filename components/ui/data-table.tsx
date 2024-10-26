@@ -2,7 +2,7 @@
 /* eslint-disable no-console */
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -18,6 +18,7 @@ import {
   useReactTable,
   getPaginationRowModel,
   getFilteredRowModel,
+  RowSelectionState,
 } from "@tanstack/react-table";
 import {
   Table,
@@ -41,9 +42,13 @@ interface DataTableProps<TData, TValue> {
   onDelete?: (id: string) => void;
   onSearch?: (value: string) => void;
   onCampaignSelect?: (campaignId: string | null) => void;
+  onSelectionChange?: (selectedRows: TData[]) => void;
+  selectedLeadIds?: Set<string>;
+  currentPageData?: TData[];
+  totalLeads?: number;
 }
 
-export function DataTable<TData, TValue>({
+export function DataTable<TData extends { id: string }, TValue>({
   columns,
   data,
   searchKey,
@@ -51,6 +56,10 @@ export function DataTable<TData, TValue>({
   onDelete,
   onSearch,
   onCampaignSelect,
+  onSelectionChange,
+  selectedLeadIds = new Set(),
+  currentPageData = [],
+  totalLeads,
 }: DataTableProps<TData, TValue>) {
   const [globalFilter, setGlobalFilter] = useState("");
   const [selectedCampaign, setSelectedCampaign] = useState<{
@@ -59,16 +68,53 @@ export function DataTable<TData, TValue>({
   } | null>(null);
   const { campaigns } = useCampaignContext();
 
+  // Initialize row selection state based on selectedLeadIds
+  const rowSelection = React.useMemo(() => {
+    const selection: RowSelectionState = {};
+    data.forEach((item, index) => {
+      if (selectedLeadIds.has(item.id)) {
+        selection[index] = true;
+      }
+    });
+    return selection;
+  }, [data, selectedLeadIds]);
+
+  const handleRowSelectionChange = useCallback(
+    (updaterOrValue: RowSelectionState | ((old: RowSelectionState) => RowSelectionState)) => {
+      let newSelection: RowSelectionState;
+      
+      if (typeof updaterOrValue === 'function') {
+        newSelection = updaterOrValue(rowSelection);
+      } else {
+        newSelection = updaterOrValue;
+      }
+
+      // Get all currently visible rows
+      const visibleRows = table.getRowModel().rows;
+      const selectedRows = visibleRows
+        .filter((row, index) => newSelection[index])
+        .map(row => row.original);
+
+      if (onSelectionChange) {
+        onSelectionChange(selectedRows);
+      }
+    },
+    [onSelectionChange]
+  );
+
   const table = useReactTable({
-    data: data || [],
+    data,
     columns,
     getCoreRowModel: getCoreRowModel(),
     getPaginationRowModel: getPaginationRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
+    onRowSelectionChange: handleRowSelectionChange,
     state: {
       globalFilter,
+      rowSelection,
     },
-    onGlobalFilterChange: setGlobalFilter,
+    enableRowSelection: !simple,
+    enableMultiRowSelection: !simple,
   });
 
   useEffect(() => {
@@ -83,7 +129,7 @@ export function DataTable<TData, TValue>({
     }
   }, [globalFilter, onSearch]);
 
-  const rows = table.getRowModel()?.rows ?? [];
+  const rows = table.getRowModel().rows;
 
   const allCampaigns = campaigns.map((campaign) => ({
     campaignName: campaign.campaign_name,
@@ -125,11 +171,11 @@ export function DataTable<TData, TValue>({
           </DropdownMenuTrigger>
           <DropdownMenuContent className="w-80">
             <DropdownMenuGroup>
+              <DropdownMenuItem onClick={() => handleCampaignSelect(null)}>
+                <p className="cursor-pointer">All Campaigns</p>
+              </DropdownMenuItem>
               <DropdownMenuSeparator />
               <ScrollArea className="h-[400px] w-full rounded-md border p-2">
-                <DropdownMenuItem onClick={() => handleCampaignSelect(null)}>
-                  <p className="cursor-pointer">All Campaigns</p>
-                </DropdownMenuItem>
                 {allCampaigns?.map((campaignItem) => (
                   <DropdownMenuItem
                     key={campaignItem.campaignId}
@@ -198,8 +244,8 @@ export function DataTable<TData, TValue>({
       </ScrollArea>
       {!simple && rows.length > 0 && (
         <div className="flex-1 text-sm text-muted-foreground pt-4">
-          {table.getFilteredSelectedRowModel().rows.length} of{" "}
-          {table.getFilteredRowModel().rows.length} row(s) selected.
+          {selectedLeadIds.size} of{" "}
+          {totalLeads} row(s) selected.
         </div>
       )}
     </>
