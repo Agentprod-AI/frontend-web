@@ -396,12 +396,19 @@ export default function Training() {
 
   const handleGenerate = async () => {
     try {
+      const customInstructions = [];
+      if (customPrompt) {
+        customInstructions.push(customPrompt);
+      }
+      if (uploadedFile) {
+        customInstructions.push(`Always mention that you are including a ${fileType}. Name of the file: ${uploadedFile.name}`);
+      }
+
       const personaData = {
         user_id: user.id,
         campaign_id: params.campaignId,
-        custom_instructions: customPrompt ? [customPrompt] : [],
+        custom_instructions: customInstructions,
         length_of_email: selectedOption,
-
       };
 
       const res = await axios.put(
@@ -417,46 +424,45 @@ export default function Training() {
     }
   };
 
-  // const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-  //   const file = e.target.files?.[0];
-  //   if (!file) return;
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
 
-  //   const isValidFileType = (
-  //     (fileType === 'image' && file.type.startsWith('image/')) ||
-  //     (fileType === 'video' && file.type.startsWith('video/')) ||
-  //     (fileType === 'pdf' && file.type === 'application/pdf')
-  //   );
+    const isValidFileType = (
+      (fileType === 'image' && file.type.startsWith('image/')) ||
+      (fileType === 'video' && file.type.startsWith('video/')) ||
+      (fileType === 'pdf' && file.type === 'application/pdf')
+    );
 
-  //   if (!isValidFileType) {
-  //     toast.error(`Invalid file type. Please select a ${fileType} file.`);
-  //     return;
-  //   }
+    if (!isValidFileType) {
+      toast.error(`Invalid file type. Please select a ${fileType} file.`);
+      return;
+    }
 
-  //   setUploadedFile(file);
-  //   setUploading(true);
+    setUploadedFile(file);
+    setUploading(true);
 
-  //   try {
-  //     const formData = new FormData();
-  //     formData.append('file', file);
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
 
-  //     const response = await axios.post(
-  //       `${process.env.NEXT_PUBLIC_SERVER_URL}v2/upload/${fileType}/${params.campaignId}`,
-  //       formData
-  //     );
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/upload/${fileType}/${params.campaignId}`,
+        formData
+      );
 
-  //     if (!response.data) {
-  //       throw new Error('Upload failed');
-  //     }
+      if (!response.data) {
+        throw new Error('Upload failed');
+      }
 
-  //     toast.success('File uploaded successfully!');
-  //     setUploadedFile(null);
-  //   } catch (error) {
-  //     toast.error('Failed to upload file');
-  //     console.error('Upload error:', error);
-  //   } finally {
-  //     setUploading(false);
-  //   }
-  // };
+      toast.success('File uploaded successfully!');
+    } catch (error) {
+      toast.error('Failed to upload file');
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   const handleTemplatePreview = async () => {
     handleCustomGenerate();
@@ -616,7 +622,7 @@ export default function Training() {
                   </div>
                 </div>
 
-                {/* <div className="w-1/2 space-y-4">
+                <div className="w-1/2 space-y-4">
                   <div>
                     <Label className="text-sm font-medium block mb-2">File Type</Label>
                     <RadioGroup
@@ -659,7 +665,7 @@ export default function Training() {
                       </p>
                     )}
                   </div>
-                </div> */}
+                </div>
               </div>
               <Button
                 onClick={handleGenerate}
