@@ -2,7 +2,6 @@
 /* eslint-disable no-console */
 import { useState, useEffect } from "react";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
-import axios from "axios";
 import { Contact, useLeads } from "@/context/lead-user";
 import { toast } from "sonner";
 import axiosInstance from "@/utils/axiosInstance";
@@ -10,39 +9,55 @@ import { Button } from "@/components/ui/button";
 import { LoadingCircle } from "@/app/icons";
 import { v4 as uuid } from "uuid";
 import { useUserContext } from "@/context/user-context";
-import { useParams } from "next/navigation";
-import { useRouter } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 
 export const SelectFromExisting = () => {
   const { setLeads, existingLeads } = useLeads();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isTableLoading, setIsTableLoading] = useState(false);
+  const [isTableLoading, setIsTableLoading] = useState(true);
   const [isCreateBtnLoading, setIsCreateBtnLoading] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<string | null>(null);
+  const [selectedLeads, setSelectedLeads] = useState<Contact[]>([]);
+  const [page, setPage] = useState(1);
+  const [totalPages, setTotalPages] = useState(1);
+  const [totalLeads, setTotalLeads] = useState(0);
+  const size = 10;
+  
   const { user } = useUserContext();
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
   const [type, setType] = useState<"create" | "edit">("create");
 
-  useEffect(() => {
-    async function fetchAllLeads() {
-      setIsTableLoading(true);
-      axiosInstance
-        .get(`v2/lead/all/${user.id}`)
-        .then((response) => {
-          console.log(response);
-          setLeads(response.data);
-          setIsTableLoading(false);
-        })
-        .catch((error) => {
-          console.log(error);
-          setError(error.message || "Failed to fetch leads.");
-          setIsTableLoading(false);
-        });
-    }
+  const [allSelectedLeads, setAllSelectedLeads] = useState<Map<string, Contact>>(new Map());
+  const [currentPageData, setCurrentPageData] = useState<Contact[]>([]);
 
-    fetchAllLeads();
-  }, []);
+  const fetchLeads = async (pageToFetch: number) => {
+    if (!user?.id) return;
+    
+    try {
+      const response = await axiosInstance.get(`v2/lead/all/${user.id}`, {
+        params: {
+          page: pageToFetch,
+          size,
+          campaign_id: selectedCampaignId,
+        },
+      });
+      setCurrentPageData(response.data.items);
+      setLeads(response.data.items);
+      setTotalLeads(response.data.total);
+      setTotalPages(Math.ceil(response.data.total / size));
+      setIsTableLoading(false);
+    } catch (error) {
+      console.error("Error fetching leads:", error);
+      setError(error instanceof Error ? error.message : "Failed to fetch leads");
+      setIsTableLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchLeads(page);
+  }, [page, selectedCampaignId]);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -57,10 +72,9 @@ export const SelectFromExisting = () => {
             setType("create");
           } else {
             if (existingLeads) {
-              // Assuming setLeads sets the leads only if existingLeads exist
               setLeads(data);
             }
-            console.log("data ==>", data);
+            setSelectedCampaignId(id);
             setType("edit");
           }
         } catch (error) {
@@ -71,6 +85,33 @@ export const SelectFromExisting = () => {
 
     fetchCampaign();
   }, [params.campaignId]);
+
+  const handleCampaignSelect = (campaignId: string | null) => {
+    setSelectedCampaignId(campaignId);
+    setPage(1);
+  };
+
+  const handlePageChange = (newPage: number) => {
+    setPage(newPage);
+  };
+
+  const handleLeadSelection = (selectedRows: Contact[]) => {
+    const newSelectedLeads = new Map(allSelectedLeads);
+    const currentPageLeadIds = new Set(currentPageData.map(lead => lead.id));
+    
+    currentPageLeadIds.forEach(id => {
+      if (!selectedRows.find(row => row.id === id)) {
+        newSelectedLeads.delete(id);
+      }
+    });
+    
+    selectedRows.forEach(lead => {
+      newSelectedLeads.set(lead.id, lead);
+    });
+    
+    setAllSelectedLeads(newSelectedLeads);
+    setSelectedLeads(Array.from(newSelectedLeads.values()));
+  };
 
   function mapLeadsToBodies(leads: Contact[], campaignId: string): Contact[] {
     return leads.map((lead) => ({
@@ -105,11 +146,11 @@ export const SelectFromExisting = () => {
       revealed_for_current_team: lead.revealed_for_current_team,
       is_responded: false,
       company_linkedin_url: lead.company_linkedin_url,
-      pain_points: lead.pain_points || [], // Assuming optional or provide default
-      value: lead.value || [], // Assuming optional or provide default
-      metrics: lead.metrics || [], // Assuming optional or provide default
-      compliments: lead.compliments || [], // Assuming optional or provide default
-      lead_information: lead.lead_information || String, // Assuming optional or provide default
+      pain_points: lead.pain_points || [],
+      value: lead.value || [],
+      metrics: lead.metrics || [],
+      compliments: lead.compliments || [],
+      lead_information: lead.lead_information || String,
       is_b2b: lead.is_b2b,
       score: lead.score,
       qualification_details: lead.qualification_details || String,
@@ -123,71 +164,87 @@ export const SelectFromExisting = () => {
   }
 
   const createAudience = async () => {
-    console.log(existingLeads);
-    const audienceBody = mapLeadsToBodies(
-      existingLeads as Contact[],
-      params.campaignId
-    );
-    console.log(audienceBody);
+    if (allSelectedLeads.size === 0) {
+      toast.error("Please select leads to create an audience");
+      return;
+    }
+
+    // console.log(allSelectedLeads)
 
     setIsCreateBtnLoading(true);
-    const response = axiosInstance
-      .post<Contact[]>(`v2/nurturing/leads`, audienceBody)
-      .then((response: any) => {
-        const data = response.data;
-        console.log("DATA from contacts: ", data);
-        if (data.isArray) {
-          setLeads(data);
-        } else {
-          setLeads([data]);
-        }
-        setIsCreateBtnLoading(false);
-        toast.success("Audience created successfully");
-        router.push(`/dashboard/campaign/${params.campaignId}`);
-      })
-      .catch((error: any) => {
-        console.log(error);
-        setError(error instanceof Error ? error.toString() : String(error));
-        setIsCreateBtnLoading(false);
-      });
-
-    console.log("response from creating contact", response);
+    try {
+      const audienceBody = mapLeadsToBodies(Array.from(allSelectedLeads.values()), params.campaignId);
+      const response = await axiosInstance.post<Contact[]>(`v2/nurturing/leads`, audienceBody);
+      const data = response.data;
+      
+      if (Array.isArray(data)) {
+        setLeads(data);
+      } else {
+        setLeads([data]);
+      }
+      
+      toast.success("Audience created successfully");
+      router.push(`/dashboard/campaign/${params.campaignId}`);
+    } catch (error) {
+      console.error(error);
+      setError(error instanceof Error ? error.toString() : String(error));
+      toast.error("Failed to create audience");
+    } finally {
+      setIsCreateBtnLoading(false);
+    }
   };
 
   return (
-    <>
-      <main>
-        {isTableLoading ? (
-          <LoadingCircle />
-        ) : (
-          <AudienceTableClient
-            isContacts={true}
-            checkboxes={true}
-            // onCampaignSelect={}
-          />
-        )}
-        {isCreateBtnLoading ? (
-          <LoadingCircle />
-        ) : type === "create" ? (
+    <main className="space-y-4">
+      {isTableLoading ? (
+        <LoadingCircle />
+      ) : (
+        <AudienceTableClient
+          isContacts={true}
+          checkboxes={true}
+          onCampaignSelect={handleCampaignSelect}
+          onSelectionChange={handleLeadSelection}
+          selectedLeadIds={new Set(allSelectedLeads.keys())}
+          currentPageData={currentPageData}
+          totalLeads={totalLeads}
+        />
+      )}
+
+      <div className="flex justify-between items-center mt-4">
+        <div className="text-sm text-muted-foreground">
+          Page {page} of {totalPages}
+        </div>
+        <div className="space-x-2">
+          <Button
+            onClick={() => handlePageChange(page - 1)}
+            disabled={page === 1 || isTableLoading}
+          >
+            Previous
+          </Button>
+          <Button
+            onClick={() => handlePageChange(page + 1)}
+            disabled={page === totalPages || isTableLoading}
+          >
+            Next
+          </Button>
+        </div>
+      </div>
+
+      {isCreateBtnLoading ? (
+        <LoadingCircle />
+      ) : (
+        <div className="flex items-center justify-between mt-4">
           <Button
             onClick={(event) => {
               event.preventDefault();
               createAudience();
             }}
+            disabled={allSelectedLeads.size === 0}
           >
-            Create Audience
+            {type === "create" ? "Create Audience" : "Update Audience"}
           </Button>
-        ) : (
-          <Button
-            onClick={(event) => {
-              event.preventDefault();
-              createAudience();
-            }}
-          >
-            Update Audience
-          </Button>
-        )}
-      </main>
-    </>
+        </div>
+      )}
+    </main>
   );
 };

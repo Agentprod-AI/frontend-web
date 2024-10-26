@@ -679,6 +679,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const [error, setError] = React.useState("");
     const { user } = useUserContext();
     const internalScrollRef = React.useRef<HTMLDivElement>(null);
+    const [isEditing, setIsEditing] = React.useState(false);
 
     const lastEmail = thread[thread.length - 1];
 
@@ -736,6 +737,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           },
         ],
       };
+      
       axiosInstance
         .post("v2/training/autogenerate/followup", payload)
         .then((response) => {
@@ -933,6 +935,33 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         });
     };
 
+    const handleEditClick = () => {
+      setIsEditing(true);
+      setEditable(true);
+    };
+
+    const handleSaveClick = () => {
+      setIsEditing(false);
+      setEditable(false);
+      
+      // Make the PATCH API call
+      const payload = {
+        subject: title,
+        body: body
+      };
+
+      axiosInstance
+        .patch(`/v2/mailbox/draft/update?_id=${emails && emails[0]?.id}`, payload)
+        .then((response) => {
+          toast.success("Draft updated successfully!");
+          console.log("Updated draft:", response.data);
+        })
+        .catch((error) => {
+          console.error("Failed to update draft:", error);
+          toast.error("Failed to update the draft. Please try again.");
+        });
+    };
+
     if (isLoading) {
       return (
         <div className="m-4 flex flex-row ">
@@ -1036,22 +1065,26 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       >
                         {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                       </Button>
-                      {editable && (
+                      {/* Remove the following line */}
+                      {/* {editable && (
                         <Button
                           variant={"ghost"}
                           onClick={() => setEditable(false)}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
-                      )}
+                      )} */}
                     </div>
                     <div>
-                      <Button
-                        variant={"ghost"}
-                        onClick={() => setEditable(true)}
-                      >
-                        <Edit3 className="h-4 w-4" />
-                      </Button>
+                      {!isEditing ? (
+                        <Button variant={"ghost"} onClick={handleEditClick}>
+                          <Edit3 className="h-4 w-4" />
+                        </Button>
+                      ) : (
+                        <Button variant={"ghost"} onClick={handleSaveClick}>
+                          <Check className="h-4 w-4" />
+                        </Button>
+                      )}
                       <Button
                         variant={"ghost"}
                         onClick={() => {
@@ -1161,16 +1194,23 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 >
                   {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                 </Button>
-                {editable && (
+                {/* Remove the following line */}
+                {/* {editable && (
                   <Button variant={"ghost"} onClick={() => setEditable(false)}>
                     <Check className="h-4 w-4" />
                   </Button>
-                )}
+                )} */}
               </div>
               <div>
-                <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                  <Edit3 className="h-4 w-4" />
-                </Button>
+                {!isEditing ? (
+                  <Button variant={"ghost"} onClick={handleEditClick}>
+                    <Edit3 className="h-4 w-4" />
+                  </Button>
+                ) : (
+                  <Button variant={"ghost"} onClick={handleSaveClick}>
+                    <Check className="h-4 w-4" />
+                  </Button>
+                )}
                 <Button variant={"ghost"} onClick={handleRegenrateDraft}>
                   <RefreshCw className="h-4 w-4" />
                 </Button>

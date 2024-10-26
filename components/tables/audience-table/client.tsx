@@ -92,6 +92,10 @@ interface AudienceTableClientProps {
   onDelete?: (id: string) => void;
   onSearch?: (value: string) => void;
   onCampaignSelect?: (campaignId: string | null) => void;
+  onSelectionChange?: (selectedRows: any) => void;
+  selectedLeadIds?: any;
+  currentPageData?: any;
+  totalLeads?: number;
 }
 
 export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
@@ -100,6 +104,10 @@ export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
   onDelete,
   onSearch,
   onCampaignSelect,
+  onSelectionChange,
+  selectedLeadIds,
+  currentPageData,
+  totalLeads,
 }) => {
   const { leads } = useLeads();
 
@@ -133,6 +141,10 @@ export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
           onDelete={onDelete}
           onSearch={onSearch}
           onCampaignSelect={onCampaignSelect}
+          onSelectionChange={onSelectionChange}
+          selectedLeadIds={selectedLeadIds}
+          currentPageData={currentPageData}
+          totalLeads={totalLeads}
         />
       </>
     );
@@ -150,6 +162,7 @@ export const AudienceTableClient: React.FC<AudienceTableClientProps> = ({
           onDelete={onDelete}
           onSearch={onSearch}
           onCampaignSelect={onCampaignSelect}
+          onSelectionChange={onSelectionChange}
         />
       </>
     );

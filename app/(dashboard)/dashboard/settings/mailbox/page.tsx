@@ -132,6 +132,64 @@ export default function Page() {
   const { user } = useUserContext();
   const [isVerifying, setIsVerifying] = useState(false);
   const verificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const verificationAttemptsRef = useRef(0);
+  const MAX_VERIFICATION_ATTEMPTS = 20;
+
+  useEffect(() => {
+    const storedVerificationState = localStorage.getItem('verificationInProgress');
+    if (storedVerificationState === 'true') {
+      startVerification();
+    }
+
+    return () => {
+      if (verificationIntervalRef.current) {
+        clearInterval(verificationIntervalRef.current);
+      }
+    };
+  }, []);
+
+  const startVerification = () => {
+    const domain = localStorage.getItem('domainInput');
+    if (!domain) {
+      toast.error("No domain found. Please enter a domain first.");
+      return;
+    }
+
+    setIsVerifying(true);
+    localStorage.setItem('verificationInProgress', 'true');
+    verificationAttemptsRef.current = 0;
+
+    verificationIntervalRef.current = setInterval(async () => {
+      if (verificationAttemptsRef.current >= MAX_VERIFICATION_ATTEMPTS) {
+        clearInterval(verificationIntervalRef.current!);
+        setIsVerifying(false);
+        localStorage.removeItem('verificationInProgress');
+        toast.error("Domain verification failed after maximum attempts. Please try again later.");
+        return;
+      }
+
+      verificationAttemptsRef.current++;
+
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${domain}/authenticate`);
+        
+        if (!response.data.error) {
+          clearInterval(verificationIntervalRef.current!);
+          setIsVerifying(false);
+          localStorage.removeItem('verificationInProgress');
+          toast.success("Domain verified successfully!");
+        } else {
+          console.log(`Domain not yet verified, attempt ${verificationAttemptsRef.current} of ${MAX_VERIFICATION_ATTEMPTS}`);
+        }
+      } catch (error: any) {
+        clearInterval(verificationIntervalRef.current!);
+        setIsVerifying(false);
+        localStorage.removeItem('verificationInProgress');
+        toast.error("An error occurred while verifying the domain. Please try again later.");
+        console.error("Domain verification error:", error);
+      }
+    }, 60 * 1000); 
+  };
 
   const handleOpenAddMailbox = () => setIsChooseServiceOpen(true);
   const handleCloseAddMailbox = () => setIsChooseServiceOpen(false);
@@ -332,6 +390,9 @@ export default function Page() {
       return;
     }
 
+    // Store the domain in localStorage
+    localStorage.setItem('domainInput', domainInput);
+
     const schema = createEmailSchema(domainInput);
     const senders = nonEmptyEmails.map((email) => ({
       mailbox: email,
@@ -509,46 +570,14 @@ export default function Page() {
     }
   }, [getDomainName, testAllDomains]);
 
-
-
-  const verifyDomain = async (domain:string) => {
-
-
-
+  const verifyDomain = () => {
     // Close all dialogs immediately
     setIsTableDialogOpen(false);
     setIsVerifyEmailOpen(false);
     setIsAddMailboxOpen(false);
 
-    // Start background verification
-    setIsVerifying(true);
-    verificationIntervalRef.current = setInterval(async () => {
-      try {
-        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${domain}/authenticate`);
-        
-        if (!response.data.error) {
-          clearInterval(verificationIntervalRef.current!);
-          setIsVerifying(false);
-          toast.success("Domain verified successfully!");
-        } else {
-          console.log("Domain not yet verified, continuing checks...");
-        }
-      } catch (error: any) {
-        clearInterval(verificationIntervalRef.current!);
-        setIsVerifying(false);
-        toast.error("An error occurred while verifying the domain. Please try again later.");
-        console.error("Domain verification error:", error);
-      }
-    }, 2 * 60 * 1000); // Check every 2 minutes
+    startVerification();
   };
-
-  useEffect(() => {
-    return () => {
-      if (verificationIntervalRef.current) {
-        clearInterval(verificationIntervalRef.current);
-      }
-    };
-  }, []);
 
   return (
     <div className="w-full">
@@ -962,9 +991,10 @@ export default function Page() {
                           <DialogFooter>
                             <Button
                               type="button"
-                              onClick={() => verifyDomain(mailbox.domain)}
+                              onClick={verifyDomain}
+                              disabled={isVerifying}
                             >
-                              Verify Domain
+                              {isVerifying ? 'Verifying...' : 'Verify Domain'}
                             </Button>
                           </DialogFooter>
                           <p className="text-gray-600 italic text-sm">
@@ -1340,9 +1370,10 @@ export default function Page() {
           <DialogFooter>
             <Button
               type="button"
-              onClick={() => verifyDomain(mailboxes[0].domain)}
+              onClick={verifyDomain}
+              disabled={isVerifying}
             >
-              Verify Domain
+              {isVerifying ? 'Verifying...' : 'Verify Domain'}
             </Button>
           </DialogFooter>
             <p className="text-gray-600 italic text-sm mt-2">

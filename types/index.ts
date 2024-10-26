@@ -9,13 +9,12 @@ export interface NavItem {
   label?: string;
   description?: string;
   isCollapsible?: boolean;
-  subNavs?: NavItem[];
-  id ?: string
-}
+  subNavs?: NavItem[]
 
 export interface NavInterface {
   category: string;
   items: NavItem[];
+  
 }
 
 export interface NavItemWithChildren extends NavItem {

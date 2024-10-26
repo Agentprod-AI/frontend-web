@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Papa from "papaparse";
 import * as XLSX from "xlsx";
 import { LoadingCircle } from "@/app/icons";
@@ -30,7 +30,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Trash2Icon, Loader2 } from "lucide-react";
+import { Trash2Icon, Loader2, FileIcon } from "lucide-react";
 import axiosInstance from "@/utils/axiosInstance";
 import { Contact, Lead, useLeads } from "@/context/lead-user";
 import { AudienceTableClient } from "../tables/audience-table/client";
@@ -41,6 +41,9 @@ import { useParams, useRouter } from "next/navigation";
 import { useButtonStatus } from "@/context/button-status";
 import axios from "axios";
 import AudienceTable from "../ui/AudienceTable";
+import { Card, CardHeader } from "@/components/ui/card";
+import { CardTitle } from "../ui/card";
+import { CardDescription } from "../ui/card";
 
 interface FileData {
   [key: string]: string;
@@ -59,10 +62,12 @@ export const ImportAudience = () => {
   const params = useParams<{ campaignId: string }>();
   const router = useRouter();
   const [type, setType] = useState<"create" | "edit">("create");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { setPageCompletion } = useButtonStatus();
 
   const [isEnrichmentLoading, setIsEnrichmentLoading] = useState(false);
+  const [showCard, setShowCard] = useState(true);
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     if (event.target.files) {
@@ -169,6 +174,7 @@ export const ImportAudience = () => {
 
   const enrichmentHandler = async () => {
     setIsEnrichmentLoading(true);
+    setShowCard(false); // Hide the card when enrichment starts
     toast.loading("Enriching leads...", { id: "enrichment" });
 
     const leadsToEnrich = fileData?.map((row) => {
@@ -186,136 +192,76 @@ export const ImportAudience = () => {
       return;
     }
 
-    const batchSize = 30;
-    const enrichedLeads: any[] = [];
-
-    const getRandomEmail = () => {
-      const emailArray = [
-        "nisheet@agentprod.com",
-        "info@agentprod.com",
-        "muskaan@agentprodapp.com",
-        "admin@agentprod.com",
-        "naman.barkiya@agentprod.com",
-        "siddhant.goswami@agentprod.com",
-        "muskaan@agentprod.com",
-      ];
-      return emailArray[Math.floor(Math.random() * emailArray.length)];
-    };
-
-    const createScraperBody = (url: string) => ({
-      count: 1,
-      searchUrl: url,
-      email: getRandomEmail(),
-      getEmails: true,
-      guessedEmails: true,
-      maxDelay: 15,
-      minDelay: 8,
-      password: "Agentprod06ms",
-      startPage: 1,
-      waitForVerification: true,
-      proxy: {
-        useApifyProxy: true,
-        apifyProxyGroups: ["RESIDENTIAL"],
-        apifyProxyCountry: "IN",
-      },
-    });
-
-    const fetchLead = async (lead: any): Promise<any[]> => {
-      const firstName = encodeURIComponent(lead.first_name || "");
-      const companyName = encodeURIComponent(lead.company_name || "");
-      const url = `https://app.apollo.io/#/people?finderViewId=5b6dfc5a73f47568b2e5f11c&sortByField=account_owner_id&sortAscending=true&qKeywords=${firstName}%20${companyName}`;
-      console.log(url);
-
-      const scraperBody = createScraperBody(url);
-
-      try {
-        const response = await axios.post(
-          "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_n5GCPgdvobcZfCa9w38PSxtIQiY22E4k3ARa",
-          scraperBody
-        );
-        return response.data;
-      } catch (error) {
-        console.error(
-          `Error fetching lead for ${firstName} ${companyName}:`,
-          error
-        );
-        return [];
-      }
-    };
-
     try {
       setIsLoading(true);
-      for (let i = 0; i < leadsToEnrich.length; i += batchSize) {
-        const batch = leadsToEnrich.slice(i, i + batchSize);
-        console.log(
-          `Processing batch ${i / batchSize + 1} of ${Math.ceil(
-            leadsToEnrich.length / batchSize
-          )}`
-        );
 
-        const batchPromises = batch.map(fetchLead);
-        const batchResults = await Promise.all(batchPromises);
-        const batchLeads = batchResults.flat();
+      // Prepare the data for the new endpoint
+      const enrichmentData = leadsToEnrich.map(lead => ({
+        first_name: lead.first_name || lead.name.split(" ")[0] || "",
+        last_name: lead.last_name || lead.name.split(" ")[1] || "",
+        email: lead.email || "",
+        company_website_url: lead.company_website_url || "",
+        company_name: lead.company_name || "",
+        linkedin_url: lead.linkedin_url || "",
+      }));
 
-        enrichedLeads.push(...batchLeads);
-
-        // Optional: Add a delay between batches to avoid rate limiting
-        if (i + batchSize < leadsToEnrich.length) {
-          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
-        }
-      }
-
-      // Process Apollo leads
-      const processedLeads = enrichedLeads.map(
-        (lead: any): Lead => ({
-          type: "prospective",
-          campaign_id: params.campaignId,
-          id: lead.id || uuid(),
-          first_name: lead.first_name,
-          last_name: lead.last_name,
-          name: lead.name,
-          title: lead.title,
-          linkedin_url: lead.linkedin_url,
-          email_status: lead.email_status,
-          photo_url: lead.photo_url,
-          twitter_url: lead.twitter_url,
-          github_url: null,
-          facebook_url: null,
-          extrapolated_email_confidence: lead.extrapolated_email_confidence,
-          headline: lead.headline,
-          email: lead.email,
-          employment_history: lead.employment_history,
-          state: lead.state,
-          city: lead.city,
-          country: lead.country,
-          is_likely_to_engage: lead.is_likely_to_engage,
-          departments: [],
-          subdepartments: [],
-          functions: [],
-          phone_numbers: lead.phone_numbers,
-          intent_strength: lead.intent_strength,
-          show_intent: lead.show_intent,
-          is_responded: false,
-          company_linkedin_url: lead.organization?.linkedin_url,
-          pain_points: [],
-          value: [],
-          metrics: [],
-          compliments: [],
-          lead_information: "",
-          is_b2b: "false",
-          score: null,
-          qualification_details: "",
-          company: lead.organization?.name,
-          phone: lead.phone_numbers[0]?.phone || null,
-          technologies: [],
-          organization: lead.organization?.name,
-          organization_id: lead.organization_id,
-          seniority: "",
-          revealed_for_current_team: false,
-          linkedin_posts: [], 
-          linkedin_bio: "",
-        })
+      // Call the new endpoint
+      const response = await axiosInstance.post(
+        'v2/apollo/leads/bulk_enrich',
+        enrichmentData
       );
+
+      const enrichedLeads = response.data;
+
+      // Process enriched leads
+      const processedLeads = enrichedLeads.map((lead: any): Lead => ({
+        type: "prospective",
+        campaign_id: params.campaignId,
+        id: lead.id || uuid(),
+        first_name: lead.first_name,
+        last_name: lead.last_name,
+        name: `${lead.first_name} ${lead.last_name}`,
+        title: lead.title,
+        linkedin_url: lead.linkedin_url,
+        email_status: lead.email_status,
+        photo_url: lead.photo_url,
+        twitter_url: lead.twitter_url,
+        github_url: lead.github_url,
+        facebook_url: lead.facebook_url,
+        extrapolated_email_confidence: lead.extrapolated_email_confidence,
+        headline: lead.headline,
+        email: lead.email,
+        employment_history: lead.employment_history,
+        state: lead.state,
+        city: lead.city,
+        country: lead.country,
+        is_likely_to_engage: lead.is_likely_to_engage,
+        departments: lead.departments || [],
+        subdepartments: lead.subdepartments || [],
+        functions: lead.functions || [],
+        phone_numbers: lead.phone_numbers,
+        intent_strength: lead.intent_strength,
+        show_intent: lead.show_intent,
+        is_responded: false,
+        company_linkedin_url: lead.organization?.linkedin_url,
+        pain_points: [],
+        value: [],
+        metrics: [],
+        compliments: [],
+        lead_information: "",
+        is_b2b: "false",
+        score: null,
+        qualification_details: "",
+        company: lead.organization?.name,
+        phone: lead.phone_numbers?.[0]?.phone || null,
+        technologies: [],
+        organization: lead.organization?.name,
+        organization_id: lead.organization_id,
+        seniority: lead.seniority || "",
+        revealed_for_current_team: lead.revealed_for_current_team || false,
+        linkedin_posts: [], 
+        linkedin_bio: lead.linkedin_bio || "",
+      }));
 
       setLeads(processedLeads);
       console.log("Processed leads:", processedLeads);
@@ -415,10 +361,47 @@ export const ImportAudience = () => {
 
       // Step 3: Update user details
       toast.info("Updating user details, please wait...");
-      setTimeout(() => {
-        router.push(`/dashboard/campaign/${params.campaignId}`);
-        setIsCreateBtnLoading(false);
-      }, 40000);
+      let attempts = 0;
+      const maxAttempts = 10;
+      const pollInterval = 6000; // 7 seconds
+
+        const checkLeads = async () => {
+          try {
+            const response = await axios.get(
+              `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
+            );
+            if (Array.isArray(response.data) && response.data.length >= 1) {
+              setIsCreateBtnLoading(false);
+              setTimeout(() => {
+                router.push(`/dashboard/campaign/${params.campaignId}`);
+              }, 4000);
+
+              return true;
+            }
+          } catch (error) {
+            console.error("Error checking leads:", error);
+          }
+          return false;
+        };
+
+        const poll = async () => {
+          const success = await checkLeads();
+          if (success) {
+            return;
+          }
+
+          attempts++;
+          if (attempts >= maxAttempts) {
+            console.log("Max attempts reached. Stopping polling.");
+            toast.error("Failed to update leads. Please try again later.");
+            setIsCreateBtnLoading(false);
+            return;
+          }
+
+          setTimeout(poll, pollInterval);
+        };
+
+        poll();
     } catch (error) {
       console.error(error);
       setError(error instanceof Error ? error.toString() : String(error));
@@ -430,75 +413,59 @@ export const ImportAudience = () => {
   const filteredOptions = [
     "First Name",
     "Last Name",
+    "Name",
     "Email",
-    "Hashed Email",
-    "Full Name",
-    "Phone Number",
-    "Apollo ID",
     "LinkedIn URL",
-    "Bio",
-    "Avatar URL",
-    "Website URL",
-    "Location",
-    "Time Zone",
-    "City",
-    "State",
-    "Country Code",
-    "Latitude",
-    "Longitude",
-    "Employment Title",
-    "Employment Seniority",
-    "Twitter URL",
-    "Facebook URL",
-    "GitHub URL",
     "Company Name",
-    "Company Domain",
-    "Company Nickname",
-    "Company Bio",
-    "Company Avatar URL",
     "Company Website URL",
-    "Company Street",
-    "Company City",
-    "Company State",
-    "Company Postal Code",
-    "Company Country",
-    "Company Raw Address",
-    "Company Founded Year",
-    "Company Employees Count",
-    "Company Alexa Global Rank",
-    "Company Retail Locations Count",
-    "Company Annual Revenue",
-    "Company Funding Total",
-    "Company Funding Stage",
-    "Company Ticker",
-    "Company Primary Industry",
-    "Company Secondary Industries",
-    "Company Tags",
-    "Company Languages",
-    "Company Tech Stack",
-    "Company Phone",
-    "Company Blog URL",
-    "Company AngelList URL",
-    "Company LinkedIn URL",
-    "Company Twitter URL",
-    "Company Facebook URL",
-    "Company Crunchbase URL",
+    
   ];
+
+  const handleCardClick = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.click();
+    }
+  };
 
   return (
     <>
-      <div className="my-4">
-        <div className="py-3">Add your CSV or XLSX file here.</div>
-        <Input
-          type="file"
-          accept=".csv,.xlsx,.xls"
-          className="w-full cursor-pointer"
-          onChange={handleFileChange}
-        />
-        {file && (
-          <Trash2Icon className="cursor-pointer" onClick={handleRemoveFile} />
-        )}
-      </div>
+      {showCard && (
+        <div className="my-4">
+          <h2 className="text-2xl font-bold mb-4">Choose Your Import Method</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card
+              className="cursor-pointer transition-all h-60 border-primary"
+              onClick={handleCardClick}
+            >
+              <CardHeader>
+                <CardTitle className="text-2xl mb-2 flex items-center">
+                  <FileIcon className="mr-2" /> Enhance Your Contact List
+                </CardTitle>
+                <CardDescription>
+                  <ul className="list-disc list-inside space-y-2">
+                    <li>Upload your file (CSV, Excel, etc.)</li>
+                    <li>We'll enrich each contact with additional details</li>
+                    <li>Get their email ID, LinkedIn ID, job titles, company size, etc.</li>
+                    <li>Save time on manual research</li>
+                    <li>Required fields: Name, Company</li>
+                  </ul>
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+
+          <Input
+            ref={fileInputRef}
+            id="file-upload"
+            type="file"
+            accept=".csv,.xlsx,.xls"
+            onChange={handleFileChange}
+            className="hidden"
+          />
+        </div>
+      )}
+
       {error && <div className="text-red-500">{error}</div>}
       {isLoading && <LoadingCircle />}
       {fileData && (

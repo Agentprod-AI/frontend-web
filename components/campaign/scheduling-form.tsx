@@ -216,7 +216,14 @@ export function SchedulingForm() {
                       <FormControl>
                         <RadioGroupItem value={type} />
                       </FormControl>
-                      <FormLabel className="font-normal">{type}</FormLabel>
+                      <FormLabel className="font-normal">
+                        {type}
+                        {(type === "Inbound" || type === "Nurturing") && (
+                          <span className="ml-2 rounded-full px-2 py-1 text-xs font-semibold text-white/70 border-white/80 border">
+                            Beta
+                          </span>
+                        )}
+                      </FormLabel>
                     </FormItem>
                   ))}
                 </RadioGroup>

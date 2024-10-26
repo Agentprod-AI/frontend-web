@@ -112,6 +112,9 @@ export default function Training() {
   const router = useRouter();
   const [startCampaignIsLoading, setStartCampaignIsLoading] =
     React.useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [uploadedFile, setUploadedFile] = useState<File | null>(null);
+  const [fileType, setFileType] = useState<'image' | 'video' | 'pdf'>('image');
 
   // const handleGenerateWithAI = async () => {
   //   try {
@@ -393,12 +396,19 @@ export default function Training() {
 
   const handleGenerate = async () => {
     try {
+      const customInstructions = [];
+      if (customPrompt) {
+        customInstructions.push(customPrompt);
+      }
+      if (uploadedFile) {
+        customInstructions.push(`Always mention that you are including a ${fileType}. Name of the file: ${uploadedFile.name}`);
+      }
+
       const personaData = {
         user_id: user.id,
         campaign_id: params.campaignId,
-        custom_instructions: customPrompt ? [customPrompt] : [],
+        custom_instructions: customInstructions,
         length_of_email: selectedOption,
-
       };
 
       const res = await axios.put(
@@ -414,6 +424,49 @@ export default function Training() {
     }
   };
 
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const isValidFileType = (
+      (fileType === 'image' && file.type.startsWith('image/')) ||
+      (fileType === 'video' && file.type.startsWith('video/')) ||
+      (fileType === 'pdf' && file.type === 'application/pdf')
+    );
+
+    if (!isValidFileType) {
+      toast.error(`Invalid file type. Please select a ${fileType} file.`);
+      return;
+    }
+
+    setUploadedFile(file);
+    setUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await axios.post(
+        `${process.env.NEXT_PUBLIC_SERVER_URL}v2/upload/${fileType}/${params.campaignId}`,
+        formData
+      );
+
+      if (!response.data) {
+        throw new Error('Upload failed');
+      }
+
+      toast.success('File uploaded successfully!');
+    } catch (error) {
+      toast.error('Failed to upload file');
+      console.error('Upload error:', error);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleTemplatePreview = async () => {
+    handleCustomGenerate();
+  };
 
   return (
     <>
@@ -433,7 +486,6 @@ export default function Training() {
               <TabsTrigger
                 value="preview"
                 className="flex gap-1"
-                onClick={handleCustomGenerate}
               >
                 {previewLoading ? (
                   <div className="flex items-center">
@@ -497,9 +549,7 @@ export default function Training() {
                           <TableRow key={index}>
                             <TableCell>{data.seed_mail}</TableCell>
                             <TableCell>
-                              {data.receivedAt.length > 0
-                                ? data.receivedAt[data.receivedAt.length - 1]
-                                : ""}
+                              {data.receivedAt}
                             </TableCell>
                             <TableCell className="text-green-400 ">
                               {data.spam_score}
@@ -522,56 +572,104 @@ export default function Training() {
         </div>
       </div>
       {activeTab === "editor" ? (
-        <div>
-          <Card className="w-full mt-4 shadow-md">
+        <div className="mt-4">
+          <Card className="w-full shadow-md">
             <CardHeader className="pb-2 border-b">
               <CardTitle className="text-2xl text-center font-semibold">
                 Let AI write
               </CardTitle>
             </CardHeader>
-            <CardContent className="pt-4 space-y-4">
-              <div className="rounded-md">
-                <Label className="text-sm font-medium mb-2 block">Length of email</Label>
-                <RadioGroup
-                  defaultValue="medium"
-                  className="flex justify-between w-60"
-                  onValueChange={(value) => setSelectedOption(parseInt(value))}
-                >
-                  {[
-                    { label: 'Short', value: 90 },
-                    { label: 'Medium', value: 130 },
-                    { label: 'Long', value: 180 }
-                  ].map((option) => (
-                    <div key={option.label} className="flex items-center">
-                      <RadioGroupItem
-                        value={option.value.toString()}
-                        id={option.label}
-                        className="mr-2"
-                      />
-                      <Label htmlFor={option.label} className="capitalize cursor-pointer">
-                        {option.label}
-                      </Label>
-                    </div>
-                  ))}
-                </RadioGroup>
-              </div>
+            <CardContent className="pt-4">
+              <div className="flex gap-20">
+                <div className="w-1/2 space-y-4">
+                  <div className="rounded-md">
+                    <Label className="text-sm font-medium mb-2 block">Length of email</Label>
+                    <RadioGroup
+                      defaultValue="medium"
+                      className="flex space-x-4"
+                      onValueChange={(value) => setSelectedOption(parseInt(value))}
+                    >
+                      {[
+                        { label: 'Short', value: 60 },
+                        { label: 'Medium', value: 120 },
+                        { label: 'Long', value: 180 }
+                      ].map((option) => (
+                        <div key={option.label} className="flex items-center">
+                          <RadioGroupItem
+                            value={option.value.toString()}
+                            id={option.label}
+                            className="mr-2"
+                          />
+                          <Label htmlFor={option.label} className="capitalize cursor-pointer">
+                            {option.label}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
 
-              <div>
-                <Label htmlFor="custom-instructions" className="text-sm font-medium mb-1 block">
-                  Custom Instructions (Optional)
-                </Label>
-                <Textarea
-                  id="custom-instructions"
-                  placeholder="Enter your custom instructions here..."
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  className="w-full"
-                />
-              </div>
+                  <div>
+                    <Label htmlFor="custom-instructions" className="text-sm font-medium mb-1 block">
+                      Custom Instructions (Optional)
+                    </Label>
+                    <Textarea
+                      id="custom-instructions"
+                      placeholder="Enter your custom instructions here..."
+                      value={customPrompt}
+                      onChange={(e) => setCustomPrompt(e.target.value)}
+                      className="w-full"
+                    />
+                  </div>
+                </div>
 
+                <div className="w-1/2 space-y-4">
+                  <div>
+                    <Label className="text-sm font-medium block mb-2">File Type</Label>
+                    <RadioGroup
+                      defaultValue="image"
+                      className="flex space-x-4"
+                      onValueChange={(value) => setFileType(value as 'image' | 'video' | 'pdf')}
+                    >
+                      {['image', 'video', 'pdf'].map((type) => (
+                        <div key={type} className="flex items-center">
+                          <RadioGroupItem value={type} id={type} className="mr-2" />
+                          <Label htmlFor={type} className="capitalize cursor-pointer">
+                            {type}
+                          </Label>
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  </div>
+
+                  <div>
+                    <Label className="text-sm font-medium block">Upload Custom File</Label>
+                    <Input
+                      type="file"
+                      accept={fileType === 'image' ? 'image/*' : fileType === 'video' ? 'video/*' : 'application/pdf'}
+                      onChange={handleFileChange}
+                      className="cursor-pointer mt-2"
+                      disabled={uploading}
+                    />
+                    {uploading && (
+                      <div className="flex items-center mt-2">
+                        <LoadingCircle />
+                        <span className="ml-2 text-sm text-gray-500">Uploading file...</span>
+                      </div>
+                    )}
+                    <p className="text-xs text-gray-500 mt-1">
+                      Accepted file type: {fileType}
+                    </p>
+                    {uploadedFile && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        Selected file: {uploadedFile.name}
+                      </p>
+                    )}
+                  </div>
+                </div>
+              </div>
               <Button
                 onClick={handleGenerate}
-                className=""
+                className="mt-4"
               >
                 <div className="flex items-center justify-center">
                   Preview Email <span className="ml-2">{loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}</span>
@@ -579,14 +677,23 @@ export default function Training() {
               </Button>
             </CardContent>
           </Card>
+          
           <Card className="w-full mt-4">
             <CardHeader>
               <CardTitle className="text-2xl font-bold text-center">
-                Use Ai Template
+                Use AI Template
               </CardTitle>
             </CardHeader>
             <CardContent>
               <EditorContent />
+              <Button
+                onClick={handleTemplatePreview}
+                className="mt-4"
+              >
+                <div className="flex items-center justify-center">
+                  Preview Email <span className="ml-2">{loadingWriteAI ? <LoadingCircle /> : <AutoAwesomeIcon />}</span>
+                </div>
+              </Button>
             </CardContent>
           </Card>
         </div>

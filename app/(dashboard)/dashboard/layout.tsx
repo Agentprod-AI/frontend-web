@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import Header from "@/components/layout/header";
 import {
   ResizableHandle,
@@ -19,6 +19,7 @@ import { useMailbox } from "@/context/mailbox-provider";
 import WarningBanner from "@/components/payment/WarningBanner";
 import axios from "axios";
 import { useSubscription } from "@/hooks/userSubscription";
+import { toast } from "sonner";
 
 export default function DashboardLayout({
   children,
@@ -29,15 +30,77 @@ export default function DashboardLayout({
   const { width } = useWindowSize();
   const { user } = useAuth();
   const { isSubscribed } = useSubscription();
+  const { isContextBarOpen } = useMailbox();
+
+  const [isVerifying, setIsVerifying] = useState(false);
+  const verificationIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const verificationAttemptsRef = useRef(0);
+  const MAX_VERIFICATION_ATTEMPTS = 20;
+  const hasInitializedRef = useRef(false);
 
   useEffect(() => {
     if (!user) {
       redirect("/");
       return;
     }
+
+    if (!hasInitializedRef.current) {
+      const storedVerificationState = localStorage.getItem('verificationInProgress');
+      if (storedVerificationState === 'true') {
+        startVerification();
+      }
+      hasInitializedRef.current = true;
+    }
+
+    return () => {
+      if (verificationIntervalRef.current) {
+        clearInterval(verificationIntervalRef.current);
+      }
+    };
   }, [user]);
 
-  const { isContextBarOpen } = useMailbox();
+  const startVerification = () => {
+    const domain = localStorage.getItem('domainInput');
+    if (!domain) {
+      toast.error("No domain found. Please enter a domain first.");
+      return;
+    }
+
+    setIsVerifying(true);
+    localStorage.setItem('verificationInProgress', 'true');
+    verificationAttemptsRef.current = 0;
+
+    verificationIntervalRef.current = setInterval(async () => {
+      if (verificationAttemptsRef.current >= MAX_VERIFICATION_ATTEMPTS) {
+        clearInterval(verificationIntervalRef.current!);
+        setIsVerifying(false);
+        localStorage.removeItem('verificationInProgress');
+        toast.error("Domain verification failed after maximum attempts. Please try again later.");
+        return;
+      }
+
+      verificationAttemptsRef.current++;
+
+      try {
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/user/${domain}/authenticate`);
+        
+        if (!response.data.error) {
+          clearInterval(verificationIntervalRef.current!);
+          setIsVerifying(false);
+          localStorage.removeItem('verificationInProgress');
+          toast.success("Domain verified successfully!");
+        } else {
+          console.log(`Domain not yet verified, attempt ${verificationAttemptsRef.current} of ${MAX_VERIFICATION_ATTEMPTS}`);
+        }
+      } catch (error: any) {
+        clearInterval(verificationIntervalRef.current!);
+        setIsVerifying(false);
+        localStorage.removeItem('verificationInProgress');
+        toast.error("An error occurred while verifying the domain. Please try again later.");
+        console.error("Domain verification error:", error);
+      }
+    }, 60 * 1000); 
+  };
 
   return (
     <>
