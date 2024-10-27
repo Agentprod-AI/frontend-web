@@ -622,7 +622,7 @@ export default function Training() {
                   </div>
                 </div>
 
-                <div className="w-1/2 space-y-4">
+                {/* <div className="w-1/2 space-y-4">
                   <div>
                     <Label className="text-sm font-medium block mb-2">File Type</Label>
                     <RadioGroup
@@ -665,7 +665,7 @@ export default function Training() {
                       </p>
                     )}
                   </div>
-                </div>
+                </div> */}
               </div>
               <Button
                 onClick={handleGenerate}
