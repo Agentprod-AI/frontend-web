@@ -195,19 +195,32 @@ export default function Page() {
       const response = await axiosInstance.post('/v2/linkedin/login', payload);
 
       if (response.status === 200) {
-        const checkpointData = response.data;
-        setCaptchaPublicKey(checkpointData.checkpoint.public_key);
-        setCaptchaData(checkpointData.checkpoint.data);
-        setCaptchaAccountId(checkpointData.account_id);
+        if (response.data.object === "AccountCreated") {
+          // Account created directly without CAPTCHA
+          toast.success("LinkedIn account connected successfully!");
+          setIsLinkedInMailboxOpen(false);
+          // Reset the LinkedIn connection state
+          setLinkedInStep(1);
+          setLinkedInUrl('');
+          setLinkedInEmail('');
+          setLinkedInPassword('');
+        } else {
+          // CAPTCHA required
+          const checkpointData = response.data;
+          setCaptchaPublicKey(checkpointData.checkpoint.public_key);
+          setCaptchaData(checkpointData.checkpoint.data);
+          setCaptchaAccountId(checkpointData.account_id);
 
-        toast.success("LinkedIn credentials submitted successfully. Please complete the CAPTCHA verification.");
-        setLinkedInStep(2);
-        loadCaptcha();
+          toast.success("LinkedIn credentials submitted successfully. Please complete the CAPTCHA verification.");
+          setLinkedInStep(2);
+          loadCaptcha();
+        }
       } else {
         toast.error("Failed to connect LinkedIn account. Please try again.");
       }
     } catch (error) {
       console.error("Error connecting LinkedIn account:", error);
+      toast.error("An error occurred while connecting your LinkedIn account. Please try again later.");
     }
   };
 
@@ -601,8 +614,7 @@ export default function Page() {
             >
               Connect
             </div>
-            <Dialog open={isLinkedInMailboxOpen}
-              onOpenChange={setIsLinkedInMailboxOpen}>
+            <Dialog open={isLinkedInMailboxOpen} onOpenChange={setIsLinkedInMailboxOpen}>
               <DialogContent>
                 <DialogHeader>
                   <DialogTitle>
@@ -616,7 +628,9 @@ export default function Page() {
                     </div>
                   </DialogTitle>
                   <DialogDescription>
-                    Step {linkedInStep} of 3: {linkedInStep === 1 ? "Enter your LinkedIn credentials" : linkedInStep === 2 ? "Complete CAPTCHA verification" : "Finalizing connection"}
+                    {linkedInStep === 1 ? "Enter your LinkedIn credentials" : 
+                     linkedInStep === 2 ? "Complete CAPTCHA verification" : 
+                     "LinkedIn account connected successfully!"}
                   </DialogDescription>
                 </DialogHeader>
                 <Separator />
@@ -669,11 +683,11 @@ export default function Page() {
                   </div>
                 )}
                 {linkedInStep === 3 && (
-                  <div>Finalizing your LinkedIn connection...</div>
+                  <div>Your LinkedIn account has been successfully connected!</div>
                 )}
                 <DialogFooter>
                   <Button variant="outline" onClick={() => setIsLinkedInMailboxOpen(false)}>
-                    Cancel
+                    {linkedInStep === 3 ? "Close" : "Cancel"}
                   </Button>
                   {linkedInStep === 1 && (
                     <Button onClick={handleLinkedInConnect}>
