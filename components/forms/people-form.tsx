@@ -46,6 +46,8 @@ import axios from "axios";
 import { useSubscription } from "@/hooks/userSubscription";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { headers } from "next/headers";
+import { Loader2 } from "lucide-react"
 
 
 
@@ -307,6 +309,8 @@ export default function PeopleForm(): JSX.Element {
   const jobTitleDropdownRef = useRef<HTMLDivElement>(null);
   const jobTitleInputRef = useRef<HTMLInputElement>(null);
 
+  const [totalLeads, setTotalLeads] = useState<number | null>(null);
+  const [isLoadingTotalLeads, setIsLoadingTotalLeads] = useState(false);
 
   const [locationDropdownIsOpen, setLocationDropdownIsOpen] = useState(false);
   const [filteredLocations, setFilteredLocations] = useState(orgLocations);
@@ -357,7 +361,7 @@ export default function PeopleForm(): JSX.Element {
         company.companyName.toLowerCase().includes(companyDomainSearchTerm.toLowerCase())
       )
       .map((company) => company);
-  
+
     setFilteredCompanyDomains(filtered);
   }, [companyDomainSearchTerm]);
 
@@ -371,7 +375,7 @@ export default function PeopleForm(): JSX.Element {
         setCompanyDomainDropdownIsOpen(false);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -617,7 +621,7 @@ export default function PeopleForm(): JSX.Element {
         })
         .join("");
     }
-    
+
     if (selectionType === 'list' && formData.q_organization_domains && formData.q_organization_domains.length > 0) {
       url += formData.q_organization_domains
         .map((domain: any) => `&organizationIds[]=${encodeURIComponent(domain.id)}`)
@@ -682,7 +686,7 @@ export default function PeopleForm(): JSX.Element {
     if (formData.minimum_company_funding || formData.maximum_company_funding) {
       const minRevenue = formData.minimum_company_funding ? encodeURIComponent(formData.minimum_company_funding.text) : '';
       const maxRevenue = formData.maximum_company_funding ? encodeURIComponent(formData.maximum_company_funding.text) : '';
-      
+
       url += `&revenueRange%5Bmin%5D=${minRevenue}&revenueRange%5Bmax%5D=${maxRevenue}`;
     }
 
@@ -1047,22 +1051,22 @@ export default function PeopleForm(): JSX.Element {
   ];
 
   const signals: SignalCheckboxOptions[] = [
-    {id: "643daa349293c1cdaa4d00f8", name: "New role", checked: false},
-    {id: "643daa3c9293c1cdaa4d00f9", name: "Opened 2+ emails in past week", checked: false},
-    {id: "643daa3f9293c1cdaa4d00fa", name: "Rapid growth", checked: false},
-    {id: "643daa439293c1cdaa4d00fb", name: "Recent funding", checked: false},
-    {id: "649f201bed59e501eb4d3f0f", name: "High buying intent", checked: false},
-    {id: "649f201bed59e501eb4d3f10", name: "Merger or acquisition", checked: false},
-    {id: "649f201bed59e501eb4d3f11", name: "New product or service", checked: false},
-    {id: "649f201ced59e501eb4d3f12", name: "Cutting costs", checked: false},
-    {id: "649f201ced59e501eb4d3f13", name: "Office expansion", checked: false},
-    {id: "649f201ced59e501eb4d3f14", name: "New partnership", checked: false},
-    {id: "649f201ced59e501eb4d3f15", name: "New client signed", checked: false},
-    {id: "649f201ded59e501eb4d3f16", name: "Award or recognition", checked: false},
-    {id: "663279c828a0230001e2338b", name: "Former champion changed jobs", checked: false},
-    {id: "663279c828a0230001e2338c", name: "Recently promoted", checked: false}
+    { id: "643daa349293c1cdaa4d00f8", name: "New role", checked: false },
+    { id: "643daa3c9293c1cdaa4d00f9", name: "Opened 2+ emails in past week", checked: false },
+    { id: "643daa3f9293c1cdaa4d00fa", name: "Rapid growth", checked: false },
+    { id: "643daa439293c1cdaa4d00fb", name: "Recent funding", checked: false },
+    { id: "649f201bed59e501eb4d3f0f", name: "High buying intent", checked: false },
+    { id: "649f201bed59e501eb4d3f10", name: "Merger or acquisition", checked: false },
+    { id: "649f201bed59e501eb4d3f11", name: "New product or service", checked: false },
+    { id: "649f201ced59e501eb4d3f12", name: "Cutting costs", checked: false },
+    { id: "649f201ced59e501eb4d3f13", name: "Office expansion", checked: false },
+    { id: "649f201ced59e501eb4d3f14", name: "New partnership", checked: false },
+    { id: "649f201ced59e501eb4d3f15", name: "New client signed", checked: false },
+    { id: "649f201ded59e501eb4d3f16", name: "Award or recognition", checked: false },
+    { id: "663279c828a0230001e2338b", name: "Former champion changed jobs", checked: false },
+    { id: "663279c828a0230001e2338c", name: "Recently promoted", checked: false }
   ];
-  
+
 
   // const [loading, setLoading] = React.useState(true);
 
@@ -1205,7 +1209,7 @@ export default function PeopleForm(): JSX.Element {
               `${process.env.NEXT_PUBLIC_SERVER_URL}v2/lead/campaign/${params.campaignId}`
             );
             if (Array.isArray(response.data) && response.data.length >= 1) {
-              
+
               setTimeout(() => {
                 router.push(`/dashboard/campaign/${params.campaignId}`);
               }, 4000);
@@ -1447,7 +1451,6 @@ export default function PeopleForm(): JSX.Element {
 
   const updateAudience = async () => {
     setIsTableLoading(true);
-    // toast.loading("Updating audience...");
     const formData = form.getValues();
 
     const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
@@ -1741,7 +1744,7 @@ export default function PeopleForm(): JSX.Element {
     setKeywordSearchTerm("");
     setKeywordDropdownIsOpen(false);
   }
-  
+
   useEffect(() => {
     if (organizationKeywordTags.length > 0) {
       setValue("organization_industry_tag_ids", organizationKeywordTags as any);
@@ -1772,7 +1775,7 @@ export default function PeopleForm(): JSX.Element {
       .filter((technology) =>
         technology.name.toLowerCase().includes(technologiesSearchTerm.toLowerCase())
       );
-    
+
     setFilteredTechnologies(filtered);
     setTechnologiesDropdownIsOpen(technologiesSearchTerm.length > 0);
   }, [technologiesSearchTerm, technologies]);
@@ -1795,7 +1798,7 @@ export default function PeopleForm(): JSX.Element {
         setTechnologiesDropdownIsOpen(false);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -1864,7 +1867,7 @@ export default function PeopleForm(): JSX.Element {
     setFilteredLocations(filtered);
     setLocationDropdownIsOpen(locationSearchTerm.length > 0);
   }, [locationSearchTerm]);
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -1875,12 +1878,68 @@ export default function PeopleForm(): JSX.Element {
         setLocationDropdownIsOpen(false);
       }
     };
-  
+
     document.addEventListener("mousedown", handleClickOutside);
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, []);
+
+  const handleTotalLeadsClick = async () => {
+    setIsLoadingTotalLeads(true);
+    try {
+      const formData = form.getValues();
+      const requestBody = {
+        page: 1,
+        per_page: 1,
+        organization_num_employees_ranges: checkedFields(checkedCompanyHeadcount, true),
+        organization_locations: formData.organization_locations?.map((tag: any) => tag.text),
+        organization_industry_tag_ids: formData.organization_industry_tag_ids?.map((tag: any) => tag.value),
+        q_organization_keyword_tags: formData.q_organization_keyword_tags?.map((tag: any) => tag.text),
+        q_organization_job_titles: formData.job_posting_titles?.map((tag: any) => tag.text),
+        organization_job_locations: formData.job_posting_locations?.map((tag: any) => tag.text),
+        q_organization_domains: formData.q_organization_domains?.map((tag: any) => tag.text),
+        person_titles: formData.person_titles?.map((tag: any) => tag.text),
+        organization_latest_funding_stage_cd: checkedFields(checkedFundingRounds, false),
+        search_signal_ids: checkedFields(checkedSearchSignal, false),
+        currently_using_any_of_technology_uids: formData.currently_using_technologies?.map((tag: any) => tag.text.toLowerCase()),
+        revenue_range: {
+          min: formData.minimum_company_funding?.text?.toString(), 
+          max: formData.maximum_company_funding?.text?.toString()
+        }
+      };
+
+      // Remove undefined or empty array properties
+      Object.keys(requestBody).forEach(key => {
+        if ((requestBody as any)[key] === undefined || 
+            (Array.isArray((requestBody as any)[key]) && (requestBody as any)[key].length === 0)) {
+          delete (requestBody as any)[key];
+        }
+      });
+
+      // Add funding range if both min and max are present
+      if (formData.minimum_company_funding && formData.maximum_company_funding) {
+        (requestBody as any).organization_funding_amount_range = {
+          min: formData.minimum_company_funding.text?.toString(),
+          max: formData.maximum_company_funding.text?.toString(),
+        };
+      }
+
+      const response = await axios.post(`https://api.apollo.io/v1/mixed_people/search`, requestBody, {
+        headers: {
+          "X-Api-Key": `${process.env.NEXT_PUBLIC_APOLLO_API_KEY}`
+        }
+      });
+      
+      // Assuming the API returns the total count in the response
+      setTotalLeads(response.data.pagination.total_entries);
+    } catch (error) {
+      console.error("Error fetching total leads:", error);
+      toast.error("Failed to fetch total leads");
+    } finally {
+      setIsLoadingTotalLeads(false);
+    }
+  };
 
   return (
     <Form {...form}>
@@ -2290,6 +2349,33 @@ export default function PeopleForm(): JSX.Element {
                     </FormItem>
                   )}
                 />
+                <div className="flex flex-col space-y-2 mt-4">
+                  <div className="flex items-center space-x-3">
+                    <Button 
+                      onClick={handleTotalLeadsClick} 
+                      disabled={isLoadingTotalLeads}
+                      className="min-w-[120px]"
+                    >
+                      {isLoadingTotalLeads ? (
+                        <div className="flex items-center space-x-2">
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                          <span>Loading</span>
+                        </div>
+                      ) : (
+                        "Calculate Leads"
+                      )}
+                    </Button>
+                    {totalLeads !== null && (
+                      <div className="flex items-center bg-secondary/20 px-4 py-2 rounded-md">
+                        <span className="text-sm font-medium mr-2">Total Available:</span>
+                        <span className="text-lg font-bold tabular-nums">
+                          {totalLeads.toLocaleString('en-US')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+                  
+                </div>
               </div>
               <div className="w-1/2 flex flex-col gap-2">
                 <div className="mb-2">Advanced</div>
@@ -2312,21 +2398,21 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
 
-                <div className={`${dropdownsOpen.companyDomains ? "block" : "hidden"}`}>
+                  <div className={`${dropdownsOpen.companyDomains ? "block" : "hidden"}`}>
 
-                  <RadioGroup className="mb-3" value={selectionType} onValueChange={handleSelectionTypeChange}>
-                    <div className="flex">
-                      <div className="flex items-center space-x-2 mr-3">
-                        <RadioGroupItem value="list" id="list" />
-                        <Label htmlFor="list">Select from list</Label>
+                    <RadioGroup className="mb-3" value={selectionType} onValueChange={handleSelectionTypeChange}>
+                      <div className="flex">
+                        <div className="flex items-center space-x-2 mr-3">
+                          <RadioGroupItem value="list" id="list" />
+                          <Label htmlFor="list">Select from list</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="custom" id="custom" />
+                          <Label htmlFor="custom">Enter custom company</Label>
+                        </div>
                       </div>
-                      <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="custom" id="custom" />
-                        <Label htmlFor="custom">Enter custom company</Label>
-                      </div>
-                    </div>
-                  </RadioGroup>
-                  {selectionType === 'list' && (
+                    </RadioGroup>
+                    {selectionType === 'list' && (
 
                       <div>
                         <div className="flex flex-row items-center gap-1 mb-2">
@@ -2334,132 +2420,132 @@ export default function PeopleForm(): JSX.Element {
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
-                              <a href="mailto:info@agentprod.com" title="info@agnetprod.com">
-                                <ExternalLink size={12} />
-                              </a>
+                                <a href="mailto:info@agentprod.com" title="info@agnetprod.com">
+                                  <ExternalLink size={12} />
+                                </a>
                               </TooltipTrigger>
                               <TooltipContent>
                                 <p>info@agentprod.com</p>
                               </TooltipContent>
                             </Tooltip>
                           </TooltipProvider>
-                      </div>
+                        </div>
 
                         <FormField
-                        control={form.control}
-                        name="q_organization_domains"
-                        render={({ field }) => (
-                          <FormItem className="flex flex-col items-start pb-4 w-8/12">
-                            <FormControl>
-                              <TagInput
-                                {...field}
-                                tags={qOrganizationDomainsTags}
-                                placeholder="Enter Company Domains"
-                                variant="base"
-                                onFocus={() => setCompanyDomainDropdownIsOpen(true)}
-                                className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
-                                setTags={(newTags) => {
-                                  if (Array.isArray(newTags)) {
-                                    if (newTags.length < qOrganizationDomainsTags.length) {
-                                      setQOrganizationDomainsTags(newTags);
-                                      setValue("q_organization_domains", newTags as [Tag, ...Tag[]]);
-                                      return;
+                          control={form.control}
+                          name="q_organization_domains"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col items-start pb-4 w-8/12">
+                              <FormControl>
+                                <TagInput
+                                  {...field}
+                                  tags={qOrganizationDomainsTags}
+                                  placeholder="Enter Company Domains"
+                                  variant="base"
+                                  onFocus={() => setCompanyDomainDropdownIsOpen(true)}
+                                  className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
+                                  setTags={(newTags) => {
+                                    if (Array.isArray(newTags)) {
+                                      if (newTags.length < qOrganizationDomainsTags.length) {
+                                        setQOrganizationDomainsTags(newTags);
+                                        setValue("q_organization_domains", newTags as [Tag, ...Tag[]]);
+                                        return;
+                                      }
+
+                                      const lastTag = newTags[newTags.length - 1];
+                                      const updatedTags = lastTag?.id.includes('-')
+                                        ? newTags.slice(0, -1)
+                                        : newTags;
+
+                                      setQOrganizationDomainsTags(updatedTags);
+                                      setValue("q_organization_domains", updatedTags as [Tag, ...Tag[]]);
                                     }
-                      
-                                    const lastTag = newTags[newTags.length - 1];
-                                    const updatedTags = lastTag?.id.includes('-')
-                                      ? newTags.slice(0, -1)
-                                      : newTags;
-                      
-                                    setQOrganizationDomainsTags(updatedTags);
-                                    setValue("q_organization_domains", updatedTags as [Tag, ...Tag[]]);
-                                  }
-                                }}
-                                onInputChange={(value) => setCompanyDomainSearchTerm(value)}
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
+                                  }}
+                                  onInputChange={(value) => setCompanyDomainSearchTerm(value)}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
 
-                      <div className="absolute inline-block text-left -my-4">
-                        {companyDomainDropdownIsOpen && (
-                          <ScrollArea
-                            className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
-                            style={{
-                              height: filteredCompanyDomains.length > 0
-                                ? `${Math.min(filteredCompanyDomains.length * 40, 200)}px`
-                                : "auto",
-                            }}
-                          >
-                            <div
-                              className="py-1"
-                              role="menu"
-                              aria-orientation="vertical"
-                              aria-labelledby="options-menu"
-                              ref={companyDomainDropdownRef}
-                            >
-                              {filteredCompanyDomains.length > 0 ? (
-                                filteredCompanyDomains.map((company) => (
-                                  <button
-                                    key={company.companyName}
-                                    onClick={(e) => {
-                                      e.preventDefault();
-                                      handleCompanyDomainDropdownSelect(company)
-                                      setCompanyDomainSearchTerm("");
-                                    }}
-                                    className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
-                                  >
-                                    {company.companyName
-                                      .split(" ")
-                                      .map(
-                                        (word) =>
-                                          word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
-                                      )
-                                      .join(" ")}
-                                  </button>
-                                ))
-                              ) : (
-                                <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                                  No items found
-                                </div>
-                              )}
-                            </div>
-                          </ScrollArea>
-                        )}
-                      </div>
-                      </div>
-
-                  )}
-
-                  {selectionType === 'custom' && (
-                    <div className={`${dropdownsOpen.companyDomains ? "block" : "hidden"}`}>
-                      <FormField
-                      control={form.control}
-                      name="q_organization_domains"
-                      render={({ field }) => (
-                        <FormItem className="flex flex-col items-start pb-4 w-8/12">
-                          <FormControl>
-                            <TagInput
-                              {...field}
-                              tags={qOrganizationDomainsTags}
-                              placeholder="Enter Custom Company"
-                              variant="base"
-                              className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
-                              setTags={(newTags) => {
-                                setQOrganizationDomainsTags(newTags);
-                                setValue('q_organization_domains', newTags as [Tag, ...Tag[]]);
+                        <div className="absolute inline-block text-left -my-4">
+                          {companyDomainDropdownIsOpen && (
+                            <ScrollArea
+                              className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                              style={{
+                                height: filteredCompanyDomains.length > 0
+                                  ? `${Math.min(filteredCompanyDomains.length * 40, 200)}px`
+                                  : "auto",
                               }}
-                              maxTags={1}
-                            />
-                          </FormControl>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    </div>
-                  )}
+                            >
+                              <div
+                                className="py-1"
+                                role="menu"
+                                aria-orientation="vertical"
+                                aria-labelledby="options-menu"
+                                ref={companyDomainDropdownRef}
+                              >
+                                {filteredCompanyDomains.length > 0 ? (
+                                  filteredCompanyDomains.map((company) => (
+                                    <button
+                                      key={company.companyName}
+                                      onClick={(e) => {
+                                        e.preventDefault();
+                                        handleCompanyDomainDropdownSelect(company)
+                                        setCompanyDomainSearchTerm("");
+                                      }}
+                                      className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                    >
+                                      {company.companyName
+                                        .split(" ")
+                                        .map(
+                                          (word) =>
+                                            word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                                        )
+                                        .join(" ")}
+                                    </button>
+                                  ))
+                                ) : (
+                                  <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                    No items found
+                                  </div>
+                                )}
+                              </div>
+                            </ScrollArea>
+                          )}
+                        </div>
+                      </div>
+
+                    )}
+
+                    {selectionType === 'custom' && (
+                      <div className={`${dropdownsOpen.companyDomains ? "block" : "hidden"}`}>
+                        <FormField
+                          control={form.control}
+                          name="q_organization_domains"
+                          render={({ field }) => (
+                            <FormItem className="flex flex-col items-start pb-4 w-8/12">
+                              <FormControl>
+                                <TagInput
+                                  {...field}
+                                  tags={qOrganizationDomainsTags}
+                                  placeholder="Enter Custom Company"
+                                  variant="base"
+                                  className="sm:min-w-[150px] bg-white/90 text-black placeholder:text-black/[70]"
+                                  setTags={(newTags) => {
+                                    setQOrganizationDomainsTags(newTags);
+                                    setValue('q_organization_domains', newTags as [Tag, ...Tag[]]);
+                                  }}
+                                  maxTags={1}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+                      </div>
+                    )}
 
                   </div>
                 </div>
@@ -2508,13 +2594,13 @@ export default function PeopleForm(): JSX.Element {
                                     setValue("organization_industry_tag_ids", newTags as any);
                                     return;
                                   }
-                              
+
                                   const lastTag = newTags[newTags.length - 1];
-                              
+
                                   const updatedTags = lastTag?.id.includes('-')
                                     ? newTags.slice(0, -1)
                                     : newTags;
-                              
+
                                   setOrganizationKeywordTags(updatedTags);
                                   setValue("organization_industry_tag_ids", updatedTags as any);
                                 }
@@ -2531,50 +2617,50 @@ export default function PeopleForm(): JSX.Element {
                     <div className="absolute inline-block text-left -my-4">
                       {keywordDropdownIsOpen && (
                         <ScrollArea
-                        className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
-                        style={{
-                          height:
-                            filteredKeywords.length > 0
-                              ? `${Math.min(filteredKeywords.length * 40, 200)}px`
-                              : "auto",
-                        }}
-                      >
-                        <div
-                          className="py-1"
-                          role="menu"
-                          aria-orientation="vertical"
-                          aria-labelledby="options-menu"
-                          ref={keywordDropdownRef}
+                          className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                          style={{
+                            height:
+                              filteredKeywords.length > 0
+                                ? `${Math.min(filteredKeywords.length * 40, 200)}px`
+                                : "auto",
+                          }}
                         >
-                          {filteredKeywords.length > 0 ? (
-                            filteredKeywords.map((option) => (
-                              <button
-                                key={option.value}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleDropdownSelect(option);
-                                  setKeywordSearchTerm("");
-                                }}
-                                className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
-                              >
-                                {option.name
-                                  .split(" ")
-                                  .map(
-                                    (word) =>
-                                      word.charAt(0).toUpperCase() +
-                                      word.slice(1).toLowerCase()
-                                  )
-                                  .join(" ")}
-                              </button>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                              No items found
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                      
+                          <div
+                            className="py-1"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="options-menu"
+                            ref={keywordDropdownRef}
+                          >
+                            {filteredKeywords.length > 0 ? (
+                              filteredKeywords.map((option) => (
+                                <button
+                                  key={option.value}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleDropdownSelect(option);
+                                    setKeywordSearchTerm("");
+                                  }}
+                                  className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                >
+                                  {option.name
+                                    .split(" ")
+                                    .map(
+                                      (word) =>
+                                        word.charAt(0).toUpperCase() +
+                                        word.slice(1).toLowerCase()
+                                    )
+                                    .join(" ")}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                No items found
+                              </div>
+                            )}
+                          </div>
+                        </ScrollArea>
+
                       )}
                     </div>
                   </div>
@@ -2600,9 +2686,8 @@ export default function PeopleForm(): JSX.Element {
                     )}
                   </div>
                   <div
-                    className={`${
-                      dropdownsOpen.company ? "block" : "hidden"
-                    } relative`}
+                    className={`${dropdownsOpen.company ? "block" : "hidden"
+                      } relative`}
                   >
                     <FormField
                       control={form.control}
@@ -2863,13 +2948,13 @@ export default function PeopleForm(): JSX.Element {
                                     setValue("currently_using_technologies", newTags as any);
                                     return;
                                   }
-                              
+
                                   const lastTag = newTags[newTags.length - 1];
-                              
+
                                   const updatedTags = lastTag?.id.includes('-')
                                     ? newTags.slice(0, -1)
                                     : newTags;
-                              
+
                                   setCurrentlyUsingTechnologiesTags(updatedTags);
                                   setValue("currently_using_technologies", updatedTags as any);
                                 }
@@ -2886,50 +2971,50 @@ export default function PeopleForm(): JSX.Element {
                     <div className="absolute inline-block text-left -my-4">
                       {technologiesDropdownIsOpen && (
                         <ScrollArea
-                        className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
-                        style={{
-                          height:
-                            filteredTechnologies.length > 0
-                              ? `${Math.min(filteredTechnologies.length * 40, 200)}px`
-                              : "auto",
-                        }}
-                      >
-                        <div
-                          className="py-1"
-                          role="menu"
-                          aria-orientation="vertical"
-                          aria-labelledby="options-menu"
-                          ref={technologyDropdownRef}
+                          className="w-56 z-50 rounded-md shadow-lg bg-white dark:bg-black ring-1 ring-black ring-opacity-5 focus:outline-none"
+                          style={{
+                            height:
+                              filteredTechnologies.length > 0
+                                ? `${Math.min(filteredTechnologies.length * 40, 200)}px`
+                                : "auto",
+                          }}
                         >
-                          {filteredTechnologies.length > 0 ? (
-                            filteredTechnologies.map((option) => (
-                              <button
-                                key={option.uid}
-                                onClick={(e) => {
-                                  e.preventDefault();
-                                  handleTechnologiesDropdownSelect(option);
-                                  setTechnologiesSearchTerm("");
-                                }}
-                                className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
-                              >
-                                {option.name
-                                  .split(" ")
-                                  .map(
-                                    (word) =>
-                                      word.charAt(0).toUpperCase() +
-                                      word.slice(1).toLowerCase()
-                                  )
-                                  .join(" ")}
-                              </button>
-                            ))
-                          ) : (
-                            <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
-                              No items found
-                            </div>
-                          )}
-                        </div>
-                      </ScrollArea>
-                      
+                          <div
+                            className="py-1"
+                            role="menu"
+                            aria-orientation="vertical"
+                            aria-labelledby="options-menu"
+                            ref={technologyDropdownRef}
+                          >
+                            {filteredTechnologies.length > 0 ? (
+                              filteredTechnologies.map((option) => (
+                                <button
+                                  key={option.uid}
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    handleTechnologiesDropdownSelect(option);
+                                    setTechnologiesSearchTerm("");
+                                  }}
+                                  className="dark:text-white block px-4 py-2 text-sm w-full text-left hover:bg-accent"
+                                >
+                                  {option.name
+                                    .split(" ")
+                                    .map(
+                                      (word) =>
+                                        word.charAt(0).toUpperCase() +
+                                        word.slice(1).toLowerCase()
+                                    )
+                                    .join(" ")}
+                                </button>
+                              ))
+                            ) : (
+                              <div className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                                No items found
+                              </div>
+                            )}
+                          </div>
+                        </ScrollArea>
+
                       )}
                     </div>
                   </div>
@@ -3159,7 +3244,7 @@ export default function PeopleForm(): JSX.Element {
               <LoadingCircle />
             ) : (
               <div>
-                {!isCreateBtnLoading ? <AudienceTable />:<div className="mt-10"></div>}
+                {!isCreateBtnLoading ? <AudienceTable /> : <div className="mt-10"></div>}
               </div>
             )}
 
