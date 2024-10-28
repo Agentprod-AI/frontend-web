@@ -1925,11 +1925,7 @@ export default function PeopleForm(): JSX.Element {
         };
       }
 
-      const response = await axios.post(`https://api.apollo.io/v1/mixed_people/search`, requestBody, {
-        headers: {
-          "X-Api-Key": `${process.env.NEXT_PUBLIC_APOLLO_API_KEY}`
-        }
-      });
+      const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/apollo/lead/search`, requestBody);
       
       // Assuming the API returns the total count in the response
       setTotalLeads(response.data.pagination.total_entries);
