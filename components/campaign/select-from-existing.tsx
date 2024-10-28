@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 /* eslint-disable no-console */
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { AudienceTableClient } from "@/components/tables/audience-table/client";
 import { Contact, useLeads } from "@/context/lead-user";
 import { toast } from "sonner";
@@ -22,6 +22,7 @@ export const SelectFromExisting = () => {
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [totalLeads, setTotalLeads] = useState(0);
+  const [searchFilter, setSearchFilter] = useState("");
   const size = 10;
   
   const { user } = useUserContext();
@@ -40,6 +41,7 @@ export const SelectFromExisting = () => {
         params: {
           page: pageToFetch,
           size,
+          search_filter: searchFilter,
           campaign_id: selectedCampaignId,
         },
       });
@@ -57,7 +59,7 @@ export const SelectFromExisting = () => {
 
   useEffect(() => {
     fetchLeads(page);
-  }, [page, selectedCampaignId]);
+  }, [page, selectedCampaignId, searchFilter]);
 
   useEffect(() => {
     const fetchCampaign = async () => {
@@ -94,6 +96,11 @@ export const SelectFromExisting = () => {
   const handlePageChange = (newPage: number) => {
     setPage(newPage);
   };
+
+  const handleSearch = useCallback((value: string) => {
+    setSearchFilter(value);
+    setPage(1);
+  }, []);
 
   const handleLeadSelection = (selectedRows: Contact[]) => {
     const newSelectedLeads = new Map(allSelectedLeads);
@@ -207,6 +214,7 @@ export const SelectFromExisting = () => {
           selectedLeadIds={new Set(allSelectedLeads.keys())}
           currentPageData={currentPageData}
           totalLeads={totalLeads}
+          onSearch={handleSearch}
         />
       )}
 
