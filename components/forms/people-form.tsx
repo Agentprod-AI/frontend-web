@@ -1928,7 +1928,7 @@ export default function PeopleForm(): JSX.Element {
       const response = await axios.post(`${process.env.NEXT_PUBLIC_SERVER_URL}v2/apollo/lead/search`, requestBody);
       
       // Assuming the API returns the total count in the response
-      setTotalLeads(response.data.pagination.total_entries);
+      setTotalLeads(response.data.total_leads);
     } catch (error) {
       console.error("Error fetching total leads:", error);
       toast.error("Failed to fetch total leads");
