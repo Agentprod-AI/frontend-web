@@ -277,6 +277,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
     // console.log("jajaja", email);
+    console.log("Platform", email);
 
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
