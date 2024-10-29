@@ -1319,6 +1319,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const matchingCampaign = campaigns.find((campaign) => campaign.id === leadId);
   const lastEmail = thread[thread.length - 1];
 
+  
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
@@ -1345,7 +1346,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               </div>
             )}
 
-<div className="m-4">
+            { <div className="m-4">
               <div className="flex items-center gap-3">
                 <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                   <Linkedin className="h-4 w-4 text-gray-400" />
@@ -1356,7 +1357,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   <p className="ml-1 text-xs">Connected on LinkedIn</p>
                 )}
               </div>
-            </div>
+            </div>}
           </>
         )}
         {thread?.length > 0 && (

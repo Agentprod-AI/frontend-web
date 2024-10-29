@@ -33,6 +33,7 @@ const autopilotFormSchema = z.object({
   error: z.boolean().optional(),
   demo: z.boolean().optional(),
   not_interested: z.boolean().optional(),
+  linkedin: z.boolean().optional(),
 });
 
 type AutopilotFormValues = z.infer<typeof autopilotFormSchema>;
@@ -50,6 +51,7 @@ const defaultValues: Partial<AutopilotFormValues> = {
   error: false,
   demo: false,
   not_interested: false,
+  linkedin: false,
 };
 
 const setFormValues = (setValue: any, values: Partial<AutopilotFormValues>) => {
@@ -87,6 +89,7 @@ export function AutopilotForm() {
       error: allMessagesActions,
       demo: allMessagesActions,
       not_interested: allMessagesActions,
+      linkedin: allMessagesActions,
     });
   }, [allMessagesActions, setValue]);
 
@@ -101,6 +104,7 @@ export function AutopilotForm() {
       error: reply,
       demo: reply,
       not_interested: reply,
+      linkedin: reply,
     });
   }, [reply, setValue]);
 
@@ -237,6 +241,11 @@ export function AutopilotForm() {
               "not_interested",
               "Not Interested",
               "Respond, ask for any other help and dont send any future campaign emails."
+            )}
+            {renderSwitchField(
+              "linkedin",
+              "LinkedIn Message",
+              "Send a LinkedIn message if the lead is connected."
             )}
           </div>
 
