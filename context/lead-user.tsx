@@ -90,6 +90,7 @@ export interface Lead {
   organization: any;
   linkedin_posts: any;
   linkedin_bio: string;
+  connected_on_linkedin?: any;
 }
 
 export interface Contact {

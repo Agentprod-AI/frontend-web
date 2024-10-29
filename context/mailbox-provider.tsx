@@ -33,6 +33,9 @@ export interface EmailMessage {
   delivered_datetime: any;
   bounce_datetime: any;
   spam_datetime: any;
+  channel?: any;
+  connected_on_linkedin?: any;
+  linkedin_url?: any;
 }
 
 export interface Mailbox {

@@ -10,6 +10,7 @@ import {
   Clock3,
   Edit3,
   Forward,
+  LinkedinIcon,
   ListTodo,
   Mail,
   MailPlus,
@@ -74,6 +75,8 @@ interface EmailMessage {
   delivered_datetime: any;
   bounce_datetime: any;
   spam_datetime: any;
+  channel?: any;
+  connected_on_linkedin?: any;
 }
 
 interface NotificationProps {
@@ -94,6 +97,8 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
   const { leads } = useLeads();
   const { user } = useUserContext();
   const internalScrollRef = React.useRef<HTMLDivElement>(null);
+
+  console.log(email)
 
   const {
     conversationId,
@@ -761,9 +766,9 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
               <Mail className="h-4 w-4 text-gray-400" />
             </div>
-            <p className=" ml-1 text-xs ">
-              Mail was delivered to recipient&apos;s inbox
-            </p>
+                {email.channel === "Linkedin"
+                  ? <p className="ml-1 text-xs">Message was delivered to recipient&apos;s LinkedIn</p>
+                  : <p className="ml-1 text-xs">Mail was delivered to recipient&apos;s inbox</p>}
             <span className="text-gray-400 text-xs">
               {email.send_datetime && (
                 <span className="text-gray-400 text-xs">
@@ -773,6 +778,18 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
             </span>
           </div>
         )}
+
+
+        <div className="flex items-center gap-3">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <LinkedinIcon className="h-4 w-4 text-gray-400" />
+            </div>
+            {email?.connected_on_linkedin !== 'CONNECTED' ? (
+              <p className="ml-1 text-xs">Not connected</p>
+          ) : (
+              <p className="ml-1 text-xs">Connected</p>
+          )}
+        </div>
 
       {(email?.status &&
         !email.is_reply &&
