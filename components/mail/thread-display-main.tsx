@@ -193,6 +193,27 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
   }, [recipientEmail]);
 
+  // Add state to track if drafts exist
+  const [hasDrafts, setHasDrafts] = React.useState(false);
+
+  // Add function to check for drafts
+  const checkForDrafts = async () => {
+    try {
+      const response = await axiosInstance.get(`/v2/mailbox/draft/${conversationId}`);
+      setHasDrafts(response.data.length > 0);
+    } catch (error) {
+      console.error("Error checking drafts:", error);
+      setHasDrafts(false);
+    }
+  };
+
+  // Check for drafts when conversation changes
+  React.useEffect(() => {
+    if (conversationId) {
+      checkForDrafts();
+    }
+  }, [conversationId]);
+
   if (isLoading) {
     return (
       <div className="m-4 flex flex-row ">
@@ -702,7 +723,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body ,
+        body: body,
       };
 
       axiosInstance
@@ -729,7 +750,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body ,
+        body: body,
       };
 
       console.log("Sending pyaload", payload);
@@ -795,7 +816,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const handleSaveClick = () => {
       setIsEditing(false);
       setEditable(false);
-      
+
       // Make the PATCH API call
       const payload = {
         subject: title,
@@ -850,7 +871,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <AvatarFallback className="bg-yellow-400 text-black text-xs">
                   {leads[0]?.first_name && leads[0]?.last_name
                     ? leads[0].first_name.charAt(0) +
-                      leads[0].last_name.charAt(0)
+                    leads[0].last_name.charAt(0)
                     : ""}
                 </AvatarFallback>
               </Avatar>
@@ -1112,11 +1133,27 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </div>
         )}
 
-        {/* Only show draft if there are no messages in the thread */}
-        {thread?.length === 0 && (
-          <div>
+        {/* Only show draft if drafts exist and either there are no messages or last message is not a reply */}
+        {hasDrafts && (
+          thread?.length === 0 ? (
             <DraftEmailComponent />
-          </div>
+          ) : (
+            lastEmail?.is_reply === false && (
+              <>
+                <DraftEmailComponent />
+                {mailStatus === "LOST" && (
+                  <div className="flex items-center gap-3 ml-4">
+                    <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                      <BadgeX className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div className="text-xs ml-1">
+                      This lead has been marked as lost.
+                    </div>
+                  </div>
+                )}
+              </>
+            )
+          )
         )}
       </div>
     </div>
