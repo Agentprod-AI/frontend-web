@@ -194,6 +194,58 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
   }, [recipientEmail]);
 
+
+  const isLinkedInUrl = (recipient: string): boolean => {
+    return recipient.toLowerCase().includes('linkedin.com');
+  };
+  
+  const fetchLeadInfo = async (recipientEmail: string, thread: EmailMessage[]) => {
+    try {
+      let response;
+      
+      // Get the recipient from first message
+      const firstMessage = thread[0];
+      const isLinkedIn = isLinkedInUrl(firstMessage.recipient);
+  
+      if (isLinkedIn) {
+        // If recipient is LinkedIn URL
+        console.log('Using LinkedIn URL endpoint:', firstMessage.recipient);
+        response = await axiosInstance.get<Lead>(
+          `v2/lead/linkedin/info?linkedin_url=${encodeURIComponent(firstMessage.recipient)}`
+        );
+      } else {
+        // If recipient is email
+        console.log('Using email endpoint for:', recipientEmail);
+        response = await axiosInstance.get<Lead>(`v2/lead/info/${recipientEmail}`);
+      }
+  
+      // Set the lead info
+      setItemId(response.data.id);
+      setLeads([response.data]);
+  
+      // Update threads with connected_on_linkedin status
+      const updatedThread = thread.map(message => ({
+        ...message,
+        connected_on_linkedin: response.data.connected_on_linkedin
+      }));
+  
+      setThread(updatedThread);
+      console.log('Lead data:', response.data);
+      console.log('Updated thread:', updatedThread);
+  
+    } catch (error) {
+      console.error("Error fetching lead data:", error);
+      setError("Failed to load lead data.");
+    }
+  };
+  
+  // Use the function in useEffect
+  React.useEffect(() => {
+    if (recipientEmail && thread.length > 0) {
+      fetchLeadInfo(recipientEmail, thread);
+    }
+  }, [recipientEmail]);
+
   if (isLoading) {
     return (
       <div className="m-4 flex flex-row ">

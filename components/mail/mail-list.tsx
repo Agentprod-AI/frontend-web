@@ -17,6 +17,8 @@ import {
   Bell,
   CalendarCheck,
   Forward,
+  LinkedinIcon,
+  Mail,
   MailPlus,
   ThumbsDown,
   ThumbsUp,
@@ -245,6 +247,11 @@ const MailList: React.FC<MailListProps> = ({
                     : "text-muted-foreground"
                 )}
               >
+                {item.channel === "Linkedin" ? (
+                  <LinkedinIcon className="w-3 h-3 text-white" />
+                ) : (
+                  <Mail className="w-3 h-3 text-white" />
+                )}
                 <span className="text-xs text-gray-400">
                   {item.updated_at && formatDate(item.updated_at)}
                 </span>
