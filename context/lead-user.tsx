@@ -140,6 +140,7 @@ export interface Contact {
   organization: any;
   linkedin_posts: any;
   linkedin_bio: string;
+  connected_on_linkedin?: any;
 }
 
 // Define the state structure for our context
