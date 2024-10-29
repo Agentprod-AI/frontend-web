@@ -226,7 +226,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       // Update threads with connected_on_linkedin status
       const updatedThread = thread.map(message => ({
         ...message,
-        connected_on_linkedin: response.data.connected_on_linkedin
       }));
   
       setThread(updatedThread);
@@ -1366,19 +1365,38 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         {isLoading ? (
           ""
         ) : (
-          <div className="m-4">
+          <>
+            {/* LinkedIn Connection Status */}
+           
+
+            {/* Campaign Info */}
             {matchingCampaign && (
-              <div className="flex items-center gap-3">
-                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                  <User className="h-4 w-4 text-gray-400" />
-                </div>
-                <div className="text-xs ml-1">
-                  {leads[0].name} was added in {matchingCampaign.campaign_type}{" "}
-                  {matchingCampaign.campaign_name} campaign
+              <div className="m-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                    <User className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="text-xs ml-1">
+                    {leads[0].name} was added in {matchingCampaign.campaign_type}{" "}
+                    {matchingCampaign.campaign_name} campaign
+                  </div>
                 </div>
               </div>
             )}
-          </div>
+
+<div className="m-4">
+              <div className="flex items-center gap-3">
+                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                  <Linkedin className="h-4 w-4 text-gray-400" />
+                </div>
+                {leads[0]?.connected_on_linkedin !== 'CONNECTED' ? (
+                  <p className="ml-1 text-xs">Not connected</p>
+                ) : (
+                  <p className="ml-1 text-xs">Connected</p>
+                )}
+              </div>
+            </div>
+          </>
         )}
         {thread?.length > 0 && (
           <div>

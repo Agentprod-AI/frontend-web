@@ -780,16 +780,7 @@ const Notification: React.FC<NotificationProps> = ({ email }) => {
         )}
 
 
-        <div className="flex items-center gap-3">
-            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-              <LinkedinIcon className="h-4 w-4 text-gray-400" />
-            </div>
-            {email?.connected_on_linkedin !== 'CONNECTED' ? (
-              <p className="ml-1 text-xs">Not connected</p>
-          ) : (
-              <p className="ml-1 text-xs">Connected</p>
-          )}
-        </div>
+       
 
       {(email?.status &&
         !email.is_reply &&
