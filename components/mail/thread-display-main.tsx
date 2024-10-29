@@ -1224,8 +1224,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 {"You to " + leads[0]?.name}
               </span>
               <div className="flex gap-3">
-                <span className="text-blue-500 text-sm flex items-center space-x-2">
-                  {platform === "Linkedin" ? "LinkedIn Message" : "Draft"}
+                <span className={`${platform === "Linkedin" ? "text-blue-500" : "text-green-500"} text-sm flex items-center space-x-2`}>
+                  {platform === "Linkedin" ? "LinkedIn Message" : "Email Draft"}
                   <div className="h-4 w-4 pl-2">
                     {platform === "Linkedin" && <Linkedin className="h-4 w-4" />}
                   </div>
