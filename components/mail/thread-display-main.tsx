@@ -193,6 +193,27 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
   }, [recipientEmail]);
 
+  // Add state to track if drafts exist
+  const [hasDrafts, setHasDrafts] = React.useState(false);
+
+  // Add function to check for drafts
+  const checkForDrafts = async () => {
+    try {
+      const response = await axiosInstance.get(`/v2/mailbox/draft/${conversationId}`);
+      setHasDrafts(response.data.length > 0);
+    } catch (error) {
+      console.error("Error checking drafts:", error);
+      setHasDrafts(false);
+    }
+  };
+
+  // Check for drafts when conversation changes
+  React.useEffect(() => {
+    if (conversationId) {
+      checkForDrafts();
+    }
+  }, [conversationId]);
+
   if (isLoading) {
     return (
       <div className="m-4 flex flex-row ">
@@ -338,32 +359,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         });
     };
 
-    const regenrateFollowUp = React.useCallback(() => {
-      const payload = {
-        follow_up_number: 3,
-        user_id: user.id,
-        previous_emails: [
-          {
-            subject: lastEmail.subject,
-            body: lastEmail.body,
-          },
-        ],
-      };
-
-      console.log(payload);
-
-      axiosInstance
-        .post("v2/training/autogenerate/followup", payload)
-        .then((response) => {
-          setTitle(response.data.subject);
-          setBody(response.data.body);
-          console.log("Regenerated");
-        })
-        .catch((error) => {
-          console.error("Error fetching followup data:", error);
-        });
-    }, [user.id, title, body]);
-
     const handleDeleteDraft = () => {
       axiosInstance
         .delete(`/v2/mailbox/draft/${conversationId}`)
@@ -478,9 +473,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <div>
                   <Button variant={"ghost"} onClick={() => setEditable(true)}>
                     <Edit3 className="h-4 w-4" />
-                  </Button>
-                  <Button variant={"ghost"} onClick={regenrateFollowUp}>
-                    <RefreshCw className="h-4 w-4" />
                   </Button>
                   <Button variant={"ghost"} onClick={handleDeleteDraft}>
                     <Trash2 className="h-4 w-4" />
@@ -655,8 +647,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const DraftEmailComponent = () => {
     const [suggestions, setSuggestions] = React.useState("");
     const [isSuggestionOpen, setIsSuggestionOpen] = React.useState(false);
-    const [followUpSubject, setFollowUpSubject] = React.useState("");
-    const [followUpBody, setFollowUpBody] = React.useState("");
     const [editable, setEditable] = React.useState(false);
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
@@ -726,68 +716,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       }
     }, [emails]);
 
-    const generateFollowUp = React.useCallback(() => {
-      const payload = {
-        follow_up_number: 1,
-        user_id: user.id,
-        previous_emails: [
-          {
-            subject: lastEmail.subject,
-            body: lastEmail.body,
-          },
-        ],
-      };
-      
-      axiosInstance
-        .post("v2/training/autogenerate/followup", payload)
-        .then((response) => {
-          const newSubject = sanitizeSubject(lastEmail.subject);
-          console.log("new SUbject: ", newSubject);
-          setFollowUpSubject(newSubject);
-          // setFollowUpSubject(response.data.subject);
-          setFollowUpBody(response.data.body);
-
-          console.log("FollowUp", response);
-        })
-        .catch((error) => {
-          console.error("Error fetching followup data:", error);
-        });
-    }, [user.id, lastEmail?.subject, lastEmail?.body]);
-
-    React.useEffect(() => {
-      if (lastEmail && !lastEmail.is_reply) {
-        generateFollowUp();
-      }
-    }, [lastEmail && !lastEmail.is_reply]);
-
-    const regenrateFollowUp = React.useCallback(() => {
-      const payload = {
-        follow_up_number: 1,
-        user_id: user.id,
-        previous_emails: [
-          {
-            subject: lastEmail.subject,
-            body: lastEmail.body,
-          },
-        ],
-      };
-
-      axiosInstance
-        .post("v2/training/autogenerate/followup", payload)
-        .then((response) => {
-          const newSubject = response.data.subject.startsWith("Re:")
-            ? response.data.subject
-            : `Re: ${lastEmail.subject}`;
-          setFollowUpSubject(newSubject);
-          // setFollowUpSubject(response.data.subject);
-          setFollowUpBody(response.data.body);
-          console.log("Regenerated");
-        })
-        .catch((error) => {
-          console.error("Error fetching followup data:", error);
-        });
-    }, [user.id, title, body]);
-
     const handleApproveEmail = () => {
       setLoadingSmartSchedule(true);
       const payload = {
@@ -795,7 +723,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body ,
+        body: body,
       };
 
       axiosInstance
@@ -822,7 +750,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         sender: senderEmail,
         recipient: recipientEmail,
         subject: title,
-        body: body ,
+        body: body,
       };
 
       console.log("Sending pyaload", payload);
@@ -833,61 +761,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           setThread(response.data);
           updateMailStatus(conversationId, "sent"); // Update mail status
           SetIsLoadingButton(false);
-          setEditable(false);
-          setSelectedMailId(conversationId);
-        })
-        .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
-        });
-    };
-
-    const handleFollowUoSendNow = () => {
-      SetIsLoadingButton(true);
-      const payload = {
-        conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
-        subject: sanitizeSubject(lastEmail.subject),
-        body: followUpBody,
-      };
-
-      console.log("Sending Followup", payload);
-
-      axiosInstance
-        .post("/v2/mailbox/send/immediately", payload)
-        .then((response) => {
-          toast.success("Your email has been sent successfully!");
-          setThread(response.data);
-          updateMailStatus(conversationId, "sent"); // Update mail status
-          SetIsLoadingButton(false);
-          setEditable(false);
-          setSelectedMailId(conversationId);
-        })
-        .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
-        });
-    };
-
-    const handleFollowUpApproval = () => {
-      setLoadingSmartSchedule(true);
-      const payload = {
-        conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
-        subject: sanitizeSubject(lastEmail.subject),
-        body: followUpBody,
-      };
-
-      axiosInstance
-        .post("/v2/mailbox/draft/send", payload)
-        .then((response) => {
-          toast.success("Draft Approved!");
-          setThread(response.data);
-          // console.log("Approve Data", response.data);
-          updateMailStatus(conversationId, "scheduled"); // Update mail status
-          setLoadingSmartSchedule(false);
           setEditable(false);
           setSelectedMailId(conversationId);
         })
@@ -943,7 +816,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     const handleSaveClick = () => {
       setIsEditing(false);
       setEditable(false);
-      
+
       // Make the PATCH API call
       const payload = {
         subject: title,
@@ -980,139 +853,91 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     }
 
     if (thread.length > 0 && !lastEmail?.is_reply) {
-      {
-        return (
-          <div className="flex gap-4 flex-col m-4 h-full">
-            {/* {thread?.length > 0 && !lastEmail.is_reply && (
-              <div className="flex items-center gap-3">
-                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                  <TrendingUp className="h-4 w-4 text-gray-400" />
-                </div>
-                <div className="text-xs ml-1">
-                  Sally will draft a follow-up email when it&apos;s time to
-                  reconnect.
-                </div>
-              </div>
-            )} */}
+      return (
+        <div className="flex gap-4 flex-col m-4 h-full">
+          <div className="flex gap-2 flex-col h-full">
+            <div className="flex w-full">
+              <Avatar
+                className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
+                onClick={() => {
+                  toggleSidebar(true);
+                }}
+              >
+                <AvatarImage
+                  src={leads[0]?.photo_url ? leads[0].photo_url : ""}
+                  alt="avatar"
+                />
 
-            <div className="flex gap-2 flex-col h-full">
-              <div className="flex w-full">
-                <Avatar
-                  className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-                  onClick={() => {
-                    toggleSidebar(true);
-                  }}
-                >
-                  <AvatarImage
-                    src={leads[0]?.photo_url ? leads[0].photo_url : ""}
-                    alt="avatar"
-                  />
-
-                  <AvatarFallback className="bg-yellow-400 text-black text-xs">
-                    {leads[0]?.first_name && leads[0]?.last_name
-                      ? leads[0].first_name.charAt(0) +
-                        leads[0].last_name.charAt(0)
-                      : ""}
-                  </AvatarFallback>
-                </Avatar>
-                <Card className="w-full mr-5 ">
-                  <div className="flex gap-5 p-4 items-center">
-                    <span className="text-sm font-semibold">
-                      {"You to " + leads[0]?.name}
+                <AvatarFallback className="bg-yellow-400 text-black text-xs">
+                  {leads[0]?.first_name && leads[0]?.last_name
+                    ? leads[0].first_name.charAt(0) +
+                    leads[0].last_name.charAt(0)
+                    : ""}
+                </AvatarFallback>
+              </Avatar>
+              <Card className="w-full mr-5 ">
+                <div className="flex gap-5 p-4 items-center">
+                  <span className="text-sm font-semibold">
+                    {"You to " + leads[0]?.name}
+                  </span>
+                  <div className="flex gap-3">
+                    <span className="text-green-500 text-sm ">
+                      Draft
                     </span>
-                    <div className="flex gap-3">
-                      <span className="text-green-500 text-sm ">
-                        Follow-up Draft
-                      </span>
-                    </div>
                   </div>
-                  <CardHeader>
-                    <CardTitle className="text-sm flex -mt-8 -ml-3">
-                      <Input
-                        value={sanitizeSubject(followUpSubject)}
-                        disabled={!editable}
-                        className="text-xs"
-                        placeholder="Subject"
-                        onChange={(e) => setFollowUpSubject(e.target.value)}
-                      />
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="text-xs -ml-3 -mt-4">
-                    <Textarea
-                      value={followUpBody}
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-sm flex -mt-8 -ml-3">
+                    <Input
+                      value={title}
                       disabled={!editable}
-                      className="text-xs h-64"
-                      placeholder="Enter email body"
-                      onChange={(e) => setFollowUpBody(e.target.value)}
+                      className="text-xs"
+                      placeholder="Subject"
+                      onChange={(e) => setTitle(e.target.value)}
                     />
-                  </CardContent>
-                  <CardFooter className="flex justify-between text-xs items-center">
-                    <div>
-                      <Button
-                        disabled={editable}
-                        onClick={handleFollowUpApproval}
-                      >
-                        {loadingSmartSchedule ? (
-                          <LoadingCircle />
-                        ) : (
-                          "Smart Schedule"
-                        )}
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs -ml-3 -mt-4">
+                  <Textarea
+                    value={body}
+                    disabled={!editable}
+                    className="text-xs h-64"
+                    placeholder="Enter email body"
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between text-xs items-center">
+                  <div>
+                    <Button disabled={editable} onClick={handleApproveEmail}>
+                      {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
+                    </Button>
+                    <Button variant={"secondary"} className="ml-2" onClick={handleSendNow}>
+                      {isLoadingButton ? <LoadingCircle /> : "Send Now"}
+                    </Button>
+                  </div>
+                  <div>
+                    {!isEditing ? (
+                      <Button variant={"ghost"} onClick={handleEditClick}>
+                        <Edit3 className="h-4 w-4" />
                       </Button>
-                      <Button
-                        variant={"secondary"}
-                        className="ml-2"
-                        onClick={handleFollowUoSendNow}
-                      >
-                        {isLoadingButton ? <LoadingCircle /> : "Send Now"}
+                    ) : (
+                      <Button variant={"ghost"} onClick={handleSaveClick}>
+                        <Check className="h-4 w-4" />
                       </Button>
-                      {/* Remove the following line */}
-                      {/* {editable && (
-                        <Button
-                          variant={"ghost"}
-                          onClick={() => setEditable(false)}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )} */}
-                    </div>
-                    <div>
-                      {!isEditing ? (
-                        <Button variant={"ghost"} onClick={handleEditClick}>
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button variant={"ghost"} onClick={handleSaveClick}>
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant={"ghost"}
-                        onClick={() => {
-                          regenrateFollowUp();
-                          toast.success("Draft Regenerating!!");
-                        }}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant={"ghost"}
-                        onClick={() =>
-                          handleDeleteDraft(
-                            emails && emails[0]?.conversation_id
-                          )
-                        }
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardFooter>
-                  <div ref={internalScrollRef} />
-                </Card>
-              </div>
+                    )}
+                    <Button variant={"ghost"} onClick={handleRegenrateDraft}>
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
+                    <Button variant={"ghost"} onClick={() => handleDeleteDraft(emails && emails[0]?.conversation_id)}>
+                      <Trash2 className="h-4 w-4" />
+                    </Button>
+                  </div>
+                </CardFooter>
+              </Card>
             </div>
           </div>
-        );
-      }
+        </div>
+      );
     }
 
     if (error) {
@@ -1194,12 +1019,6 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 >
                   {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                 </Button>
-                {/* Remove the following line */}
-                {/* {editable && (
-                  <Button variant={"ghost"} onClick={() => setEditable(false)}>
-                    <Check className="h-4 w-4" />
-                  </Button>
-                )} */}
               </div>
               <div>
                 {!isEditing ? (
@@ -1314,38 +1133,27 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           </div>
         )}
 
-        {/* {thread?.length > 0 ? (
-          lastEmail.is_reply === false ? (
-            mailStatus === "LOST" ? (
-              "No Message"
-            ) : (
-              <DraftEmailComponent />
-            )
-          ) : null
-        ) : (
-          <div>
+        {/* Only show draft if drafts exist and either there are no messages or last message is not a reply */}
+        {hasDrafts && (
+          thread?.length === 0 ? (
             <DraftEmailComponent />
-          </div>
-        )} */}
-        {thread?.length > 0 ? (
-          lastEmail.is_reply === false ? (
-            mailStatus === "LOST" ? (
-              <div className="flex items-center gap-3 ml-4">
-                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                  <BadgeX className="h-4 w-4 text-gray-400" />
-                </div>
-                <div className="text-xs ml-1">
-                  This lead has been marked as lost.
-                </div>
-              </div>
-            ) : (
-              <DraftEmailComponent />
+          ) : (
+            lastEmail?.is_reply === false && (
+              <>
+                <DraftEmailComponent />
+                {mailStatus === "LOST" && (
+                  <div className="flex items-center gap-3 ml-4">
+                    <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                      <BadgeX className="h-4 w-4 text-gray-400" />
+                    </div>
+                    <div className="text-xs ml-1">
+                      This lead has been marked as lost.
+                    </div>
+                  </div>
+                )}
+              </>
             )
-          ) : null
-        ) : (
-          <div>
-            <DraftEmailComponent />
-          </div>
+          )
         )}
       </div>
     </div>
