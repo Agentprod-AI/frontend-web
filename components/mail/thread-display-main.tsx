@@ -1351,9 +1351,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                   <Linkedin className="h-4 w-4 text-gray-400" />
                 </div>
                 {leads[0]?.connected_on_linkedin !== 'CONNECTED' ? (
-                  <p className="ml-1 text-xs">Not connected</p>
+                  <p className="ml-1 text-xs">Not connected on LinkedIn</p>
                 ) : (
-                  <p className="ml-1 text-xs">Connected</p>
+                  <p className="ml-1 text-xs">Connected on LinkedIn</p>
                 )}
               </div>
             </div>
