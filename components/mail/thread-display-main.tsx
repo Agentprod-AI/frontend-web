@@ -1046,81 +1046,40 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                       Draft
                     </span>
                   </div>
-
-                  {platform !== "Linkedin" && (
-                    <CardHeader>
-                      <CardTitle className="text-sm flex -mt-2 -ml-3">
-                        <Input
-                        value={sanitizeSubject(followUpSubject)}
-                        disabled={!editable}
-                        className="text-xs"
-                        placeholder="Subject"
-                        onChange={(e) => setFollowUpSubject(e.target.value)}
-                      />
-                    </CardTitle>
-                  </CardHeader>
-                  )}
-                  <CardContent className="text-xs -ml-3 -mt-4">
-                    <Textarea
-                      value={followUpBody}
-
+                </div>
+                <CardHeader>
+                  <CardTitle className="text-sm flex -mt-8 -ml-3">
+                    <Input
+                      value={title}
                       disabled={!editable}
                       className="text-xs"
                       placeholder="Subject"
                       onChange={(e) => setTitle(e.target.value)}
                     />
-
-                  </CardContent>
-                  <CardFooter className="flex justify-between text-xs items-center">
-                    <div>
-                      {platform !== "Linkedin" && (
-                        <Button
-                          disabled={editable}
-                          onClick={handleFollowUpApproval}
-                      >
-                        {loadingSmartSchedule ? (
-                          <LoadingCircle />
-                        ) : (
-                          "Smart Schedule"
-                        )}
-                      </Button>
-                      )}
-                      <Button
-                        variant={"secondary"}
-                        className="ml-2"
-                        onClick={handleFollowUoSendNow}
-                      >
-                        {isLoadingButton ? <LoadingCircle /> : "Send Now"}
-                      </Button>
-                      {/* Remove the following line */}
-                     {/* {editable && (
-                        <Button
-                          variant={"ghost"}
-                          onClick={() => setEditable(false)}
-                        >
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )}*/}
-                    </div>
-                    <div>
-                      {!isEditing ? (
-                        <Button variant={"ghost"} onClick={handleEditClick}>
-                          <Edit3 className="h-4 w-4" />
-                        </Button>
-                      ) : (
-                        <Button variant={"ghost"} onClick={handleSaveClick}>
-                          <Check className="h-4 w-4" />
-                        </Button>
-                      )}
-                      <Button
-                        variant={"ghost"}
-                        onClick={() => {
-                          regenrateFollowUp();
-                          toast.success("Draft Regenerating!!");
-                        }}
-                      >
-                        <RefreshCw className="h-4 w-4" />
-
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="text-xs -ml-3 -mt-4">
+                  <Textarea
+                    value={body}
+                    disabled={!editable}
+                    className="text-xs h-64"
+                    placeholder="Enter email body"
+                    onChange={(e) => setBody(e.target.value)}
+                  />
+                </CardContent>
+                <CardFooter className="flex justify-between text-xs items-center">
+                  <div>
+                    <Button disabled={editable} onClick={handleApproveEmail}>
+                      {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
+                    </Button>
+                    <Button variant={"secondary"} className="ml-2" onClick={handleSendNow}>
+                      {isLoadingButton ? <LoadingCircle /> : "Send Now"}
+                    </Button>
+                  </div>
+                  <div>
+                    {!isEditing ? (
+                      <Button variant={"ghost"} onClick={handleEditClick}>
+                        <Edit3 className="h-4 w-4" />
                       </Button>
                     ) : (
                       <Button variant={"ghost"} onClick={handleSaveClick}>
