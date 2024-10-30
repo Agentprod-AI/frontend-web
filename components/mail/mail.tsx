@@ -70,6 +70,7 @@ export interface Conversations {
   photo_url: string;
   company_name: string;
   category: string;
+  channel?: string
 }
 
 interface CampaignStatus {
@@ -254,11 +255,21 @@ export function Mail({
 
         console.log("Response data:", response.data.mails);
 
+        const campaignChannelMap = campaigns.reduce((map: {[key: string]: string}, campaign: any) => {
+          map[campaign.id] = campaign.channel;
+          return map;
+        }, {});
+
+        const mailsWithChannel = response.data.mails.map((mail: any) => ({
+          ...mail,
+          channel: campaignChannelMap[mail.campaign_id] || null
+        }));
+
         setMails((prevMails) => {
           if (pageNum === 1) {
-            return response.data.mails;
+            return mailsWithChannel;
           } else {
-            return [...prevMails, ...response.data.mails];
+            return [...prevMails, ...mailsWithChannel];
           }
         });
 
@@ -277,7 +288,7 @@ export function Mail({
         setShowLoadingOverlay(false);
       }
     },
-    [user?.id, showLoadingOverlay]
+    [user?.id, showLoadingOverlay, campaigns] // Added campaigns to dependency array
   );
 
   const loadMore = React.useCallback(() => {

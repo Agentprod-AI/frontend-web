@@ -32,6 +32,7 @@ import {
   ChevronsUpDown,
   Edit3,
   Forward,
+  Linkedin,
   ListTodo,
   MailPlus,
   RefreshCw,
@@ -179,17 +180,87 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
   React.useEffect(() => {
     if (recipientEmail) {
-      axiosInstance
-        .get(`v2/lead/info/${recipientEmail}`)
-        .then((response) => {
-          setItemId(response.data.id);
-          setLeads([response.data]);
-          // console.log(response.data);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-          setError(error.message || "Failed to load data.");
-        });
+      const fetchLeadInfo = async () => {
+      const isLinkedIn = isLinkedInUrl(recipientEmail);
+
+      if (isLinkedIn) {
+        console.log('Using LinkedIn URL endpoint:', recipientEmail);
+        const response = await axiosInstance.get<Lead>(
+          `v2/lead/linkedin/info?linkedin_url=${encodeURIComponent(recipientEmail)}`
+        );
+        setItemId(response.data.id);
+        setLeads([response.data]);
+      } else {
+        console.log('Using email endpoint for:', recipientEmail);
+        const response = await axiosInstance.get<Lead>(`v2/lead/info/${recipientEmail}`);
+        setItemId(response.data.id);
+        setLeads([response.data]);
+      }
+
+    }
+    fetchLeadInfo();
+      // axiosInstance
+      //   .get(`v2/lead/info/${recipientEmail}`)
+      //   .then((response) => {
+      //     setItemId(response.data.id);
+      //     setLeads([response.data]);
+      //     // console.log(response.data);
+      //   })
+      //   .catch((error) => {
+      //     console.error("Error fetching data:", error);
+      //     setError(error.message || "Failed to load data.");
+      //   });
+    }
+  }, [recipientEmail]);
+
+
+  const isLinkedInUrl = (recipient: string): boolean => {
+    return recipient.toLowerCase().includes('linkedin.com');
+  };
+
+  // const fetchLeadInfo = async (recipientEmail: string, thread: EmailMessage[]) => {
+  //   try {
+  //     let response;
+      
+  //     // Get the recipient from first message
+  //     const firstMessage = thread[0];
+  //     const isLinkedIn = isLinkedInUrl(firstMessage.recipient);
+  
+  //     if (isLinkedIn) {
+  //       // If recipient is LinkedIn URL
+  //       console.log('Using LinkedIn URL endpoint:', firstMessage.recipient);
+  //       response = await axiosInstance.get<Lead>(
+  //         `v2/lead/linkedin/info?linkedin_url=${encodeURIComponent(firstMessage.recipient)}`
+  //       );
+  //     } else {
+  //       // If recipient is email
+  //       console.log('Using email endpoint for:', recipientEmail);
+  //       response = await axiosInstance.get<Lead>(`v2/lead/info/${recipientEmail}`);
+  //     }
+  
+  //     // Set the lead info
+  //     setItemId(response.data.id);
+  //     setLeads([response.data]);
+  
+  //     // Update threads with connected_on_linkedin status
+  //     const updatedThread = thread.map(message => ({
+  //       ...message,
+  //     }));
+  
+  //     setThread(updatedThread);
+  //     console.log('Lead data:', response.data);
+  //     console.log('Updated thread:', updatedThread);
+  
+  //   } catch (error) {
+  //     console.error("Error fetching lead data:", error);
+  //     setError("Failed to load lead data.");
+  //   }
+  // };
+  
+  // Use the function in useEffect
+  React.useEffect(() => {
+    if (recipientEmail && thread.length > 0) {
+      // fetchLeadInfo(recipientEmail, thread);
     }
   }, [recipientEmail]);
 
@@ -246,6 +317,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
     // console.log("jajaja", email);
+    console.log("Platform", email);
 
     const [title, setTitle] = React.useState("");
     const [body, setBody] = React.useState("");
@@ -307,29 +379,42 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const handleSendNow = () => {
       SetIsLoadingButton(true);
-      const payload = {
-        conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
-        subject: email.subject,
-        body: email.body,
-      };
+      
+      let payload;
+      let endpoint;
 
-      console.log("Info re", payload);
+      if (email.channel === "Linkedin") {
+        payload = {
+          email: recipientEmail,
+          user_id: user.id, // Assuming you have access to the user object
+          message: email.body
+        };
+        endpoint = "/v2/linkedin/send-message";
+      } else {
+        payload = {
+          conversation_id: conversationId,
+          sender: senderEmail,
+          recipient: recipientEmail,
+          subject: title,
+          body: body,
+        };
+        endpoint = "/v2/mailbox/send/immediately";
+      }
 
       axiosInstance
-        .post("/v2/mailbox/send/immediately", payload)
+        .post(endpoint, payload)
         .then((response) => {
-          toast.success("Your email has been sent successfully!");
-          // console.log("Send Data", response.data);
+          toast.success("Your message has been sent successfully!");
           setThread(response.data);
-          // updateMailStatus(conversationId, "sent"); // Update mail status
+          updateMailStatus(conversationId, "sent");
           SetIsLoadingButton(false);
           setEditable(false);
+          setSelectedMailId(conversationId);
         })
         .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
+          console.error("Failed to send message:", error);
+          toast.error("Failed to send the message. Please try again.");
+          SetIsLoadingButton(false);
         });
     };
 
@@ -374,6 +459,68 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     if (email?.status === "TO-APPROVE") {
+      const [isEditing, setIsEditing] = React.useState(false);
+      const [editableSubject, setEditableSubject] = React.useState(parseActionDraft(email.body).subject);
+      const [editableBody, setEditableBody] = React.useState(parseActionDraft(email.body).body);
+
+      const handleSaveClick = () => {
+        setIsEditing(false);
+        
+        const payload = {
+          conversation_id: conversationId,
+          received_datetime: email.received_datetime,
+          sender: senderEmail,
+          recipient: recipientEmail,
+          subject: editableSubject,
+          body: editableBody,
+          is_reply: email.is_reply,
+          send_datetime: email.send_datetime,
+          open_datetime: email.open_datetime,
+          click_datetime: email.click_datetime,
+          response_datetime: email.response_datetime,
+          status: email.status,
+          sentiment: email.sentiment,
+          category: email.category,
+          action_draft: email.action_draft,
+          approved: email.approved,
+        };
+
+        axiosInstance
+          .patch(`/v2/mailbox/action_draft/update?_id=${email.id}`, payload)
+          .then((response) => {
+            toast.success("Draft updated successfully!");
+            // Update the thread with the new data
+            const updatedThread = thread.map(msg => 
+              msg.id === email.id ? { ...msg, subject: editableSubject, body: editableBody } : msg
+            );
+            setThread(updatedThread);
+          })
+          .catch((error) => {
+            console.error("Failed to update draft:", error);
+            toast.error("Failed to update the draft. Please try again.");
+          });
+      };
+
+      const handleRegenerateDraft = () => {
+        const payload = {
+          user_id: user.id,
+          conversation_id: conversationId,
+          campaign_id: leads[0].campaign_id,
+        };
+
+        axiosInstance
+          .post(`/v2/mailbox/draft/regenerate`, payload)
+          .then((response) => {
+            toast.success("Draft regenerated successfully!");
+            setEditableSubject(response.data.subject);
+            setEditableBody(response.data.body);
+          })
+          .catch((error) => {
+            console.error("Failed to regenerate draft:", error);
+            toast.error("Failed to regenerate the draft. Please try again.");
+          });
+      };
+
       return (
         <div className="flex gap-4 flex-col m-4 h-full">
           <div className="flex w-full ">
@@ -429,50 +576,53 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               <CardHeader>
                 <CardTitle className="text-sm flex -mt-8 -ml-3">
                   <Input
-                    value={parseActionDraft(email.body).subject}
+                    value={editableSubject}
                     className="text-xs"
                     placeholder="Subject"
-                    readOnly
+                    readOnly={!isEditing}
+                    onChange={(e) => setEditableSubject(e.target.value)}
                   />
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
                 <Textarea
-                  value={parseActionDraft(email.body).body}
-                  readOnly
+                  value={editableBody}
                   className="text-xs h-64"
                   placeholder="Enter email body"
+                  readOnly={!isEditing}
+                  onChange={(e) => setEditableBody(e.target.value)}
                 />
               </CardContent>
-              {/* ADD BUTTON */}
               <CardFooter className="flex justify-between text-xs items-center">
                 <div>
-                  <Button disabled={editable} onClick={handleApproveEmail}>
-                    {loadingSmartSchedule ? (
-                      <LoadingCircle />
-                    ) : (
-                      "Smart Schedule"
-                    )}
-                  </Button>
+                  {email.channel !== "Linkedin" && (
+                    <Button disabled={isEditing} onClick={handleApproveEmail}>
+                      {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
+                    </Button>
+                  )}
                   <Button
                     variant={"secondary"}
                     className="ml-2"
+                    disabled={isEditing}
                     onClick={handleSendNow}
                   >
                     {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                   </Button>
-                  {editable && (
-                    <Button
-                      variant={"ghost"}
-                      onClick={() => setEditable(false)}
-                    >
+                </div>
+                <div>
+                  {!isEditing ? (
+                    <Button variant={"ghost"} onClick={() => setIsEditing(true)}>
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button variant={"ghost"} onClick={handleSaveClick}>
                       <Check className="h-4 w-4" />
                     </Button>
                   )}
-                </div>
-                <div>
-                  <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                    <Edit3 className="h-4 w-4" />
+
+                  <Button variant={"ghost"} onClick={handleRegenerateDraft}>
+                    <RefreshCw className="h-4 w-4" />
+
                   </Button>
                   <Button variant={"ghost"} onClick={handleDeleteDraft}>
                     <Trash2 className="h-4 w-4" />
@@ -673,18 +823,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const lastEmail = thread[thread.length - 1];
 
-    // const unsubscribeLink =
-    //   "https://c813b042.sibforms.com/serve/MUIFACgOoNUQaUMaLeDSg4MqyII5sxJsKlTht8bu0QczloASUT1[…]zXFFdhD-z4tMlMX3wuEczUEShKd0mklk4Fyf76rLkIiQb_1toOnqLQ7eIh";
-
-    // const unsubscribeText = `\n\nTo unsubscribe from future communications, please ${(
-    //   <a href={unsubscribeLink}>click here</a>
-    // )}.`;
+    // Add this state to store the platform
+    const [platform, setPlatform] = React.useState("");
 
     React.useEffect(() => {
-      // For handleing, the thread if some error occurs
       setError("");
       setIsLoading(true);
-      // For handleing, the thread if some error occurs
       axiosInstance
         .get(`/v2/mailbox/draft/${conversationId}`)
         .then((response) => {
@@ -696,8 +840,9 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             if (response.data[0].suggestions) {
               setSuggestions(response.data[0].suggestions);
             }
+            // Store the platform information
+            setPlatform(response.data[0].platform);
           }
-
           setIsLoading(false);
         })
         .catch((err) => {
@@ -745,28 +890,44 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const handleSendNow = () => {
       SetIsLoadingButton(true);
-      const payload = {
-        conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
-        subject: title,
-        body: body,
-      };
 
-      console.log("Sending pyaload", payload);
+      
+      let payload;
+      let endpoint;
+
+      if (platform === "Linkedin") {
+        payload = {
+          email: recipientEmail,
+          user_id: user.id, // Assuming you have access to the user object
+          message: body
+        };
+        endpoint = "/v2/linkedin/send-message";
+      } else {
+        payload = {
+          conversation_id: conversationId,
+          sender: senderEmail,
+          recipient: recipientEmail,
+          subject: title,
+          body: body,
+        };
+        endpoint = "/v2/mailbox/send/immediately";
+      }
+
+
       axiosInstance
-        .post("/v2/mailbox/send/immediately", payload)
+        .post(endpoint, payload)
         .then((response) => {
-          toast.success("Your email has been sent successfully!");
+          toast.success("Your message has been sent successfully!");
           setThread(response.data);
-          updateMailStatus(conversationId, "sent"); // Update mail status
+          updateMailStatus(conversationId, "sent");
           SetIsLoadingButton(false);
           setEditable(false);
           setSelectedMailId(conversationId);
         })
         .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
+          console.error("Failed to send message:", error);
+          toast.error("Failed to send the message. Please try again.");
+          SetIsLoadingButton(false);
         });
     };
 
@@ -959,6 +1120,23 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     return (
       <div className="flex gap-2 flex-col m-4 h-full">
+        {platform === "Linkedin" && (
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <Linkedin className="h-4 w-4 text-gray-400" />
+            </div>
+            {leads[0]?.connected_on_linkedin === 'SENT' ? (
+              <p className="ml-1 text-xs">{leads[0]?.name} has been sent a connection request</p>
+            ) : leads[0]?.connected_on_linkedin === 'FAILED' ? (
+              <p className="ml-1 text-xs">{leads[0]?.name} has rejected your connection request</p>
+            ) : leads[0]?.connected_on_linkedin === 'CONNECTED' ? (
+              <p className="ml-1 text-xs">{leads[0]?.name} has accepted your connection request</p>
+            ) : (
+              <p className="ml-1 text-xs">Connection request scheduled for {leads[0]?.name}</p>
+            )}
+          </div>
+        )}
+        
         <div className="flex w-full">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -983,37 +1161,45 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 {"You to " + leads[0]?.name}
               </span>
               <div className="flex gap-3">
-                {/* <span className="text-gray-500 text-sm  ">8 hours ago</span> */}
-                <span className="text-green-500 text-sm ">Draft</span>
+                <span className={`${platform === "Linkedin" ? "text-blue-500" : "text-green-500"} text-sm flex items-center space-x-2`}>
+                  {platform === "Linkedin" ? "LinkedIn Message" : "Email Draft"}
+                  <div className="h-4 w-4 pl-2">
+                    {platform === "Linkedin" && <Linkedin className="h-4 w-4" />}
+                  </div>
+                </span>
               </div>
             </div>
-            <CardHeader>
-              <CardTitle className="text-sm flex -mt-8 -ml-3">
-                <Input
-                  value={title}
-                  disabled={!editable}
-                  className="text-xs"
-                  placeholder="Subject"
-                  onChange={(e) => setTitle(e.target.value)}
-                />
-              </CardTitle>
-            </CardHeader>
+            {platform !== "Linkedin" && (
+              <CardHeader>
+                <CardTitle className="text-sm flex -mt-8 -ml-3">
+                  <Input
+                    value={title}
+                    disabled={!editable}
+                    className="text-xs"
+                    placeholder="Subject"
+                    onChange={(e) => setTitle(e.target.value)}
+                  />
+                </CardTitle>
+              </CardHeader>
+            )}
             <CardContent className="text-xs -ml-3 -mt-4">
               <Textarea
                 value={body}
                 disabled={!editable}
                 className="text-xs h-64"
-                placeholder="Enter email body"
+                placeholder="Enter message body"
                 onChange={(e) => setBody(e.target.value)}
               />
             </CardContent>
             <CardFooter className="flex justify-between text-xs items-center">
               <div>
-                <Button disabled={editable} onClick={handleApproveEmail}>
-                  {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
-                </Button>
+                {platform !== "Linkedin" && (
+                  <Button disabled={editable} onClick={handleApproveEmail}>
+                    {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
+                  </Button>
+                )}
                 <Button
-                  variant={"secondary"}
+                  variant={platform === "Linkedin" ? "default" : "secondary"}
                   className="ml-2"
                   onClick={handleSendNow}
                 >
@@ -1046,7 +1232,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <div ref={internalScrollRef} />
           </Card>
         </div>
-        <SuggestionDisplay suggestions={suggestions} />
+        {platform !== "Linkedin" && <SuggestionDisplay suggestions={suggestions} />}
       </div>
     );
   };
@@ -1104,6 +1290,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const matchingCampaign = campaigns.find((campaign) => campaign.id === leadId);
   const lastEmail = thread[thread.length - 1];
 
+  
   return (
     <div className="relative">
       <div className="bg-accent w-[3px] h-full absolute left-7 -z-10"></div>
@@ -1111,19 +1298,41 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         {isLoading ? (
           ""
         ) : (
-          <div className="m-4">
+          <>
+            {/* LinkedIn Connection Status */}
+           
+
+            {/* Campaign Info */}
             {matchingCampaign && (
-              <div className="flex items-center gap-3">
-                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
-                  <User className="h-4 w-4 text-gray-400" />
-                </div>
-                <div className="text-xs ml-1">
-                  {leads[0].name} was added in {matchingCampaign.campaign_type}{" "}
-                  {matchingCampaign.campaign_name} campaign
+              <div className="m-4">
+                <div className="flex items-center gap-3">
+                  <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                    <User className="h-4 w-4 text-gray-400" />
+                  </div>
+                  <div className="text-xs ml-1">
+                    {leads[0].name} was added in {matchingCampaign.campaign_type}{" "}
+                    {matchingCampaign.campaign_name} campaign
+                  </div>
                 </div>
               </div>
             )}
-          </div>
+            {thread[0]?.channel === 'Linkedin' && <div className="m-4">
+              <div className="flex items-center gap-3">
+                <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+                  <Linkedin className="h-4 w-4 text-gray-400" />
+                </div>
+                {leads[0]?.connected_on_linkedin === 'SENT' ? (
+                  <p className="ml-1 text-xs">{leads[0]?.name} has been sent a connection request</p>
+                ) : leads[0]?.connected_on_linkedin === 'FAILED' ? (
+                  <p className="ml-1 text-xs">{leads[0]?.name} has rejected your connection request</p>
+                ) : leads[0]?.connected_on_linkedin === 'CONNECTED' ? (
+                  <p className="ml-1 text-xs">{leads[0]?.name} has accepted your connection request</p>
+                ) : (
+                  <p className="ml-1 text-xs">Connection request scheduled for {leads[0]?.name}</p>
+                )}
+              </div>
+            </div>}
+          </>
         )}
         {thread?.length > 0 && (
           <div>
