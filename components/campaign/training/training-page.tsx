@@ -536,10 +536,13 @@ export default function Training() {
           </Tabs>
           {startCampaignIsLoading ? (
             <LoadingCircle />
+          ) : channel === "Linkedin" ? (
+            <Button onClick={handleStartCampaign}>
+              Start Campaign
+            </Button>
           ) : (
             <Dialog>
               <DialogTrigger>
-                {" "}
                 <Button
                   onClick={async () => {
                     toast.info("Testing campaign...");
