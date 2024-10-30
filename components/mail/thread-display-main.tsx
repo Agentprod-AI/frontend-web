@@ -1120,6 +1120,23 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     return (
       <div className="flex gap-2 flex-col m-4 h-full">
+        {platform === "Linkedin" && (
+          <div className="flex items-center gap-3 mb-4">
+            <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
+              <Linkedin className="h-4 w-4 text-gray-400" />
+            </div>
+            {leads[0]?.connected_on_linkedin === 'SENT' ? (
+              <p className="ml-1 text-xs">{leads[0]?.name} has been sent a connection request</p>
+            ) : leads[0]?.connected_on_linkedin === 'FAILED' ? (
+              <p className="ml-1 text-xs">{leads[0]?.name} has rejected your connection request</p>
+            ) : leads[0]?.connected_on_linkedin === 'CONNECTED' ? (
+              <p className="ml-1 text-xs">{leads[0]?.name} has accepted your connection request</p>
+            ) : (
+              <p className="ml-1 text-xs">Connection request scheduled for {leads[0]?.name}</p>
+            )}
+          </div>
+        )}
+        
         <div className="flex w-full">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
@@ -1299,8 +1316,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 </div>
               </div>
             )}
-
-            { <div className="m-4">
+            {thread[0]?.channel === 'Linkedin' && <div className="m-4">
               <div className="flex items-center gap-3">
                 <div className="h-[30px] w-[30px] bg-gray-800 rounded-full items-center justify-center flex text-center">
                   <Linkedin className="h-4 w-4 text-gray-400" />
