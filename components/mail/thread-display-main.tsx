@@ -464,6 +464,68 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     if (email?.status === "TO-APPROVE") {
+      const [isEditing, setIsEditing] = React.useState(false);
+      const [editableSubject, setEditableSubject] = React.useState(parseActionDraft(email.body).subject);
+      const [editableBody, setEditableBody] = React.useState(parseActionDraft(email.body).body);
+
+      const handleSaveClick = () => {
+        setIsEditing(false);
+        
+        const payload = {
+          conversation_id: conversationId,
+          received_datetime: email.received_datetime,
+          sender: senderEmail,
+          recipient: recipientEmail,
+          subject: editableSubject,
+          body: editableBody,
+          is_reply: email.is_reply,
+          send_datetime: email.send_datetime,
+          open_datetime: email.open_datetime,
+          click_datetime: email.click_datetime,
+          response_datetime: email.response_datetime,
+          status: email.status,
+          sentiment: email.sentiment,
+          category: email.category,
+          action_draft: email.action_draft,
+          approved: email.approved,
+        };
+
+        axiosInstance
+          .patch(`/v2/mailbox/action_draft/update?_id=${email.id}`, payload)
+          .then((response) => {
+            toast.success("Draft updated successfully!");
+            // Update the thread with the new data
+            const updatedThread = thread.map(msg => 
+              msg.id === email.id ? { ...msg, subject: editableSubject, body: editableBody } : msg
+            );
+            setThread(updatedThread);
+          })
+          .catch((error) => {
+            console.error("Failed to update draft:", error);
+            toast.error("Failed to update the draft. Please try again.");
+          });
+      };
+
+      const handleRegenerateDraft = () => {
+        const payload = {
+          user_id: user.id,
+          conversation_id: conversationId,
+          campaign_id: leads[0].campaign_id,
+        };
+
+        axiosInstance
+          .post(`/v2/mailbox/draft/regenerate`, payload)
+          .then((response) => {
+            toast.success("Draft regenerated successfully!");
+            setEditableSubject(response.data.subject);
+            setEditableBody(response.data.body);
+          })
+          .catch((error) => {
+            console.error("Failed to regenerate draft:", error);
+            toast.error("Failed to regenerate the draft. Please try again.");
+          });
+      };
+
       return (
         <div className="flex gap-4 flex-col m-4 h-full">
           <div className="flex w-full ">
@@ -519,54 +581,50 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               <CardHeader>
                 <CardTitle className="text-sm flex -mt-8 -ml-3">
                   <Input
-                    value={parseActionDraft(email.body).subject}
+                    value={editableSubject}
                     className="text-xs"
                     placeholder="Subject"
-                    readOnly
+                    readOnly={!isEditing}
+                    onChange={(e) => setEditableSubject(e.target.value)}
                   />
                 </CardTitle>
               </CardHeader>
               <CardContent className="text-xs -ml-3 -mt-4">
                 <Textarea
-                  value={parseActionDraft(email.body).body}
-                  readOnly
+                  value={editableBody}
                   className="text-xs h-64"
                   placeholder="Enter email body"
+                  readOnly={!isEditing}
+                  onChange={(e) => setEditableBody(e.target.value)}
                 />
               </CardContent>
-              {/* ADD BUTTON */}
               <CardFooter className="flex justify-between text-xs items-center">
                 <div>
                   {email.channel !== "Linkedin" && (
-                    <Button disabled={editable} onClick={handleApproveEmail}>
-                      {loadingSmartSchedule ? (
-                        <LoadingCircle />
-                    ) : (
-                      "Smart Schedule"
-                      )}
+                    <Button disabled={isEditing} onClick={handleApproveEmail}>
+                      {loadingSmartSchedule ? <LoadingCircle /> : "Smart Schedule"}
                     </Button>
                   )}
                   <Button
                     variant={"secondary"}
                     className="ml-2"
+                    disabled={isEditing}
                     onClick={handleSendNow}
                   >
                     {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                   </Button>
-                  {editable && (
-                    <Button
-                      variant={"ghost"}
-                      onClick={() => setEditable(false)}
-                    >
+                </div>
+                <div>
+                  {!isEditing ? (
+                    <Button variant={"ghost"} onClick={() => setIsEditing(true)}>
+                      <Edit3 className="h-4 w-4" />
+                    </Button>
+                  ) : (
+                    <Button variant={"ghost"} onClick={handleSaveClick}>
                       <Check className="h-4 w-4" />
                     </Button>
                   )}
-                </div>
-                <div>
-                  <Button variant={"ghost"} onClick={() => setEditable(true)}>
-                    <Edit3 className="h-4 w-4" />
-                  </Button>
-                  <Button variant={"ghost"} onClick={regenrateFollowUp}>
+                  <Button variant={"ghost"} onClick={handleRegenerateDraft}>
                     <RefreshCw className="h-4 w-4" />
                   </Button>
                   <Button variant={"ghost"} onClick={handleDeleteDraft}>
