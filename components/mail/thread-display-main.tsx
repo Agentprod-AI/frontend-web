@@ -1417,7 +1417,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 ) : leads[0]?.connected_on_linkedin === 'CONNECTED' ? (
                   <p className="ml-1 text-xs">{leads[0]?.name} has accepted your connection request</p>
                 ) : (
-                  <p className="ml-1 text-xs">LinkedIn connection request not sent to {leads[0]?.name}</p>
+                  <p className="ml-1 text-xs">Connection request scheduled for {leads[0]?.name}</p>
                 )}
               </div>
             </div>}
