@@ -358,29 +358,42 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
 
     const handleSendNow = () => {
       SetIsLoadingButton(true);
-      const payload = {
-        conversation_id: conversationId,
-        sender: senderEmail,
-        recipient: recipientEmail,
-        subject: email.subject,
-        body: email.body,
-      };
+      
+      let payload;
+      let endpoint;
 
-      console.log("Info re", payload);
+      if (email.channel === "Linkedin") {
+        payload = {
+          email: recipientEmail,
+          user_id: user.id, // Assuming you have access to the user object
+          message: email.body
+        };
+        endpoint = "/v2/linkedin/send-message";
+      } else {
+        payload = {
+          conversation_id: conversationId,
+          sender: senderEmail,
+          recipient: recipientEmail,
+          subject: title,
+          body: body,
+        };
+        endpoint = "/v2/mailbox/send/immediately";
+      }
 
       axiosInstance
-        .post("/v2/mailbox/send/immediately", payload)
+        .post(endpoint, payload)
         .then((response) => {
-          toast.success("Your email has been sent successfully!");
-          // console.log("Send Data", response.data);
+          toast.success("Your message has been sent successfully!");
           setThread(response.data);
-          // updateMailStatus(conversationId, "sent"); // Update mail status
+          updateMailStatus(conversationId, "sent");
           SetIsLoadingButton(false);
           setEditable(false);
+          setSelectedMailId(conversationId);
         })
         .catch((error) => {
-          console.error("Failed to send email:", error);
-          toast.error("Failed to send the email. Please try again.");
+          console.error("Failed to send message:", error);
+          toast.error("Failed to send the message. Please try again.");
+          SetIsLoadingButton(false);
         });
     };
 
@@ -524,13 +537,15 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               {/* ADD BUTTON */}
               <CardFooter className="flex justify-between text-xs items-center">
                 <div>
-                  <Button disabled={editable} onClick={handleApproveEmail}>
-                    {loadingSmartSchedule ? (
-                      <LoadingCircle />
+                  {email.channel !== "Linkedin" && (
+                    <Button disabled={editable} onClick={handleApproveEmail}>
+                      {loadingSmartSchedule ? (
+                        <LoadingCircle />
                     ) : (
                       "Smart Schedule"
-                    )}
-                  </Button>
+                      )}
+                    </Button>
+                  )}
                   <Button
                     variant={"secondary"}
                     className="ml-2"
@@ -1151,14 +1166,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                         {isLoadingButton ? <LoadingCircle /> : "Send Now"}
                       </Button>
                       {/* Remove the following line */}
-                      {/* {editable && (
+                     {/* {editable && (
                         <Button
                           variant={"ghost"}
                           onClick={() => setEditable(false)}
                         >
                           <Check className="h-4 w-4" />
                         </Button>
-                      )} */}
+                      )}*/}
                     </div>
                     <div>
                       {!isEditing ? (
