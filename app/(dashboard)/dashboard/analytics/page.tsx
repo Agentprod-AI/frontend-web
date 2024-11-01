@@ -341,7 +341,7 @@ export default function Page() {
                   <p className="text-sm font-semibold">
                     {dashboardData.conversion_funnel?.cta_clicked || 0}
                   </p>
-                  <p className="text-xs text-gray-500">CTA Click</p>
+                  <p className="text-xs text-gray-500">Reply</p>
                 </div>
               </div>
 
@@ -367,7 +367,7 @@ export default function Page() {
                   <p className="text-sm font-semibold">
                     {dashboardData.conversion_funnel?.goal || 0}
                   </p>
-                  <p className="text-xs text-gray-500">Goal</p>
+                  <p className="text-xs text-gray-500">Demo scenario</p>
                 </div>
               </div>
             </CardContent>
