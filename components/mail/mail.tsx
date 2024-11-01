@@ -501,39 +501,14 @@ export function Mail({
                   value="to-approve"
                   className="text-zinc-800 dark:text-zinc-200"
                 >
-                  To do
+                  To Approve
                 </TabsTrigger>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="flex items-center justify-center space-x-2"
-                    >
-                      <span>
-                        {moreOptionSelected.toLocaleUpperCase() || "More"}
-                      </span>
-                      <ChevronDown size={20} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent>
-                    <DropdownMenuItem
-                      onSelect={() => handleTabChange("scheduled")}
-                    >
-                      Scheduled
-                    </DropdownMenuItem>
-                    <DropdownMenuItem
-                      onSelect={() => handleTabChange("replied")}
-                    >
-                      Replied
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleTabChange("sent")}>
-                      Sent
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onSelect={() => handleTabChange("lost")}>
-                      Lost
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                <TabsTrigger
+                  value="replied"
+                  className="text-zinc-800 dark:text-zinc-200"
+                >
+                  Replied
+                </TabsTrigger>
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button
