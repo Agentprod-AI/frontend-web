@@ -40,7 +40,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { toast } from "sonner";
-import axios from "axios";
+import axios, { CancelTokenSource } from "axios";
 
 const ITEMS_PER_PAGE = 10;
 
@@ -127,6 +127,8 @@ export function Mail({
   const [showStatus, setShowStatus] = React.useState(false);
   const [isUserInitiatedSearch, setIsUserInitiatedSearch] =
     React.useState(false);
+  const [isTransitioning, setIsTransitioning] = React.useState(false);
+  const [isInitialLoading, setIsInitialLoading] = React.useState(true);
 
   const { user } = useUserContext();
   const {
@@ -141,6 +143,8 @@ export function Mail({
     React.useState(false);
   const loadingStartTimeRef = React.useRef<number | null>(null);
   const mailListRef = React.useRef<HTMLDivElement>(null);
+
+  const cancelTokenRef = React.useRef<CancelTokenSource | null>(null);
 
   const fetchCampaignStatus = React.useCallback(async (campaignId: string) => {
     setShowStatus(true);
@@ -215,10 +219,17 @@ export function Mail({
       search?: string,
       status?: string
     ) => {
-      setLoading(true);
-      if (showLoadingOverlay) {
-        loadingStartTimeRef.current = Date.now();
+      if (cancelTokenRef.current) {
+        cancelTokenRef.current.cancel('Operation canceled due to new request.');
       }
+
+      cancelTokenRef.current = axios.CancelToken.source();
+      setLoading(true);
+      if (pageNum === 1) {
+        setIsInitialLoading(true);
+        setIsTransitioning(true);
+      }
+
       try {
         let url = `v2/mailbox/${user?.id}`;
 
@@ -250,7 +261,10 @@ export function Mail({
         console.log("Fetching conversations with URL:", url);
 
         const response = await axios.get(
-          `${process.env.NEXT_PUBLIC_SERVER_URL}${url}`
+          `${process.env.NEXT_PUBLIC_SERVER_URL}${url}`,
+          {
+            cancelToken: cancelTokenRef.current.token
+          }
         );
 
         console.log("Response data:", response.data.mails);
@@ -273,22 +287,30 @@ export function Mail({
           }
         });
 
-        if (pageNum === 1) {
-          setInitialMailIdSet(false);
-        }
-
         setHasMore(response.data.mails.length === itemsPerPage);
         setPage(pageNum);
-      } catch (err: any) {
-        console.error("Error fetching mails:", err);
-        setError(err.message || "Failed to load mails.");
-        setMails([]);
-      } finally {
         setLoading(false);
+        if (pageNum === 1) {
+          setIsInitialLoading(false);
+          setIsTransitioning(false);
+        }
+
+      } catch (err: any) {
+        if (axios.isCancel(err)) {
+          console.log('Request cancelled, keeping loader');
+        } else {
+          console.error("Error fetching mails:", err);
+          setError(err.message || "Failed to load mails.");
+          setMails([]);
+          setLoading(false);
+          setIsInitialLoading(false);
+          setIsTransitioning(false);
+        }
+      } finally {
         setShowLoadingOverlay(false);
       }
     },
-    [user?.id, showLoadingOverlay, campaigns] // Added campaigns to dependency array
+    [user?.id, showLoadingOverlay, campaigns]
   );
 
   const loadMore = React.useCallback(() => {
@@ -616,7 +638,7 @@ export function Mail({
               className="flex-grow overflow-hidden m-0"
             >
               <div ref={mailListRef} className="h-full flex flex-col">
-                {loading && page === 1 ? (
+                {(isInitialLoading && page === 1) || isTransitioning ? (
                   <div className="flex flex-col space-y-3 p-4 pt-0">
                     {[...Array(6)].map((_, index) => (
                       <Skeleton
@@ -635,7 +657,7 @@ export function Mail({
                     loadMore={loadMore}
                     onDeleteMail={handleDeleteMail}
                   />
-                ) : (
+                ) : !loading && !isTransitioning ? (
                   <div className="flex flex-col gap-3 items-center justify-center mt-36">
                     <Image
                       src="/empty.svg"
@@ -646,7 +668,7 @@ export function Mail({
                     />
                     <p className="text-gray-500 mt-4">No Mails Available</p>
                   </div>
-                )}
+                ) : null}
               </div>
             </TabsContent>
           </Tabs>
@@ -673,6 +695,7 @@ export function Mail({
                 selectedMailId={selectedMailId}
                 setSelectedMailId={setSelectedMailId}
                 mailStatus={currentMail.status}
+                name={currentMail.name}
               />
             ) : (
               <div className="flex flex-col gap-3 items-center justify-center mt-[17.2rem]">

@@ -74,7 +74,8 @@ interface ThreadDisplayMainProps {
   updateMailStatus: (mailId: string, status: string) => void;
   selectedMailId: string | null;
   setSelectedMailId: (id: string | null) => void;
-  mailStatus: string; // Add this line
+  mailStatus: string;
+  name: string;
 }
 
 const frameworks = [
@@ -94,6 +95,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   selectedMailId,
   setSelectedMailId,
   mailStatus,
+  name,
 }) => {
   const {
     conversationId,
@@ -113,6 +115,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
   const { user } = useUserContext();
 
   // const { campaigns } = useCampaignContext();
+
+  const [drafts, setDrafts] = React.useState<any[]>([]);
 
   const initials = (name: string) => {
     const names = name.split(" ");
@@ -157,7 +161,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     };
 
     fetchCampaigns();
-  }, [user?.id, setCampaigns]);
+  }, [user?.id]);
 
   React.useEffect(() => {
     // For handleing, the thread if some error occurs
@@ -178,11 +182,14 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
       });
   }, [conversationId, thread.length]);
 
-  React.useEffect(() => {
-    if (recipientEmail) {
-      const fetchLeadInfo = async () => {
-      const isLinkedIn = isLinkedInUrl(recipientEmail);
+  const isLinkedInUrl = (recipient: string): boolean => {
+    return recipient.toLowerCase().includes('linkedin.com');
+  };
 
+  const handleAvatarClick = async () => {
+    try {
+      const isLinkedIn = isLinkedInUrl(recipientEmail);
+      
       if (isLinkedIn) {
         console.log('Using LinkedIn URL endpoint:', recipientEmail);
         const response = await axiosInstance.get<Lead>(
@@ -196,123 +203,12 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         setItemId(response.data.id);
         setLeads([response.data]);
       }
-
-    }
-    fetchLeadInfo();
-      // axiosInstance
-      //   .get(`v2/lead/info/${recipientEmail}`)
-      //   .then((response) => {
-      //     setItemId(response.data.id);
-      //     setLeads([response.data]);
-      //     // console.log(response.data);
-      //   })
-      //   .catch((error) => {
-      //     console.error("Error fetching data:", error);
-      //     setError(error.message || "Failed to load data.");
-      //   });
-    }
-  }, [recipientEmail]);
-
-
-  const isLinkedInUrl = (recipient: string): boolean => {
-    return recipient.toLowerCase().includes('linkedin.com');
-  };
-
-  // const fetchLeadInfo = async (recipientEmail: string, thread: EmailMessage[]) => {
-  //   try {
-  //     let response;
-      
-  //     // Get the recipient from first message
-  //     const firstMessage = thread[0];
-  //     const isLinkedIn = isLinkedInUrl(firstMessage.recipient);
-  
-  //     if (isLinkedIn) {
-  //       // If recipient is LinkedIn URL
-  //       console.log('Using LinkedIn URL endpoint:', firstMessage.recipient);
-  //       response = await axiosInstance.get<Lead>(
-  //         `v2/lead/linkedin/info?linkedin_url=${encodeURIComponent(firstMessage.recipient)}`
-  //       );
-  //     } else {
-  //       // If recipient is email
-  //       console.log('Using email endpoint for:', recipientEmail);
-  //       response = await axiosInstance.get<Lead>(`v2/lead/info/${recipientEmail}`);
-  //     }
-  
-  //     // Set the lead info
-  //     setItemId(response.data.id);
-  //     setLeads([response.data]);
-  
-  //     // Update threads with connected_on_linkedin status
-  //     const updatedThread = thread.map(message => ({
-  //       ...message,
-  //     }));
-  
-  //     setThread(updatedThread);
-  //     console.log('Lead data:', response.data);
-  //     console.log('Updated thread:', updatedThread);
-  
-  //   } catch (error) {
-  //     console.error("Error fetching lead data:", error);
-  //     setError("Failed to load lead data.");
-  //   }
-  // };
-  
-  // Use the function in useEffect
-  React.useEffect(() => {
-    if (recipientEmail && thread.length > 0) {
-      // fetchLeadInfo(recipientEmail, thread);
-    }
-  }, [recipientEmail]);
-
-  // Add state to track if drafts exist
-  const [hasDrafts, setHasDrafts] = React.useState(false);
-
-  // Add function to check for drafts
-  const checkForDrafts = async () => {
-    try {
-      const response = await axiosInstance.get(`/v2/mailbox/draft/${conversationId}`);
-      setHasDrafts(response.data.length > 0);
+      toggleSidebar(true);
     } catch (error) {
-      console.error("Error checking drafts:", error);
-      setHasDrafts(false);
+      console.error("Error fetching lead info:", error);
+      toast.error("Failed to load lead information");
     }
   };
-
-  // Check for drafts when conversation changes
-  React.useEffect(() => {
-    if (conversationId) {
-      checkForDrafts();
-    }
-  }, [conversationId]);
-
-  if (isLoading) {
-    return (
-      <div className="m-4 flex flex-row ">
-        <Skeleton className="h-7 w-7 rounded-full" />
-        <div className="flex flex-col space-y-3 ml-5">
-          <Skeleton className="h-[25px] w-[30rem] rounded-lg" />
-          <Skeleton className="h-[325px] w-[30rem] rounded-xl" />
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex justify-center flex-col items-center h-screen">
-        <Image
-          src="/error1.svg"
-          alt="empty-inbox"
-          width="200"
-          height="200"
-          className="dark:filter dark:invert"
-        />
-        <p className="flex justify-center items-center mt-10 ml-6  text-gray-500">
-          Oops!! Something Went Wrong
-        </p>
-      </div>
-    );
-  }
 
   const EmailComponent = ({ email }: { email: EmailMessage }) => {
     // const isEmailFromOwner = email.sender === ownerEmail;
@@ -526,9 +422,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
           <div className="flex w-full ">
             <Avatar
               className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-              onClick={() => {
-                toggleSidebar(true);
-              }}
+              onClick={handleAvatarClick}
             >
               <AvatarImage
                 src={leads[0]?.photo_url ? leads[0].photo_url : ""}
@@ -536,9 +430,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               />
 
               <AvatarFallback className="bg-yellow-400 text-black text-xs">
-                {leads.length > 0 && leads[0]?.first_name && leads[0]?.last_name
-                  ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
-                  : ""}
+                {name ? initials(name) : ""}
               </AvatarFallback>
             </Avatar>
             <Card className="w-full mr-5 ">
@@ -546,8 +438,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 <span className="text-sm font-semibold">
                   {leads[0]?.email
                     ? email.sender !== leads[0].email
-                      ? "You to " + leads[0].first_name
-                      : leads[0].first_name + " to you"
+                      ? "You to " + name
+                      : name + " to you"
                     : ""}
                 </span>
                 <div className="flex gap-3">
@@ -640,9 +532,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         <div className="flex w-full ">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-            onClick={() => {
-              toggleSidebar(true);
-            }}
+            onClick={handleAvatarClick}
           >
             <AvatarImage
               src={leads[0]?.photo_url ? leads[0].photo_url : ""}
@@ -650,9 +540,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             />
 
             <AvatarFallback className="bg-yellow-400 text-black text-xs">
-              {leads.length > 0 && leads[0]?.first_name && leads[0]?.last_name
-                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
-                : ""}
+              {name ? initials(name) : ""}
             </AvatarFallback>
           </Avatar>
           <Card className="w-full mr-5 ">
@@ -660,8 +548,8 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
               <span className="text-sm font-semibold">
                 {leads[0]?.email
                   ? email.sender !== leads[0].email
-                    ? "You to " + leads[0].name
-                    : leads[0].name + " to you"
+                    ? "You to " + name
+                    : name + " to you"
                   : ""}
               </span>
               <div className="flex gap-3">
@@ -1020,9 +908,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             <div className="flex w-full">
               <Avatar
                 className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-                onClick={() => {
-                  toggleSidebar(true);
-                }}
+                onClick={handleAvatarClick}
               >
                 <AvatarImage
                   src={leads[0]?.photo_url ? leads[0].photo_url : ""}
@@ -1030,16 +916,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                 />
 
                 <AvatarFallback className="bg-yellow-400 text-black text-xs">
-                  {leads[0]?.first_name && leads[0]?.last_name
-                    ? leads[0].first_name.charAt(0) +
-                    leads[0].last_name.charAt(0)
-                    : ""}
+                  {name ? initials(name) : ""}
                 </AvatarFallback>
               </Avatar>
               <Card className="w-full mr-5 ">
                 <div className="flex gap-5 p-4 items-center">
                   <span className="text-sm font-semibold">
-                    {"You to " + leads[0]?.name}
+                    {"You to " + name}
                   </span>
                   <div className="flex gap-3">
                     <span className="text-green-500 text-sm ">
@@ -1140,9 +1023,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         <div className="flex w-full">
           <Avatar
             className="flex h-7 w-7 items-center justify-center space-y-0 border bg-white mr-4"
-            onClick={() => {
-              setIsContextBarOpen(true);
-            }}
+            onClick={handleAvatarClick}
           >
             <AvatarImage
               src={leads[0]?.photo_url ? leads[0].photo_url : ""}
@@ -1150,15 +1031,13 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
             />
 
             <AvatarFallback className="bg-yellow-400 text-black text-xs">
-              {leads[0]?.first_name && leads[0]?.last_name
-                ? leads[0].first_name.charAt(0) + leads[0].last_name.charAt(0)
-                : ""}
+              {name ? initials(name) : ""}
             </AvatarFallback>
           </Avatar>
           <Card className="w-full mr-5 ">
             <div className="flex gap-5 p-4 items-center">
               <span className="text-sm font-semibold">
-                {"You to " + leads[0]?.name}
+                {"You to " + name}
               </span>
               <div className="flex gap-3">
                 <span className={`${platform === "Linkedin" ? "text-blue-500" : "text-green-500"} text-sm flex items-center space-x-2`}>
@@ -1343,7 +1222,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         )}
 
         {/* Only show draft if drafts exist and either there are no messages or last message is not a reply */}
-        {hasDrafts && (
+        {drafts?.length > 0 && (
           thread?.length === 0 ? (
             <DraftEmailComponent />
           ) : (
