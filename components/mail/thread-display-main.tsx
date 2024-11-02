@@ -1222,7 +1222,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
         )}
 
         {/* Only show draft if drafts exist and either there are no messages or last message is not a reply */}
-        {drafts?.length > 0 && (
+        {true && (
           thread?.length === 0 ? (
             <DraftEmailComponent />
           ) : (
