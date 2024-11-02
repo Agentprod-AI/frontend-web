@@ -54,7 +54,7 @@ function Qualification() {
   const addCriteria = () => {
     setCriteria([
       ...criteria,
-      { question: "", type: "", answer: "", addToCampaign: true },
+      { question: "", type: "yes/no", answer: "", addToCampaign: true },
     ]);
   };
 
@@ -182,9 +182,14 @@ function TextInput({ criterion, onUpdate }: any) {
 
                   <RadioGroup
                     className="my-3"
-                    value={localCriterion.type}
+                    value={localCriterion.type || "yes/no"}
+                    defaultValue="yes/no"
                     onValueChange={(value) =>
-                      setLocalCriterion({ ...localCriterion, type: value })
+                      setLocalCriterion({ 
+                        ...localCriterion, 
+                        type: value,
+                        answer: value === "research" ? null : localCriterion.answer 
+                      })
                     }
                   >
                     <div className="flex items-center space-x-2">
@@ -192,39 +197,43 @@ function TextInput({ criterion, onUpdate }: any) {
                       <Label htmlFor="option-one">Yes/No</Label>
                     </div>
                     <div className="ml-6 dark:text-white/40 text-start">
-                      Ask a yes-no question, such as "Is this company remote
-                      work friendly?"
+                      Ask a yes-no question to qualify a lead to add them to the
+                      campaign
                     </div>
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="research" id="option-two" />
                       <Label htmlFor="option-two">Research</Label>
                     </div>
                     <div className="ml-6 dark:text-white/40 text-start">
-                      Ask a research based question, such as "Does my lead
-                      company provide sales support?"
+                      Ask a research based question to know more about the lead
                     </div>
                   </RadioGroup>
 
-                  <div className="text-start mt-6">
-                    Add to Campaign if answer is..
-                  </div>
+                  {localCriterion.type === "yes/no" && (
+                    <>
+                      <div className="text-start mt-6">
+                        Add to Campaign if answer is..
+                      </div>
 
-                  <RadioGroup
-                    className="my-3"
-                    value={localCriterion.answer}
-                    onValueChange={(value) =>
-                      setLocalCriterion({ ...localCriterion, answer: value })
-                    }
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="yes" id="option-one" />
-                      <Label htmlFor="option-one">Yes</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="no" id="option-two" />
-                      <Label htmlFor="option-two">No</Label>
-                    </div>
-                  </RadioGroup>
+                      <RadioGroup
+                        className="my-3"
+                        value={localCriterion.answer || "yes"}
+                        defaultValue="yes"
+                        onValueChange={(value) =>
+                          setLocalCriterion({ ...localCriterion, answer: value })
+                        }
+                      >
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="yes" id="option-one" />
+                          <Label htmlFor="option-one">Yes</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                          <RadioGroupItem value="no" id="option-two" />
+                          <Label htmlFor="option-two">No</Label>
+                        </div>
+                      </RadioGroup>
+                    </>
+                  )}
                   <div className="flex mt-6 space-x-2">
                     <Checkbox
                       id="terms2"
@@ -241,8 +250,7 @@ function TextInput({ criterion, onUpdate }: any) {
                       htmlFor="terms2"
                       className="text-sm font-medium text-start leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                     >
-                      Also add to Campaign if we are unable to answer the filter
-                      question
+                      Also add to Campaign if lead does not qualify the question
                     </label>
                   </div>
                   <DialogClose asChild>
