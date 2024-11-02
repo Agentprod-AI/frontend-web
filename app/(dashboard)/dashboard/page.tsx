@@ -57,22 +57,21 @@ export default function Page() {
   const allWeekDays = getWeekDays();
 
   const activeDaysSet = new Set(
-    mailGraphData
-      .map((data) => {
-        if (!data.date) return null;
-        try {
-          const parsedDate = parseISO(data.date);
-          if (isNaN(parsedDate.getTime())) {
-            console.warn(`Invalid date: ${data.date}`);
-            return null;
-          }
-          return format(parsedDate, "yyyy-MM-dd");
-        } catch (error) {
-          console.error(`Error parsing date: ${data.date}`, error);
+    (mailGraphData || []).map((data) => {
+      if (!data.date) return null;
+      try {
+        const parsedDate = parseISO(data.date);
+        if (isNaN(parsedDate.getTime())) {
+          console.warn(`Invalid date: ${data.date}`);
           return null;
         }
-      })
-      .filter(Boolean)
+        return format(parsedDate, "yyyy-MM-dd");
+      } catch (error) {
+        console.error(`Error parsing date: ${data.date}`, error);
+        return null;
+      }
+    })
+    .filter(Boolean)
   );
 
   return (
@@ -103,7 +102,7 @@ export default function Page() {
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
                     <div className="text-2xl font-bold">
-                      {dashboardData?.emails_sent || "0"}
+                      {isLoading ? <LoadingCircle /> : dashboardData?.emails_sent}
                     </div>
                   </CardContent>
                 </Card>
@@ -115,7 +114,7 @@ export default function Page() {
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
                     <div className="text-2xl font-bold">
-                      {dashboardData?.engaged || "0"}
+                      {isLoading ? <LoadingCircle /> : dashboardData?.engaged}
                     </div>
                   </CardContent>
                 </Card>
@@ -127,7 +126,7 @@ export default function Page() {
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
                     <div className="text-2xl font-bold">
-                      {dashboardData?.meetings_booked || "0"}
+                      {isLoading ? <LoadingCircle /> : dashboardData?.meetings_booked}
                     </div>
                   </CardContent>
                 </Card>
@@ -139,9 +138,9 @@ export default function Page() {
                   </CardHeader>
                   <CardContent className="h-1/2 md:mt-2">
                     <div className="text-2xl font-bold">
-                      {(dashboardData?.response_rate &&
-                        Math.round(dashboardData?.response_rate)) ||
-                        "0"}
+                      {isLoading ? <LoadingCircle /> : 
+                        Math.round(dashboardData?.response_rate)
+                      }
                     </div>
                   </CardContent>
                 </Card>

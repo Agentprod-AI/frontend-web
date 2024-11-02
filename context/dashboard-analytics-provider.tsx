@@ -107,25 +107,43 @@ export const DashboardProvider: React.FunctionComponent<Props> = ({
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
 
+  const fetchDashboardData = async (userId: string, retryCount = 0) => {
+    try {
+      const response = await axiosInstance.get<DashboardEntry>(`v2/dashboard/${userId}`);
+      if (response.data === null) {
+        // If response is null, retry up to 3 times with increasing delay
+        if (retryCount < 3) {
+          console.log(`Retry attempt ${retryCount + 1} for null response`);
+          // Exponential backoff delay: 1s, 2s, 4s
+          const delay = Math.pow(2, retryCount) * 1000;
+          await new Promise(resolve => setTimeout(resolve, delay));
+          return fetchDashboardData(userId, retryCount + 1);
+        }
+        // If all retries fail, set default empty data
+        setDashboardData(defaultDashboardState.dashboardData);
+        console.warn("Received null response after retries");
+      } else {
+        setDashboardData(response.data);
+        console.log("Dashboard Data:", response.data);
+      }
+      setIsLoading(false);
+    } catch (error: any) {
+      if (error.response?.status === 404 || error.response?.status === 500 && retryCount < 3) {
+        console.log(`Retry attempt ${retryCount + 1} for 404 error`);
+        // Wait for 1 second before retrying
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        return fetchDashboardData(userId, retryCount + 1);
+      }
+      console.error("Error fetching data:", error);
+      setError(error.message || "Failed to load data.");
+      setIsLoading(false);
+    }
+  };
+
   React.useEffect(() => {
     if (user?.id) {
       setIsLoading(true);
-      axiosInstance
-        .get<DashboardEntry>(`v2/dashboard/${user.id}`)
-        .then((response) => {
-          if (response.data) {
-            setDashboardData(response.data); // Check if data exists
-            console.log("Dashboard Data:", response.data);
-          } else {
-            console.warn("Received empty dashboard data");
-          }
-          setIsLoading(false);
-        })
-        .catch((error) => {
-          console.error("Error fetching data:", error);
-          setError(error.message || "Failed to load data.");
-          setIsLoading(false);
-        });
+      fetchDashboardData(user.id);
     } else {
       console.warn("No user ID found");
       setIsLoading(false);
