@@ -240,9 +240,10 @@ export function Mail({
         // Set ITEMS_PER_PAGE to 100 if the status is "replied"
         const itemsPerPage = status === "replied" ? 100 : ITEMS_PER_PAGE;
 
-        url += `?limit=${itemsPerPage}&offset=${
-          (pageNum - 1) * itemsPerPage
-        }`;
+        // Calculate the offset based on page number
+        const offset = (pageNum - 1) * itemsPerPage;
+        
+        url += `?limit=${itemsPerPage}&offset=${offset}`;
 
         if (search) {
           const searchWords = search
@@ -268,6 +269,8 @@ export function Mail({
         );
 
         console.log("Response data:", response.data.mails);
+        
+        const totalCount = response.data.total_count;
 
         const campaignChannelMap = campaigns.reduce((map: {[key: string]: string}, campaign: any) => {
           map[campaign.id] = campaign.channel;
@@ -287,7 +290,8 @@ export function Mail({
           }
         });
 
-        setHasMore(response.data.mails.length === itemsPerPage);
+        const hasMoreItems = offset + itemsPerPage < totalCount;
+        setHasMore(hasMoreItems);
         setPage(pageNum);
         setLoading(false);
         if (pageNum === 1) {

@@ -169,7 +169,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
     setIsLoading(true); // Set loading state when conversationId changes
     // For handleing, the thread if some error occurs
     axiosInstance
-      .get<EmailMessage[]>(`v2/mailbox/conversation/${conversationId}`)
+      .get(`v2/mailbox/draft/${conversationId}`)
       .then((response) => {
         setThread(response.data);
         console.log("Thread Data", response.data);
