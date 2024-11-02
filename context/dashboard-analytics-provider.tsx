@@ -107,7 +107,7 @@ export const DashboardProvider: React.FunctionComponent<Props> = ({
   const [isLoading, setIsLoading] = React.useState(true);
   const [error, setError] = React.useState("");
 
-  const fetchDashboardData = async (userId: string, retryCount = 0) => {
+  const fetchDashboardData = async (userId: string, retryCount = 0): Promise<void> => {
     try {
       const response = await axiosInstance.get<DashboardEntry>(`v2/dashboard/${userId}`);
       if (response.data === null) {
