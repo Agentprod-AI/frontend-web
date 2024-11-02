@@ -1189,7 +1189,7 @@ const ThreadDisplayMain: React.FC<ThreadDisplayMainProps> = ({
                     <User className="h-4 w-4 text-gray-400" />
                   </div>
                   <div className="text-xs ml-1">
-                    {leads[0].name} was added in {matchingCampaign.campaign_type}{" "}
+                    {name} was added in {matchingCampaign.campaign_type}{" "}
                     {matchingCampaign.campaign_name} campaign
                   </div>
                 </div>
