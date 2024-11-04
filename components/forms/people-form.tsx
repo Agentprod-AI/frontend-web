@@ -1542,258 +1542,21 @@ export default function PeopleForm(): JSX.Element {
 
   const updateAudience = async () => {
     setIsTableLoading(true);
-    const formData = form.getValues();
-
-    const pages = formData.per_page ? Math.ceil(formData.per_page / 10) : 1;
-
-    let filters = editFilters ? { ...editFilters } : {};
-
-    filters = {
-      ...filters,
-      ...(pages && { page: pages }),
-      ...(formData.per_page && {
-        per_page:
-          formData.per_page > 10
-            ? Math.ceil(formData.per_page / pages)
-            : formData.per_page,
-      }),
-      prospected_by_current_team: ["No"],
-      ...(Array.isArray(formData.person_titles) &&
-        formData.person_titles.length > 0 && {
-        person_titles: formData.person_titles
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      ...(Array.isArray(formData.organization_locations) &&
-        formData.organization_locations.length > 0 && {
-        organization_locations: formData.organization_locations
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      organization_num_employees_ranges: checkedFields(
-        checkedCompanyHeadcount,
-        true
-      ),
-      ...(Array.isArray(formData.q_organization_domains) &&
-        formData.q_organization_domains.length > 0 && {
-        q_organization_domains: formData.q_organization_domains
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      ...(formData.email_status && { email_status: formData.email_status }),
-      ...(Array.isArray(formData.organization_industry_tag_ids) &&
-        formData.organization_industry_tag_ids.length > 0 && {
-        organization_industry_tag_ids: formData.organization_industry_tag_ids
-          .map((tag) => tag?.value)
-          .filter(Boolean),
-      }),
-      ...(Array.isArray(formData.currently_using_technologies) &&
-        formData.currently_using_technologies.length > 0 && {
-        currently_using_technologies: formData.currently_using_technologies
-          .map((tag) => tag?.id)
-          .filter(Boolean),
-      }),
-      ...(Array.isArray(formData.q_organization_keyword_tags) &&
-        formData.q_organization_keyword_tags.length > 0 && {
-        q_organization_keyword_tags: formData.q_organization_keyword_tags
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      ...(Array.isArray(formData.job_posting_titles) &&
-        formData.job_posting_titles.length > 0 && {
-        job_posting_titles: formData.job_posting_titles
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      ...(Array.isArray(formData.job_posting_locations) &&
-        formData.job_posting_locations.length > 0 && {
-        job_posting_locations: formData.job_posting_locations
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      ...(formData.minimum_company_funding &&
-        formData.maximum_company_funding && {
-        revenue_range: {
-          min: formData.minimum_company_funding.text?.toString(),
-          max: formData.maximum_company_funding.text?.toString(),
-        },
-      }),
-      ...(Array.isArray(formData.organization_job_locations) &&
-        formData.organization_job_locations.length > 0 && {
-        organization_job_locations: formData.organization_job_locations
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      ...(Array.isArray(formData.q_organization_job_titles) &&
-        formData.q_organization_job_titles.length > 0 && {
-        q_organization_job_titles: formData.q_organization_job_titles
-          .map((tag) => tag?.text)
-          .filter(Boolean),
-      }),
-      organization_latest_funding_stage_cd: checkedFields(
-        checkedFundingRounds,
-        false
-      ),
-      search_signals: checkedFields(
-        checkedSearchSignal,
-        false
-      ),
-      buying_intent_topics: checkedFields(
-        checkedIntentTopics,
-        false
-      ),
-      buying_intent_scores: checkedFields(
-        checkedIntentScores,
-        false
-      ),
-    };
-
-    const filtersPostBody = {
-      campaign_id: params.campaignId,
-      audience_type: "prospective",
-      filters_applied: filters,
-    };
-
-    setIsTableLoading(true);
 
     try {
       // Update audience filters
-      const recurringCampaignResponse = await axiosInstance.get(`v2/recurring_campaign_request/${params.campaignId}`);
-
-      if (recurringCampaignResponse.data !== null) {
-        // If recurring campaign request exists, update the Apollo URL
-        const newApolloUrl = constructApolloUrl(formData);
-        await axiosInstance.put(`v2/recurring_campaign_request`, {
-          campaign_id: params.campaignId,
-          apollo_url: newApolloUrl,
-        });
-        console.log("Recurring campaign request updated with new Apollo URL");
-      }
-
-      const newApolloUrl = constructApolloUrl(formData);
-      setApolloUrl(newApolloUrl);
-
-      let pages = 1;
-      if (formData.per_page) {
-        if (formData.per_page <= 25) {
-          pages = 1;
-        } else if (formData.per_page <= 50) {
-          pages = 2;
-        } else if (formData.per_page <= 75) {
-          pages = 3;
-        } else {
-          pages = Math.ceil(formData.per_page / 25);
-        }
-      }
-      setCalculatedPages(pages);
-
-      // Fetch leads from Apify
-      const getRandomEmail = (startPage: number) => {
-        const premiumAcc = ["info@agentprod.com", "muskaan@agentprodapp.com", "demo@agentprod.com"];
-        const randomIndex = startPage % 3;
-        return premiumAcc[randomIndex];
-      };
-
-      const createScraperBody = (email: string, count: number, startPage: number) => ({
-        count: Math.min(count, 25),
-        email: email,
-        getEmails: true,
-        guessedEmails: true,
-        maxDelay: 15,
-        minDelay: 8,
-        password: "Agentprod06ms",
-        searchUrl: newApolloUrl,
-        startPage: startPage,
-        waitForVerification: true,
-        proxy: {
-          useApifyProxy: true,
-          apifyProxyGroups: ["RESIDENTIAL"],
-          apifyProxyCountry: "IN",
-        },
-      });
-
-      const fetchLead = async (startPage: number): Promise<any[]> => {
-        const email = getRandomEmail(startPage);
-        const scraperBody = createScraperBody(email, 25, startPage);
-        let retries = 0;
-        const TIMEOUT = 90000;
-        const maxRetries = 3;
-
-        while (retries < maxRetries) {
-          try {
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), TIMEOUT);
-            const response = await axios.post(
-              "https://api.apify.com/v2/acts/curious_coder~apollo-io-scraper/run-sync-get-dataset-items?token=apify_api_n5GCPgdvobcZfCa9w38PSxtIQiY22E4k3ARa",
-              scraperBody,
-              {
-                signal: controller.signal,
-              }
-            );
-            clearTimeout(timeoutId);
-            return response.data;
-          } catch (error) {
-            console.error(`Error fetching leads for page ${startPage} (attempt ${retries + 1}):`, error);
-            retries++;
-            if (axios.isCancel(error)) {
-              console.log("Request timed out. Retrying...");
-            } else if (retries === maxRetries) {
-              console.error(`Failed to fetch leads for page ${startPage} after ${maxRetries} attempts`);
-              return [];
-            }
-            await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay before retry
-          }
-        }
-        return [];
-      };
-
-      const batchSize = 8;
-      const totalPages = Math.ceil(formData.per_page / 25);
-      let enrichedLeads: any[] = [];
-
-      for (let i = 0; i < totalPages; i += batchSize) {
-        const batch = Array.from({ length: Math.min(batchSize, totalPages - i) }, (_, index) => i + index + 1);
-        console.log(`Processing batch ${i / batchSize + 1} of ${Math.ceil(totalPages / batchSize)}`);
-
-        const batchPromises = batch.map(fetchLead);
-        const batchResults = await Promise.all(batchPromises);
-        const batchLeads = batchResults.flat();
-
-        enrichedLeads.push(...batchLeads);
-
-        if (i + batchSize < totalPages) {
-          await new Promise((resolve) => setTimeout(resolve, 5000)); // 5 second delay
-        }
-      }
-
-      if (enrichedLeads.length === 0) {
-        toast.error("No leads found");
-        setTab("tab1");
-      } else {
-        console.log("Fetched leads:", enrichedLeads);
-
-        const processedLeads = enrichedLeads
-          .slice(0, formData.per_page)
-          .map((person: any) => ({
-            ...person,
-            type: "prospective",
-            campaign_id: params.campaignId,
-            id: uuid(),
-          }));
-        setLeads(processedLeads);
-        console.log("Processed new leads:", processedLeads);
+      
 
         // Update audience filters
         // await axiosInstance.put(`v2/audience/${audienceId}`, filtersPostBody);
 
 
         // Update contacts
-        const updateLeadsBody = mapLeadsToBodies(processedLeads, params.campaignId);
-        await axiosInstance.post(`v2/lead/bulk/`, updateLeadsBody);
+        const audienceBody = mapLeadsToBodies(leads as Lead[], params.campaignId);
+        await axiosInstance.post(`v2/lead/bulk/`, audienceBody);
 
         toast.success("Audience updated successfully");
         router.push(`/dashboard/campaign/${params.campaignId}`);
-      }
     } catch (error) {
       console.error("Error updating audience:", error);
       toast.error("Error updating audience");
@@ -2044,8 +1807,7 @@ export default function PeopleForm(): JSX.Element {
       >
         <Tabs value={tab} onValueChange={onTabChange} className="w-full">
           <TabsList
-            className={`grid grid-cols-2 w-[330px] ${type === "edit" && "hidden"
-              }`}
+            className={`grid grid-cols-2 w-[330px]`}
           >
             <TabsTrigger value="tab1" disabled={isSubmitting}>
               Edit
@@ -3479,7 +3241,7 @@ export default function PeopleForm(): JSX.Element {
 
               </div>
             </div>
-            {type === "edit" && (
+            {/* {type === "edit" && (
               <Button
                 onClick={(event) => {
                   event.preventDefault();
@@ -3489,7 +3251,7 @@ export default function PeopleForm(): JSX.Element {
               >
                 {isTableLoading ? <LoadingCircle /> : "Update Audience"}
               </Button>
-            )}
+            )} */}
           </TabsContent>
           <TabsContent value="tab2">
             {isTableLoading ? (
@@ -3512,11 +3274,10 @@ export default function PeopleForm(): JSX.Element {
               </Button>
             ) : (
               <div className="w-1/4 space-y-4 justify-between">
-                <Button>Go Back</Button>
                 <Button
                   onClick={(event) => {
                     event.preventDefault();
-                    createAudience();
+                    updateAudience();
                   }}
                   disabled={isSubmitting}
                 >
