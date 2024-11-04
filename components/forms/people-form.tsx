@@ -1547,16 +1547,19 @@ export default function PeopleForm(): JSX.Element {
       // Update audience filters
       
 
+      
         // Update audience filters
         // await axiosInstance.put(`v2/audience/${audienceId}`, filtersPostBody);
 
 
         // Update contacts
         const audienceBody = mapLeadsToBodies(leads as Lead[], params.campaignId);
+
         await axiosInstance.post(`v2/lead/bulk/`, audienceBody);
 
         toast.success("Audience updated successfully");
-        router.push(`/dashboard/campaign/${params.campaignId}`);
+      router.push(`/dashboard/campaign/${params.campaignId}`);
+
     } catch (error) {
       console.error("Error updating audience:", error);
       toast.error("Error updating audience");
