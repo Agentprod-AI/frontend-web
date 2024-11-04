@@ -54,7 +54,7 @@ function Qualification() {
   const addCriteria = () => {
     setCriteria([
       ...criteria,
-      { question: "", type: "yes/no", answer: "", addToCampaign: true },
+      { question: "", type: "yes/no", answer: ""},
     ]);
   };
 
@@ -168,6 +168,7 @@ function TextInput({ criterion, onUpdate }: any) {
                   <Input
                     className="bg-transparent w-full dark:text-white/70 placeholder:dark:text-white/20"
                     value={localCriterion.question}
+                    placeholder={`Ask a qualification question`}
                     onChange={(e) =>
                       setLocalCriterion({
                         ...localCriterion,
@@ -192,25 +193,17 @@ function TextInput({ criterion, onUpdate }: any) {
                       })
                     }
                   >
+                    <Card className="p-4">
                     <div className="flex items-center space-x-2">
                       <RadioGroupItem value="yes/no" id="option-one" />
-                      <Label htmlFor="option-one">Yes/No</Label>
+                      <Label htmlFor="option-one">Decision Based (Yes/No)</Label>
                     </div>
                     <div className="ml-6 dark:text-white/40 text-start">
-                      Ask a yes-no question to qualify a lead to add them to the
-                      campaign
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="research" id="option-two" />
-                      <Label htmlFor="option-two">Research</Label>
-                    </div>
-                    <div className="ml-6 dark:text-white/40 text-start">
-                      Ask a research based question to know more about the lead
-                    </div>
-                  </RadioGroup>
-
-                  {localCriterion.type === "yes/no" && (
-                    <>
+                        Ask a yes-no question to qualify a lead to add them to the
+                        campaign
+                      </div>
+                      {localCriterion.type === "yes/no" && (
+                        <div className="ml-6 -mt-5">
                       <div className="text-start mt-6">
                         Add to Campaign if answer is..
                       </div>
@@ -232,27 +225,22 @@ function TextInput({ criterion, onUpdate }: any) {
                           <Label htmlFor="option-two">No</Label>
                         </div>
                       </RadioGroup>
-                    </>
+                    </div>
                   )}
-                  <div className="flex mt-6 space-x-2">
-                    <Checkbox
-                      id="terms2"
-                      className="mt-1"
-                      checked={localCriterion.addToCampaign}
-                      onCheckedChange={(checked) =>
-                        setLocalCriterion({
-                          ...localCriterion,
-                          addToCampaign: checked,
-                        })
-                      }
-                    />
-                    <label
-                      htmlFor="terms2"
-                      className="text-sm font-medium text-start leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                    >
-                      Also add to Campaign if lead does not qualify the question
-                    </label>
-                  </div>
+                  </Card>
+                  <Card className="p-4">
+
+                    <div className="flex items-center space-x-2">
+                      <RadioGroupItem value="research" id="option-two" />
+                      <Label htmlFor="option-two">Research</Label>
+                    </div>
+                    <div className="ml-6 dark:text-white/40 text-start">
+                      Ask a research based question to know more about the lead
+                    </div>
+                  </Card>
+                  </RadioGroup>
+
+
                   <DialogClose asChild>
                     <Button className="my-1 mt-6" onClick={handleUpdate}>
                       Save qualification
