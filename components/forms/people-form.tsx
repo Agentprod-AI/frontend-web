@@ -151,6 +151,22 @@ const FormSchema = z.object({
       })
     )
     .optional(),
+  buying_intent_topics: z
+  .array(
+    z.object({
+      id: z.string(),
+      text: z.string()
+    })
+  )
+  .optional(),
+  buying_intent_scores: z
+  .array(
+    z.object({
+      id: z.string(),
+      text: z.string()
+    })
+  )
+  .optional(),
   job_posting_titles: z
     .array(
       z.object({
@@ -219,6 +235,9 @@ export default function PeopleForm(): JSX.Element {
 
   const [checkedSearchSignal, setCheckedSearchSignal] =
     React.useState<string[]>();
+  
+  const [checkedIntentTopics, setCheckedIntentTopics] = React.useState<string[]>();
+  const [checkedIntentScores, setCheckedIntentScores] = React.useState<string[]>();
 
   const [minimumCompanyFunding, setMinimumCompanyFunding] =
     React.useState<InputType>({
@@ -683,6 +702,24 @@ export default function PeopleForm(): JSX.Element {
         .join("")
     }
 
+    if (checkedIntentScores && checkedIntentScores.length > 0) {
+      url += checkedIntentScores
+      .map(
+        (intent: string) =>
+          `&intentStrengths[]=${encodeURIComponent(intent)}`
+      )
+      .join("")
+    }
+
+    if (checkedIntentTopics && checkedIntentTopics.length > 0) {
+      url += checkedIntentTopics
+      .map(
+        (intent: string) =>
+          `&intentIds[]=${encodeURIComponent(intent)}`
+      )
+      .join("")
+    }
+
     if (formData.minimum_company_funding || formData.maximum_company_funding) {
       const minRevenue = formData.minimum_company_funding ? encodeURIComponent(formData.minimum_company_funding.text) : '';
       const maxRevenue = formData.maximum_company_funding ? encodeURIComponent(formData.maximum_company_funding.text) : '';
@@ -699,6 +736,8 @@ export default function PeopleForm(): JSX.Element {
         .join("");
     }
 
+    // console.log(url)
+
     return url;
   };
 
@@ -712,6 +751,8 @@ export default function PeopleForm(): JSX.Element {
     checkedCompanyHeadcount,
     checkedFundingRounds,
     checkedSearchSignal,
+    checkedIntentScores,
+    checkedIntentTopics,
     form.watch("organization_locations"),
     form.watch("organization_industry_tag_ids"),
     form.watch("person_titles"),
@@ -745,6 +786,8 @@ export default function PeopleForm(): JSX.Element {
       email_status: data.email_status,
       organization_job_locations: data.organization_job_locations,
       q_organization_job_titles: data.q_organization_job_titles,
+      buying_intent_topics: data.buying_intent_topics,
+      buying_intent_scores: data.buying_intent_scores,
     };
     setIsSubmitting(true);
     setPageCompletion("audience", true);
@@ -996,6 +1039,7 @@ export default function PeopleForm(): JSX.Element {
     company: false,
     searchSignals: false,
     technologies: false,
+    buyingIntent: false,
   });
   const toggleDropdown = (id: string) => {
     setDropdownsOpen((prev) => ({
@@ -1014,6 +1058,18 @@ export default function PeopleForm(): JSX.Element {
   };
 
   type SignalCheckboxOptions = {
+    id: string;
+    name: string;
+    checked: boolean;
+  }
+
+  type IntentScoreCheckboxOptions = {
+    id: string;
+    name: string;
+    checked: boolean;
+  }
+
+  type IntentTopicCheckboxOptions = {
     id: string;
     name: string;
     checked: boolean;
@@ -1065,6 +1121,17 @@ export default function PeopleForm(): JSX.Element {
     { id: "649f201ded59e501eb4d3f16", name: "Award or recognition", checked: false },
     { id: "663279c828a0230001e2338b", name: "Former champion changed jobs", checked: false },
     { id: "663279c828a0230001e2338c", name: "Recently promoted", checked: false }
+  ];
+
+  const buyingIntentScores: IntentScoreCheckboxOptions[] = [
+    { id: "high", name: "High", checked: false},
+    { id: "mid", name: "Medium", checked: false},
+    { id: "low", name: "Low", checked: false},
+    { id: "none", name: "None", checked: false},
+  ];
+
+  const buyingIntentTopics: IntentTopicCheckboxOptions[] = [
+    { id: "48b1feaa8b0d1805a23f59f268fc7c91", name: "Shopify", checked: false}
   ];
 
 
@@ -1168,6 +1235,8 @@ export default function PeopleForm(): JSX.Element {
             email_status: formData.email_status,
             organization_job_locations: formData.organization_job_locations,
             q_organization_job_titles: formData.q_organization_job_titles,
+            buying_intent_topics: checkedIntentTopics,
+            buying_intent_scores: checkedIntentScores,
           },
         };
 
@@ -1382,6 +1451,28 @@ export default function PeopleForm(): JSX.Element {
         )
       }
 
+      // Buying intent
+
+      if (allFiltersFromDB.buying_intent_scores) {
+        setCheckedIntentScores(
+          allFiltersFromDB.buying_intent_scores
+        );
+        setValue(
+          "buying_intent_scores",
+          allFiltersFromDB.buying_intent_scores
+        )
+      }
+
+      if (allFiltersFromDB.buying_intent_topics) {
+        setCheckedIntentTopics(
+          allFiltersFromDB.buying_intent_topics
+        );
+        setValue(
+          "buying_intent_topics",
+          allFiltersFromDB.buying_intent_topics
+        )
+      }
+
       // Company Domains
       if (allFiltersFromDB.q_organization_domains) {
         setQOrganizationDomainsTags(allFiltersFromDB.q_organization_domains);
@@ -1468,6 +1559,7 @@ export default function PeopleForm(): JSX.Element {
 
         toast.success("Audience updated successfully");
       router.push(`/dashboard/campaign/${params.campaignId}`);
+
     } catch (error) {
       console.error("Error updating audience:", error);
       toast.error("Error updating audience");
@@ -2948,6 +3040,163 @@ export default function PeopleForm(): JSX.Element {
                         </FormItem>
                       )}
                     />
+                  </div>
+                </div>
+
+
+                {/* Buying Intent */}
+
+                <div className="bg-muted px-2 rounded">
+                  <div
+                    className="flex justify-between w-full py-3 cursor-pointer"
+                    onClick={() => toggleDropdown("buyingIntent")}
+                  >
+                    <div className="text-sm">Buying Intent</div>
+                    {dropdownsOpen.buyingIntent ? (
+                      <ChevronUp color="#000000" />
+                    ) : (
+                      <ChevronUp
+                        color="#000000"
+                        className="transition-transform duration-200 transform rotate-180"
+                      />
+                    )}
+                  </div>
+                  <div
+                    className={`${dropdownsOpen.buyingIntent ? "block" : "hidden"
+                      }`}
+                  >
+                    <FormField
+                    control={form.control}
+                    name="buying_intent_scores"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col items-start">
+                        <FormLabel
+                          className="text-left"
+                        >
+                          Intent Scores
+                        </FormLabel>
+                        <FormControl>
+                          <div>
+                            {buyingIntentScores.map(
+                              (intent, index) => (
+                                <div
+                                  className="text-sm flex items-center mb-3"
+                                  key={index}
+                                >
+                                  <Checkbox
+                                    {...field}
+                                    className="mr-2"
+                                    checked={checkedIntentScores?.includes(
+                                      intent.id
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      const isChecked = checked.valueOf();
+                                      const value = intent.id;
+
+                                      setCheckedIntentScores(
+                                        (currentChecked) => {
+                                          if (
+                                            currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return currentChecked;
+                                          }
+
+                                          if (
+                                            !currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return [
+                                              ...(currentChecked || []),
+                                              value,
+                                            ];
+                                          }
+
+                                          return (currentChecked || []).filter(
+                                            (item) => item !== value
+                                          );
+                                        }
+                                      );
+                                    }}
+                                    value={intent.name}
+                                  />
+                                  {intent.name}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="buying_intent_topics"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-col items-start">
+                        <FormLabel
+                          className="text-left"
+                        >
+                          Intent Topics
+                        </FormLabel>
+                        <FormControl>
+                          <div>
+                            {buyingIntentTopics.map(
+                              (intent, index) => (
+                                <div
+                                  className="text-sm flex items-center mb-3"
+                                  key={index}
+                                >
+                                  <Checkbox
+                                    {...field}
+                                    className="mr-2"
+                                    checked={checkedIntentTopics?.includes(
+                                      intent.id
+                                    )}
+                                    onCheckedChange={(checked) => {
+                                      const isChecked = checked.valueOf();
+                                      const value = intent.id;
+
+                                      setCheckedIntentTopics(
+                                        (currentChecked) => {
+                                          if (
+                                            currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return currentChecked;
+                                          }
+
+                                          if (
+                                            !currentChecked?.includes(value) &&
+                                            isChecked
+                                          ) {
+                                            return [
+                                              ...(currentChecked || []),
+                                              value,
+                                            ];
+                                          }
+
+                                          return (currentChecked || []).filter(
+                                            (item) => item !== value
+                                          );
+                                        }
+                                      );
+                                    }}
+                                    value={intent.name}
+                                  />
+                                  {intent.name}
+                                </div>
+                              )
+                            )}
+                          </div>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   </div>
                 </div>
 
